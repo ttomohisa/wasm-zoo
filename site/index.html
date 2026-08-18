@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="WASM Zoo publishes fresh, reproducible WebAssembly builds of upstream native software.">
+  <meta name="theme-color" content="#f7f7f4">
+  <title>WASM Zoo — fresh upstream WebAssembly builds</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="WASM Zoo home">
+      <span class="brand-mark" aria-hidden="true">W</span>
+      <span>WASM Zoo</span>
+    </a>
+    <a class="github-link" href="https://github.com/ttomohisa" rel="noreferrer">GitHub</a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">Unofficial WebAssembly distro</span>
+        <h1>Upstream software,<br>compiled for WebAssembly.</h1>
+        <p>Current, reproducible WASM builds of native projects — preserving upstream CLIs where practical, with exact toolchains, capability gaps, smoke tests and source handoff.</p>
+        <div class="hero-actions">
+          <a class="primary-button" href="#catalog">Browse builds</a>
+          <a class="secondary-button" href="https://github.com/ttomohisa" rel="noreferrer">Build recipes</a>
+        </div>
+      </div>
+      <div class="terminal-card" aria-label="Example WASM Zoo package metadata">
+        <div class="terminal-top"><span></span><span></span><span></span></div>
+        <pre><code><span class="muted">package</span>  ffmpeg
+<span class="muted">upstream</span> 9.0.1
+<span class="muted">zoo</span>      9.0.1  <b>✓ current</b>
+<span class="muted">target</span>   browser-full
+<span class="muted">cli</span>      upstream <b>✓</b>
+<span class="muted">threads</span>  pthreads <b>✓</b>
+<span class="muted">simd</span>     wasm128 <b>✓</b>
+<span class="muted">sab</span>      required
+<span class="muted">source</span>   included <b>✓</b></code></pre>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Catalog statistics">
+      <div><strong id="stat-packages">—</strong><span>tracked projects</span></div>
+      <div><strong id="stat-available">—</strong><span>available today</span></div>
+      <div><strong id="stat-profiles">—</strong><span>published variants</span></div>
+    </section>
+
+    <section class="why">
+      <div class="section-heading">
+        <span class="eyebrow">Why Zoo exists</span>
+        <h2>The difficult part is not the registry. It is keeping native software buildable.</h2>
+      </div>
+      <div class="value-grid">
+        <article><span>01</span><h3>Upstream tracking</h3><p>Pin a real upstream release and show exactly when the WASM build falls behind.</p></article>
+        <article><span>02</span><h3>Build matrices</h3><p>Browser/WASI targets, license variants, threading and optional native dependencies produce different artifacts. Zoo records those differences instead of hiding them.</p></article>
+        <article><span>03</span><h3>Capability diff</h3><p>Expose what is present, absent or intentionally removed instead of hiding it behind a package name.</p></article>
+        <article><span>04</span><h3>Reproducible releases</h3><p>Exact refs, build info, checksums, license notices and matching source travel with the artifact.</p></article>
+      </div>
+    </section>
+
+    <section id="catalog" class="catalog-section">
+      <div class="catalog-head">
+        <div>
+          <span class="eyebrow">Build catalog</span>
+          <h2>Native projects in the Zoo</h2>
+        </div>
+        <div class="filters" role="group" aria-label="Filter packages">
+          <button class="filter active" data-filter="all">All</button>
+          <button class="filter" data-filter="available">Available</button>
+          <button class="filter" data-filter="planned">Planned</button>
+        </div>
+      </div>
+      <div id="package-grid" class="package-grid" aria-live="polite">
+        <div class="loading-card">Loading catalog…</div>
+      </div>
+    </section>
+
+    <section class="release-contract">
+      <div>
+        <span class="eyebrow">Release contract</span>
+        <h2>A binary is not enough.</h2>
+      </div>
+      <div class="contract-list">
+        <div><b>01</b><span>Exact upstream and compiler refs</span></div>
+        <div><b>02</b><span>Machine-readable manifest</span></div>
+        <div><b>03</b><span>Real runtime smoke test</span></div>
+        <div><b>04</b><span>SHA-256 checksums</span></div>
+        <div><b>05</b><span>License notices and corresponding source</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p><strong>WASM Zoo</strong> is an unofficial distribution project. Upstream project names and trademarks belong to their respective owners.</p>
+    <p id="generated-at"></p>
+  </footer>
+
+  <dialog id="package-dialog">
+    <div class="dialog-shell">
+      <button id="dialog-close" class="dialog-close" aria-label="Close">×</button>
+      <div id="dialog-content"></div>
+    </div>
+  </dialog>
+
+  <script src="./app.js" type="module"></script>
+</body>
+</html>

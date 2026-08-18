@@ -1,0 +1,10 @@
+.DS_Store
+node_modules/
+.builders-cache/
+artifacts/
+release/
+builders/*/build/
+builders/*/dist/
+builders/*/release/
+!site/catalog.json
+!site/index.html

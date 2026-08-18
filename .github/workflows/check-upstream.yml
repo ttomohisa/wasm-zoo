@@ -1,0 +1,47 @@
+name: Check upstream releases
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 3 * * 1"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Generate upstream report
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/check-upstream.mjs --json > upstream-report.json
+      - name: Add report to job summary
+        shell: bash
+        run: |
+          echo '## WASM Zoo upstream report' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat upstream-report.json >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+      - name: Open one update issue when a pinned package is behind
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          HAS_UPDATES="$(node -e 'const r=require("./upstream-report.json");process.stdout.write(String(r.hasUpdates))')"
+          test "$HAS_UPDATES" = "true" || exit 0
+          EXISTING="$(gh issue list --state open --search 'WASM Zoo upstream update in:title' --json number --jq 'length')"
+          test "$EXISTING" = "0" || exit 0
+          {
+            echo 'An upstream release is newer than a pinned WASM Zoo build.'
+            echo
+            echo '```json'
+            cat upstream-report.json
+            echo '```'
+            echo
+            echo 'Update one dependency at a time and require the full build + browser smoke-test matrix to pass before changing the catalog pin.'
+          } > issue-body.md
+          gh issue create --title "WASM Zoo upstream update" --body-file issue-body.md

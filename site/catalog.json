@@ -1,0 +1,301 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "name": "WASM Zoo",
+    "version": "0.2.6",
+    "tagline": "Upstream software, compiled for WebAssembly.",
+    "unofficial": true
+  },
+  "stats": {
+    "packages": 5,
+    "available": 1,
+    "profiles": 2
+  },
+  "packages": [
+    {
+      "schemaVersion": 1,
+      "slug": "ffmpeg",
+      "name": "FFmpeg",
+      "summary": "Current upstream ffmpeg CLI compiled as a generic, full-featured browser WebAssembly distribution.",
+      "category": "media",
+      "status": "available",
+      "order": 10,
+      "upstream": {
+        "version": "9.0.1",
+        "ref": "n9.0.1",
+        "released": "2026-08-12",
+        "homepage": "https://ffmpeg.org/",
+        "repository": "https://github.com/FFmpeg/FFmpeg",
+        "license": "LGPL-2.1-or-later / GPL-2.0-or-later depending on enabled components"
+      },
+      "tracker": {
+        "type": "github-tags",
+        "repository": "FFmpeg/FFmpeg",
+        "tagPattern": "^n([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)$"
+      },
+      "zoo": {
+        "builderVersion": "0.2.6",
+        "toolchain": "Emscripten 6.0.6",
+        "buildModel": "upstream-cli-full",
+        "reproducible": true,
+        "sourceBundle": true,
+        "checksums": true,
+        "browserSmokeTest": true,
+        "featureInventory": true
+      },
+      "profiles": [
+        {
+          "id": "browser-full",
+          "label": "Browser Full",
+          "target": "browser",
+          "threads": true,
+          "simd": true,
+          "sharedArrayBuffer": true,
+          "worker": true,
+          "workerFs": false,
+          "arbitraryCli": true,
+          "network": false,
+          "features": [
+            "upstream fftools/ffmpeg CLI",
+            "broad built-in decoders and encoders",
+            "broad demuxers and muxers",
+            "broad software filters",
+            "pthreads",
+            "WASM SIMD",
+            "machine-readable feature inventory"
+          ],
+          "externalLibraries": [],
+          "output": "Generic ffmpeg CLI; output is chosen by CLI arguments",
+          "binaryLicense": "LGPL-2.1-or-later",
+          "size": "Measured in each release manifest"
+        },
+        {
+          "id": "browser-full-gpl",
+          "label": "Browser Full GPL",
+          "target": "browser",
+          "threads": true,
+          "simd": true,
+          "sharedArrayBuffer": true,
+          "worker": true,
+          "workerFs": false,
+          "arbitraryCli": true,
+          "network": false,
+          "features": [
+            "everything in Browser Full",
+            "GPL-enabled FFmpeg components",
+            "libx264 H.264 encoding",
+            "pthreads",
+            "WASM SIMD",
+            "machine-readable feature inventory"
+          ],
+          "externalLibraries": [
+            "libx264"
+          ],
+          "output": "Generic ffmpeg CLI with GPL/libx264 features",
+          "binaryLicense": "GPL-2.0-or-later",
+          "size": "Measured in each release manifest"
+        }
+      ],
+      "comparison": [
+        {
+          "name": "Upstream native",
+          "version": "9.0.1",
+          "note": "Exact features vary with native configure options and platform libraries."
+        },
+        {
+          "name": "WASM Zoo",
+          "version": "9.0.1",
+          "note": "Upstream ffmpeg CLI with browser-target constraints; arbitrary CLI arguments are supported."
+        },
+        {
+          "name": "ffmpeg.wasm core",
+          "version": "FFmpeg 5.1.4",
+          "note": "Reference comparison only; not maintained by WASM Zoo."
+        }
+      ],
+      "capabilityMatrix": [
+        {
+          "feature": "upstream ffmpeg CLI",
+          "native": true,
+          "browserFull": true,
+          "browserFullGpl": true
+        },
+        {
+          "feature": "arbitrary CLI arguments",
+          "native": true,
+          "browserFull": true,
+          "browserFullGpl": true
+        },
+        {
+          "feature": "software codecs / formats / filters",
+          "native": true,
+          "browserFull": true,
+          "browserFullGpl": true
+        },
+        {
+          "feature": "libx264 encode",
+          "native": "optional",
+          "browserFull": false,
+          "browserFullGpl": true
+        },
+        {
+          "feature": "pthreads",
+          "native": true,
+          "browserFull": true,
+          "browserFullGpl": true
+        },
+        {
+          "feature": "WASM SIMD",
+          "native": false,
+          "browserFull": true,
+          "browserFullGpl": true
+        },
+        {
+          "feature": "native network protocols",
+          "native": true,
+          "browserFull": false,
+          "browserFullGpl": false
+        },
+        {
+          "feature": "native capture devices",
+          "native": true,
+          "browserFull": false,
+          "browserFullGpl": false
+        },
+        {
+          "feature": "CUDA / VAAPI / VideoToolbox / V4L2",
+          "native": "platform",
+          "browserFull": false,
+          "browserFullGpl": false
+        }
+      ],
+      "notes": [
+        "WASM Zoo no longer carries app-specific video-compressor or lossless-video-cutter runners; those belong in the separate specialized FFmpeg WASM Builder.",
+        "Full means a broad software FFmpeg build for the browser target, not every capability of every native FFmpeg build.",
+        "Both full profiles require SharedArrayBuffer and COOP/COEP because the upstream FFmpeg CLI requires a working thread backend.",
+        "Native networking, libavdevice capture APIs and hardware acceleration backends are deliberately reported as unsupported rather than hidden.",
+        "Each built release records actual file sizes, SHA-256 hashes, enabled FFmpeg CONFIG entries, features.json and ffmpeg-config.mak."
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "slug": "imagemagick",
+      "name": "ImageMagick",
+      "summary": "Image conversion and manipulation. Candidate for a current upstream magick CLI browser build.",
+      "category": "image",
+      "status": "planned",
+      "order": 20,
+      "upstream": {
+        "version": null,
+        "ref": null,
+        "released": null,
+        "homepage": "https://imagemagick.org/",
+        "repository": "https://github.com/ImageMagick/ImageMagick",
+        "license": "ImageMagick License"
+      },
+      "tracker": {
+        "type": "github-releases",
+        "repository": "ImageMagick/ImageMagick"
+      },
+      "zoo": {
+        "builderVersion": null,
+        "reproducible": false
+      },
+      "profiles": [],
+      "comparison": [],
+      "notes": [
+        "Planned after the FFmpeg build/release pipeline is stable."
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "slug": "libvips",
+      "name": "libvips",
+      "summary": "Fast, low-memory image processing. Candidate for a current upstream vips CLI/library WebAssembly distribution.",
+      "category": "image",
+      "status": "planned",
+      "order": 30,
+      "upstream": {
+        "version": null,
+        "ref": null,
+        "released": null,
+        "homepage": "https://www.libvips.org/",
+        "repository": "https://github.com/libvips/libvips",
+        "license": "LGPL-2.1-or-later"
+      },
+      "tracker": {
+        "type": "github-releases",
+        "repository": "libvips/libvips"
+      },
+      "zoo": {
+        "builderVersion": null,
+        "reproducible": false
+      },
+      "profiles": [],
+      "comparison": [],
+      "notes": [
+        "Planned browser build; dependency surface needs to be profiled before shipping binaries."
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "slug": "ghostscript",
+      "name": "Ghostscript",
+      "summary": "PostScript/PDF interpreter and renderer. Candidate for a current upstream gs CLI WebAssembly distribution.",
+      "category": "document",
+      "status": "planned",
+      "order": 40,
+      "upstream": {
+        "version": null,
+        "ref": null,
+        "released": null,
+        "homepage": "https://www.ghostscript.com/",
+        "repository": "https://github.com/ArtifexSoftware/ghostpdl",
+        "license": "AGPL-3.0-or-later / commercial options upstream"
+      },
+      "tracker": {
+        "type": "github-releases",
+        "repository": "ArtifexSoftware/ghostpdl"
+      },
+      "zoo": {
+        "builderVersion": null,
+        "reproducible": false
+      },
+      "profiles": [],
+      "comparison": [],
+      "notes": [
+        "License and redistribution requirements must be reviewed before publishing binaries."
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "slug": "libarchive",
+      "name": "libarchive",
+      "summary": "Archive reading/writing toolkit. Candidate for a current upstream bsdtar/libarchive browser or WASI distribution.",
+      "category": "archive",
+      "status": "planned",
+      "order": 50,
+      "upstream": {
+        "version": null,
+        "ref": null,
+        "released": null,
+        "homepage": "https://www.libarchive.org/",
+        "repository": "https://github.com/libarchive/libarchive",
+        "license": "BSD-2-Clause"
+      },
+      "tracker": {
+        "type": "github-releases",
+        "repository": "libarchive/libarchive"
+      },
+      "zoo": {
+        "builderVersion": null,
+        "reproducible": false
+      },
+      "profiles": [],
+      "comparison": [],
+      "notes": [
+        "Planned after the first media and image packages establish the release contract."
+      ]
+    }
+  ]
+}

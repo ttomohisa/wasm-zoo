@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "slug": "libarchive",
+  "name": "libarchive",
+  "summary": "Archive reading/writing toolkit. Candidate for a current upstream bsdtar/libarchive browser or WASI distribution.",
+  "category": "archive",
+  "status": "planned",
+  "order": 50,
+  "upstream": {
+    "version": null,
+    "ref": null,
+    "released": null,
+    "homepage": "https://www.libarchive.org/",
+    "repository": "https://github.com/libarchive/libarchive",
+    "license": "BSD-2-Clause"
+  },
+  "tracker": {
+    "type": "github-releases",
+    "repository": "libarchive/libarchive"
+  },
+  "zoo": {
+    "builderVersion": null,
+    "reproducible": false
+  },
+  "profiles": [],
+  "comparison": [],
+  "notes": [
+    "Planned after the first media and image packages establish the release contract."
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "slug": "imagemagick",
+  "name": "ImageMagick",
+  "summary": "Image conversion and manipulation. Candidate for a current upstream magick CLI browser build.",
+  "category": "image",
+  "status": "planned",
+  "order": 20,
+  "upstream": {
+    "version": null,
+    "ref": null,
+    "released": null,
+    "homepage": "https://imagemagick.org/",
+    "repository": "https://github.com/ImageMagick/ImageMagick",
+    "license": "ImageMagick License"
+  },
+  "tracker": {
+    "type": "github-releases",
+    "repository": "ImageMagick/ImageMagick"
+  },
+  "zoo": {
+    "builderVersion": null,
+    "reproducible": false
+  },
+  "profiles": [],
+  "comparison": [],
+  "notes": [
+    "Planned after the FFmpeg build/release pipeline is stable."
+  ]
+}

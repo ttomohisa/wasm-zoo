@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>WASM Zoo FFmpeg smoke test</title></head>
+<body>
+<pre id="log">starting</pre>
+<script src="./browser-ffmpeg.js"></script>
+<script type="module">
+const log = document.querySelector("#log");
+const lines = [];
+const setStatus = (phase, detail = "") => {
+  const params = new URLSearchParams({ phase, detail: String(detail).slice(-700) });
+  history.replaceState(null, "", "#SMOKE_TEST_RUNNING_" + params.toString());
+};
+const add = (value) => {
+  const text = String(value);
+  lines.push(text);
+  log.textContent = lines.slice(-80).join("\n");
+  setStatus("ffmpeg", text);
+};
+const fail = (error) => {
+  add("FAIL " + (error?.stack || error));
+  location.hash = "SMOKE_TEST_FAIL_" + encodeURIComponent(error?.message || String(error));
+};
+try {
+  if (!crossOriginIsolated || typeof SharedArrayBuffer === "undefined") throw new Error("crossOriginIsolated/SharedArrayBuffer unavailable");
+  setStatus("metadata", "loading manifest");
+  const manifest = await (await fetch("./manifest.json", {cache:"no-store"})).json();
+  setStatus("core", "loading ffmpeg-core.wasm");
+  const runner = await WasmZooFFmpeg.loadHosted({
+    coreJsUrl: "./ffmpeg-core.js",
+    wasmUrl: "./ffmpeg-core.wasm"
+  });
+  const input = await (await fetch("./smoke-input.mp4", {cache:"no-store"})).arrayBuffer();
+  const args = manifest.profile === "browser-full-gpl"
+    // A smoke test should prove libx264 really runs, not benchmark a full transcode.
+    // One video frame keeps the test deterministic. Limit decoder/filter/encoder threading so the fixed Emscripten pthread pool cannot be exhausted by FFmpeg auto-threading.
+    ? ["-hide_banner","-nostdin","-y","-filter_threads","1","-filter_complex_threads","1","-threads:v","1","-i","/input.mp4","-frames:v","1","-an","-threads:v","1","-c:v","libx264","-preset","ultrafast","-tune","zerolatency","-pix_fmt","yuv420p","/output.mp4"]
+    : ["-hide_banner","-nostdin","-y","-i","/input.mp4","-map","0","-c","copy","/output.mp4"];
+  setStatus("exec", manifest.profile === "browser-full-gpl" ? "encoding one frame with libx264" : "stream copy");
+  const result = await runner.exec(args, {
+    files: [{name:"/input.mp4", data:input}],
+    outputs: ["/output.mp4"],
+    onLog: ({message}) => add(message)
+  });
+  const bytes = result.files[0]?.data?.byteLength || 0;
+  if (bytes < 1000) throw new Error("smoke output is unexpectedly small: " + bytes);
+  runner.dispose();
+  add("PASS bytes=" + bytes);
+  location.hash = "SMOKE_TEST_PASS_profile=" + encodeURIComponent(manifest.profile) + "&bytes=" + bytes;
+} catch (error) { fail(error); }
+</script>
+</body>
+</html>

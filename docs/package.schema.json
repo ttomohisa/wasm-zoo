@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wasm-zoo.dev/schema/package.schema.json",
+  "title": "WASM Zoo package metadata",
+  "type": "object",
+  "required": ["schemaVersion", "slug", "name", "summary", "category", "status", "upstream", "tracker", "zoo", "profiles"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "name": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string", "minLength": 1 },
+    "category": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["available", "experimental", "planned", "paused"] },
+    "upstream": {
+      "type": "object",
+      "required": ["version", "homepage", "repository", "license"]
+    },
+    "tracker": {
+      "type": "object",
+      "required": ["type", "repository"]
+    },
+    "zoo": { "type": "object" },
+    "profiles": { "type": "array" },
+    "comparison": { "type": "array" },
+    "notes": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

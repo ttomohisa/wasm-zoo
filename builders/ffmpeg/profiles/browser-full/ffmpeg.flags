@@ -1,0 +1,2 @@
+# No --disable-everything here: keep FFmpeg's built-in software feature set broad.
+# External libraries are intentionally not autodetected, so this remains a reproducible LGPL-oriented baseline.

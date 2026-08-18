@@ -1,0 +1,59 @@
+name: Build FFmpeg full WASM
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "builders/ffmpeg/**"
+      - "packages/ffmpeg/**"
+      - ".github/workflows/build-ffmpeg.yml"
+  pull_request:
+    paths:
+      - "builders/ffmpeg/**"
+      - "packages/ffmpeg/**"
+      - ".github/workflows/build-ffmpeg.yml"
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [browser-full, browser-full-gpl]
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Static builder checks
+        run: node builders/ffmpeg/scripts/check-repository.mjs
+      - name: Build upstream ffmpeg CLI and run browser smoke test
+        shell: bash
+        working-directory: builders/ffmpeg
+        env:
+          FFMPEG_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh "${{ matrix.profile }}"
+      - name: Show generated manifest
+        run: cat "builders/ffmpeg/dist/${{ matrix.profile }}/manifest.json"
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-zoo-ffmpeg-${{ matrix.profile }}-${{ github.sha }}
+          path: |
+            builders/ffmpeg/dist/${{ matrix.profile }}/ffmpeg-core.js
+            builders/ffmpeg/dist/${{ matrix.profile }}/ffmpeg-core.wasm
+            builders/ffmpeg/dist/${{ matrix.profile }}/manifest.json
+            builders/ffmpeg/dist/${{ matrix.profile }}/features.json
+            builders/ffmpeg/dist/${{ matrix.profile }}/ffmpeg-config.mak
+            builders/ffmpeg/dist/${{ matrix.profile }}/browser-ffmpeg.js
+          if-no-files-found: error
+          retention-days: 30

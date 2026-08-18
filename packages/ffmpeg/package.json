@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "slug": "ffmpeg",
+  "name": "FFmpeg",
+  "summary": "Current upstream ffmpeg CLI compiled as a generic, full-featured browser WebAssembly distribution.",
+  "category": "media",
+  "status": "available",
+  "order": 10,
+  "upstream": {
+    "version": "9.0.1",
+    "ref": "n9.0.1",
+    "released": "2026-08-12",
+    "homepage": "https://ffmpeg.org/",
+    "repository": "https://github.com/FFmpeg/FFmpeg",
+    "license": "LGPL-2.1-or-later / GPL-2.0-or-later depending on enabled components"
+  },
+  "tracker": {
+    "type": "github-tags",
+    "repository": "FFmpeg/FFmpeg",
+    "tagPattern": "^n([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)$"
+  },
+  "zoo": {
+    "builderVersion": "0.2.6",
+    "toolchain": "Emscripten 6.0.6",
+    "buildModel": "upstream-cli-full",
+    "reproducible": true,
+    "sourceBundle": true,
+    "checksums": true,
+    "browserSmokeTest": true,
+    "featureInventory": true
+  },
+  "profiles": [
+    {
+      "id": "browser-full",
+      "label": "Browser Full",
+      "target": "browser",
+      "threads": true,
+      "simd": true,
+      "sharedArrayBuffer": true,
+      "worker": true,
+      "workerFs": false,
+      "arbitraryCli": true,
+      "network": false,
+      "features": [
+        "upstream fftools/ffmpeg CLI",
+        "broad built-in decoders and encoders",
+        "broad demuxers and muxers",
+        "broad software filters",
+        "pthreads",
+        "WASM SIMD",
+        "machine-readable feature inventory"
+      ],
+      "externalLibraries": [],
+      "output": "Generic ffmpeg CLI; output is chosen by CLI arguments",
+      "binaryLicense": "LGPL-2.1-or-later",
+      "size": "Measured in each release manifest"
+    },
+    {
+      "id": "browser-full-gpl",
+      "label": "Browser Full GPL",
+      "target": "browser",
+      "threads": true,
+      "simd": true,
+      "sharedArrayBuffer": true,
+      "worker": true,
+      "workerFs": false,
+      "arbitraryCli": true,
+      "network": false,
+      "features": [
+        "everything in Browser Full",
+        "GPL-enabled FFmpeg components",
+        "libx264 H.264 encoding",
+        "pthreads",
+        "WASM SIMD",
+        "machine-readable feature inventory"
+      ],
+      "externalLibraries": [
+        "libx264"
+      ],
+      "output": "Generic ffmpeg CLI with GPL/libx264 features",
+      "binaryLicense": "GPL-2.0-or-later",
+      "size": "Measured in each release manifest"
+    }
+  ],
+  "comparison": [
+    {
+      "name": "Upstream native",
+      "version": "9.0.1",
+      "note": "Exact features vary with native configure options and platform libraries."
+    },
+    {
+      "name": "WASM Zoo",
+      "version": "9.0.1",
+      "note": "Upstream ffmpeg CLI with browser-target constraints; arbitrary CLI arguments are supported."
+    },
+    {
+      "name": "ffmpeg.wasm core",
+      "version": "FFmpeg 5.1.4",
+      "note": "Reference comparison only; not maintained by WASM Zoo."
+    }
+  ],
+  "capabilityMatrix": [
+    {
+      "feature": "upstream ffmpeg CLI",
+      "native": true,
+      "browserFull": true,
+      "browserFullGpl": true
+    },
+    {
+      "feature": "arbitrary CLI arguments",
+      "native": true,
+      "browserFull": true,
+      "browserFullGpl": true
+    },
+    {
+      "feature": "software codecs / formats / filters",
+      "native": true,
+      "browserFull": true,
+      "browserFullGpl": true
+    },
+    {
+      "feature": "libx264 encode",
+      "native": "optional",
+      "browserFull": false,
+      "browserFullGpl": true
+    },
+    {
+      "feature": "pthreads",
+      "native": true,
+      "browserFull": true,
+      "browserFullGpl": true
+    },
+    {
+      "feature": "WASM SIMD",
+      "native": false,
+      "browserFull": true,
+      "browserFullGpl": true
+    },
+    {
+      "feature": "native network protocols",
+      "native": true,
+      "browserFull": false,
+      "browserFullGpl": false
+    },
+    {
+      "feature": "native capture devices",
+      "native": true,
+      "browserFull": false,
+      "browserFullGpl": false
+    },
+    {
+      "feature": "CUDA / VAAPI / VideoToolbox / V4L2",
+      "native": "platform",
+      "browserFull": false,
+      "browserFullGpl": false
+    }
+  ],
+  "notes": [
+    "WASM Zoo no longer carries app-specific video-compressor or lossless-video-cutter runners; those belong in the separate specialized FFmpeg WASM Builder.",
+    "Full means a broad software FFmpeg build for the browser target, not every capability of every native FFmpeg build.",
+    "Both full profiles require SharedArrayBuffer and COOP/COEP because the upstream FFmpeg CLI requires a working thread backend.",
+    "Native networking, libavdevice capture APIs and hardware acceleration backends are deliberately reported as unsupported rather than hidden.",
+    "Each built release records actual file sizes, SHA-256 hashes, enabled FFmpeg CONFIG entries, features.json and ffmpeg-config.mak."
+  ]
+}

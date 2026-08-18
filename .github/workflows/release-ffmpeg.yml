@@ -1,0 +1,58 @@
+name: Release FFmpeg full WASM
+
+on:
+  push:
+    tags:
+      - "ffmpeg-v*.*.*"
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Verify release tag
+        shell: bash
+        working-directory: builders/ffmpeg
+        run: |
+          set -euo pipefail
+          source ./versions.env
+          test "${GITHUB_REF_NAME}" = "ffmpeg-v${BUILDER_VERSION}"
+      - name: Static builder checks
+        run: node builders/ffmpeg/scripts/check-repository.mjs
+      - name: Build and smoke-test both generic CLI profiles
+        shell: bash
+        working-directory: builders/ffmpeg
+        env:
+          FFMPEG_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+          ./build.sh browser-full-gpl
+      - name: Prepare binary, source and checksum assets
+        shell: bash
+        working-directory: builders/ffmpeg
+        run: ./scripts/prepare-release.sh "${GITHUB_REF_NAME}"
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/ffmpeg/versions.env
+          gh release create "${GITHUB_REF_NAME}" \
+            builders/ffmpeg/release/* \
+            --verify-tag \
+            --title "WASM Zoo · FFmpeg ${FFMPEG_REF#n} · full browser builds" \
+            --notes "Unofficial generic upstream ffmpeg CLI builds for WebAssembly. Includes browser-full and browser-full-gpl, feature inventories, exact hashes and corresponding source/build recipe. Both profiles passed the real Chromium pthread smoke test before publication."

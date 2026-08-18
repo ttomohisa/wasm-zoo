@@ -1,0 +1,32 @@
+name: Verify catalog
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "packages/**"
+      - "site/**"
+      - "scripts/**"
+      - "docs/**"
+      - "builders/ffmpeg/versions.env"
+      - "package.json"
+      - ".github/workflows/verify.yml"
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Generate catalog
+        run: npm run catalog
+      - name: Validate repository
+        run: npm run check
+      - name: Validate FFmpeg full builder
+        run: node builders/ffmpeg/scripts/check-repository.mjs
+      - name: Ensure generated catalog is committed
+        run: git diff --exit-code -- site/catalog.json

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "slug": "ghostscript",
+  "name": "Ghostscript",
+  "summary": "PostScript/PDF interpreter and renderer. Candidate for a current upstream gs CLI WebAssembly distribution.",
+  "category": "document",
+  "status": "planned",
+  "order": 40,
+  "upstream": {
+    "version": null,
+    "ref": null,
+    "released": null,
+    "homepage": "https://www.ghostscript.com/",
+    "repository": "https://github.com/ArtifexSoftware/ghostpdl",
+    "license": "AGPL-3.0-or-later / commercial options upstream"
+  },
+  "tracker": {
+    "type": "github-releases",
+    "repository": "ArtifexSoftware/ghostpdl"
+  },
+  "zoo": {
+    "builderVersion": null,
+    "reproducible": false
+  },
+  "profiles": [],
+  "comparison": [],
+  "notes": [
+    "License and redistribution requirements must be reviewed before publishing binaries."
+  ]
+}

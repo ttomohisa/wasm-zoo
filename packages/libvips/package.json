@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "slug": "libvips",
+  "name": "libvips",
+  "summary": "Fast, low-memory image processing. Candidate for a current upstream vips CLI/library WebAssembly distribution.",
+  "category": "image",
+  "status": "planned",
+  "order": 30,
+  "upstream": {
+    "version": null,
+    "ref": null,
+    "released": null,
+    "homepage": "https://www.libvips.org/",
+    "repository": "https://github.com/libvips/libvips",
+    "license": "LGPL-2.1-or-later"
+  },
+  "tracker": {
+    "type": "github-releases",
+    "repository": "libvips/libvips"
+  },
+  "zoo": {
+    "builderVersion": null,
+    "reproducible": false
+  },
+  "profiles": [],
+  "comparison": [],
+  "notes": [
+    "Planned browser build; dependency surface needs to be profiled before shipping binaries."
+  ]
+}
