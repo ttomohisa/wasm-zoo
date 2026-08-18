@@ -8,6 +8,7 @@ on:
       - "packages/**"
       - "site/**"
       - "scripts/**"
+      - "builders/ffmpeg/runtime/browser-ffmpeg.js"
       - "VERSION"
       - ".github/workflows/pages.yml"
 
@@ -55,8 +56,12 @@ jobs:
             dest="site/assets/ffmpeg/${version}/${profile}"
             mkdir -p "$dest"
             unzip -q -j "$work/$asset" \
-              ffmpeg-core.js ffmpeg-core.wasm browser-ffmpeg.js manifest.json features.json \
+              ffmpeg-core.js ffmpeg-core.wasm manifest.json features.json \
               -d "$dest"
+            # Keep the published core byte-for-byte, but use the current thin
+            # browser wrapper so Playground-only fixes do not require a new
+            # FFmpeg binary release.
+            cp builders/ffmpeg/runtime/browser-ffmpeg.js "$dest/browser-ffmpeg.js"
             test -s "$dest/ffmpeg-core.js"
             test -s "$dest/ffmpeg-core.wasm"
             test -s "$dest/browser-ffmpeg.js"

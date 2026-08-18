@@ -26,7 +26,7 @@
       <div class="runtime-state">
         <span>Runtime</span>
         <strong id="isolation-status" data-state="working">Checking cross-origin isolation…</strong>
-        <small>pthread builds need SharedArrayBuffer. This page installs a same-origin Service Worker and may reload once.</small>
+        <small>pthread builds need SharedArrayBuffer. This page installs a site-scoped Service Worker so FFmpeg pthread workers under /assets/ are isolated too; it may reload once.</small>
       </div>
     </section>
 

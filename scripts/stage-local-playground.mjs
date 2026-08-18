@@ -5,7 +5,7 @@ import { readEnv, root } from './lib.mjs';
 const env = await readEnv(path.join(root, 'builders', 'ffmpeg', 'versions.env'));
 const version = env.FFMPEG_REF.replace(/^n/, '');
 const profiles = ['browser-full', 'browser-full-gpl'];
-const required = ['ffmpeg-core.js', 'ffmpeg-core.wasm', 'browser-ffmpeg.js', 'manifest.json', 'features.json'];
+const required = ['ffmpeg-core.js', 'ffmpeg-core.wasm', 'manifest.json', 'features.json'];
 let staged = 0;
 
 for (const profile of profiles) {
@@ -19,6 +19,10 @@ for (const profile of profiles) {
   }
   await fs.mkdir(dest, { recursive: true });
   for (const name of required) await fs.copyFile(path.join(source, name), path.join(dest, name));
+  await fs.copyFile(
+    path.join(root, 'builders', 'ffmpeg', 'runtime', 'browser-ffmpeg.js'),
+    path.join(dest, 'browser-ffmpeg.js')
+  );
   staged += 1;
   console.log(`[OK] staged ${profile} for local Playground`);
 }

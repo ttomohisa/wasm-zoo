@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed the Pages Playground pthread worker crash by moving cross-origin isolation from `/playground/` scope to the WASM Zoo Pages root, so Emscripten workers loaded from `/assets/ffmpeg/**` are controlled too.
+- Added migration logic that unregisters the old Playground-scoped Service Worker and reloads once under the new root-scoped worker.
+- Pages now keeps the published v0.2.6 core binaries unchanged while overlaying the current thin browser runtime wrapper, allowing Playground-only fixes without republishing FFmpeg.
+- Improved asynchronous worker error reporting so pthread startup failures surface a useful message instead of `Uncaught [object Event]`.
 - Added stable FFmpeg v0.2.6 Release/download/source/checksum links to package metadata and the catalog UI.
 - Added a GitHub Pages FFmpeg Playground that runs the published `browser-full` and `browser-full-gpl` cores with arbitrary CLI arguments, local file input and output download.
 - Pages deployment now stages the exact published v0.2.6 Release cores instead of rebuilding a separate demo binary.

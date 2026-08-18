@@ -4,6 +4,22 @@
 
   const WORKER_SOURCE = String.raw`
     "use strict";
+    let fatalPosted = false;
+    const postFatal = (error, fallback = "FFmpeg worker failed.") => {
+      if (fatalPosted) return;
+      fatalPosted = true;
+      const message = error?.message || (typeof error === "string" ? error : fallback);
+      const name = error?.name && error.name !== "Event" ? error.name : "Error";
+      self.postMessage({ type: "error", name, message, stack: error?.stack || "" });
+    };
+    self.addEventListener("error", (event) => {
+      postFatal(event.error, event.message || "An FFmpeg pthread worker failed to initialize. Reload the page and try again.");
+      event.preventDefault();
+    });
+    self.addEventListener("unhandledrejection", (event) => {
+      postFatal(event.reason, "FFmpeg worker promise rejected unexpectedly.");
+      event.preventDefault();
+    });
     const ensureParent = (FS, path) => {
       const index = path.lastIndexOf("/");
       if (index <= 0) return;
@@ -49,7 +65,7 @@
         }
         self.postMessage({ type: "done", exitCode, files: resultFiles }, transfer);
       } catch (error) {
-        self.postMessage({ type: "error", name: error?.name || "Error", message: error?.message || String(error), stack: error?.stack || "" });
+        postFatal(error);
       }
     };
   `;
@@ -125,7 +141,10 @@
         };
         worker.onerror = (event) => {
           finish();
-          reject(event.error || new Error(event.message || "FFmpeg worker failed."));
+          const error = event.error instanceof Error
+            ? event.error
+            : new Error(event.message || "FFmpeg worker failed before it could report a structured error.");
+          reject(error);
         };
         worker.postMessage({
           coreJsUrl: this.coreJsUrl,

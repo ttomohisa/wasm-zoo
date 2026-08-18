@@ -88,7 +88,7 @@ It supports:
 - a one-second stream-copy preset;
 - a real one-frame `libx264` encode using `browser-full-gpl`.
 
-GitHub Pages does not supply the COOP/COEP response headers needed by pthread WASM. The Playground therefore installs a same-origin Service Worker, reloads once, and adds the required isolation headers to controlled responses. The Pages workflow also downloads the exact published Release ZIPs and stages only the runtime files under the Pages artifact, so the demo loads the same release that users download rather than a separately rebuilt copy.
+GitHub Pages does not supply the COOP/COEP response headers needed by pthread WASM. The Playground therefore installs a Service Worker at the WASM Zoo Pages root, reloads once, and adds the required isolation headers to both the Playground and `/assets/` pthread worker clients. The Pages workflow downloads the exact published Release ZIPs and keeps their `ffmpeg-core.js` / `ffmpeg-core.wasm` byte-for-byte; only the thin `browser-ffmpeg.js` integration wrapper is taken from the current repository so Playground fixes do not require republishing the FFmpeg binary release.
 
 Files selected in the Playground are written to the in-browser Emscripten filesystem; the demo does not upload them to an application server.
 

@@ -79,18 +79,27 @@ const requiredSiteFiles = [
   "site/playground/app.js",
   "site/playground/playground.css",
   "site/playground/coi-bootstrap.js",
+  "site/coi-serviceworker.js",
   "site/playground/coi-serviceworker.js"
 ];
 for (const rel of requiredSiteFiles) {
   try { await fs.access(path.join(root, rel)); } catch { errors.push(`${rel} is missing`); }
 }
 try {
-  const sw = await fs.readFile(path.join(root, "site/playground/coi-serviceworker.js"), "utf8");
-  assert(sw.includes("Cross-Origin-Opener-Policy") && sw.includes("same-origin"), "Playground Service Worker must add COOP");
-  assert(sw.includes("Cross-Origin-Embedder-Policy") && sw.includes("require-corp"), "Playground Service Worker must add COEP");
+  const sw = await fs.readFile(path.join(root, "site/coi-serviceworker.js"), "utf8");
+  assert(sw.includes("Cross-Origin-Opener-Policy") && sw.includes("same-origin"), "Site-root Service Worker must add COOP");
+  assert(sw.includes("Cross-Origin-Embedder-Policy") && sw.includes("require-corp"), "Site-root Service Worker must add COEP");
+  const bootstrap = await fs.readFile(path.join(root, "site/playground/coi-bootstrap.js"), "utf8");
+  assert(bootstrap.includes("../coi-serviceworker.js"), "Playground must register the isolation Service Worker from the site root");
+  assert(bootstrap.includes("scope: rootScopeUrl"), "Playground isolation Service Worker must use the WASM Zoo site-root scope");
+  assert(bootstrap.includes("getRegistrations") && bootstrap.includes("unregister"), "Playground must migrate the legacy /playground/ Service Worker registration");
   const pages = await fs.readFile(path.join(root, ".github/workflows/pages.yml"), "utf8");
   assert(pages.includes("gh release download"), "Pages workflow must stage the published release, not rebuild a separate Playground core");
   assert(pages.includes("site/assets/ffmpeg"), "Pages workflow must stage FFmpeg cores under site/assets/ffmpeg");
+  assert(pages.includes("cp builders/ffmpeg/runtime/browser-ffmpeg.js"), "Pages workflow must use the current runtime wrapper with the published core");
+  assert(pages.includes('"builders/ffmpeg/runtime/browser-ffmpeg.js"'), "Pages workflow must redeploy when the runtime wrapper changes");
+  const runtime = await fs.readFile(path.join(root, "builders/ffmpeg/runtime/browser-ffmpeg.js"), "utf8");
+  assert(runtime.includes('self.addEventListener("error"'), "FFmpeg runtime wrapper must surface asynchronous pthread worker errors");
   const readme = await fs.readFile(path.join(root, "README.md"), "utf8");
   assert(!readme.includes('ffmpeg-v0.2.6 -m "WASM Zoo FFmpeg v0.2.5"'), "README release tag example has a stale v0.2.5 message");
 } catch (error) {
