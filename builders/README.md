@@ -4,4 +4,4 @@ Each builder should produce a generic distribution artifact for one upstream pro
 
 - `ffmpeg/` — upstream `fftools/ffmpeg` browser builds (`browser-full`, `browser-full-gpl`) with pthreads, SIMD, generated feature inventory and real-browser testing.
 
-App-specific minimized builds are out of scope for WASM Zoo.
+Builders prioritize upstream-oriented, reproducible distributions with explicit capability and target metadata.

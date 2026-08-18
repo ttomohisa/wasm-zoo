@@ -21,6 +21,17 @@
     },
     "zoo": { "type": "object" },
     "profiles": { "type": "array" },
+    "release": {
+      "type": "object",
+      "required": ["tag", "page", "downloadBase", "sourceAsset", "checksumsAsset"],
+      "properties": {
+        "tag": { "type": "string", "minLength": 1 },
+        "page": { "type": "string", "pattern": "^https://" },
+        "downloadBase": { "type": "string", "pattern": "^https://" },
+        "sourceAsset": { "type": "string", "minLength": 1 },
+        "checksumsAsset": { "type": "string", "minLength": 1 }
+      }
+    },
     "comparison": { "type": "array" },
     "notes": { "type": "array", "items": { "type": "string" } }
   },

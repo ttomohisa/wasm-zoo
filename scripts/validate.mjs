@@ -33,6 +33,16 @@ for (const pkg of packages) {
     assert(Boolean(pkg.upstream.version), `${at}: available package needs upstream.version`);
     assert(Boolean(pkg.zoo?.builderVersion), `${at}: available package needs zoo.builderVersion`);
     assert(pkg.profiles.length > 0, `${at}: available package needs at least one profile`);
+    if (pkg.release) {
+      assert(typeof pkg.release.tag === "string" && pkg.release.tag.length > 0, `${at}: release.tag is required when release metadata is present`);
+      assert(isHttps(pkg.release.page), `${at}: release.page must use https`);
+      assert(isHttps(pkg.release.downloadBase), `${at}: release.downloadBase must use https`);
+      assert(typeof pkg.release.sourceAsset === "string" && pkg.release.sourceAsset.length > 0, `${at}: release.sourceAsset is required`);
+      assert(typeof pkg.release.checksumsAsset === "string" && pkg.release.checksumsAsset.length > 0, `${at}: release.checksumsAsset is required`);
+      for (const profile of pkg.profiles) {
+        assert(typeof profile.releaseAsset === "string" && profile.releaseAsset.length > 0, `${at}: profile ${profile.id} needs releaseAsset`);
+      }
+    }
   }
 }
 
@@ -46,12 +56,45 @@ if (ffmpeg) {
   const ids = new Set(ffmpeg.profiles.map((profile) => profile.id));
   assert(ids.has("browser-full"), "FFmpeg catalog must publish browser-full");
   assert(ids.has("browser-full-gpl"), "FFmpeg catalog must publish browser-full-gpl");
-  assert(!ids.has("video-compressor") && !ids.has("lossless-video-cutter"), "App-specific FFmpeg profiles do not belong in WASM Zoo");
   for (const profile of ffmpeg.profiles) {
     assert(profile.arbitraryCli === true, `FFmpeg profile ${profile.id} must expose the generic upstream CLI`);
     assert(profile.threads === true && profile.sharedArrayBuffer === true, `FFmpeg profile ${profile.id} must declare pthread/SAB requirements`);
     assert(profile.simd === true, `FFmpeg profile ${profile.id} must declare WASM SIMD`);
+    assert(profile.playground === true, `FFmpeg profile ${profile.id} must be enabled in the Playground`);
   }
+  assert(ffmpeg.release?.tag === `ffmpeg-v${ffmpeg.zoo.builderVersion}`, `FFmpeg release tag must match builderVersion ${ffmpeg.zoo.builderVersion}`);
+  assert(ffmpeg.release?.page?.includes(ffmpeg.release.tag), "FFmpeg release.page must point at the declared tag");
+  assert(ffmpeg.release?.downloadBase?.includes(ffmpeg.release.tag), "FFmpeg release.downloadBase must point at the declared tag");
+  for (const profile of ffmpeg.profiles) {
+    const expectedAsset = `ffmpeg-${profile.id}-${ffmpeg.upstream.version}-zoo-${ffmpeg.zoo.builderVersion}.zip`;
+    assert(profile.releaseAsset === expectedAsset, `FFmpeg profile ${profile.id} releaseAsset must be ${expectedAsset}`);
+  }
+  const expectedSource = `ffmpeg-sources-${ffmpeg.upstream.version}-zoo-${ffmpeg.zoo.builderVersion}.tar.gz`;
+  assert(ffmpeg.release?.sourceAsset === expectedSource, `FFmpeg release.sourceAsset must be ${expectedSource}`);
+  assert(ffmpeg.release?.checksumsAsset === "SHA256SUMS.txt", "FFmpeg release.checksumsAsset must be SHA256SUMS.txt");
+}
+
+const requiredSiteFiles = [
+  "site/playground/index.html",
+  "site/playground/app.js",
+  "site/playground/playground.css",
+  "site/playground/coi-bootstrap.js",
+  "site/playground/coi-serviceworker.js"
+];
+for (const rel of requiredSiteFiles) {
+  try { await fs.access(path.join(root, rel)); } catch { errors.push(`${rel} is missing`); }
+}
+try {
+  const sw = await fs.readFile(path.join(root, "site/playground/coi-serviceworker.js"), "utf8");
+  assert(sw.includes("Cross-Origin-Opener-Policy") && sw.includes("same-origin"), "Playground Service Worker must add COOP");
+  assert(sw.includes("Cross-Origin-Embedder-Policy") && sw.includes("require-corp"), "Playground Service Worker must add COEP");
+  const pages = await fs.readFile(path.join(root, ".github/workflows/pages.yml"), "utf8");
+  assert(pages.includes("gh release download"), "Pages workflow must stage the published release, not rebuild a separate Playground core");
+  assert(pages.includes("site/assets/ffmpeg"), "Pages workflow must stage FFmpeg cores under site/assets/ffmpeg");
+  const readme = await fs.readFile(path.join(root, "README.md"), "utf8");
+  assert(!readme.includes('ffmpeg-v0.2.6 -m "WASM Zoo FFmpeg v0.2.5"'), "README release tag example has a stale v0.2.5 message");
+} catch (error) {
+  errors.push(`site/release validation failed: ${error.message}`);
 }
 
 const catalogPath = path.join(root, "site", "catalog.json");

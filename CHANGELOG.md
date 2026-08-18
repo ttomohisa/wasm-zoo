@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Added stable FFmpeg v0.2.6 Release/download/source/checksum links to package metadata and the catalog UI.
+- Added a GitHub Pages FFmpeg Playground that runs the published `browser-full` and `browser-full-gpl` cores with arbitrary CLI arguments, local file input and output download.
+- Pages deployment now stages the exact published v0.2.6 Release cores instead of rebuilding a separate demo binary.
+- Added a same-origin Service Worker isolation bootstrap for pthread/SharedArrayBuffer support on GitHub Pages.
+- The catalog reads staged release manifests to show actual WASM/gzip sizes.
+- Polished README badges, release documentation, Playground usage and corrected the v0.2.6 tag message.
+
 ## 0.2.6 - 2026-08-19
 
 - Fixed the GPL browser smoke deadlock caused by FFmpeg input decoder/filter auto-threading exhausting the fixed Emscripten pthread pool.
@@ -43,13 +52,13 @@
 
 ## 0.2.0 - 2026-08-18
 
-- Reframed FFmpeg from app-specific runners to generic upstream `fftools/ffmpeg` CLI builds.
+- Reframed FFmpeg around generic upstream `fftools/ffmpeg` CLI builds.
 - Added `browser-full`: broad built-in FFmpeg software feature set without `--disable-everything`.
 - Added `browser-full-gpl`: generic full CLI plus GPL components and libx264.
 - Enabled Emscripten pthreads and WebAssembly SIMD for both full profiles.
 - Added arbitrary CLI browser runtime, COOP/COEP real-browser smoke test, `features.json`, `ffmpeg-config.mak`, per-file SHA-256 and size metadata.
 - Added explicit native → WASM capability-gap table in the catalog UI.
-- Removed `video-compressor`, `lossless-video-cutter`, profile runners and single-purpose APIs from WASM Zoo.
+- Removed legacy profile runners and narrowed APIs while standardizing the generic distribution contract.
 
 ## 0.1.0 - 2026-08-18
 

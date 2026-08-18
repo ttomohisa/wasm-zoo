@@ -8,6 +8,7 @@
     "catalog": "node scripts/generate-catalog.mjs",
     "check": "node scripts/validate.mjs",
     "check:upstream": "node scripts/check-upstream.mjs",
-    "build:site": "node scripts/generate-catalog.mjs && node scripts/validate.mjs"
+    "build:site": "node scripts/generate-catalog.mjs && node scripts/validate.mjs",
+    "stage:playground": "node scripts/stage-local-playground.mjs"
   }
 }

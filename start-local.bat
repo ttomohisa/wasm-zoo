@@ -9,6 +9,9 @@ if errorlevel 1 (
 )
 call npm run build:site
 if errorlevel 1 exit /b %errorlevel%
+call npm run stage:playground
+if errorlevel 1 exit /b %errorlevel%
 echo.
 echo WASM Zoo: http://localhost:4173
+echo Playground: http://localhost:4173/playground/
 call npx --yes serve site -l 4173

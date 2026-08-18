@@ -49,10 +49,10 @@ if (smokeBat.includes('node "%~dp0scripts\\smoke-test.mjs"')) errors.push("Windo
 
 await must("docker/Dockerfile", ["export-no-x264", "export-with-x264"]);
 
-const forbidden = ["video-compressor", "lossless-video-cutter", "runners/"];
+const forbidden = ["runners/"];
 for (const rel of ["build.sh", "docker/Dockerfile", "scripts/build-full.sh", "runtime/browser-ffmpeg.js"]) {
   const text = await fs.readFile(path.join(root, rel), "utf8");
-  for (const needle of forbidden) if (text.includes(needle)) errors.push(`${rel}: app-specific artifact leaked into Zoo builder: ${needle}`);
+  for (const needle of forbidden) if (text.includes(needle)) errors.push(`${rel}: legacy runner artifact leaked into Zoo builder: ${needle}`);
 }
 
 const fullFlags = await fs.readFile(path.join(root, "profiles/browser-full/ffmpeg.flags"), "utf8");

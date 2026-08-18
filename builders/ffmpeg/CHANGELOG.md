@@ -42,7 +42,7 @@
 
 ## 0.2.0 - 2026-08-18
 
-- Rebuilt the Zoo FFmpeg integration around upstream `fftools/ffmpeg` rather than app-specific libav runners.
+- Rebuilt the Zoo FFmpeg integration around upstream `fftools/ffmpeg` with generic CLI behavior.
 - Added `browser-full` and `browser-full-gpl`.
 - Enabled pthreads, SharedArrayBuffer runtime contract and WebAssembly SIMD.
 - Added actual configure inventory (`features.json`, `ffmpeg-config.mak`) and real COOP/COEP browser testing.

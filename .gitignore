@@ -8,3 +8,4 @@ builders/*/dist/
 builders/*/release/
 !site/catalog.json
 !site/index.html
+site/assets/ffmpeg/

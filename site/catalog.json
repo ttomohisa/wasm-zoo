@@ -67,7 +67,9 @@
           "externalLibraries": [],
           "output": "Generic ffmpeg CLI; output is chosen by CLI arguments",
           "binaryLicense": "LGPL-2.1-or-later",
-          "size": "Measured in each release manifest"
+          "size": "Loaded from the published release manifest",
+          "releaseAsset": "ffmpeg-browser-full-9.0.1-zoo-0.2.6.zip",
+          "playground": true
         },
         {
           "id": "browser-full-gpl",
@@ -93,7 +95,9 @@
           ],
           "output": "Generic ffmpeg CLI with GPL/libx264 features",
           "binaryLicense": "GPL-2.0-or-later",
-          "size": "Measured in each release manifest"
+          "size": "Loaded from the published release manifest",
+          "releaseAsset": "ffmpeg-browser-full-gpl-9.0.1-zoo-0.2.6.zip",
+          "playground": true
         }
       ],
       "comparison": [
@@ -170,12 +174,18 @@
         }
       ],
       "notes": [
-        "WASM Zoo no longer carries app-specific video-compressor or lossless-video-cutter runners; those belong in the separate specialized FFmpeg WASM Builder.",
         "Full means a broad software FFmpeg build for the browser target, not every capability of every native FFmpeg build.",
         "Both full profiles require SharedArrayBuffer and COOP/COEP because the upstream FFmpeg CLI requires a working thread backend.",
         "Native networking, libavdevice capture APIs and hardware acceleration backends are deliberately reported as unsupported rather than hidden.",
         "Each built release records actual file sizes, SHA-256 hashes, enabled FFmpeg CONFIG entries, features.json and ffmpeg-config.mak."
-      ]
+      ],
+      "release": {
+        "tag": "ffmpeg-v0.2.6",
+        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.6",
+        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/ffmpeg-v0.2.6/",
+        "sourceAsset": "ffmpeg-sources-9.0.1-zoo-0.2.6.tar.gz",
+        "checksumsAsset": "SHA256SUMS.txt"
+      }
     },
     {
       "schemaVersion": 1,

@@ -1,6 +1,6 @@
 # FFmpeg profiles
 
-WASM Zoo publishes generic upstream CLI builds, not app-specific runners.
+WASM Zoo publishes upstream-oriented CLI builds with explicit browser-target capabilities and limitations.
 
 - `browser-full`: broad FFmpeg built-in software feature set, LGPL-oriented, no optional external codec libraries.
 - `browser-full-gpl`: same generic CLI plus GPL components and `libx264`.

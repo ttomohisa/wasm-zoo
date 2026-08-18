@@ -1,13 +1,13 @@
 # WASM Zoo · FFmpeg full builds
 
-This builder exists only for generic upstream FFmpeg CLI distributions.
+This builder produces reproducible, upstream-oriented FFmpeg CLI distributions for browser WebAssembly.
 
 Profiles:
 
 - `browser-full` — broad built-in FFmpeg software feature set, LGPL-oriented.
 - `browser-full-gpl` — same full CLI plus GPL components and libx264.
 
-The build links FFmpeg's own `fftools/ffmpeg` frontend. There are no custom C runners and no app-specific command schema.
+The build links FFmpeg's own `fftools/ffmpeg` frontend and exposes ordinary FFmpeg CLI arguments.
 
 ## Runtime requirements
 

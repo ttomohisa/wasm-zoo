@@ -29,14 +29,47 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+
       - name: Generate and validate catalog
         run: |
           npm run catalog
           npm run check
+
+      - name: Stage published FFmpeg release for Playground
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/ffmpeg/versions.env
+          tag="ffmpeg-v${BUILDER_VERSION}"
+          version="${FFMPEG_REF#n}"
+          work="${RUNNER_TEMP}/wasm-zoo-pages-release"
+          rm -rf "$work"
+          mkdir -p "$work"
+
+          for profile in browser-full browser-full-gpl; do
+            asset="ffmpeg-${profile}-${version}-zoo-${BUILDER_VERSION}.zip"
+            echo "[pages] downloading ${asset} from ${tag}"
+            gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir "$work"
+            dest="site/assets/ffmpeg/${version}/${profile}"
+            mkdir -p "$dest"
+            unzip -q -j "$work/$asset" \
+              ffmpeg-core.js ffmpeg-core.wasm browser-ffmpeg.js manifest.json features.json \
+              -d "$dest"
+            test -s "$dest/ffmpeg-core.js"
+            test -s "$dest/ffmpeg-core.wasm"
+            test -s "$dest/browser-ffmpeg.js"
+            test -s "$dest/manifest.json"
+          done
+
+          echo "[OK] staged FFmpeg ${version} ${tag} for the Pages Playground"
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
         with:
           path: site
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
