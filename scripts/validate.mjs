@@ -95,6 +95,27 @@ if (libarchive) {
   assert(libarchive.release?.sourceAsset === expectedSource, `libarchive release.sourceAsset must be ${expectedSource}`);
 }
 
+
+const imagemagick = packages.find((pkg) => pkg.slug === "imagemagick");
+if (imagemagick) {
+  const env = await readEnv(path.join(root, "builders", "imagemagick", "versions.env"));
+  assert(env.IMAGEMAGICK_REF === imagemagick.upstream.version, `ImageMagick catalog version ${imagemagick.upstream.version} does not match IMAGEMAGICK_REF=${env.IMAGEMAGICK_REF}`);
+  assert(env.BUILDER_VERSION === imagemagick.zoo.builderVersion, `ImageMagick builderVersion ${imagemagick.zoo.builderVersion} does not match versions.env ${env.BUILDER_VERSION}`);
+  const ids = new Set(imagemagick.profiles.map((profile) => profile.id));
+  assert(ids.has("browser-full"), "ImageMagick catalog must publish browser-full");
+  for (const profile of imagemagick.profiles) {
+    assert(profile.arbitraryCli === true, `ImageMagick profile ${profile.id} must expose upstream CLI arguments`);
+    assert(profile.threads === false && profile.sharedArrayBuffer === false, `ImageMagick profile ${profile.id} must remain single-threaded/no-SAB in v0.4.0`);
+    assert(profile.playground === true, `ImageMagick profile ${profile.id} must be enabled in the Playground`);
+    assert(profile.playgroundPath === "./imagemagick-playground/", `ImageMagick profile ${profile.id} must link to the ImageMagick Playground`);
+  }
+  assert(imagemagick.release?.tag === `imagemagick-v${imagemagick.zoo.builderVersion}`, `ImageMagick release tag must match builderVersion ${imagemagick.zoo.builderVersion}`);
+  const expectedAsset = `imagemagick-browser-full-${imagemagick.upstream.version}-zoo-${imagemagick.zoo.builderVersion}.zip`;
+  assert(imagemagick.profiles[0]?.releaseAsset === expectedAsset, `ImageMagick browser-full releaseAsset must be ${expectedAsset}`);
+  const expectedSource = `imagemagick-sources-${imagemagick.upstream.version}-zoo-${imagemagick.zoo.builderVersion}.tar.gz`;
+  assert(imagemagick.release?.sourceAsset === expectedSource, `ImageMagick release.sourceAsset must be ${expectedSource}`);
+}
+
 const requiredSiteFiles = [
   "site/playground/index.html",
   "site/playground/app.js",
@@ -104,7 +125,10 @@ const requiredSiteFiles = [
   "site/playground/coi-serviceworker.js",
   "site/libarchive-playground/index.html",
   "site/libarchive-playground/app.js",
-  "site/libarchive-playground/playground.css"
+  "site/libarchive-playground/playground.css",
+  "site/imagemagick-playground/index.html",
+  "site/imagemagick-playground/app.js",
+  "site/imagemagick-playground/playground.css",
 ];
 for (const rel of requiredSiteFiles) {
   try { await fs.access(path.join(root, rel)); } catch { errors.push(`${rel} is missing`); }
@@ -125,8 +149,13 @@ try {
   assert(pages.includes("site/assets/libarchive"), "Pages workflow must stage libarchive cores under site/assets/libarchive");
   assert(pages.includes("cp builders/libarchive/runtime/browser-libarchive.js"), "Pages workflow must use the current libarchive runtime wrapper");
   assert(pages.includes('"builders/libarchive/runtime/browser-libarchive.js"'), "Pages workflow must redeploy when the libarchive runtime wrapper changes");
+  assert(pages.includes("site/assets/imagemagick"), "Pages workflow must stage ImageMagick cores under site/assets/imagemagick");
+  assert(pages.includes("cp builders/imagemagick/runtime/browser-imagemagick.js"), "Pages workflow must use the current ImageMagick runtime wrapper");
+  assert(pages.includes('"builders/imagemagick/runtime/browser-imagemagick.js"'), "Pages workflow must redeploy when the ImageMagick runtime wrapper changes");
   const runtime = await fs.readFile(path.join(root, "builders/ffmpeg/runtime/browser-ffmpeg.js"), "utf8");
   assert(runtime.includes('self.addEventListener("error"'), "FFmpeg runtime wrapper must surface asynchronous pthread worker errors");
+  const imageRuntime = await fs.readFile(path.join(root, "builders/imagemagick/runtime/browser-imagemagick.js"), "utf8");
+  assert(!imageRuntime.includes("mainScriptUrlOrBlob") && !imageRuntime.includes("SharedArrayBuffer"), "ImageMagick runtime must stay single-threaded and must not require pthread bootstrap/SAB support");
   const readme = await fs.readFile(path.join(root, "README.md"), "utf8");
   assert(!readme.includes('ffmpeg-v0.2.6 -m "WASM Zoo FFmpeg v0.2.5"'), "README release tag example has a stale v0.2.5 message");
 } catch (error) {

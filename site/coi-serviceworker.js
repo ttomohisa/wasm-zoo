@@ -1,9 +1,9 @@
 /*
  * WASM Zoo cross-origin-isolation Service Worker.
  *
- * Keep this worker at the Pages site root. Emscripten pthread workers load
- * ffmpeg-core.js from /assets/ffmpeg/**, so the Service Worker must control
- * both /playground/** and /assets/**. A Playground-only scope isolates the
+ * Keep this worker at the Pages site root. Emscripten pthread builds load their core scripts from /assets/**, so the
+ * Service Worker must control both Playground documents and published assets.
+ * This currently covers FFmpeg and ImageMagick pthread runtimes. A Playground-only scope isolates the
  * document but leaves pthread worker clients outside the isolated scope.
  */
 self.addEventListener('install', () => self.skipWaiting());

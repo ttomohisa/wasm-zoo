@@ -1,0 +1,58 @@
+name: Release ImageMagick WASM
+
+on:
+  push:
+    tags:
+      - "imagemagick-v*.*.*"
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Verify release tag
+        shell: bash
+        working-directory: builders/imagemagick
+        run: |
+          set -euo pipefail
+          source ./versions.env
+          test "${GITHUB_REF_NAME}" = "imagemagick-v${BUILDER_VERSION}"
+      - name: Static builder checks
+        run: node builders/imagemagick/scripts/check-repository.mjs
+      - name: Build and smoke-test browser-full
+        shell: bash
+        working-directory: builders/imagemagick
+        env:
+          IMAGEMAGICK_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - name: Prepare binary, source and checksum assets
+        shell: bash
+        working-directory: builders/imagemagick
+        run: ./scripts/prepare-release.sh "${GITHUB_REF_NAME}"
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/imagemagick/versions.env
+          gh release create "${GITHUB_REF_NAME}"             builders/imagemagick/release/*             --verify-tag             --title "WASM Zoo · ImageMagick ${IMAGEMAGICK_REF} · browser build"             --notes "Unofficial upstream ImageMagick magick CLI build for WebAssembly. Includes machine-readable build inventory, exact hashes and corresponding source/build recipe. The browser build passed a real Chromium PNG identify + resize smoke test before publication."
+      - name: Refresh Pages so the Playground stages this release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main

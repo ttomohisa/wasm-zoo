@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "slug": "imagemagick",
   "name": "ImageMagick",
-  "summary": "Image conversion and manipulation. Candidate for a current upstream magick CLI browser build.",
+  "summary": "Upstream magick CLI compiled for browser WebAssembly with reproducible source and toolchain pins.",
   "category": "image",
-  "status": "planned",
-  "order": 20,
+  "status": "available",
+  "order": 15,
   "upstream": {
-    "version": null,
-    "ref": null,
-    "released": null,
+    "version": "7.1.2-29",
+    "ref": "7.1.2-29",
+    "released": "2026-07-27",
     "homepage": "https://imagemagick.org/",
     "repository": "https://github.com/ImageMagick/ImageMagick",
     "license": "ImageMagick License"
@@ -19,12 +19,78 @@
     "repository": "ImageMagick/ImageMagick"
   },
   "zoo": {
-    "builderVersion": null,
-    "reproducible": false
+    "builderVersion": "0.4.0",
+    "toolchain": "Emscripten 6.0.6",
+    "buildModel": "upstream-cli-full",
+    "reproducible": true,
+    "sourceBundle": true,
+    "checksums": true,
+    "browserSmokeTest": true,
+    "featureInventory": true
   },
-  "profiles": [],
-  "comparison": [],
+  "profiles": [
+    {
+      "id": "browser-full",
+      "label": "Browser Full",
+      "target": "browser",
+      "threads": false,
+      "simd": false,
+      "sharedArrayBuffer": false,
+      "worker": true,
+      "workerFs": false,
+      "arbitraryCli": true,
+      "network": false,
+      "features": [
+        "upstream magick CLI",
+        "single-threaded Worker runtime",
+        "PNG read/write",
+        "JPEG read/write",
+        "basic resize/format conversion",
+        "identify/metadata output",
+        "Emscripten MEMFS",
+        "ImageMagick zero-configuration mode",
+        "machine-readable build inventory"
+      ],
+      "externalLibraries": [
+        "zlib 1.3.2 (Emscripten port)",
+        "libpng 1.6.58 (Emscripten port)",
+        "libjpeg 9f (Emscripten port)"
+      ],
+      "output": "Generic upstream magick CLI; input and output paths are chosen by CLI arguments",
+      "binaryLicense": "ImageMagick License",
+      "size": "Loaded from the published release manifest",
+      "releaseAsset": "imagemagick-browser-full-7.1.2-29-zoo-0.4.0.zip",
+      "playground": true,
+      "playgroundPath": "./imagemagick-playground/"
+    }
+  ],
+  "comparison": [
+    {
+      "name": "Upstream native",
+      "version": "7.1.2-29",
+      "note": "Feature set depends on optional delegate libraries and platform integration available in the native build."
+    },
+    {
+      "name": "WASM Zoo",
+      "version": "7.1.2-29",
+      "note": "Upstream magick CLI with browser filesystem constraints and PNG/JPEG-focused delegate set."
+    }
+  ],
   "notes": [
-    "Planned after the FFmpeg build/release pipeline is stable."
-  ]
+    "The browser-full profile is deliberately single-threaded: ImageMagick thread support and OpenMP are disabled, the CLI runs inside an outer Worker, and SharedArrayBuffer/cross-origin isolation are not required.",
+    "Files live in Emscripten MEMFS during each command; native filesystem watches, device access, fonts and shell pipes are not equivalent to a desktop build.",
+    "ImageMagick zero-configuration mode is enabled so the browser build does not depend on external delegates.xml/config files.",
+    "v0.4.0 enables zlib, PNG and JPEG support. Optional delegates such as TIFF, WebP, HEIC, OpenEXR, LCMS, XML, Ghostscript/PDF and font stacks remain disabled and are recorded as capability gaps.",
+    "The real Chromium smoke test runs magick -version, identifies a PNG fixture, resizes it and writes a JPEG output.",
+    "Pages stages the published release core and uses the current runtime wrapper for the Playground, matching the FFmpeg/libarchive pattern.",
+    "ImageMagick 7.1.2 detects PNG through pkg-config; Emscripten 6.0.6 provides libpng 1.6.58 without libpng.pc, so the builder supplies a target-only pkg-config shim that points back to the pinned Emscripten port.",
+    "The browser-full builder applies a narrowly scoped source patch for zero-configuration mode: the one-time anonymous pixel-cache mmap decision is initialized to disabled. With an empty built-in policy and no working Emscripten mmap this preserves the effective behavior while avoiding ImageMagick's policy/semaphore initialization cycle during first pixel-cache open."
+  ],
+  "release": {
+    "tag": "imagemagick-v0.4.0",
+    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.0",
+    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/imagemagick-v0.4.0/",
+    "sourceAsset": "imagemagick-sources-7.1.2-29-zoo-0.4.0.tar.gz",
+    "checksumsAsset": "SHA256SUMS.txt"
+  }
 }

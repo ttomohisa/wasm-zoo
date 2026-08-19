@@ -11,6 +11,7 @@ on:
       - "docs/**"
       - "builders/ffmpeg/versions.env"
       - "builders/libarchive/**"
+      - "builders/imagemagick/**"
       - "package.json"
       - "VERSION"
       - ".github/workflows/verify.yml"
@@ -32,5 +33,7 @@ jobs:
         run: node builders/ffmpeg/scripts/check-repository.mjs
       - name: Validate libarchive builder
         run: node builders/libarchive/scripts/check-repository.mjs
+      - name: Validate ImageMagick builder
+        run: node builders/imagemagick/scripts/check-repository.mjs
       - name: Ensure generated catalog is committed
         run: git diff --exit-code -- site/catalog.json

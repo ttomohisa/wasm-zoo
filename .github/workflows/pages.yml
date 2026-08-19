@@ -10,6 +10,7 @@ on:
       - "scripts/**"
       - "builders/ffmpeg/runtime/browser-ffmpeg.js"
       - "builders/libarchive/runtime/browser-libarchive.js"
+      - "builders/imagemagick/runtime/browser-imagemagick.js"
       - "VERSION"
       - ".github/workflows/pages.yml"
 
@@ -84,6 +85,30 @@ jobs:
             manifest.json features.json -d "$dest"
           cp builders/libarchive/runtime/browser-libarchive.js "$dest/browser-libarchive.js"
           echo "[OK] staged libarchive ${version} ${tag}"
+
+
+      - name: Stage published ImageMagick release for Playground
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/imagemagick/versions.env
+          tag="imagemagick-v${BUILDER_VERSION}"
+          version="${IMAGEMAGICK_REF}"
+          if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "[WARN] ${tag} is not published yet; ImageMagick Playground assets will be staged after the release workflow completes."
+            exit 0
+          fi
+          work="${RUNNER_TEMP}/wasm-zoo-pages-imagemagick"
+          rm -rf "$work" && mkdir -p "$work"
+          asset="imagemagick-browser-full-${version}-zoo-${BUILDER_VERSION}.zip"
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir "$work"
+          dest="site/assets/imagemagick/${version}/browser-full"
+          mkdir -p "$dest"
+          unzip -q -j "$work/$asset" magick-core.js magick-core.wasm manifest.json features.json -d "$dest"
+          cp builders/imagemagick/runtime/browser-imagemagick.js "$dest/browser-imagemagick.js"
+          echo "[OK] staged ImageMagick ${version} ${tag}"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

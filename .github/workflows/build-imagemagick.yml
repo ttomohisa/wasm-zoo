@@ -1,0 +1,55 @@
+name: Build ImageMagick browser WASM
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "builders/imagemagick/**"
+      - "packages/imagemagick/**"
+      - ".github/workflows/build-imagemagick.yml"
+  pull_request:
+    paths:
+      - "builders/imagemagick/**"
+      - "packages/imagemagick/**"
+      - ".github/workflows/build-imagemagick.yml"
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Static builder checks
+        run: node builders/imagemagick/scripts/check-repository.mjs
+      - name: Build upstream magick CLI and run browser smoke test
+        shell: bash
+        working-directory: builders/imagemagick
+        env:
+          IMAGEMAGICK_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - name: Show generated manifest
+        run: cat builders/imagemagick/dist/browser-full/manifest.json
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-zoo-imagemagick-browser-full-${{ github.sha }}
+          path: |
+            builders/imagemagick/dist/browser-full/magick-core.js
+            builders/imagemagick/dist/browser-full/magick-core.wasm
+            builders/imagemagick/dist/browser-full/manifest.json
+            builders/imagemagick/dist/browser-full/features.json
+            builders/imagemagick/dist/browser-full/imagemagick-config.txt
+            builders/imagemagick/dist/browser-full/browser-imagemagick.js
+          if-no-files-found: error
+          retention-days: 30

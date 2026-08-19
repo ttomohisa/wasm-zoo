@@ -1,0 +1,98 @@
+<!doctype html><meta charset="utf-8"><title>WASM Zoo ImageMagick smoke</title>
+<script src="./browser-imagemagick.js"></script>
+<script type="module">
+let phase = 'boot';
+let detail = '';
+const logs = [];
+const matrix = [];
+const status = (nextPhase, nextDetail = '') => {
+  phase = nextPhase;
+  detail = nextDetail;
+  location.hash = `#SMOKE_TEST_RUNNING_${encodeURIComponent(`phase=${phase}&detail=${detail}`)}`;
+};
+const onLog = ({ stream, message }) => {
+  logs.push(`${stream}: ${message}`);
+  if (logs.length > 240) logs.shift();
+};
+const fileSummary = (files = []) => files.length
+  ? files.map((file) => `${file.name}:${file.data?.byteLength ?? file.bytes ?? 0}B`).join(', ')
+  : 'none';
+const fail = (error) => {
+  console.error(error);
+  const recent = logs.length ? `\nRecent CLI output:\n${logs.slice(-80).join('\n')}` : '';
+  const results = matrix.length ? `\nDiagnostic matrix:\n${matrix.map((item) => `${item.ok ? 'PASS' : 'FAIL'} ${item.name}: ${item.detail}`).join('\n')}` : '';
+  const message = `phase=${phase}&detail=${detail}\n${error?.stack || error?.message || String(error)}${results}${recent}`;
+  location.hash = `#SMOKE_TEST_FAIL_${encodeURIComponent(message)}`;
+};
+
+async function probe(runner, fixture, name, args, outputPath = '') {
+  status(name, args.join(' '));
+  const before = logs.length;
+  try {
+    const result = await runner.exec(args, {
+      files: [{ name: '/fixture.png', data: fixture }],
+      dirs: ['/out'],
+      outputs: outputPath ? [outputPath] : [],
+      timeoutMs: 15000,
+      onLog
+    });
+    const output = outputPath ? result.files.find((file) => file.name === outputPath) : null;
+    const description = outputPath
+      ? `exit=0 output=${output ? `${outputPath}:${output.data.byteLength}B` : 'MISSING'}`
+      : 'exit=0';
+    matrix.push({ name, ok: !outputPath || Boolean(output), detail: description });
+    return { ok: !outputPath || Boolean(output), result, output };
+  } catch (error) {
+    const phaseLogs = logs.slice(before).slice(-40);
+    const partial = Array.isArray(error.files) ? error.files : [];
+    const description = `${error.message.split('\n')[0]}; partialOutputs=${fileSummary(partial)}`;
+    matrix.push({ name, ok: false, detail: description });
+    if (phaseLogs.length) console.error(`${name} logs:\n${phaseLogs.join('\n')}`);
+    return { ok: false, error, partial };
+  }
+}
+
+try {
+  status('load');
+  const fixtureResponse = await fetch('./smoke-input.png');
+  if (!fixtureResponse.ok) throw new Error(`fixture HTTP ${fixtureResponse.status}`);
+  const fixture = await fixtureResponse.arrayBuffer();
+  const runner = WasmZooImageMagick.loadHosted({ baseUrl: './' });
+
+  status('version', 'magick -version');
+  const versionBefore = logs.length;
+  await runner.exec(['-version'], { timeoutMs: 15000, onLog });
+  const versionLogs = logs.slice(versionBefore);
+  if (!versionLogs.some((line) => line.includes('ImageMagick'))) throw new Error('magick -version did not mention ImageMagick');
+  matrix.push({ name: 'version', ok: true, detail: 'exit=0' });
+
+  status('identify', 'identify /fixture.png');
+  const identifyBefore = logs.length;
+  await runner.exec(['identify', '/fixture.png'], {
+    files: [{ name: '/fixture.png', data: fixture }],
+    timeoutMs: 15000,
+    onLog
+  });
+  if (!logs.slice(identifyBefore).some((line) => line.includes('/fixture.png'))) throw new Error('identify did not report the PNG fixture');
+  matrix.push({ name: 'identify', ok: true, detail: 'exit=0' });
+
+  const roundtrip = await probe(runner, fixture, 'png-roundtrip', ['/fixture.png', '/out/roundtrip.png'], '/out/roundtrip.png');
+  const jpeg = await probe(runner, fixture, 'png-to-jpeg', ['/fixture.png', '/out/direct.jpg'], '/out/direct.jpg');
+  const resizePng = await probe(runner, fixture, 'resize-to-png', ['/fixture.png', '-resize', '2x2!', '/out/resized.png'], '/out/resized.png');
+  const resizeJpeg = await probe(runner, fixture, 'resize-to-jpeg', ['/fixture.png', '-resize', '2x2!', '/out/resized.jpg'], '/out/resized.jpg');
+
+  if (!resizePng.ok || !resizeJpeg.ok) {
+    await probe(runner, fixture, 'resize-debug', ['-debug', 'trace', '/fixture.png', '-resize', '2x2!', '/out/debug.png'], '/out/debug.png');
+  }
+
+  const required = [roundtrip, jpeg, resizePng, resizeJpeg];
+  if (required.some((item) => !item.ok)) {
+    throw new Error('ImageMagick transform diagnostic detected one or more failing commands. See Diagnostic matrix below.');
+  }
+
+  const jpegOutput = resizeJpeg.output;
+  if (!(jpegOutput.data[0] === 0xFF && jpegOutput.data[1] === 0xD8)) throw new Error('resized.jpg is not a JPEG');
+  runner.dispose();
+  location.hash = `#SMOKE_TEST_PASS_${encodeURIComponent(`profile=browser-full&matrix=${matrix.map((x) => x.name + ':pass').join(',')}`)}`;
+} catch (error) { fail(error); }
+</script>

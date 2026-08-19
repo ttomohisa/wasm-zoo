@@ -117,7 +117,7 @@ try {
   document.querySelector('#generated-at').textContent = `Catalog v${catalog.project.version}`;
   const zooVersion = document.querySelector('#hero-zoo-version');
   if (zooVersion) zooVersion.textContent = catalog.project.version || '—';
-  for (const slug of ['ffmpeg', 'libarchive']) {
+  for (const slug of ['ffmpeg', 'libarchive', 'imagemagick']) {
     const item = catalog.packages.find((pkg) => pkg.slug === slug);
     if (!item) continue;
     const hero = document.querySelector(`#hero-${slug}-version`);

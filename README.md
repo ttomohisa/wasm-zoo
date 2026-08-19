@@ -4,6 +4,7 @@
 [![FFmpeg build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-ffmpeg.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-ffmpeg.yml)
 [![libarchive build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libarchive.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libarchive.yml)
 [![Pages](https://github.com/ttomohisa/wasm-zoo/actions/workflows/pages.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/pages.yml)
+[![ImageMagick build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-imagemagick.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-imagemagick.yml)
 
 **Current upstream software, compiled for WebAssembly.**
 
@@ -12,6 +13,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 - Catalog: https://ttomohisa.github.io/wasm-zoo/
 - FFmpeg Playground: https://ttomohisa.github.io/wasm-zoo/playground/
 - libarchive Playground: https://ttomohisa.github.io/wasm-zoo/libarchive-playground/
+- ImageMagick Playground: https://ttomohisa.github.io/wasm-zoo/imagemagick-playground/
 
 ## Available packages
 
@@ -19,8 +21,9 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 | --- | --- | --- | --- | --- |
 | FFmpeg | 9.0.1 | 0.2.6 | `browser-full`, `browser-full-gpl` | yes |
 | libarchive | 3.8.9 | 0.3.0 | `browser-full` | yes |
+| ImageMagick | 7.1.2-29 | 0.4.0 | `browser-full` | yes |
 
-The project version is **WASM Zoo v0.3.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+The project version is **WASM Zoo v0.4.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
 ## What a Zoo package contains
 
@@ -166,9 +169,64 @@ SHA256SUMS.txt
 
 Its binary ZIP contains four `*-core.js` / `*-core.wasm` pairs, gzip copies, `browser-libarchive.js`, `manifest.json`, `features.json`, `libarchive-config.txt`, build information, libarchive/zlib/bzip2 license notices and toolchain attribution.
 
+## ImageMagick 7.1.2-29
+
+WASM Zoo v0.4.0 adds ImageMagick as the third available package.
+
+The first browser profile publishes the upstream `magick` CLI as a single modularized WebAssembly core.
+
+`browser-full` is deliberately conservative in v0.4.0:
+
+- single-threaded WebAssembly with ImageMagick thread support and OpenMP disabled;
+- Worker + Emscripten MEMFS;
+- PNG and JPEG support via the pinned Emscripten ports;
+- ImageMagick zero-configuration mode for a self-contained browser runtime;
+- no SharedArrayBuffer or cross-origin isolation requirement;
+- no Ghostscript/PDF, TIFF, WebP, HEIC, XML, color-management or font-stack delegates.
+
+The browser smoke test uses a real PNG fixture, runs `magick -version`, identifies the PNG, resizes it, and writes a JPEG output.
+
+Build on Windows:
+
+```text
+build-imagemagick.bat browser-full
+```
+
+Linux/macOS:
+
+```text
+./builders/imagemagick/build.sh browser-full
+```
+
+Release tag after the real build passes:
+
+```text
+git tag -a imagemagick-v0.4.0 -m "WASM Zoo ImageMagick v0.4.0"
+git push origin imagemagick-v0.4.0
+```
+
+The release workflow rebuilds from the exact pin, runs the Chromium smoke test, publishes binary/source/checksum assets, then asks the Pages workflow to refresh the ImageMagick Playground.
+
+## ImageMagick browser API
+
+```js
+const image = WasmZooImageMagick.loadHosted({
+  baseUrl: "/assets/imagemagick/7.1.2-29/browser-full/"
+});
+
+const result = await image.exec([
+  "/input/source.png",
+  "-resize", "640x640>",
+  "/output.jpg"
+], {
+  files: [{ name: "/input/source.png", data: file }],
+  outputs: ["/output.jpg"],
+  onLog: ({ stream, message }) => console.log(stream, message)
+});
+```
+
 ## Tracked next candidates
 
-- ImageMagick
 - libvips
 - Ghostscript
 
