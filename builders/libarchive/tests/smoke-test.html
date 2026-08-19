@@ -1,0 +1,33 @@
+<!doctype html><meta charset="utf-8"><title>WASM Zoo libarchive smoke</title>
+<script src="./browser-libarchive.js"></script>
+<script type="module">
+const status = (phase, detail = '') => { location.hash = `#SMOKE_TEST_RUNNING_${encodeURIComponent(`phase=${phase}&detail=${detail}`)}`; };
+const fail = (error) => { console.error(error); location.hash = `#SMOKE_TEST_FAIL_${encodeURIComponent(error?.stack || error?.message || String(error))}`; };
+try {
+  status('load');
+  const fixture = await (await fetch('./smoke-input.zip')).arrayBuffer();
+  const runner = WasmZooLibarchive.loadHosted({ baseUrl: './' });
+  const logs = [];
+  const onLog = ({ stream, message }) => { logs.push(`${stream}:${message}`); };
+
+  status('list', 'bsdtar ZIP/Deflate');
+  await runner.exec('bsdtar', ['-tf', '/fixture.zip'], { files: [{ name: '/fixture.zip', data: fixture }], onLog });
+  if (!logs.some((line) => line.includes('hello.txt'))) throw new Error('bsdtar list did not report hello.txt');
+
+  status('extract', 'bsdtar ZIP/Deflate');
+  const result = await runner.exec('bsdtar', ['-xf', '/fixture.zip', '-C', '/out'], {
+    files: [{ name: '/fixture.zip', data: fixture }], dirs: ['/out'], collectDirs: ['/out'], onLog
+  });
+  const hello = result.files.find((file) => file.name === '/out/hello.txt');
+  if (!hello) throw new Error('bsdtar extraction did not produce /out/hello.txt');
+  if (new TextDecoder().decode(hello.data) !== 'hello from WASM Zoo libarchive\n') throw new Error('Extracted hello.txt content mismatch');
+
+  status('unzip', 'bsdunzip list');
+  await runner.exec('bsdunzip', ['-l', '/fixture.zip'], { files: [{ name: '/fixture.zip', data: fixture }], onLog });
+
+  status('versions');
+  for (const tool of ['bsdcpio', 'bsdcat']) await runner.exec(tool, ['--version'], { onLog });
+  runner.dispose();
+  location.hash = `#SMOKE_TEST_PASS_${encodeURIComponent(`profile=browser-full&files=${result.files.length}`)}`;
+} catch (error) { fail(error); }
+</script>

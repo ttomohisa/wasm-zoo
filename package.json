@@ -1,6 +1,6 @@
 {
   "name": "wasm-zoo",
-  "version": "0.2.6",
+  "version": "0.3.0",
   "private": true,
   "description": "Current upstream software compiled into reproducible, generic WebAssembly distributions.",
   "type": "module",

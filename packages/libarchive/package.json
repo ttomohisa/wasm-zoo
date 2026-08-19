@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "slug": "libarchive",
   "name": "libarchive",
-  "summary": "Archive reading/writing toolkit. Candidate for a current upstream bsdtar/libarchive browser or WASI distribution.",
+  "summary": "Upstream archive command-line tools compiled for browser WebAssembly with reproducible source and toolchain pins.",
   "category": "archive",
-  "status": "planned",
-  "order": 50,
+  "status": "available",
+  "order": 20,
   "upstream": {
-    "version": null,
-    "ref": null,
-    "released": null,
+    "version": "3.8.9",
+    "ref": "v3.8.9",
+    "released": "2026-07-28",
     "homepage": "https://www.libarchive.org/",
     "repository": "https://github.com/libarchive/libarchive",
     "license": "BSD-2-Clause"
@@ -19,12 +19,73 @@
     "repository": "libarchive/libarchive"
   },
   "zoo": {
-    "builderVersion": null,
-    "reproducible": false
+    "builderVersion": "0.3.0",
+    "toolchain": "Emscripten 6.0.6",
+    "buildModel": "upstream-cli-full",
+    "reproducible": true,
+    "sourceBundle": true,
+    "checksums": true,
+    "browserSmokeTest": true,
+    "featureInventory": true
   },
-  "profiles": [],
-  "comparison": [],
+  "profiles": [
+    {
+      "id": "browser-full",
+      "label": "Browser Full",
+      "target": "browser",
+      "threads": false,
+      "simd": false,
+      "sharedArrayBuffer": false,
+      "worker": true,
+      "workerFs": false,
+      "arbitraryCli": true,
+      "network": false,
+      "features": [
+        "upstream bsdtar CLI",
+        "upstream bsdcpio CLI",
+        "upstream bsdcat CLI",
+        "upstream bsdunzip CLI",
+        "zlib compression backend",
+        "bzip2 compression backend",
+        "Emscripten MEMFS",
+        "machine-readable build inventory"
+      ],
+      "externalLibraries": [
+        "zlib 1.3.2 (Emscripten port)",
+        "bzip2 1.0.6 (Emscripten port)"
+      ],
+      "output": "Four generic upstream archive CLIs; archive files are chosen by CLI arguments",
+      "binaryLicense": "BSD-2-Clause",
+      "size": "Loaded from the published release manifest",
+      "releaseAsset": "libarchive-browser-full-3.8.9-zoo-0.3.0.zip",
+      "playground": true,
+      "playgroundPath": "./libarchive-playground/"
+    }
+  ],
+  "comparison": [
+    {
+      "name": "Upstream native",
+      "version": "3.8.9",
+      "note": "Feature set depends on optional compression, crypto, XML and platform libraries available at native build time."
+    },
+    {
+      "name": "WASM Zoo",
+      "version": "3.8.9",
+      "note": "Upstream bsdtar/bsdcpio/bsdcat/bsdunzip CLIs with browser filesystem constraints and zlib+bzip2 enabled."
+    }
+  ],
   "notes": [
-    "Planned after the first media and image packages establish the release contract."
-  ]
+    "The browser profile is single-threaded and does not require SharedArrayBuffer or cross-origin isolation.",
+    "Files live in Emscripten MEMFS during each command; native filesystem metadata and process semantics are not equivalent to a desktop build.",
+    "v0.3.0 intentionally leaves xz/LZMA, Zstandard, LZ4, LZO, XML and crypto backends disabled and records those gaps explicitly.",
+    "The real Chromium smoke test lists and extracts a ZIP/Deflate fixture and also instantiates the other published CLI cores.",
+    "Emscripten 6.0.6 pins zlib 1.3.2 and bzip2 1.0.6 for the enabled ports; their license notices ship with the binary release."
+  ],
+  "release": {
+    "tag": "libarchive-v0.3.0",
+    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libarchive-v0.3.0",
+    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/libarchive-v0.3.0/",
+    "sourceAsset": "libarchive-sources-3.8.9-zoo-0.3.0.tar.gz",
+    "checksumsAsset": "SHA256SUMS.txt"
+  }
 }

@@ -74,13 +74,37 @@ if (ffmpeg) {
   assert(ffmpeg.release?.checksumsAsset === "SHA256SUMS.txt", "FFmpeg release.checksumsAsset must be SHA256SUMS.txt");
 }
 
+const libarchive = packages.find((pkg) => pkg.slug === "libarchive");
+if (libarchive) {
+  const env = await readEnv(path.join(root, "builders", "libarchive", "versions.env"));
+  assert(env.LIBARCHIVE_REF === `v${libarchive.upstream.version}`, `libarchive catalog version ${libarchive.upstream.version} does not match LIBARCHIVE_REF=${env.LIBARCHIVE_REF}`);
+  assert(env.BUILDER_VERSION === libarchive.zoo.builderVersion, `libarchive builderVersion ${libarchive.zoo.builderVersion} does not match versions.env ${env.BUILDER_VERSION}`);
+  assert(env.LIBARCHIVE_COMMIT === "27cbc7827172698143e440801fc0ba39ccb4f1f5", "libarchive exact v3.8.9 commit pin is missing");
+  const ids = new Set(libarchive.profiles.map((profile) => profile.id));
+  assert(ids.has("browser-full"), "libarchive catalog must publish browser-full");
+  for (const profile of libarchive.profiles) {
+    assert(profile.arbitraryCli === true, `libarchive profile ${profile.id} must expose upstream CLI arguments`);
+    assert(profile.threads === false && profile.sharedArrayBuffer === false, `libarchive profile ${profile.id} must remain single-threaded/no-SAB in v0.3.0`);
+    assert(profile.playground === true, `libarchive profile ${profile.id} must be enabled in the Playground`);
+    assert(profile.playgroundPath === "./libarchive-playground/", `libarchive profile ${profile.id} must link to libarchive Playground`);
+  }
+  assert(libarchive.release?.tag === `libarchive-v${libarchive.zoo.builderVersion}`, `libarchive release tag must match builderVersion ${libarchive.zoo.builderVersion}`);
+  const expectedAsset = `libarchive-browser-full-${libarchive.upstream.version}-zoo-${libarchive.zoo.builderVersion}.zip`;
+  assert(libarchive.profiles[0]?.releaseAsset === expectedAsset, `libarchive browser-full releaseAsset must be ${expectedAsset}`);
+  const expectedSource = `libarchive-sources-${libarchive.upstream.version}-zoo-${libarchive.zoo.builderVersion}.tar.gz`;
+  assert(libarchive.release?.sourceAsset === expectedSource, `libarchive release.sourceAsset must be ${expectedSource}`);
+}
+
 const requiredSiteFiles = [
   "site/playground/index.html",
   "site/playground/app.js",
   "site/playground/playground.css",
   "site/playground/coi-bootstrap.js",
   "site/coi-serviceworker.js",
-  "site/playground/coi-serviceworker.js"
+  "site/playground/coi-serviceworker.js",
+  "site/libarchive-playground/index.html",
+  "site/libarchive-playground/app.js",
+  "site/libarchive-playground/playground.css"
 ];
 for (const rel of requiredSiteFiles) {
   try { await fs.access(path.join(root, rel)); } catch { errors.push(`${rel} is missing`); }
@@ -97,7 +121,10 @@ try {
   assert(pages.includes("gh release download"), "Pages workflow must stage the published release, not rebuild a separate Playground core");
   assert(pages.includes("site/assets/ffmpeg"), "Pages workflow must stage FFmpeg cores under site/assets/ffmpeg");
   assert(pages.includes("cp builders/ffmpeg/runtime/browser-ffmpeg.js"), "Pages workflow must use the current runtime wrapper with the published core");
-  assert(pages.includes('"builders/ffmpeg/runtime/browser-ffmpeg.js"'), "Pages workflow must redeploy when the runtime wrapper changes");
+  assert(pages.includes('"builders/ffmpeg/runtime/browser-ffmpeg.js"'), "Pages workflow must redeploy when the FFmpeg runtime wrapper changes");
+  assert(pages.includes("site/assets/libarchive"), "Pages workflow must stage libarchive cores under site/assets/libarchive");
+  assert(pages.includes("cp builders/libarchive/runtime/browser-libarchive.js"), "Pages workflow must use the current libarchive runtime wrapper");
+  assert(pages.includes('"builders/libarchive/runtime/browser-libarchive.js"'), "Pages workflow must redeploy when the libarchive runtime wrapper changes");
   const runtime = await fs.readFile(path.join(root, "builders/ffmpeg/runtime/browser-ffmpeg.js"), "utf8");
   assert(runtime.includes('self.addEventListener("error"'), "FFmpeg runtime wrapper must surface asynchronous pthread worker errors");
   const readme = await fs.readFile(path.join(root, "README.md"), "utf8");

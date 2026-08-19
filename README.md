@@ -2,44 +2,58 @@
 
 [![Verify](https://github.com/ttomohisa/wasm-zoo/actions/workflows/verify.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/verify.yml)
 [![FFmpeg build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-ffmpeg.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-ffmpeg.yml)
+[![libarchive build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libarchive.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libarchive.yml)
 [![Pages](https://github.com/ttomohisa/wasm-zoo/actions/workflows/pages.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/pages.yml)
 
 **Current upstream software, compiled for WebAssembly.**
 
-WASM Zoo is an unofficial distribution project for native software whose commonly available WebAssembly builds lag upstream or hide important build differences. Zoo publishes reproducible, capability-oriented WASM builds with exact source/toolchain pins, real browser smoke tests, feature inventories, checksums, license notices and corresponding source.
+WASM Zoo is an unofficial distribution project for native software whose WebAssembly builds benefit from current upstream pins, reproducible recipes and explicit capability reporting. Zoo publishes exact source/toolchain revisions, meaningful runtime smoke tests, machine-readable manifests, checksums, license notices and corresponding source.
 
 - Catalog: https://ttomohisa.github.io/wasm-zoo/
 - FFmpeg Playground: https://ttomohisa.github.io/wasm-zoo/playground/
-- FFmpeg v0.2.6 Release: https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.6
+- libarchive Playground: https://ttomohisa.github.io/wasm-zoo/libarchive-playground/
 
-## What Zoo is
+## Available packages
 
-WASM Zoo aims to preserve the **upstream program/API shape** where practical and make browser-target differences explicit. Each package is treated as a reproducible distribution: the upstream revision, toolchain, enabled capabilities, target limitations, runtime requirements, checksums and corresponding source are all part of the release contract.
+| Package | Upstream | Zoo builder | Browser profile | Playground |
+| --- | --- | --- | --- | --- |
+| FFmpeg | 9.0.1 | 0.2.6 | `browser-full`, `browser-full-gpl` | yes |
+| libarchive | 3.8.9 | 0.3.0 | `browser-full` | yes |
 
-For FFmpeg, Zoo publishes the upstream `fftools/ffmpeg` CLI with broad browser-compatible software capabilities, arbitrary CLI arguments, machine-readable feature inventory and target-specific limitations recorded alongside the artifacts.
+The project version is **WASM Zoo v0.3.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
-## First animal: FFmpeg 9.0.1
+## What a Zoo package contains
 
-The published Zoo build is **FFmpeg 9.0.1 / Emscripten 6.0.6 / Zoo builder 0.2.6**.
+WASM Zoo aims to preserve the **upstream program/API shape** where practical. A published package should provide:
 
-| Profile | Purpose | External library | Binary license |
+- an exact upstream release/ref and commit;
+- an exact compiler/toolchain pin;
+- reproducible build scripts;
+- generic upstream-facing artifacts instead of a hidden feature subset;
+- target/runtime limitations stated explicitly;
+- a real runtime smoke test that exercises meaningful functionality;
+- `manifest.json` plus package-specific build/feature inventory;
+- immutable release assets, SHA-256 checksums and corresponding source.
+
+`full` means a broad, useful build for the declared WebAssembly target. It never means every feature available on every native operating system.
+
+## FFmpeg 9.0.1
+
+FFmpeg remains the first Zoo package. It publishes the upstream `fftools/ffmpeg` CLI in two browser variants:
+
+| Profile | Extra library | Threads | Binary license |
 | --- | --- | --- | --- |
-| `browser-full` | Broad upstream `fftools/ffmpeg` CLI build | — | LGPL-2.1-or-later |
-| `browser-full-gpl` | Broad CLI build plus H.264 encoding | libx264 | GPL-2.0-or-later |
+| `browser-full` | — | pthreads | LGPL-2.1-or-later |
+| `browser-full-gpl` | libx264 | pthreads | GPL-2.0-or-later |
 
-Both profiles:
+Both use WebAssembly SIMD, require SharedArrayBuffer/cross-origin isolation, expose arbitrary CLI arguments and publish a generated codec/format/filter inventory. The GPL smoke test performs a real H.264 decode → libx264 encode.
 
-- build the upstream `fftools/ffmpeg` CLI, not a custom runner;
-- do **not** use `--disable-everything`;
-- retain a broad set of built-in software codecs, formats, parsers and filters that compile for Emscripten;
-- accept arbitrary FFmpeg CLI arguments;
-- use WebAssembly SIMD and Emscripten pthreads;
-- require `SharedArrayBuffer` and cross-origin isolation;
-- publish `manifest.json`, `features.json` and `ffmpeg-config.mak` so the actual build can be inspected rather than inferred from the word “full”.
+Build on Windows:
 
-`full` means **broad browser software build**, not “every native FFmpeg feature”. Native GPU APIs, capture devices and native socket/network semantics are explicitly recorded as gaps.
-
-## Published release
+```text
+build-ffmpeg.bat browser-full
+build-ffmpeg.bat browser-full-gpl
+```
 
 Release tag:
 
@@ -47,157 +61,129 @@ Release tag:
 ffmpeg-v0.2.6
 ```
 
-Published assets:
+## libarchive 3.8.9
+
+WASM Zoo v0.3.0 adds upstream libarchive command-line tools as the second available package:
 
 ```text
-ffmpeg-browser-full-9.0.1-zoo-0.2.6.zip
-ffmpeg-browser-full-gpl-9.0.1-zoo-0.2.6.zip
-ffmpeg-sources-9.0.1-zoo-0.2.6.tar.gz
-BUILDINFO-browser-full.txt
-BUILDINFO-browser-full-gpl.txt
-SHA256SUMS.txt
+bsdtar
+bsdcpio
+bsdcat
+bsdunzip
 ```
 
-Each binary ZIP contains:
+`browser-full` is deliberately single-threaded. It runs inside a Worker with Emscripten MEMFS and therefore **does not require SharedArrayBuffer or COOP/COEP**.
+
+The first profile enables:
+
+- zlib 1.3.2 through the pinned Emscripten 6.0.6 toolchain;
+- bzip2 1.0.6 through the pinned Emscripten 6.0.6 toolchain;
+- upstream archive formats that are compiled into the four static CLI executables.
+
+The following optional external backends are intentionally left disabled in v0.3.0 and recorded as capability gaps: xz/LZMA, Zstandard, LZ4, LZO, XML and crypto libraries.
+
+The browser smoke test uses a real ZIP/Deflate fixture, verifies `bsdtar -tf`, extracts the archive with `bsdtar -xf`, checks extracted bytes, exercises `bsdunzip -l`, and instantiates `bsdcpio`/`bsdcat`.
+
+Build on Windows:
 
 ```text
-ffmpeg-core.js
-ffmpeg-core.wasm
-ffmpeg-core.js.gz
-ffmpeg-core.wasm.gz
-browser-ffmpeg.js
-manifest.json
-features.json
-ffmpeg-config.mak
-BUILDINFO.txt
-LICENSES/
-```
-
-The catalog reads the deployed release manifests and shows the actual WASM/gzip sizes instead of keeping a hand-maintained size estimate.
-
-## FFmpeg Playground
-
-The Pages site includes a small interactive Playground that runs the published v0.2.6 cores in the browser.
-
-It supports:
-
-- `ffmpeg -version`;
-- arbitrary FFmpeg CLI arguments;
-- local file input through Emscripten FS;
-- output download;
-- a one-second stream-copy preset;
-- a real one-frame `libx264` encode using `browser-full-gpl`.
-
-GitHub Pages does not supply the COOP/COEP response headers needed by pthread WASM. The Playground therefore installs a Service Worker at the WASM Zoo Pages root, reloads once, and adds the required isolation headers to both the Playground and `/assets/` pthread worker clients. The Pages workflow downloads the exact published Release ZIPs and keeps their `ffmpeg-core.js` / `ffmpeg-core.wasm` byte-for-byte; only the thin `browser-ffmpeg.js` integration wrapper is taken from the current repository so Playground fixes do not require republishing the FFmpeg binary release.
-
-Files selected in the Playground are written to the in-browser Emscripten filesystem; the demo does not upload them to an application server.
-
-## Browser API
-
-The wrapper intentionally exposes generic CLI arguments:
-
-```js
-const ffmpeg = await WasmZooFFmpeg.loadHosted({
-  coreJsUrl: "/ffmpeg/ffmpeg-core.js",
-  wasmUrl: "/ffmpeg/ffmpeg-core.wasm"
-});
-
-const result = await ffmpeg.exec([
-  "-hide_banner", "-y",
-  "-filter_threads", "1",
-  "-threads:v", "1",
-  "-i", "/input.mp4",
-  "-frames:v", "1",
-  "-an",
-  "-threads:v", "1",
-  "-c:v", "libx264",
-  "-preset", "ultrafast",
-  "/output.mp4"
-], {
-  files: [{ name: "/input.mp4", data: file }],
-  outputs: ["/output.mp4"],
-  onLog: ({ stream, message }) => console.log(stream, message)
-});
-```
-
-The `libx264` example requires `browser-full-gpl`.
-
-## Build FFmpeg
-
-Requirements: Docker Desktop / Docker Buildx, Node.js, and Chrome or Edge for the automatic browser test.
-
-Windows:
-
-```text
-build-ffmpeg.bat browser-full
-build-ffmpeg.bat browser-full-gpl
+build-libarchive.bat browser-full
 ```
 
 Linux/macOS:
 
 ```text
-./builders/ffmpeg/build.sh browser-full
-./builders/ffmpeg/build.sh browser-full-gpl
+./builders/libarchive/build.sh browser-full
 ```
 
-A successful build does not stop at linking. The test server serves COOP/COEP headers and headless Chromium processes a real H.264/AAC MP4. The GPL profile performs a real H.264 decode → `libx264` encode with explicit decoder/filter/encoder thread caps. Full builds prewarm a 32-worker pthread pool and use strict pool-exhaustion handling.
+Release tag after the real build passes:
 
-## Preview the site locally
+```text
+git tag -a libarchive-v0.3.0 -m "WASM Zoo libarchive v0.3.0"
+git push origin libarchive-v0.3.0
+```
 
-After building either FFmpeg profile:
+The release workflow rebuilds from the exact pin, runs the Chromium smoke test, publishes binary/source/checksum assets, then asks the Pages workflow to refresh the libarchive Playground.
+
+## libarchive browser API
+
+The thin wrapper keeps the CLI surface generic:
+
+```js
+const archive = WasmZooLibarchive.loadHosted({
+  baseUrl: "/assets/libarchive/3.8.9/browser-full/"
+});
+
+const result = await archive.exec("bsdtar", [
+  "-xf", "/input/archive.zip",
+  "-C", "/out"
+], {
+  files: [{ name: "/input/archive.zip", data: file }],
+  dirs: ["/out"],
+  collectDirs: ["/out"],
+  onLog: ({ stream, message }) => console.log(stream, message)
+});
+```
+
+Each command gets an in-memory filesystem. Files returned from `collectDirs` can then be downloaded or processed by the calling application.
+
+## Playgrounds and Pages
+
+Pages stages immutable binary cores from the matching GitHub Release rather than rebuilding them specifically for the demo. Thin JavaScript integration wrappers are taken from `main`, allowing Playground integration fixes without silently changing the published Wasm binary.
+
+FFmpeg's pthread build needs cross-origin isolation, so the Pages-root Service Worker supplies COOP/COEP to its page and worker clients. libarchive's v0.3.0 profile is single-threaded and does not depend on that mechanism.
+
+## Local preview
 
 ```text
 start-local.bat
 ```
 
-This regenerates the catalog, copies any local `builders/ffmpeg/dist/*` cores into the ignored `site/assets/` staging area, and starts the site on `http://localhost:4173`.
-
-You can also run:
+This regenerates the catalog, stages any locally built FFmpeg/libarchive artifacts under ignored `site/assets/`, and serves:
 
 ```text
-npm run build:site
-npm run stage:playground
+http://localhost:4173/
+http://localhost:4173/playground/
+http://localhost:4173/libarchive-playground/
 ```
 
-The catalog itself works even when no local FFmpeg artifacts have been staged.
+The catalog still works when no local Wasm build has been staged.
 
-## Release FFmpeg
+## Release assets
 
-The release workflow rebuilds both profiles and refuses to publish unless both real Chromium smoke tests pass.
+Every package release includes a binary ZIP, corresponding source/build recipe, build information and `SHA256SUMS.txt`.
+
+libarchive v0.3.0 uses:
 
 ```text
-git tag -a ffmpeg-v0.2.6 -m "WASM Zoo FFmpeg v0.2.6"
-git push origin ffmpeg-v0.2.6
+libarchive-browser-full-3.8.9-zoo-0.3.0.zip
+libarchive-sources-3.8.9-zoo-0.3.0.tar.gz
+BUILDINFO-browser-full.txt
+SHA256SUMS.txt
 ```
 
-The release preparation fetches the exact FFmpeg and x264 commits again, packages corresponding source/build recipes, writes build information and generates SHA-256 checksums before publication.
+Its binary ZIP contains four `*-core.js` / `*-core.wasm` pairs, gzip copies, `browser-libarchive.js`, `manifest.json`, `features.json`, `libarchive-config.txt`, build information, libarchive/zlib/bzip2 license notices and toolchain attribution.
 
-## Catalog metadata
-
-The catalog is generated from `packages/*/package.json`. An available package can declare a `release` object plus per-profile `releaseAsset` values. The site then provides stable Release/download links, while the deployed manifests provide exact generated sizes and hashes.
-
-FFmpeg also exposes a Native → Zoo capability matrix rather than pretending a browser target is equivalent to an arbitrary native build.
-
-Tracked next candidates:
+## Tracked next candidates
 
 - ImageMagick
 - libvips
 - Ghostscript
-- libarchive
 
-They remain `planned` until a reproducible artifact passes its own meaningful runtime test.
+They remain `planned` until a reproducible artifact passes a meaningful runtime test.
 
 ## Repository layout
 
 ```text
-packages/                 catalog + release metadata
-builders/ffmpeg/          generic full FFmpeg build pipeline
-scripts/                  catalog/upstream/local staging tooling
-site/                     static catalog + FFmpeg Playground
-docs/                     manifest/package contracts
-.github/workflows/        verify, build, release, upstream tracking, Pages
+packages/                   catalog + release metadata
+builders/ffmpeg/            FFmpeg build pipeline
+builders/libarchive/        libarchive build pipeline
+scripts/                    catalog/upstream/local staging tooling
+site/                       catalog + package Playgrounds
+docs/                       manifest/package contracts
+.github/workflows/          verify, build, release, upstream tracking, Pages
 ```
 
 ## License
 
-WASM Zoo's own orchestration/site code is MIT. Generated third-party binaries retain the licenses determined by their actual build flags and linked dependencies. Zoo does not relicense upstream projects.
+WASM Zoo's orchestration/site code is MIT. Generated third-party binaries retain the licenses determined by their actual build flags and linked dependencies. Zoo does not relicense upstream projects.

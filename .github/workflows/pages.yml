@@ -9,6 +9,7 @@ on:
       - "site/**"
       - "scripts/**"
       - "builders/ffmpeg/runtime/browser-ffmpeg.js"
+      - "builders/libarchive/runtime/browser-libarchive.js"
       - "VERSION"
       - ".github/workflows/pages.yml"
 
@@ -30,7 +31,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-
       - name: Generate and validate catalog
         run: |
           npm run catalog
@@ -45,36 +45,50 @@ jobs:
           source builders/ffmpeg/versions.env
           tag="ffmpeg-v${BUILDER_VERSION}"
           version="${FFMPEG_REF#n}"
-          work="${RUNNER_TEMP}/wasm-zoo-pages-release"
-          rm -rf "$work"
-          mkdir -p "$work"
-
+          work="${RUNNER_TEMP}/wasm-zoo-pages-ffmpeg"
+          rm -rf "$work" && mkdir -p "$work"
           for profile in browser-full browser-full-gpl; do
             asset="ffmpeg-${profile}-${version}-zoo-${BUILDER_VERSION}.zip"
-            echo "[pages] downloading ${asset} from ${tag}"
             gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir "$work"
             dest="site/assets/ffmpeg/${version}/${profile}"
             mkdir -p "$dest"
-            unzip -q -j "$work/$asset" \
-              ffmpeg-core.js ffmpeg-core.wasm manifest.json features.json \
-              -d "$dest"
-            # Keep the published core byte-for-byte, but use the current thin
-            # browser wrapper so Playground-only fixes do not require a new
-            # FFmpeg binary release.
+            unzip -q -j "$work/$asset" ffmpeg-core.js ffmpeg-core.wasm manifest.json features.json -d "$dest"
             cp builders/ffmpeg/runtime/browser-ffmpeg.js "$dest/browser-ffmpeg.js"
-            test -s "$dest/ffmpeg-core.js"
-            test -s "$dest/ffmpeg-core.wasm"
-            test -s "$dest/browser-ffmpeg.js"
-            test -s "$dest/manifest.json"
           done
+          echo "[OK] staged FFmpeg ${version} ${tag}"
 
-          echo "[OK] staged FFmpeg ${version} ${tag} for the Pages Playground"
+      - name: Stage published libarchive release for Playground
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/libarchive/versions.env
+          tag="libarchive-v${BUILDER_VERSION}"
+          version="${LIBARCHIVE_REF#v}"
+          if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "[WARN] ${tag} is not published yet; libarchive Playground assets will be staged after the release workflow completes."
+            exit 0
+          fi
+          work="${RUNNER_TEMP}/wasm-zoo-pages-libarchive"
+          rm -rf "$work" && mkdir -p "$work"
+          asset="libarchive-browser-full-${version}-zoo-${BUILDER_VERSION}.zip"
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir "$work"
+          dest="site/assets/libarchive/${version}/browser-full"
+          mkdir -p "$dest"
+          unzip -q -j "$work/$asset" \
+            bsdtar-core.js bsdtar-core.wasm \
+            bsdcpio-core.js bsdcpio-core.wasm \
+            bsdcat-core.js bsdcat-core.wasm \
+            bsdunzip-core.js bsdunzip-core.wasm \
+            manifest.json features.json -d "$dest"
+          cp builders/libarchive/runtime/browser-libarchive.js "$dest/browser-libarchive.js"
+          echo "[OK] staged libarchive ${version} ${tag}"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
         with:
           path: site
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

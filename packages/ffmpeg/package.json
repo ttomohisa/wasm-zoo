@@ -55,7 +55,8 @@
       "binaryLicense": "LGPL-2.1-or-later",
       "size": "Loaded from the published release manifest",
       "releaseAsset": "ffmpeg-browser-full-9.0.1-zoo-0.2.6.zip",
-      "playground": true
+      "playground": true,
+      "playgroundPath": "./playground/"
     },
     {
       "id": "browser-full-gpl",
@@ -83,7 +84,8 @@
       "binaryLicense": "GPL-2.0-or-later",
       "size": "Loaded from the published release manifest",
       "releaseAsset": "ffmpeg-browser-full-gpl-9.0.1-zoo-0.2.6.zip",
-      "playground": true
+      "playground": true,
+      "playgroundPath": "./playground/"
     }
   ],
   "comparison": [

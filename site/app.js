@@ -24,15 +24,18 @@ const releaseUrl = (pkg, asset) => pkg.release?.downloadBase && asset ? `${pkg.r
 function profileSize(profile) {
   const manifest = profile._manifest;
   if (!manifest) return profile.size || null;
-  const wasm = formatBytes(manifest.files?.['ffmpeg-core.wasm']?.bytes);
-  const gzip = formatBytes(manifest.files?.['ffmpeg-core.wasm.gz']?.bytes);
+  const entries = Object.entries(manifest.files || {});
+  const wasmBytes = entries.filter(([name]) => name.endsWith('.wasm') && !name.endsWith('.wasm.gz')).reduce((sum, [, file]) => sum + (Number(file?.bytes) || 0), 0);
+  const gzipBytes = entries.filter(([name]) => name.endsWith('.wasm.gz')).reduce((sum, [, file]) => sum + (Number(file?.bytes) || 0), 0);
+  const wasm = wasmBytes ? formatBytes(wasmBytes) : null;
+  const gzip = gzipBytes ? formatBytes(gzipBytes) : null;
   return wasm && gzip ? `${wasm} · gzip ${gzip}` : wasm || gzip || profile.size || null;
 }
 
 function card(pkg) {
   const zooVersion = pkg.status === 'available' ? pkg.upstream.version : null;
   const profiles = pkg.profiles.length
-    ? pkg.profiles.map((profile) => `<span class="profile-pill"><span>${esc(profile.label)}</span>${profile._manifest ? `<small>${esc(formatBytes(profile._manifest.files?.['ffmpeg-core.wasm']?.bytes) || '')}</small>` : ''}</span>`).join('')
+    ? pkg.profiles.map((profile) => `<span class="profile-pill"><span>${esc(profile.label)}</span>${profile._manifest ? `<small>${esc(profileSize(profile) || '')}</small>` : ''}</span>`).join('')
     : `<span class="profile-pill">Build profile not published yet</span>`;
   const release = pkg.release?.tag ? `<span class="release-chip">${esc(pkg.release.tag)}</span>` : '';
   return `<article class="package-card" data-status="${esc(pkg.status)}">
@@ -61,7 +64,8 @@ function boolPill(label, value) { return `<span>${esc(label)}: ${value ? 'yes' :
 function releaseButtons(pkg, profile) {
   if (!pkg.release) return '';
   const asset = releaseUrl(pkg, profile.releaseAsset);
-  const playground = profile.playground ? `<a class="detail-action secondary" href="./playground/?profile=${encodeURIComponent(profile.id)}">Try in Playground</a>` : '';
+  const playgroundPath = profile.playgroundPath || './playground/';
+  const playground = profile.playground ? `<a class="detail-action secondary" href="${esc(playgroundPath)}${playgroundPath.includes('?') ? '&' : '?'}profile=${encodeURIComponent(profile.id)}">Try in Playground</a>` : '';
   return `<div class="profile-actions">${asset ? `<a class="detail-action" href="${esc(asset)}">Download ZIP</a>` : ''}${playground}</div>`;
 }
 
@@ -111,20 +115,19 @@ try {
   document.querySelector('#stat-available').textContent = catalog.stats.available;
   document.querySelector('#stat-profiles').textContent = catalog.stats.profiles;
   document.querySelector('#generated-at').textContent = `Catalog v${catalog.project.version}`;
-  const featured = catalog.packages.find((pkg) => pkg.slug === 'ffmpeg');
-  if (featured) {
-    const upstream = document.querySelector('#hero-ffmpeg-upstream');
-    const zoo = document.querySelector('#hero-ffmpeg-zoo');
-    const release = document.querySelector('#hero-ffmpeg-release');
-    const featuredVersion = document.querySelector('#featured-ffmpeg-version');
-    const releaseLink = document.querySelector('#featured-release-link');
-    if (upstream) upstream.textContent = featured.upstream.version || '—';
-    if (zoo) zoo.textContent = featured.upstream.version || '—';
-    if (release) release.textContent = featured.release?.tag || 'not published';
-    if (featuredVersion) featuredVersion.textContent = featured.upstream.version || 'current';
-    if (releaseLink && featured.release?.page) {
-      releaseLink.href = featured.release.page;
-      releaseLink.textContent = `View ${featured.release.tag} release`;
+  const zooVersion = document.querySelector('#hero-zoo-version');
+  if (zooVersion) zooVersion.textContent = catalog.project.version || '—';
+  for (const slug of ['ffmpeg', 'libarchive']) {
+    const item = catalog.packages.find((pkg) => pkg.slug === slug);
+    if (!item) continue;
+    const hero = document.querySelector(`#hero-${slug}-version`);
+    const featuredVersion = document.querySelector(`#featured-${slug}-version`);
+    const releaseLink = document.querySelector(`#featured-${slug}-release`);
+    if (hero) hero.textContent = item.upstream.version || '—';
+    if (featuredVersion) featuredVersion.textContent = item.upstream.version || 'current';
+    if (releaseLink && item.release?.page) {
+      releaseLink.href = item.release.page;
+      releaseLink.textContent = item.release.tag;
     }
   }
   await enrichReleaseManifests();

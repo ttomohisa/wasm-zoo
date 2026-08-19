@@ -1,0 +1,1 @@
+.two-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.download-area{display:flex;gap:7px;flex-wrap:wrap}.download-button{max-width:100%;overflow:hidden;text-overflow:ellipsis}.extracted-note{font-size:11px;color:var(--muted);width:100%}@media(max-width:620px){.two-fields{grid-template-columns:1fr}}

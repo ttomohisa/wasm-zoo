@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 - 2026-08-19
+
+- Added libarchive 3.8.9 as the second available WASM Zoo package.
+- Added reproducible `browser-full` builds for upstream `bsdtar`, `bsdcpio`, `bsdcat` and `bsdunzip`.
+- Enabled Emscripten toolchain-pinned zlib and bzip2 backends; documented optional compression/XML/crypto gaps.
+- Added real Chromium ZIP/Deflate list + extraction smoke testing.
+- Added libarchive release workflow with binary ZIP, corresponding source and SHA-256 checksums.
+- Added a libarchive Playground and generalized catalog manifest sizing/Playground links for multiple packages.
+- Updated Pages staging so published FFmpeg and libarchive cores power their demos.
+
 ## Unreleased
 
 - Fixed the Pages Playground pthread worker crash by moving cross-origin isolation from `/playground/` scope to the WASM Zoo Pages root, so Emscripten workers loaded from `/assets/ffmpeg/**` are controlled too.

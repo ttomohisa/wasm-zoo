@@ -10,7 +10,9 @@ on:
       - "scripts/**"
       - "docs/**"
       - "builders/ffmpeg/versions.env"
+      - "builders/libarchive/**"
       - "package.json"
+      - "VERSION"
       - ".github/workflows/verify.yml"
   pull_request:
 
@@ -26,7 +28,9 @@ jobs:
         run: npm run catalog
       - name: Validate repository
         run: npm run check
-      - name: Validate FFmpeg full builder
+      - name: Validate FFmpeg builder
         run: node builders/ffmpeg/scripts/check-repository.mjs
+      - name: Validate libarchive builder
+        run: node builders/libarchive/scripts/check-repository.mjs
       - name: Ensure generated catalog is committed
         run: git diff --exit-code -- site/catalog.json
