@@ -19,6 +19,13 @@ need(build.includes('zlib 1.3.2') && build.includes('bzip2 1.0.6'),'pinned Emscr
 const runtime=read('runtime/browser-libarchive.js');
 need(runtime.includes('createLibarchiveCore'),'runtime must load the modularized upstream CLI core');
 need(runtime.includes('collectDirs'),'runtime must support directory extraction results');
+
+const playground=fs.readFileSync(path.join(root,'../../site/libarchive-playground/app.js'),'utf8');
+const playgroundHtml=fs.readFileSync(path.join(root,'../../site/libarchive-playground/index.html'),'utf8');
+need(playground.includes('isObviousNonArchive'),'Playground must detect obvious non-archive inputs before read presets run');
+need(playground.includes('Use “Create TAR”'),'Playground must explain how to archive arbitrary regular files');
+need(playground.includes("activePreset === 'unzip'"),'Playground must distinguish ZIP-only bsdunzip input from general archive input');
+need(playgroundHtml.includes('id="file-guidance"'),'Playground must expose preset-specific file guidance');
 const smoke=read('tests/smoke-test.html');
 need(smoke.includes("['-tf', '/fixture.zip']"),'smoke test must list a real ZIP');
 need(smoke.includes("['-xf', '/fixture.zip', '-C', '/out']"),'smoke test must extract a real ZIP');

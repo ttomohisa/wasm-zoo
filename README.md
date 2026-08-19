@@ -133,6 +133,8 @@ Pages stages immutable binary cores from the matching GitHub Release rather than
 
 FFmpeg's pthread build needs cross-origin isolation, so the Pages-root Service Worker supplies COOP/COEP to its page and worker clients. libarchive's v0.3.0 profile is single-threaded and does not depend on that mechanism.
 
+In the libarchive Playground, List/Extract expects an archive input, while Create TAR accepts arbitrary local files and packages them into a TAR in memory.
+
 ## Local preview
 
 ```text

@@ -29,7 +29,7 @@
     <div class="playground-panel command-panel">
       <div class="panel-heading"><div><span class="eyebrow">02 · Command</span><h2>Run an archive command</h2></div></div>
       <div class="preset-row"><button type="button" data-preset="list">List archive</button><button type="button" data-preset="extract">Extract</button><button type="button" data-preset="create">Create TAR</button><button type="button" data-preset="unzip">bsdunzip -l</button></div>
-      <label>Local files <span class="label-hint">staged under <code>/input/</code></span><input id="input-files" type="file" multiple></label>
+      <label>Local files <span id="file-guidance" class="label-hint">Files are staged under <code>/input/</code>. <code>{input}</code> means the first selected file.</span><input id="input-files" type="file" multiple aria-describedby="file-guidance"></label>
       <label>CLI arguments <span class="label-hint"><code>{input}</code> = first file, <code>{output}</code> = output path</span><textarea id="args" rows="5" spellcheck="false">--version</textarea></label>
       <div class="two-fields"><label>Output path<input id="output-name" type="text" value="/output.tar" spellcheck="false"></label><label>Collect directory<input id="collect-dir" type="text" value="" placeholder="/out" spellcheck="false"></label></div>
       <button id="run" class="primary-button run-button" type="button">Run command</button>
@@ -37,7 +37,7 @@
     </div>
   </section>
   <section class="log-panel"><div class="panel-heading"><div><span class="eyebrow">03 · Output</span><h2>CLI log</h2></div><span class="local-badge">Local browser execution</span></div><div id="log" class="log-output" aria-live="polite"><div class="log-line info">Choose a preset or enter arbitrary CLI arguments.</div></div></section>
-  <section class="playground-notes"><div><strong>MEMFS</strong><span>Inputs and outputs live in memory for each command.</span></div><div><strong>Four CLIs</strong><span>bsdtar, bsdcpio, bsdcat and bsdunzip are shipped as separate upstream executables.</span></div><div><strong>Browser target</strong><span>Native filesystem ownership, device access, subprocess filters and platform metadata are constrained.</span></div></section>
+  <section class="playground-notes"><div><strong>MEMFS</strong><span>Inputs and outputs live in memory for each command.</span></div><div><strong>Preset inputs</strong><span>List/Extract reads an archive. Create TAR accepts arbitrary files such as videos, images and documents.</span></div><div><strong>Browser target</strong><span>Native filesystem ownership, device access, subprocess filters and platform metadata are constrained.</span></div></section>
 </main>
 <footer><p><strong>WASM Zoo</strong> · libarchive Playground</p><p><a href="../">Back to catalog</a></p></footer>
 <script src="./app.js" type="module"></script>

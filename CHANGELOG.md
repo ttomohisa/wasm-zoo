@@ -12,6 +12,8 @@
 
 ## Unreleased
 
+- Improved the libarchive Playground input UX: archive-reading presets now reject obvious regular media/document files before invoking libarchive, while Create TAR continues to accept arbitrary files.
+- Added preset-specific file guidance so List/Extract, ZIP listing and TAR creation clearly communicate different input expectations.
 - Fixed the Pages Playground pthread worker crash by moving cross-origin isolation from `/playground/` scope to the WASM Zoo Pages root, so Emscripten workers loaded from `/assets/ffmpeg/**` are controlled too.
 - Added migration logic that unregisters the old Playground-scoped Service Worker and reloads once under the new root-scoped worker.
 - Pages now keeps the published v0.2.6 core binaries unchanged while overlaying the current thin browser runtime wrapper, allowing Playground-only fixes without republishing FFmpeg.
