@@ -180,6 +180,33 @@ if (libvips) {
   assert(libvips.integration?.example?.includes("Image.newFromBuffer"), "libvips integration example must exercise the image library API");
 }
 
+const ghostscript = packages.find((pkg) => pkg.slug === "ghostscript");
+if (ghostscript) {
+  const env = await readEnv(path.join(root, "builders", "ghostscript", "versions.env"));
+  assert(env.GHOSTSCRIPT_VERSION === ghostscript.upstream.version, `Ghostscript catalog version ${ghostscript.upstream.version} does not match GHOSTSCRIPT_VERSION=${env.GHOSTSCRIPT_VERSION}`);
+  assert(env.GHOSTSCRIPT_REF === ghostscript.upstream.ref, `Ghostscript upstream ref ${ghostscript.upstream.ref} does not match GHOSTSCRIPT_REF=${env.GHOSTSCRIPT_REF}`);
+  assert(env.BUILDER_VERSION === ghostscript.zoo.builderVersion, `Ghostscript builderVersion ${ghostscript.zoo.builderVersion} does not match versions.env ${env.BUILDER_VERSION}`);
+  assert(env.GHOSTSCRIPT_COMMIT === "053fa3f79d74e774b11fbf399495d4ec65bb33e7", "Ghostscript exact gs10.07.1 source commit pin is missing");
+  assert(env.GHOSTSCRIPT_SOURCE_SHA256 === "1cdb766de8db8f1e589c817f09c5855ea5f65dfc8540e465a69ac14c18416025", "Ghostscript exact official source SHA-256 pin is missing");
+  assert(env.EMSCRIPTEN_COMMIT === "4483d70a78098ed5d860dff2dc21f3025b2da2ee", "Ghostscript exact Emscripten 6.0.7 commit pin is missing");
+  const ids = new Set(ghostscript.profiles.map((profile) => profile.id));
+  assert(ids.has("browser-full"), "Ghostscript catalog must publish browser-full");
+  const profile = ghostscript.profiles.find((entry) => entry.id === "browser-full");
+  assert(profile?.arbitraryCli === true, "Ghostscript browser-full must expose the upstream gs CLI");
+  assert(profile?.threads === false && profile?.sharedArrayBuffer === false, "Ghostscript browser-full must remain single-threaded/no-SAB in v0.7.0");
+  assert(profile?.worker === true, "Ghostscript browser-full must run commands in a Worker");
+  assert(profile?.playground === true && profile?.playgroundPath === "./ghostscript-playground/", "Ghostscript browser-full must link to the Ghostscript Playground");
+  assert(ghostscript.release?.tag === `ghostscript-v${ghostscript.zoo.builderVersion}`, `Ghostscript release tag must match builderVersion ${ghostscript.zoo.builderVersion}`);
+  const expectedAsset = `ghostscript-browser-full-${ghostscript.upstream.version}-zoo-${ghostscript.zoo.builderVersion}.zip`;
+  assert(profile?.releaseAsset === expectedAsset, `Ghostscript browser-full releaseAsset must be ${expectedAsset}`);
+  const expectedSource = `ghostscript-sources-${ghostscript.upstream.version}-zoo-${ghostscript.zoo.builderVersion}.tar.gz`;
+  assert(ghostscript.release?.sourceAsset === expectedSource, `Ghostscript release.sourceAsset must be ${expectedSource}`);
+  assert(ghostscript.release?.checksumsAsset === "SHA256SUMS.txt", "Ghostscript release.checksumsAsset must be SHA256SUMS.txt");
+  assert(ghostscript.integration?.example?.includes("WasmZooGhostscript.loadHosted"), "Ghostscript integration example must use the public runtime wrapper");
+  assert(ghostscript.integration?.example?.includes("gs.dispose()"), "Ghostscript integration example must dispose the runner");
+  assert(ghostscript.tracker?.candidateMode === "none", "Ghostscript automatic candidate substitution must remain source-digest gated");
+}
+
 const requiredSiteFiles = [
   "site/ffmpeg-playground/index.html",
   "site/ffmpeg-playground/app.js",
@@ -197,6 +224,9 @@ const requiredSiteFiles = [
   "site/libvips-playground/index.html",
   "site/libvips-playground/app.js",
   "site/libvips-playground/playground.css",
+  "site/ghostscript-playground/index.html",
+  "site/ghostscript-playground/app.js",
+  "site/ghostscript-playground/playground.css",
   "site/upstream-status.json",
   ".github/workflows/check-upstream.yml",
   ".github/workflows/upstream-candidate.yml",
@@ -230,12 +260,18 @@ try {
   assert(pages.includes("site/assets/libvips"), "Pages workflow must stage libvips cores under site/assets/libvips");
   assert(pages.includes("cp builders/libvips/runtime/browser-libvips.js"), "Pages workflow must use the current libvips runtime wrapper");
   assert(pages.includes('"builders/libvips/runtime/browser-libvips.js"'), "Pages workflow must redeploy when the libvips runtime wrapper changes");
+  assert(pages.includes("site/assets/ghostscript"), "Pages workflow must stage Ghostscript cores under site/assets/ghostscript");
+  assert(pages.includes("cp builders/ghostscript/runtime/browser-ghostscript.js"), "Pages workflow must use the current Ghostscript runtime wrapper");
+  assert(pages.includes('"builders/ghostscript/runtime/browser-ghostscript.js"'), "Pages workflow must redeploy when the Ghostscript runtime wrapper changes");
   const runtime = await fs.readFile(path.join(root, "builders/ffmpeg/runtime/browser-ffmpeg.js"), "utf8");
   assert(runtime.includes('self.addEventListener("error"'), "FFmpeg runtime wrapper must surface asynchronous pthread worker errors");
   const imageRuntime = await fs.readFile(path.join(root, "builders/imagemagick/runtime/browser-imagemagick.js"), "utf8");
   assert(!imageRuntime.includes("mainScriptUrlOrBlob") && !imageRuntime.includes("SharedArrayBuffer"), "ImageMagick runtime must stay single-threaded and must not require pthread bootstrap/SAB support");
   const vipsRuntime = await fs.readFile(path.join(root, "builders/libvips/runtime/browser-libvips.js"), "utf8");
   assert(vipsRuntime.includes("crossOriginIsolated") && vipsRuntime.includes("SharedArrayBuffer"), "libvips runtime must enforce cross-origin isolation for pthreads");
+  const ghostRuntime = await fs.readFile(path.join(root, "builders/ghostscript/runtime/browser-ghostscript.js"), "utf8");
+  assert(ghostRuntime.includes("Worker") && ghostRuntime.includes("core.FS"), "Ghostscript runtime must use an isolated Worker with Emscripten FS/MEMFS");
+  assert(!ghostRuntime.includes("SharedArrayBuffer"), "Ghostscript runtime must not require SharedArrayBuffer in v0.7.0");
   const siteApp = await fs.readFile(path.join(root, "site/app.js"), "utf8");
   assert(siteApp.includes("Use in your app") && siteApp.includes("data-copy-code"), "Package details must render integration guidance with copyable examples");
   assert(siteApp.includes("renderVersionGap") && siteApp.includes("renderFeatureMatrix"), "Pages must render Version Gap Dashboard and Feature Matrix");
@@ -251,6 +287,7 @@ try {
   assert(upstreamScript.includes("refusing to replace the last good Pages snapshot"), "Upstream checker must preserve the last good snapshot when all trackers fail");
   const verifyWorkflow = await fs.readFile(path.join(root, ".github/workflows/verify.yml"), "utf8");
   assert(verifyWorkflow.includes("builders/libvips/scripts/check-repository.mjs"), "Verify workflow must include libvips repository checks");
+  assert(verifyWorkflow.includes("builders/ghostscript/scripts/check-repository.mjs"), "Verify workflow must include Ghostscript repository checks");
   const candidate = await fs.readFile(path.join(root, ".github/workflows/upstream-candidate.yml"), "utf8");
   assert(candidate.includes("prepare-candidate.mjs") && candidate.includes("browser smoke test"), "Candidate workflow must substitute isolated pins and run browser smoke tests");
   assert(candidate.includes("adapter-gated") && candidate.includes("libvips-readiness"), "libvips candidate workflow must preserve the adapter gate");

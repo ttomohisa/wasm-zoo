@@ -12,6 +12,7 @@ on:
       - "builders/libarchive/runtime/browser-libarchive.js"
       - "builders/imagemagick/runtime/browser-imagemagick.js"
       - "builders/libvips/runtime/browser-libvips.js"
+      - "builders/ghostscript/runtime/browser-ghostscript.js"
       - "VERSION"
       - ".github/workflows/pages.yml"
 
@@ -135,6 +136,29 @@ jobs:
             cp builders/libvips/runtime/browser-libvips.js "$dest/browser-libvips.js"
             echo "[OK] staged libvips ${version} ${profile} ${tag}"
           done
+
+      - name: Stage published Ghostscript release for Playground
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/ghostscript/versions.env
+          tag="ghostscript-v${BUILDER_VERSION}"
+          version="${GHOSTSCRIPT_VERSION}"
+          if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "[WARN] ${tag} is not published yet; Ghostscript Playground assets will be staged after the release workflow completes."
+            exit 0
+          fi
+          work="${RUNNER_TEMP}/wasm-zoo-pages-ghostscript"
+          rm -rf "$work" && mkdir -p "$work"
+          asset="ghostscript-browser-full-${version}-zoo-${BUILDER_VERSION}.zip"
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir "$work"
+          dest="site/assets/ghostscript/${version}/browser-full"
+          mkdir -p "$dest"
+          unzip -q -j "$work/$asset" gs-core.js gs-core.wasm manifest.json features.json -d "$dest"
+          cp builders/ghostscript/runtime/browser-ghostscript.js "$dest/browser-ghostscript.js"
+          echo "[OK] staged Ghostscript ${version} ${tag}"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

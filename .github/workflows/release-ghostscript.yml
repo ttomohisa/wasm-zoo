@@ -1,0 +1,58 @@
+name: Release Ghostscript WASM
+
+on:
+  push:
+    tags:
+      - "ghostscript-v*.*.*"
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 420
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Verify release tag
+        shell: bash
+        working-directory: builders/ghostscript
+        run: |
+          set -euo pipefail
+          source ./versions.env
+          test "${GITHUB_REF_NAME}" = "ghostscript-v${BUILDER_VERSION}"
+      - name: Static builder checks
+        run: node builders/ghostscript/scripts/check-repository.mjs
+      - name: Build and smoke-test browser-full
+        shell: bash
+        working-directory: builders/ghostscript
+        env:
+          GHOSTSCRIPT_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - name: Prepare binary, corresponding source and checksum assets
+        shell: bash
+        working-directory: builders/ghostscript
+        run: ./scripts/prepare-release.sh
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/ghostscript/versions.env
+          gh release create "${GITHUB_REF_NAME}"             builders/ghostscript/release/*             --verify-tag             --title "WASM Zoo · Ghostscript ${GHOSTSCRIPT_VERSION} · browser build"             --notes "Unofficial upstream Ghostscript gs CLI build for browser WebAssembly. The release includes the AGPL license, exact official release source archive/build recipe, machine-readable manifests and SHA-256 checksums. Chromium smoke testing verifies real PDF → PNG rendering and PostScript → PDF conversion before publication."
+      - name: Refresh Pages so the Playground stages this release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main

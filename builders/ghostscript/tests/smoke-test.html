@@ -1,0 +1,48 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>WASM Zoo Ghostscript smoke test</title>
+<pre id="log">boot</pre>
+<script src="./browser-ghostscript.js"></script>
+<script>
+const log = document.querySelector('#log');
+const lines = [];
+const onLog = ({stream, message}) => { lines.push(`${stream}: ${message}`); log.textContent = lines.slice(-80).join('\n'); };
+const fail = (error) => { console.error(error); location.hash = `#SMOKE_TEST_FAIL_${encodeURIComponent(error?.message || String(error))}`; };
+const signature = (bytes, expected) => expected.every((value, index) => bytes[index] === value);
+(async () => {
+  try {
+    const runner = WasmZooGhostscript.loadHosted({ baseUrl: './' });
+    const pdfResponse = await fetch('./smoke-input.pdf');
+    if (!pdfResponse.ok) throw new Error(`fixture HTTP ${pdfResponse.status}`);
+    const pdf = await pdfResponse.arrayBuffer();
+
+    const versionStart = lines.length;
+    await runner.exec(['--version'], { timeoutMs: 60000, onLog });
+    if (!lines.slice(versionStart).some((line) => line.includes('10.07.1'))) throw new Error('gs --version did not report 10.07.1');
+
+    const render = await runner.exec([
+      '-dSAFER','-dBATCH','-dNOPAUSE','-sDEVICE=png16m','-r72',
+      '-sOutputFile=/out/page.png','/input.pdf'
+    ], {
+      files: [{ name: '/input.pdf', data: pdf }],
+      dirs: ['/out'], outputs: ['/out/page.png'], timeoutMs: 90000, onLog
+    });
+    const png = render.files.find((file) => file.name === '/out/page.png');
+    if (!png || !signature(png.data, [0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a])) throw new Error('PDF -> PNG output is missing or invalid');
+
+    const ps = new TextEncoder().encode('%!PS-Adobe-3.0\n<< /PageSize [200 120] >> setpagedevice\n0.1 0.45 0.8 setrgbcolor\n20 20 160 80 rectfill\nshowpage\n%%EOF\n');
+    const convert = await runner.exec([
+      '-dSAFER','-dBATCH','-dNOPAUSE','-sDEVICE=pdfwrite',
+      '-sOutputFile=/out/output.pdf','/input.ps'
+    ], {
+      files: [{ name: '/input.ps', data: ps }],
+      dirs: ['/out'], outputs: ['/out/output.pdf'], timeoutMs: 90000, onLog
+    });
+    const outPdf = convert.files.find((file) => file.name === '/out/output.pdf');
+    const pdfMagic = [0x25,0x50,0x44,0x46,0x2d];
+    if (!outPdf || !signature(outPdf.data, pdfMagic)) throw new Error('PostScript -> pdfwrite output is missing or invalid');
+    runner.dispose();
+    location.hash = '#SMOKE_TEST_PASS_Ghostscript_10.07.1_PDF_to_PNG_and_PS_to_PDF';
+  } catch (error) { fail(error); }
+})();
+</script>

@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Fix Ghostscript final linking under Emscripten 6.0.7 by enabling `DEFAULT_TO_CXX` and add a fast C++ runtime preflight before the long compile.
+
+## v0.7.0
+
+- add Ghostscript 10.07.1 as the fifth available WASM Zoo package, pinned to the exact official release source archive SHA-256 and corresponding GhostPDL source commit;
+- add a single-threaded `browser-full` upstream `gs` CLI build with browser-oriented BMP/JPEG/PNG/PS/TIFF output-driver groups and desktop printing/display integrations disabled;
+- add an isolated Worker + MEMFS browser runtime and Chromium smoke test covering real PDF → PNG rendering and PostScript → PDF conversion through `pdfwrite`;
+- add Ghostscript Playground, Pages/local release staging, build/release Actions, catalog metadata, Feature Matrix and Version Gap Dashboard integration;
+- ship the exact official Ghostscript source archive, AGPL license notice, build recipe and SHA-256 checksums with release handoff;
+- keep automatic Ghostscript candidate substitution disabled until the watcher also captures and verifies the new release asset digest.
+
 ## v0.6.0
 
 - add a Version Gap Dashboard to Pages showing latest upstream, Zoo pin, representative WASM build, gap state and watcher verification date;

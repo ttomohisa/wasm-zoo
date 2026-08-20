@@ -6,6 +6,7 @@
 [![Pages](https://github.com/ttomohisa/wasm-zoo/actions/workflows/pages.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/pages.yml)
 [![ImageMagick build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-imagemagick.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-imagemagick.yml)
 [![libvips build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libvips.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libvips.yml)
+[![Ghostscript build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-ghostscript.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-ghostscript.yml)
 [![Upstream watcher](https://github.com/ttomohisa/wasm-zoo/actions/workflows/check-upstream.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/check-upstream.yml)
 
 **Current upstream software, compiled for WebAssembly.**
@@ -17,6 +18,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 - libarchive Playground: https://ttomohisa.github.io/wasm-zoo/libarchive-playground/
 - ImageMagick Playground: https://ttomohisa.github.io/wasm-zoo/imagemagick-playground/
 - libvips Playground: https://ttomohisa.github.io/wasm-zoo/libvips-playground/
+- Ghostscript Playground: https://ttomohisa.github.io/wasm-zoo/ghostscript-playground/
 
 ## Available packages
 
@@ -26,8 +28,9 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 | libarchive | 3.8.9 | 0.3.0 | `browser-full` | yes |
 | ImageMagick | 7.1.2-29 | 0.4.0 | `browser-full` | yes |
 | libvips | 8.18.5 | 0.5.0 | `browser-core`, `browser-full` | yes |
+| Ghostscript | 10.07.1 | 0.7.0 | `browser-full` | yes |
 
-The project version is **WASM Zoo v0.6.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+The project version is **WASM Zoo v0.7.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
 ## Freshness dashboard and capability matrix
 
@@ -37,7 +40,7 @@ WASM Zoo v0.6.0 makes freshness and target differences first-class catalog data 
 - **Feature Matrix** — Native vs every published browser profile using a shared state vocabulary: Included, Intentionally excluded, Browser N/A, Optional/platform-dependent and Unknown/not tested;
 - **Upstream Watcher** — daily stable-release discovery with a committed `site/upstream-status.json` snapshot, one issue per newly detected release and an isolated candidate workflow where automatic testing is safe.
 
-The watcher deliberately does **not** change reviewed pins or publish releases. For FFmpeg, libarchive and ImageMagick, a newly detected stable release can be substituted only inside the candidate workflow and must pass the existing real Chromium smoke test. libvips is marked `adapter-gated`: a new libvips release first needs reviewed wasm-vips/compatibility patch pins before a candidate build would be meaningful.
+The watcher deliberately does **not** change reviewed pins or publish releases. For FFmpeg, libarchive and ImageMagick, a newly detected stable release can be substituted only inside the candidate workflow and must pass the existing real Chromium smoke test. libvips is marked `adapter-gated`: a new libvips release first needs reviewed wasm-vips/compatibility patch pins before a candidate build would be meaningful. Ghostscript is tracked daily but automatic candidate substitution is intentionally disabled until the watcher can also capture and verify the official source-asset SHA-256.
 
 Run the watcher manually:
 
@@ -162,7 +165,7 @@ Each command gets an in-memory filesystem. Files returned from `collectDirs` can
 
 Pages stages immutable binary cores from the matching GitHub Release rather than rebuilding them specifically for the demo. Thin JavaScript integration wrappers are taken from `main`, allowing Playground integration fixes without silently changing the published Wasm binary.
 
-FFmpeg and libvips use pthreads and need cross-origin isolation, so the Pages-root Service Worker supplies COOP/COEP to their page and worker clients. libarchive and the current ImageMagick profile are single-threaded and do not depend on that mechanism.
+FFmpeg and libvips use pthreads and need cross-origin isolation, so the Pages-root Service Worker supplies COOP/COEP to their page and worker clients. libarchive, ImageMagick and Ghostscript are currently single-threaded and do not depend on SharedArrayBuffer.
 
 In the libarchive Playground, List/Extract expects an archive input, while Create TAR accepts arbitrary local files and packages them into a TAR in memory.
 
@@ -172,7 +175,7 @@ In the libarchive Playground, List/Extract expects an archive input, while Creat
 start-local.bat
 ```
 
-This regenerates the catalog, stages any locally built FFmpeg/libarchive/ImageMagick/libvips artifacts under ignored `site/assets/`, and serves:
+This regenerates the catalog, stages any locally built FFmpeg/libarchive/ImageMagick/libvips/Ghostscript artifacts under ignored `site/assets/`, and serves:
 
 ```text
 http://localhost:4173/
@@ -180,6 +183,7 @@ http://localhost:4173/ffmpeg-playground/
 http://localhost:4173/libarchive-playground/
 http://localhost:4173/imagemagick-playground/
 http://localhost:4173/libvips-playground/
+http://localhost:4173/ghostscript-playground/
 ```
 
 The catalog still works when no local Wasm build has been staged.
@@ -307,11 +311,58 @@ input.delete();
 
 The release workflow rebuilds both profiles, runs the Chromium smoke tests, publishes both binary archives plus the profile size comparison/source/checksum assets, then refreshes the libvips Playground through Pages.
 
-## Tracked next candidates
+## Ghostscript 10.07.1
 
-- Ghostscript
+WASM Zoo v0.7.0 adds Ghostscript as the fifth available package. The build uses the official `ghostscript-10.07.1.tar.xz` release archive, verifies its pinned SHA-256 before extraction, and records the corresponding `gs10.07.1` source branch commit for provenance. The browser artifact exposes the upstream `gs` CLI rather than a reduced custom API.
 
-It remains `planned` until a reproducible artifact passes a meaningful runtime test.
+The first `browser-full` profile is deliberately single-threaded and uses an isolated Worker plus Emscripten MEMFS. It keeps PostScript/PDF interpretation, `pdfwrite`, and BMP/JPEG/PNG/PS/TIFF file-output driver groups while disabling desktop-only CUPS, D-Bus, GTK/X11, fontconfig, libpaper, libidn, pdftoraster and IJS integrations. GhostPCL and GhostXPS remain separate from this Ghostscript `gs` artifact.
+
+The Chromium smoke test performs two real document operations: PDF → PNG through `png16m`, and PostScript → PDF through `pdfwrite`.
+
+On Windows:
+
+```bat
+build-ghostscript.bat browser-full
+```
+
+On bash:
+
+```bash
+./builders/ghostscript/build.sh browser-full
+```
+
+Release tag:
+
+```bash
+git tag -a ghostscript-v0.7.0 -m "WASM Zoo Ghostscript v0.7.0"
+git push origin ghostscript-v0.7.0
+```
+
+### Ghostscript browser API
+
+```js
+const gs = WasmZooGhostscript.loadHosted({
+  baseUrl: "/assets/ghostscript/10.07.1/browser-full/"
+});
+
+try {
+  const result = await gs.exec([
+    "-dSAFER", "-dBATCH", "-dNOPAUSE",
+    "-sDEVICE=png16m", "-r150",
+    "-sOutputFile=/out/page.png", "/input.pdf"
+  ], {
+    files: [{ name: "/input.pdf", data: pdfBytes }],
+    dirs: ["/out"],
+    outputs: ["/out/page.png"]
+  });
+  console.log(result.files[0]);
+} finally {
+  gs.dispose();
+}
+```
+
+Ghostscript's published binary is AGPL-3.0-or-later. The release handoff includes the exact official source archive, the Ghostscript license notice, a conservative bundled third-party license/copyright inventory, the build recipe and SHA-256 checksums. Automatic candidate builds are source-digest gated and therefore remain disabled until the watcher can verify a new release asset digest before substitution.
+
 
 ## Repository layout
 
@@ -321,6 +372,7 @@ builders/ffmpeg/            FFmpeg build pipeline
 builders/libarchive/        libarchive build pipeline
 builders/imagemagick/       ImageMagick build pipeline
 builders/libvips/           libvips build pipeline
+builders/ghostscript/       Ghostscript build pipeline
 scripts/                    catalog/upstream/local staging tooling
 site/                       catalog + package Playgrounds
 docs/                       manifest/package contracts

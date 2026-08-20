@@ -71,5 +71,21 @@ async function stageLibvips() {
   return staged;
 }
 
-const staged = (await stageFfmpeg()) + (await stageLibarchive()) + (await stageImageMagick()) + (await stageLibvips());
+async function stageGhostscript() {
+  const env = await readEnv(path.join(root, 'builders', 'ghostscript', 'versions.env'));
+  const version = env.GHOSTSCRIPT_VERSION;
+  const profile = 'browser-full';
+  const source = path.join(root, 'builders', 'ghostscript', 'dist', profile);
+  const dest = path.join(root, 'site', 'assets', 'ghostscript', version, profile);
+  try { await fs.access(path.join(source, 'manifest.json')); } catch { console.log('[skip] Ghostscript browser-full: build it first for local Playground'); return 0; }
+  await fs.mkdir(dest, { recursive: true });
+  for (const name of ['gs-core.js', 'gs-core.wasm', 'manifest.json', 'features.json']) {
+    await fs.copyFile(path.join(source, name), path.join(dest, name));
+  }
+  await fs.copyFile(path.join(root, 'builders', 'ghostscript', 'runtime', 'browser-ghostscript.js'), path.join(dest, 'browser-ghostscript.js'));
+  console.log('[OK] staged Ghostscript browser-full');
+  return 1;
+}
+
+const staged = (await stageFfmpeg()) + (await stageLibarchive()) + (await stageImageMagick()) + (await stageLibvips()) + (await stageGhostscript());
 if (!staged) console.log('[info] No local release cores staged; the catalog can still be previewed.');

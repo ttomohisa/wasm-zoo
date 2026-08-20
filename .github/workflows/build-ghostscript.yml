@@ -1,0 +1,57 @@
+name: Build Ghostscript browser WASM
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "builders/ghostscript/**"
+      - "packages/ghostscript/**"
+      - ".github/workflows/build-ghostscript.yml"
+  pull_request:
+    paths:
+      - "builders/ghostscript/**"
+      - "packages/ghostscript/**"
+      - ".github/workflows/build-ghostscript.yml"
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Static builder checks
+        run: node builders/ghostscript/scripts/check-repository.mjs
+      - name: Build upstream gs CLI and run browser smoke test
+        shell: bash
+        working-directory: builders/ghostscript
+        env:
+          GHOSTSCRIPT_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - name: Show generated manifest
+        run: cat builders/ghostscript/dist/browser-full/manifest.json
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-zoo-ghostscript-browser-full-${{ github.sha }}
+          path: |
+            builders/ghostscript/dist/browser-full/gs-core.js
+            builders/ghostscript/dist/browser-full/gs-core.wasm
+            builders/ghostscript/dist/browser-full/manifest.json
+            builders/ghostscript/dist/browser-full/features.json
+            builders/ghostscript/dist/browser-full/ghostscript-config.txt
+            builders/ghostscript/dist/browser-full/browser-ghostscript.js
+            builders/ghostscript/dist/browser-full/LICENSE-Ghostscript.txt
+            builders/ghostscript/dist/browser-full/THIRD-PARTY-LICENSES/
+          if-no-files-found: error
+          retention-days: 30

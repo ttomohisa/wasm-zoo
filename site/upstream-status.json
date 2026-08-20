@@ -16,9 +16,19 @@
       "latestReleased": "2026-08-12T00:00:00Z",
       "updateAvailable": false,
       "lagDays": 0,
-      "gap": { "kind": "current", "label": "Current", "versionsBehind": 0 },
+      "gap": {
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
+      },
       "url": "https://github.com/FFmpeg/FFmpeg/tree/n9.0.1",
-      "candidate": { "mode": "auto", "profiles": ["browser-full", "browser-full-gpl"] }
+      "candidate": {
+        "mode": "auto",
+        "profiles": [
+          "browser-full",
+          "browser-full-gpl"
+        ]
+      }
     },
     {
       "slug": "libarchive",
@@ -33,9 +43,18 @@
       "latestReleased": "2026-07-28T10:13:00Z",
       "updateAvailable": false,
       "lagDays": 0,
-      "gap": { "kind": "current", "label": "Current", "versionsBehind": 0 },
+      "gap": {
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
+      },
       "url": "https://github.com/libarchive/libarchive/releases/tag/v3.8.9",
-      "candidate": { "mode": "auto", "profiles": ["browser-full"] }
+      "candidate": {
+        "mode": "auto",
+        "profiles": [
+          "browser-full"
+        ]
+      }
     },
     {
       "slug": "imagemagick",
@@ -50,9 +69,18 @@
       "latestReleased": "2026-07-27T00:00:00Z",
       "updateAvailable": false,
       "lagDays": 0,
-      "gap": { "kind": "current", "label": "Current", "versionsBehind": 0 },
+      "gap": {
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
+      },
       "url": "https://github.com/ImageMagick/ImageMagick/releases/tag/7.1.2-29",
-      "candidate": { "mode": "auto", "profiles": ["browser-full"] }
+      "candidate": {
+        "mode": "auto",
+        "profiles": [
+          "browser-full"
+        ]
+      }
     },
     {
       "slug": "libvips",
@@ -67,26 +95,45 @@
       "latestReleased": "2026-08-03T00:00:00Z",
       "updateAvailable": false,
       "lagDays": 0,
-      "gap": { "kind": "current", "label": "Current", "versionsBehind": 0 },
+      "gap": {
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
+      },
       "url": "https://github.com/libvips/libvips/releases/tag/v8.18.5",
-      "candidate": { "mode": "adapter-gated", "profiles": ["browser-core", "browser-full"] }
+      "candidate": {
+        "mode": "adapter-gated",
+        "profiles": [
+          "browser-core",
+          "browser-full"
+        ]
+      }
     },
     {
       "slug": "ghostscript",
       "name": "Ghostscript",
       "status": "ok",
-      "pinned": null,
-      "pinnedRef": null,
-      "pinnedReleased": null,
+      "pinned": "10.07.1",
+      "pinnedRef": "gs10.07.1",
+      "pinnedReleased": "2026-05-19",
       "latest": "10.07.1",
       "latestRef": "gs10071",
-      "latestCommit": "f655225",
+      "latestCommit": "f655225dde85a4281289fafed18feb5794d1a1fb",
       "latestReleased": "2026-05-19T12:34:00Z",
       "updateAvailable": false,
       "lagDays": 0,
-      "gap": { "kind": "planned", "label": "Not pinned", "versionsBehind": null },
+      "gap": {
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
+      },
       "url": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/tag/gs10071",
-      "candidate": { "mode": "none", "profiles": [] }
+      "candidate": {
+        "mode": "none",
+        "profiles": [
+          "browser-full"
+        ]
+      }
     }
   ]
 }

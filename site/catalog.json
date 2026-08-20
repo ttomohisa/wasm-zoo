@@ -2,16 +2,16 @@
   "schemaVersion": 2,
   "project": {
     "name": "WASM Zoo",
-    "version": "0.6.0",
+    "version": "0.7.0",
     "tagline": "Upstream software, compiled for WebAssembly.",
     "unofficial": true
   },
   "stats": {
     "packages": 5,
-    "available": 4,
-    "profiles": 6,
-    "featureMatrices": 4,
-    "referenceBuilds": 4
+    "available": 5,
+    "profiles": 7,
+    "featureMatrices": 5,
+    "referenceBuilds": 5
   },
   "packages": [
     {
@@ -883,14 +883,14 @@
       "schemaVersion": 2,
       "slug": "ghostscript",
       "name": "Ghostscript",
-      "summary": "PostScript/PDF interpreter and renderer. Candidate for a current upstream gs CLI WebAssembly distribution.",
+      "summary": "Current upstream Ghostscript PostScript/PDF CLI compiled for browser WebAssembly with an isolated-worker MEMFS runtime.",
       "category": "document",
-      "status": "planned",
+      "status": "available",
       "order": 40,
       "upstream": {
-        "version": null,
-        "ref": null,
-        "released": null,
+        "version": "10.07.1",
+        "ref": "gs10.07.1",
+        "released": "2026-05-19",
         "homepage": "https://www.ghostscript.com/",
         "repository": "https://github.com/ArtifexSoftware/ghostpdl",
         "license": "AGPL-3.0-or-later / commercial options upstream"
@@ -900,19 +900,172 @@
         "repository": "ArtifexSoftware/ghostpdl-downloads",
         "versionPattern": "(\\d+\\.\\d+\\.\\d+)",
         "candidateMode": "none",
-        "candidateProfiles": []
+        "candidateProfiles": [
+          "browser-full"
+        ]
       },
       "zoo": {
-        "builderVersion": null,
-        "reproducible": false
+        "builderVersion": "0.7.0",
+        "toolchain": "Emscripten 6.0.7",
+        "buildModel": "official-release-archive-upstream-cli",
+        "reproducible": true,
+        "sourceBundle": true,
+        "checksums": true,
+        "browserSmokeTest": true,
+        "featureInventory": true
       },
-      "profiles": [],
-      "comparison": [],
-      "notes": [
-        "License and redistribution requirements must be reviewed before publishing binaries."
+      "profiles": [
+        {
+          "id": "browser-full",
+          "label": "Browser Full",
+          "target": "browser",
+          "threads": false,
+          "simd": false,
+          "sharedArrayBuffer": false,
+          "worker": true,
+          "workerFs": false,
+          "arbitraryCli": true,
+          "network": false,
+          "features": [
+            "upstream gs CLI",
+            "PostScript and PDF interpretation",
+            "BMP / JPEG / PNG / PS / TIFF output-driver groups",
+            "pdfwrite",
+            "Emscripten MEMFS",
+            "isolated Worker per invocation"
+          ],
+          "externalLibraries": [
+            "Ghostscript bundled third-party source set from the official 10.07.1 release archive"
+          ],
+          "output": "Generic Ghostscript gs CLI for local PostScript/PDF rendering and conversion",
+          "binaryLicense": "AGPL-3.0-or-later",
+          "size": "Loaded from the published release manifest",
+          "releaseAsset": "ghostscript-browser-full-10.07.1-zoo-0.7.0.zip",
+          "playground": true,
+          "playgroundPath": "./ghostscript-playground/"
+        }
       ],
-      "referenceWasm": null,
-      "capabilityMatrix": []
+      "integration": {
+        "summary": "Self-host the wrapper plus gs-core.js/gs-core.wasm and run ordinary Ghostscript CLI arguments against files in MEMFS.",
+        "files": [
+          "browser-ghostscript.js",
+          "gs-core.js",
+          "gs-core.wasm"
+        ],
+        "example": "<script src=\"/vendor/ghostscript/browser-ghostscript.js\"></script>\n<script type=\"module\">\nconst gs = WasmZooGhostscript.loadHosted({ baseUrl: \"/vendor/ghostscript/\" });\ntry {\n  const result = await gs.exec([\n    \"-dSAFER\", \"-dBATCH\", \"-dNOPAUSE\",\n    \"-sDEVICE=png16m\", \"-r150\",\n    \"-sOutputFile=/out/page.png\", \"/input.pdf\"\n  ], {\n    files: [{ name: \"/input.pdf\", data: file }],\n    dirs: [\"/out\"],\n    outputs: [\"/out/page.png\"]\n  });\n  return result.files[0].data;\n} finally {\n  gs.dispose();\n}\n</script>",
+        "notes": [
+          "The current browser-full profile is single-threaded and does not require SharedArrayBuffer.",
+          "Each command runs in a fresh Worker/MEMFS instance.",
+          "The published Ghostscript Wasm binary is AGPL-3.0-or-later; review licensing before redistribution."
+        ]
+      },
+      "comparison": [
+        {
+          "name": "Upstream native",
+          "version": "10.07.1",
+          "note": "Full native Ghostscript can integrate with operating-system print/display services and optional platform libraries."
+        },
+        {
+          "name": "WASM Zoo",
+          "version": "10.07.1",
+          "note": "Current Ghostscript gs CLI with browser-oriented file-output devices and native desktop integrations removed."
+        }
+      ],
+      "notes": [
+        "Official Ghostscript 10.07.1 release source archive is pinned by SHA-256 in addition to the source branch commit.",
+        "The real Chromium smoke test renders a PDF to PNG and converts PostScript to PDF with pdfwrite.",
+        "Automatic upstream candidate substitution is intentionally disabled for Ghostscript until the watcher also captures and verifies the new official source-asset digest.",
+        "GhostPCL and GhostXPS remain outside this package even though they share the GhostPDL source tree."
+      ],
+      "release": {
+        "tag": "ghostscript-v0.7.0",
+        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.0",
+        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/ghostscript-v0.7.0/",
+        "sourceAsset": "ghostscript-sources-10.07.1-zoo-0.7.0.tar.gz",
+        "checksumsAsset": "SHA256SUMS.txt"
+      },
+      "referenceWasm": {
+        "name": "@okathira/ghostpdl-wasm",
+        "packageVersion": "1.1.0",
+        "upstreamVersion": "10.06.0",
+        "repository": "https://github.com/okathira-dev/ghostpdl-wasm",
+        "checkedAt": "2026-08-21",
+        "note": "Reference npm package 1.1.0 is built from Ghostscript/GhostPDL 10.06.0 and exposes FS/callMain."
+      },
+      "capabilityMatrix": [
+        {
+          "feature": "PostScript interpretation",
+          "native": "included",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "Core Ghostscript PostScript interpreter is retained."
+        },
+        {
+          "feature": "PDF interpretation",
+          "native": "included",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "Browser smoke test renders a real PDF fixture through png16m."
+        },
+        {
+          "feature": "pdfwrite (PS/PDF output)",
+          "native": "included",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "Browser smoke test converts PostScript to a new PDF."
+        },
+        {
+          "feature": "PNG / JPEG / BMP / TIFF file output",
+          "native": "included",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "The selected output-driver groups target common file conversion workflows."
+        },
+        {
+          "feature": "GhostPCL / GhostXPS frontends",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "excluded"
+          },
+          "note": "These are separate GhostPDL interpreters and are not part of the Ghostscript gs artifact."
+        },
+        {
+          "feature": "CUPS / pdftoraster / IJS printing integration",
+          "native": "platform",
+          "profiles": {
+            "browser-full": "na"
+          },
+          "note": "Browser WebAssembly has no native print spooler integration; these configure paths are disabled."
+        },
+        {
+          "feature": "GTK / X11 display devices",
+          "native": "platform",
+          "profiles": {
+            "browser-full": "na"
+          },
+          "note": "Browser rendering is returned as output files rather than an OS display surface."
+        },
+        {
+          "feature": "Native filesystem semantics",
+          "native": "platform",
+          "profiles": {
+            "browser-full": "na"
+          },
+          "note": "Input and output live in Emscripten MEMFS inside an isolated Worker."
+        },
+        {
+          "feature": "Threads / SharedArrayBuffer",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "excluded"
+          },
+          "note": "The first Zoo profile stays single-threaded for simpler deployment."
+        }
+      ]
     }
   ]
 }

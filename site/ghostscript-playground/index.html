@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="Run Ghostscript 10.07.1 directly in your browser."><meta name="theme-color" content="#f7f7f4">
+  <title>Ghostscript Playground · WASM Zoo</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23171714'/%3E%3Cpath d='M13 18h8l5 23 6-18h7l6 18 5-23h8L49 47h-8l-6-17-6 17h-8z' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../playground.css"><link rel="stylesheet" href="./playground.css">
+</head>
+<body class="playground-page">
+<header class="topbar"><a class="brand" href="../"><span class="brand-mark">W</span><span>WASM Zoo</span></a><nav class="topnav"><a href="../ffmpeg-playground/">FFmpeg</a><a href="../libvips-playground/">libvips</a><a class="github-link" href="https://github.com/ttomohisa/wasm-zoo" rel="noreferrer">GitHub</a></nav></header>
+<main class="playground-main">
+  <section class="playground-hero"><div><span class="eyebrow">Ghostscript <span id="version">—</span> · Playground</span><h1>PDF and PostScript, processed locally.</h1><p>Run the published upstream <code>gs</code> CLI against local PDF or PostScript files. Each command gets its own Worker and in-memory filesystem.</p></div><div class="runtime-state"><span>Runtime</span><strong id="runtime-status" data-state="working">Loading catalog…</strong><small>Single-threaded WebAssembly. SharedArrayBuffer is not required.</small></div></section>
+  <section class="playground-grid">
+    <div class="playground-panel controls-panel"><div class="panel-heading"><div><span class="eyebrow">01 · Core</span><h2>Ghostscript browser-full</h2></div><span id="core-status" class="core-status">Not loaded</span></div><div id="manifest-summary" class="manifest-summary"><span>Loading release manifest…</span></div><button id="load-core" class="primary-button" type="button">Load Ghostscript</button><p class="panel-note">The published Wasm binary is AGPL-3.0-or-later. CUPS, GTK/X11, fontconfig and other desktop integrations are intentionally not part of this browser profile.</p></div>
+    <div class="playground-panel command-panel"><div class="panel-heading"><div><span class="eyebrow">02 · Command</span><h2>Choose a conversion</h2></div></div>
+      <div class="preset-row"><button type="button" data-preset="render">PDF → PNG</button><button type="button" data-preset="optimize">PDF optimize</button><button type="button" data-preset="pspdf">PS → PDF</button><button type="button" data-preset="version">Version</button></div>
+      <label>Local file<input id="input-file" type="file" accept="application/pdf,.pdf,.ps,application/postscript"></label>
+      <label>CLI arguments <span class="label-hint"><code>{input}</code> and <code>{output}</code> are substituted automatically.</span><textarea id="args" rows="7" spellcheck="false">--version</textarea></label>
+      <label>Output path<input id="output-name" type="text" value="/out/page.png" spellcheck="false"></label>
+      <button id="run" class="primary-button run-button" type="button">Run command</button><div id="download-area" class="download-area"></div>
+    </div>
+  </section>
+  <section class="log-panel"><div class="panel-heading"><div><span class="eyebrow">03 · Output</span><h2>Ghostscript log</h2></div><span class="local-badge">Local browser execution</span></div><div id="preview" class="gs-preview"></div><div id="log" class="log-output" aria-live="polite"><div class="log-line info">Choose a preset or enter ordinary Ghostscript CLI arguments.</div></div></section>
+  <section class="playground-notes"><div><strong>PDF + PostScript</strong><span>The first Zoo profile keeps Ghostscript's two core document languages.</span></div><div><strong>MEMFS</strong><span>Local files are copied into browser memory for each command and returned as output bytes.</span></div><div><strong>AGPL</strong><span>Redistribution of the Ghostscript binary has stronger source/license obligations than the MIT Zoo glue.</span></div></section>
+</main>
+<footer><p><strong>WASM Zoo</strong> · Ghostscript Playground</p><p><a href="../">Back to catalog</a></p></footer>
+<script src="./app.js" type="module"></script>
+</body></html>

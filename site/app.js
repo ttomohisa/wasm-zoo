@@ -231,7 +231,7 @@ try {
   document.querySelector('#stat-profiles').textContent = catalog.stats.profiles;
   document.querySelector('#generated-at').textContent = `Catalog v${catalog.project.version}${upstreamStatus.generatedAt ? ` · upstream verified ${verifiedText()}` : ''}`;
   document.querySelector('#hero-zoo-version').textContent = catalog.project.version || '—';
-  for (const slug of ['ffmpeg', 'libarchive', 'imagemagick', 'libvips']) {
+  for (const slug of ['ffmpeg', 'libarchive', 'imagemagick', 'libvips', 'ghostscript']) {
     const item = catalog.packages.find((pkg) => pkg.slug === slug);
     if (!item) continue;
     const hero = document.querySelector(`#hero-${slug}-version`);
