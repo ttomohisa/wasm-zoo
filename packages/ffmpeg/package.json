@@ -88,6 +88,20 @@
       "playgroundPath": "./playground/"
     }
   ],
+  "integration": {
+    "summary": "Download one FFmpeg profile ZIP, extract it under your app, and point the thin runtime wrapper at the matching core files.",
+    "files": [
+      "browser-ffmpeg.js",
+      "ffmpeg-core.js",
+      "ffmpeg-core.wasm"
+    ],
+    "example": "<script src=\"/vendor/ffmpeg/browser-ffmpeg.js\"></script>\n<script type=\"module\">\nasync function remuxMp4(file) {\n  const ffmpeg = await WasmZooFFmpeg.loadHosted({\n    coreJsUrl: \"/vendor/ffmpeg/ffmpeg-core.js\",\n    wasmUrl: \"/vendor/ffmpeg/ffmpeg-core.wasm\"\n  });\n\n  try {\n    const result = await ffmpeg.exec(\n      [\"-i\", \"/input.mp4\", \"-c\", \"copy\", \"/output.mp4\"],\n      {\n        files: [{ name: \"/input.mp4\", data: file }],\n        outputs: [\"/output.mp4\"],\n        onLog: ({ stream, message }) => console.log(stream, message)\n      }\n    );\n    return result.files[0].data;\n  } finally {\n    ffmpeg.dispose();\n  }\n}\n</script>",
+    "notes": [
+      "Both full profiles require SharedArrayBuffer and cross-origin isolation (COOP/COEP).",
+      "browser-full and browser-full-gpl use the same wrapper API and filenames; choose the GPL build only when you need its extra GPL components such as libx264.",
+      "Input and output paths are Emscripten MEMFS paths for each command."
+    ]
+  },
   "comparison": [
     {
       "name": "Upstream native",

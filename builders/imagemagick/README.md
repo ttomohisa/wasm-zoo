@@ -28,7 +28,7 @@ The initial profile is intentionally conservative:
 
 ### WebAssembly function-pointer compatibility
 
-`browser-full` keeps ImageMagick itself single-threaded. The final `magick` link uses Emscripten `-sEMULATE_FUNCTION_POINTER_CASTS=1` with a final-link optimization level of `-O1` and a 4 MiB WebAssembly stack. Emscripten 6.0.6 crashed in Binaryen when the same fpcast emulation was combined with the O2+ optimizer pipeline; `-O1` still runs fpcast emulation while avoiding that pipeline. Source compilation remains `-O3`.
+`browser-full` keeps ImageMagick itself single-threaded. The final `magick` link uses Emscripten `-sEMULATE_FUNCTION_POINTER_CASTS=1` with a final-link optimization level of `-O1` and a 4 MiB WebAssembly stack. Emscripten 6.0.6 crashed in Binaryen when the same fpcast emulation was combined with the O2+ optimizer pipeline; `-O1` still runs fpcast emulation while avoiding that pipeline. Source compilation remains `-O3`. Emscripten assertions are not forced in release builds.
 
 ### Browser zero-configuration pixel-cache patch
 

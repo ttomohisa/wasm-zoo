@@ -32,6 +32,17 @@
         "checksumsAsset": { "type": "string", "minLength": 1 }
       }
     },
+    "integration": {
+      "type": "object",
+      "required": ["summary", "files", "example"],
+      "properties": {
+        "summary": { "type": "string", "minLength": 1 },
+        "files": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+        "example": { "type": "string", "minLength": 1 },
+        "notes": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      },
+      "additionalProperties": false
+    },
     "comparison": { "type": "array" },
     "notes": { "type": "array", "items": { "type": "string" } }
   },

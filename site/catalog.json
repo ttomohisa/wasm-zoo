@@ -102,6 +102,20 @@
           "playgroundPath": "./playground/"
         }
       ],
+      "integration": {
+        "summary": "Download one FFmpeg profile ZIP, extract it under your app, and point the thin runtime wrapper at the matching core files.",
+        "files": [
+          "browser-ffmpeg.js",
+          "ffmpeg-core.js",
+          "ffmpeg-core.wasm"
+        ],
+        "example": "<script src=\"/vendor/ffmpeg/browser-ffmpeg.js\"></script>\n<script type=\"module\">\nasync function remuxMp4(file) {\n  const ffmpeg = await WasmZooFFmpeg.loadHosted({\n    coreJsUrl: \"/vendor/ffmpeg/ffmpeg-core.js\",\n    wasmUrl: \"/vendor/ffmpeg/ffmpeg-core.wasm\"\n  });\n\n  try {\n    const result = await ffmpeg.exec(\n      [\"-i\", \"/input.mp4\", \"-c\", \"copy\", \"/output.mp4\"],\n      {\n        files: [{ name: \"/input.mp4\", data: file }],\n        outputs: [\"/output.mp4\"],\n        onLog: ({ stream, message }) => console.log(stream, message)\n      }\n    );\n    return result.files[0].data;\n  } finally {\n    ffmpeg.dispose();\n  }\n}\n</script>",
+        "notes": [
+          "Both full profiles require SharedArrayBuffer and cross-origin isolation (COOP/COEP).",
+          "browser-full and browser-full-gpl use the same wrapper API and filenames; choose the GPL build only when you need its extra GPL components such as libx264.",
+          "Input and output paths are Emscripten MEMFS paths for each command."
+        ]
+      },
       "comparison": [
         {
           "name": "Upstream native",
@@ -255,6 +269,20 @@
           "playgroundPath": "./imagemagick-playground/"
         }
       ],
+      "integration": {
+        "summary": "Self-host the ImageMagick release files and use the wrapper to run ordinary magick CLI arguments against in-memory files.",
+        "files": [
+          "browser-imagemagick.js",
+          "magick-core.js",
+          "magick-core.wasm"
+        ],
+        "example": "<script src=\"/vendor/imagemagick/browser-imagemagick.js\"></script>\n<script type=\"module\">\nasync function resizeToJpeg(file) {\n  const magick = WasmZooImageMagick.loadHosted({\n    baseUrl: \"/vendor/imagemagick/\"\n  });\n\n  try {\n    const result = await magick.exec(\n      [\"/input.png\", \"-resize\", \"640x640>\", \"/out/output.jpg\"],\n      {\n        files: [{ name: \"/input.png\", data: file }],\n        dirs: [\"/out\"],\n        outputs: [\"/out/output.jpg\"]\n      }\n    );\n    return result.files[0].data;\n  } finally {\n    magick.dispose();\n  }\n}\n</script>",
+        "notes": [
+          "No SharedArrayBuffer or cross-origin isolation is required for browser-full.",
+          "v0.4.0 intentionally focuses on PNG/JPEG conversion, identify and basic image transforms; unsupported delegates remain documented in the package notes.",
+          "Input and output paths are MEMFS paths and the returned file data is a Uint8Array."
+        ]
+      },
       "comparison": [
         {
           "name": "Upstream native",
@@ -349,6 +377,20 @@
           "playgroundPath": "./libarchive-playground/"
         }
       ],
+      "integration": {
+        "summary": "Self-host the runtime wrapper plus the core pair for each libarchive CLI you use. This example extracts a ZIP with bsdtar.",
+        "files": [
+          "browser-libarchive.js",
+          "bsdtar-core.js",
+          "bsdtar-core.wasm"
+        ],
+        "example": "<script src=\"/vendor/libarchive/browser-libarchive.js\"></script>\n<script type=\"module\">\nasync function extractZip(file) {\n  const archive = WasmZooLibarchive.loadHosted({\n    baseUrl: \"/vendor/libarchive/\"\n  });\n\n  try {\n    const result = await archive.exec(\n      \"bsdtar\",\n      [\"-xf\", \"/input.zip\", \"-C\", \"/out\"],\n      {\n        files: [{ name: \"/input.zip\", data: file }],\n        dirs: [\"/out\"],\n        collectDirs: [\"/out\"]\n      }\n    );\n    return result.files;\n  } finally {\n    archive.dispose();\n  }\n}\n</script>",
+        "notes": [
+          "No SharedArrayBuffer or cross-origin isolation is required for the browser-full profile.",
+          "For bsdcpio, bsdcat or bsdunzip, also host the matching <tool>-core.js and <tool>-core.wasm pair.",
+          "Extracted files are returned from MEMFS as Uint8Array data."
+        ]
+      },
       "comparison": [
         {
           "name": "Upstream native",

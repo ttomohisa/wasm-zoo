@@ -62,6 +62,20 @@
       "playgroundPath": "./libarchive-playground/"
     }
   ],
+  "integration": {
+    "summary": "Self-host the runtime wrapper plus the core pair for each libarchive CLI you use. This example extracts a ZIP with bsdtar.",
+    "files": [
+      "browser-libarchive.js",
+      "bsdtar-core.js",
+      "bsdtar-core.wasm"
+    ],
+    "example": "<script src=\"/vendor/libarchive/browser-libarchive.js\"></script>\n<script type=\"module\">\nasync function extractZip(file) {\n  const archive = WasmZooLibarchive.loadHosted({\n    baseUrl: \"/vendor/libarchive/\"\n  });\n\n  try {\n    const result = await archive.exec(\n      \"bsdtar\",\n      [\"-xf\", \"/input.zip\", \"-C\", \"/out\"],\n      {\n        files: [{ name: \"/input.zip\", data: file }],\n        dirs: [\"/out\"],\n        collectDirs: [\"/out\"]\n      }\n    );\n    return result.files;\n  } finally {\n    archive.dispose();\n  }\n}\n</script>",
+    "notes": [
+      "No SharedArrayBuffer or cross-origin isolation is required for the browser-full profile.",
+      "For bsdcpio, bsdcat or bsdunzip, also host the matching <tool>-core.js and <tool>-core.wasm pair.",
+      "Extracted files are returned from MEMFS as Uint8Array data."
+    ]
+  },
   "comparison": [
     {
       "name": "Upstream native",

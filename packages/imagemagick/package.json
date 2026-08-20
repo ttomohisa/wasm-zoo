@@ -64,6 +64,20 @@
       "playgroundPath": "./imagemagick-playground/"
     }
   ],
+  "integration": {
+    "summary": "Self-host the ImageMagick release files and use the wrapper to run ordinary magick CLI arguments against in-memory files.",
+    "files": [
+      "browser-imagemagick.js",
+      "magick-core.js",
+      "magick-core.wasm"
+    ],
+    "example": "<script src=\"/vendor/imagemagick/browser-imagemagick.js\"></script>\n<script type=\"module\">\nasync function resizeToJpeg(file) {\n  const magick = WasmZooImageMagick.loadHosted({\n    baseUrl: \"/vendor/imagemagick/\"\n  });\n\n  try {\n    const result = await magick.exec(\n      [\"/input.png\", \"-resize\", \"640x640>\", \"/out/output.jpg\"],\n      {\n        files: [{ name: \"/input.png\", data: file }],\n        dirs: [\"/out\"],\n        outputs: [\"/out/output.jpg\"]\n      }\n    );\n    return result.files[0].data;\n  } finally {\n    magick.dispose();\n  }\n}\n</script>",
+    "notes": [
+      "No SharedArrayBuffer or cross-origin isolation is required for browser-full.",
+      "v0.4.0 intentionally focuses on PNG/JPEG conversion, identify and basic image transforms; unsupported delegates remain documented in the package notes.",
+      "Input and output paths are MEMFS paths and the returned file data is a Uint8Array."
+    ]
+  },
   "comparison": [
     {
       "name": "Upstream native",

@@ -69,15 +69,68 @@ function releaseButtons(pkg, profile) {
   return `<div class="profile-actions">${asset ? `<a class="detail-action" href="${esc(asset)}">Download ZIP</a>` : ''}${playground}</div>`;
 }
 
+function integrationSection(pkg) {
+  const integration = pkg.integration;
+  if (!integration) return '';
+  const files = Array.isArray(integration.files) && integration.files.length
+    ? `<div class="integration-files"><span>Host these files</span><div>${integration.files.map((file) => `<code>${esc(file)}</code>`).join('')}</div></div>`
+    : '';
+  const notes = Array.isArray(integration.notes) && integration.notes.length
+    ? `<ul class="integration-notes">${integration.notes.map((note) => `<li>${esc(note)}</li>`).join('')}</ul>`
+    : '';
+  return `<div class="detail-section integration-section">
+    <div class="integration-title"><div><span class="eyebrow">Integration</span><h3>Use in your app</h3></div><span class="integration-badge">Copy · self-host · run</span></div>
+    <p class="integration-summary">${esc(integration.summary)}</p>
+    ${files}
+    <div class="integration-code">
+      <div class="integration-code-head"><span>Minimal example</span><button type="button" data-copy-code>Copy</button></div>
+      <pre><code>${esc(integration.example)}</code></pre>
+    </div>
+    ${notes}
+  </div>`;
+}
+
+function wireIntegrationActions() {
+  dialogContent.querySelectorAll('[data-copy-code]').forEach((button) => button.addEventListener('click', async () => {
+    const code = button.closest('.integration-code')?.querySelector('code')?.textContent || '';
+    if (!code) return;
+    const original = button.textContent;
+    try {
+      if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(code);
+      else {
+        const textarea = document.createElement('textarea');
+        textarea.value = code;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.append(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        textarea.remove();
+      }
+      button.textContent = 'Copied';
+      button.dataset.copied = 'true';
+    } catch {
+      button.textContent = 'Select code';
+    }
+    setTimeout(() => {
+      button.textContent = original;
+      delete button.dataset.copied;
+    }, 1600);
+  }));
+}
+
 function openPackage(slug) {
   const pkg = catalog.packages.find((item) => item.slug === slug);
   if (!pkg) return;
   const comparison = pkg.comparison.length ? `<div class="detail-section"><h3>Version comparison</h3><table class="comparison"><thead><tr><th>Distribution</th><th>Version</th><th>Notes</th></tr></thead><tbody>${pkg.comparison.map((row) => `<tr><td><strong>${esc(row.name)}</strong></td><td><code>${esc(row.version)}</code></td><td>${esc(row.note)}</td></tr>`).join('')}</tbody></table></div>` : '';
   const matrix = pkg.capabilityMatrix?.length ? `<div class="detail-section"><h3>Native → WASM capability gap</h3><div class="table-scroll"><table class="comparison capability"><thead><tr><th>Capability</th><th>Native</th><th>Full</th><th>Full GPL</th></tr></thead><tbody>${pkg.capabilityMatrix.map((row) => `<tr><td><strong>${esc(row.feature)}</strong></td><td>${mark(row.native)}</td><td>${mark(row.browserFull)}</td><td>${mark(row.browserFullGpl)}</td></tr>`).join('')}</tbody></table></div></div>` : '';
   const profiles = pkg.profiles.length ? `<div class="detail-section"><h3>Published builds</h3>${pkg.profiles.map((profile) => `<div class="profile-detail"><div class="profile-detail-head"><div><h4>${esc(profile.label)}</h4><div>${esc(profile.output)}</div></div>${profileSize(profile) ? `<strong class="profile-size">${esc(profileSize(profile))}</strong>` : ''}</div><div class="profile-meta">${boolPill('threads', profile.threads)}${boolPill('SIMD', profile.simd)}${boolPill('SharedArrayBuffer', profile.sharedArrayBuffer)}${boolPill('Worker', profile.worker)}${boolPill('network', profile.network)}${boolPill('arbitrary CLI', profile.arbitraryCli)}</div><div class="feature-list">${profile.features.map((feature) => `<span>${esc(feature)}</span>`).join('')}</div><div class="feature-list"><span>license: ${esc(profile.binaryLicense)}</span><span>target: ${esc(profile.target)}</span></div>${releaseButtons(pkg, profile)}</div>`).join('')}</div>` : `<div class="detail-section"><h3>Build status</h3><p>This package is being tracked, but WASM Zoo does not publish a binary for it yet.</p></div>`;
+  const integration = integrationSection(pkg);
   const notes = pkg.notes?.length ? `<div class="detail-section"><h3>Notes</h3><ul class="notes">${pkg.notes.map((note) => `<li>${esc(note)}</li>`).join('')}</ul></div>` : '';
   const release = pkg.release ? `<div class="detail-section release-links"><h3>Release</h3><div class="profile-actions"><a class="detail-action" href="${esc(pkg.release.page)}">Release ${esc(pkg.release.tag)}</a>${pkg.release.sourceAsset ? `<a class="detail-action secondary" href="${esc(releaseUrl(pkg, pkg.release.sourceAsset))}">Corresponding source</a>` : ''}${pkg.release.checksumsAsset ? `<a class="detail-action secondary" href="${esc(releaseUrl(pkg, pkg.release.checksumsAsset))}">SHA-256</a>` : ''}</div></div>` : '';
-  dialogContent.innerHTML = `<div class="dialog-title"><span class="eyebrow">${esc(statusLabel(pkg.status))} · ${esc(pkg.category)}</span><h2>${esc(pkg.name)}</h2><p>${esc(pkg.summary)}</p></div><div class="version-table"><span>Upstream pin</span><strong>${displayVersion(pkg.upstream.version)}</strong><span>Zoo builder</span><strong>${displayVersion(pkg.zoo.builderVersion, 'Not published')}</strong><span>Upstream license</span><strong>${esc(pkg.upstream.license)}</strong></div>${release}${comparison}${matrix}${profiles}${notes}`;
+  dialogContent.innerHTML = `<div class="dialog-title"><span class="eyebrow">${esc(statusLabel(pkg.status))} · ${esc(pkg.category)}</span><h2>${esc(pkg.name)}</h2><p>${esc(pkg.summary)}</p></div><div class="version-table"><span>Upstream pin</span><strong>${displayVersion(pkg.upstream.version)}</strong><span>Zoo builder</span><strong>${displayVersion(pkg.zoo.builderVersion, 'Not published')}</strong><span>Upstream license</span><strong>${esc(pkg.upstream.license)}</strong></div>${release}${comparison}${matrix}${profiles}${integration}${notes}`;
+  wireIntegrationActions();
   dialog.showModal();
 }
 

@@ -40,7 +40,7 @@ need(!build.includes('-pthread'),'ImageMagick browser-full must not compile or l
 need(!build.includes('libpng-mt'),'ImageMagick browser-full must use Emscripten standard libpng, not libpng-mt');
 need(build.includes('\"threads\": false'),'manifest must record a single-threaded runtime');
 need(build.includes('\"sharedArrayBuffer\": false'),'manifest must record that SharedArrayBuffer is not required');
-need(build.includes('-sEMULATE_FUNCTION_POINTER_CASTS=1'),'ImageMagick diagnostic link must enable function-pointer cast emulation');
+need(build.includes('-sEMULATE_FUNCTION_POINTER_CASTS=1'),'ImageMagick final link must enable function-pointer cast emulation');
 need(build.includes('-sSTACK_SIZE=4194304'),'ImageMagick final Wasm link must reserve a 4 MiB stack');
 need(!build.includes('-sASSERTIONS='),'ImageMagick release link must not force Emscripten ASSERTIONS');
 const runtime=read('runtime/browser-imagemagick.js');

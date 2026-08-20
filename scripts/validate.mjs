@@ -33,6 +33,10 @@ for (const pkg of packages) {
     assert(Boolean(pkg.upstream.version), `${at}: available package needs upstream.version`);
     assert(Boolean(pkg.zoo?.builderVersion), `${at}: available package needs zoo.builderVersion`);
     assert(pkg.profiles.length > 0, `${at}: available package needs at least one profile`);
+    assert(typeof pkg.integration?.summary === "string" && pkg.integration.summary.length > 0, `${at}: available package needs integration.summary`);
+    assert(Array.isArray(pkg.integration?.files) && pkg.integration.files.length > 0 && pkg.integration.files.every((file) => typeof file === "string" && file.length > 0), `${at}: available package needs integration.files`);
+    assert(typeof pkg.integration?.example === "string" && pkg.integration.example.length > 0, `${at}: available package needs integration.example`);
+    if (pkg.integration?.notes !== undefined) assert(Array.isArray(pkg.integration.notes) && pkg.integration.notes.every((note) => typeof note === "string" && note.length > 0), `${at}: integration.notes must be a string array`);
     if (pkg.release) {
       assert(typeof pkg.release.tag === "string" && pkg.release.tag.length > 0, `${at}: release.tag is required when release metadata is present`);
       assert(isHttps(pkg.release.page), `${at}: release.page must use https`);
@@ -72,6 +76,8 @@ if (ffmpeg) {
   const expectedSource = `ffmpeg-sources-${ffmpeg.upstream.version}-zoo-${ffmpeg.zoo.builderVersion}.tar.gz`;
   assert(ffmpeg.release?.sourceAsset === expectedSource, `FFmpeg release.sourceAsset must be ${expectedSource}`);
   assert(ffmpeg.release?.checksumsAsset === "SHA256SUMS.txt", "FFmpeg release.checksumsAsset must be SHA256SUMS.txt");
+  assert(ffmpeg.integration?.example?.includes("WasmZooFFmpeg.loadHosted"), "FFmpeg integration example must use the public runtime wrapper");
+  assert(ffmpeg.integration?.example?.includes("ffmpeg.dispose()"), "FFmpeg integration example must dispose the runner");
 }
 
 const libarchive = packages.find((pkg) => pkg.slug === "libarchive");
@@ -93,6 +99,8 @@ if (libarchive) {
   assert(libarchive.profiles[0]?.releaseAsset === expectedAsset, `libarchive browser-full releaseAsset must be ${expectedAsset}`);
   const expectedSource = `libarchive-sources-${libarchive.upstream.version}-zoo-${libarchive.zoo.builderVersion}.tar.gz`;
   assert(libarchive.release?.sourceAsset === expectedSource, `libarchive release.sourceAsset must be ${expectedSource}`);
+  assert(libarchive.integration?.example?.includes("WasmZooLibarchive.loadHosted"), "libarchive integration example must use the public runtime wrapper");
+  assert(libarchive.integration?.example?.includes("archive.dispose()"), "libarchive integration example must dispose the runner");
 }
 
 
@@ -114,6 +122,8 @@ if (imagemagick) {
   assert(imagemagick.profiles[0]?.releaseAsset === expectedAsset, `ImageMagick browser-full releaseAsset must be ${expectedAsset}`);
   const expectedSource = `imagemagick-sources-${imagemagick.upstream.version}-zoo-${imagemagick.zoo.builderVersion}.tar.gz`;
   assert(imagemagick.release?.sourceAsset === expectedSource, `ImageMagick release.sourceAsset must be ${expectedSource}`);
+  assert(imagemagick.integration?.example?.includes("WasmZooImageMagick.loadHosted"), "ImageMagick integration example must use the public runtime wrapper");
+  assert(imagemagick.integration?.example?.includes("magick.dispose()"), "ImageMagick integration example must dispose the runner");
 }
 
 const requiredSiteFiles = [
@@ -156,6 +166,8 @@ try {
   assert(runtime.includes('self.addEventListener("error"'), "FFmpeg runtime wrapper must surface asynchronous pthread worker errors");
   const imageRuntime = await fs.readFile(path.join(root, "builders/imagemagick/runtime/browser-imagemagick.js"), "utf8");
   assert(!imageRuntime.includes("mainScriptUrlOrBlob") && !imageRuntime.includes("SharedArrayBuffer"), "ImageMagick runtime must stay single-threaded and must not require pthread bootstrap/SAB support");
+  const siteApp = await fs.readFile(path.join(root, "site/app.js"), "utf8");
+  assert(siteApp.includes("Use in your app") && siteApp.includes("data-copy-code"), "Package details must render integration guidance with copyable examples");
   const readme = await fs.readFile(path.join(root, "README.md"), "utf8");
   assert(!readme.includes('ffmpeg-v0.2.6 -m "WASM Zoo FFmpeg v0.2.5"'), "README release tag example has a stale v0.2.5 message");
 } catch (error) {
