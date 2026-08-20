@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="Run libvips 8.18.5 directly in your browser."><meta name="theme-color" content="#f7f7f4">
+  <title>libvips Playground · WASM Zoo</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23171714'/%3E%3Cpath d='M13 18h8l5 23 6-18h7l6 18 5-23h8L49 47h-8l-6-17-6 17h-8z' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../playground.css"><link rel="stylesheet" href="./playground.css">
+</head>
+<body class="playground-page">
+<header class="topbar"><a class="brand" href="../"><span class="brand-mark">W</span><span>WASM Zoo</span></a><nav class="topnav"><a href="../imagemagick-playground/">ImageMagick</a><a class="github-link" href="https://github.com/ttomohisa/wasm-zoo" rel="noreferrer">GitHub</a></nav></header>
+<main class="playground-main">
+  <section class="playground-hero"><div><span class="eyebrow">libvips <span id="version">—</span> · Playground</span><h1>Fast image pipelines, running locally in your browser.</h1><p>The published libvips core is loaded from the WASM Zoo release and operates directly on local image buffers. Files are not uploaded to an application server.</p></div><div class="runtime-state"><span>Runtime</span><strong id="isolation-status" data-state="working">Checking cross-origin isolation…</strong><small>libvips uses pthreads and WebAssembly SIMD, so SharedArrayBuffer and cross-origin isolation are required.</small></div></section>
+  <section class="playground-grid">
+    <div class="playground-panel controls-panel"><div class="panel-heading"><div><span class="eyebrow">01 · Core</span><h2>Load libvips</h2></div><span id="core-status" class="core-status">Not loaded</span></div><label>Profile<select id="profile-select"><option value="browser-core" selected>Browser Core · JPEG / PNG / WebP</option><option value="browser-full">Browser Full · + TIFF / GIF</option></select></label><div id="manifest-summary" class="manifest-summary"><span>Loading release manifest…</span></div><div id="profile-comparison" class="manifest-summary"><span>Comparing profile sizes…</span></div><button id="load-core" class="primary-button" type="button">Load libvips core</button><p class="panel-note"><strong>Browser Core</strong> is the recommended small profile. Browser Full keeps TIFF/GIF/imagequant. Both use the same libvips API and require cross-origin isolation.</p></div>
+    <div class="playground-panel command-panel"><div class="panel-heading"><div><span class="eyebrow">02 · Pipeline</span><h2>Process an image</h2></div></div>
+      <label>Local image<input id="input-file" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"></label>
+      <label>Operation<select id="operation"><option value="info">Inspect only</option><option value="resize" selected>Resize</option><option value="grayscale">Grayscale</option><option value="convert">Convert only</option></select></label>
+      <div class="two-fields"><label>Target width<input id="target-width" type="number" value="640" min="1" max="16384"></label><label>Output format<select id="format"><option value="jpg">JPEG</option><option value="png">PNG</option><option value="webp">WebP</option></select></label></div>
+      <button id="run" class="primary-button run-button" type="button">Run pipeline</button><div id="download-area" class="download-area"></div>
+    </div>
+  </section>
+  <section class="log-panel"><div class="panel-heading"><div><span class="eyebrow">03 · Output</span><h2>Pipeline log</h2></div><span class="local-badge">Local browser execution</span></div><div id="log" class="log-output" aria-live="polite"><div class="log-line info">Choose an image and run a pipeline.</div></div></section>
+  <section class="playground-notes"><div><strong>Demand-driven</strong><span>libvips builds a pipeline and evaluates pixels when output is requested.</span></div><div><strong>Threaded</strong><span>The browser build retains libvips pthread execution and SIMD.</span></div><div><strong>Library API</strong><span>This package exposes libvips operations directly instead of emulating a desktop CLI.</span></div></section>
+</main><footer><p><strong>WASM Zoo</strong> · libvips Playground</p><p><a href="../">Back to catalog</a></p></footer>
+<script src="../playground/coi-bootstrap.js" type="module"></script><script src="./app.js" type="module"></script>
+</body></html>

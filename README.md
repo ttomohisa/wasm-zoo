@@ -5,6 +5,7 @@
 [![libarchive build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libarchive.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libarchive.yml)
 [![Pages](https://github.com/ttomohisa/wasm-zoo/actions/workflows/pages.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/pages.yml)
 [![ImageMagick build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-imagemagick.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-imagemagick.yml)
+[![libvips build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libvips.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libvips.yml)
 
 **Current upstream software, compiled for WebAssembly.**
 
@@ -14,6 +15,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 - FFmpeg Playground: https://ttomohisa.github.io/wasm-zoo/ffmpeg-playground/
 - libarchive Playground: https://ttomohisa.github.io/wasm-zoo/libarchive-playground/
 - ImageMagick Playground: https://ttomohisa.github.io/wasm-zoo/imagemagick-playground/
+- libvips Playground: https://ttomohisa.github.io/wasm-zoo/libvips-playground/
 
 ## Available packages
 
@@ -22,8 +24,9 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 | FFmpeg | 9.0.1 | 0.2.6 | `browser-full`, `browser-full-gpl` | yes |
 | libarchive | 3.8.9 | 0.3.0 | `browser-full` | yes |
 | ImageMagick | 7.1.2-29 | 0.4.0 | `browser-full` | yes |
+| libvips | 8.18.5 | 0.5.0 | `browser-core`, `browser-full` | yes |
 
-The project version is **WASM Zoo v0.4.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+The project version is **WASM Zoo v0.5.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
 ## What a Zoo package contains
 
@@ -134,7 +137,7 @@ Each command gets an in-memory filesystem. Files returned from `collectDirs` can
 
 Pages stages immutable binary cores from the matching GitHub Release rather than rebuilding them specifically for the demo. Thin JavaScript integration wrappers are taken from `main`, allowing Playground integration fixes without silently changing the published Wasm binary.
 
-FFmpeg's pthread build needs cross-origin isolation, so the Pages-root Service Worker supplies COOP/COEP to its page and worker clients. libarchive's v0.3.0 profile is single-threaded and does not depend on that mechanism.
+FFmpeg and libvips use pthreads and need cross-origin isolation, so the Pages-root Service Worker supplies COOP/COEP to their page and worker clients. libarchive and the current ImageMagick profile are single-threaded and do not depend on that mechanism.
 
 In the libarchive Playground, List/Extract expects an archive input, while Create TAR accepts arbitrary local files and packages them into a TAR in memory.
 
@@ -144,12 +147,14 @@ In the libarchive Playground, List/Extract expects an archive input, while Creat
 start-local.bat
 ```
 
-This regenerates the catalog, stages any locally built FFmpeg/libarchive artifacts under ignored `site/assets/`, and serves:
+This regenerates the catalog, stages any locally built FFmpeg/libarchive/ImageMagick/libvips artifacts under ignored `site/assets/`, and serves:
 
 ```text
 http://localhost:4173/
 http://localhost:4173/ffmpeg-playground/
 http://localhost:4173/libarchive-playground/
+http://localhost:4173/imagemagick-playground/
+http://localhost:4173/libvips-playground/
 ```
 
 The catalog still works when no local Wasm build has been staged.
@@ -225,12 +230,63 @@ const result = await image.exec([
 });
 ```
 
+## libvips 8.18.5
+
+WASM Zoo v0.5.0 adds libvips as the fourth available package. Unlike FFmpeg, libarchive and ImageMagick, libvips is published as a **library API** rather than a synthetic command-line wrapper.
+
+Both profiles use the pinned `wasm-vips` browser adapter while keeping libvips itself at the exact upstream `v8.18.5` release. **`browser-core` is the recommended small profile** for Browser-Kitty-style work: JPEG/PNG/WebP plus the normal resize, thumbnail, colourspace, composite and convolution APIs. It removes TIFF, GIF, imagequant/quantizr and legacy PPM/Analyze/Radiance loaders. `browser-full` keeps JPEG/PNG/WebP/TIFF/GIF and imagequant. AVIF/HEIC, JPEG XL, SVG/resvg and UltraHDR remain disabled in both profiles.
+
+libvips retains its pthread + WebAssembly SIMD execution model. Therefore both browser profiles require **SharedArrayBuffer and cross-origin isolation (COOP/COEP)**.
+
+The Chromium smoke test performs a real PNG decode, verifies the libvips version, resizes 2×2 → 1×1 and encodes the result as both JPEG and WebP. When both profiles have been built, `builders/libvips/dist/size-comparison.md` and `.json` record the raw/gzip size difference automatically.
+
+Build just the recommended core profile on Windows:
+
+```text
+build-libvips.bat browser-core
+```
+
+Build both profiles and print the size comparison:
+
+```text
+build-libvips.bat all
+```
+
+Linux/macOS:
+
+```text
+./builders/libvips/build.sh browser-core
+./builders/libvips/build.sh all
+```
+
+Release tag after the real build passes:
+
+```text
+git tag -a libvips-v0.5.0 -m "WASM Zoo libvips v0.5.0"
+git push origin libvips-v0.5.0
+```
+
+### libvips browser API
+
+```js
+const vips = await WasmZooLibvips.loadHosted({
+  baseUrl: "/assets/libvips/8.18.5/browser-core/"
+});
+
+const input = vips.Image.newFromBuffer(new Uint8Array(await file.arrayBuffer()));
+const resized = input.resize(640 / input.width);
+const jpeg = resized.writeToBuffer(".jpg[Q=85]");
+resized.delete();
+input.delete();
+```
+
+The release workflow rebuilds both profiles, runs the Chromium smoke tests, publishes both binary archives plus the profile size comparison/source/checksum assets, then refreshes the libvips Playground through Pages.
+
 ## Tracked next candidates
 
-- libvips
 - Ghostscript
 
-They remain `planned` until a reproducible artifact passes a meaningful runtime test.
+It remains `planned` until a reproducible artifact passes a meaningful runtime test.
 
 ## Repository layout
 
@@ -238,6 +294,8 @@ They remain `planned` until a reproducible artifact passes a meaningful runtime 
 packages/                   catalog + release metadata
 builders/ffmpeg/            FFmpeg build pipeline
 builders/libarchive/        libarchive build pipeline
+builders/imagemagick/       ImageMagick build pipeline
+builders/libvips/           libvips build pipeline
 scripts/                    catalog/upstream/local staging tooling
 site/                       catalog + package Playgrounds
 docs/                       manifest/package contracts

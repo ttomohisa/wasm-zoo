@@ -1,0 +1,70 @@
+name: Build libvips browser WASM
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "builders/libvips/**"
+      - "packages/libvips/**"
+      - "site/libvips-playground/**"
+      - ".github/workflows/build-libvips.yml"
+  pull_request:
+    paths:
+      - "builders/libvips/**"
+      - "packages/libvips/**"
+      - "site/libvips-playground/**"
+      - ".github/workflows/build-libvips.yml"
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 420
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Static builder checks
+        run: node builders/libvips/scripts/check-repository.mjs
+      - name: Build both libvips browser profiles and run browser smoke tests
+        shell: bash
+        working-directory: builders/libvips
+        env:
+          LIBVIPS_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh all
+      - name: Show generated manifests and size comparison
+        run: |
+          cat builders/libvips/dist/browser-core/manifest.json
+          cat builders/libvips/dist/browser-full/manifest.json
+          cat builders/libvips/dist/size-comparison.md
+      - name: Upload browser-core artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-zoo-libvips-browser-core-${{ github.sha }}
+          path: builders/libvips/dist/browser-core/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload browser-full artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-zoo-libvips-browser-full-${{ github.sha }}
+          path: builders/libvips/dist/browser-full/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload profile size comparison
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-zoo-libvips-size-comparison-${{ github.sha }}
+          path: |
+            builders/libvips/dist/size-comparison.json
+            builders/libvips/dist/size-comparison.md
+          if-no-files-found: error
+          retention-days: 30

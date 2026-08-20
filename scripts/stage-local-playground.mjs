@@ -52,5 +52,24 @@ async function stageImageMagick() {
   return 1;
 }
 
-const staged = (await stageFfmpeg()) + (await stageLibarchive()) + (await stageImageMagick());
+async function stageLibvips() {
+  const env = await readEnv(path.join(root, 'builders', 'libvips', 'versions.env'));
+  const version = env.LIBVIPS_REF.replace(/^v/, '');
+  let staged = 0;
+  for (const profile of ['browser-core', 'browser-full']) {
+    const source = path.join(root, 'builders', 'libvips', 'dist', profile);
+    const dest = path.join(root, 'site', 'assets', 'libvips', version, profile);
+    try { await fs.access(path.join(source, 'manifest.json')); } catch { console.log(`[skip] libvips ${profile}: build it first for local Playground`); continue; }
+    await fs.mkdir(dest, { recursive: true });
+    for (const name of ['vips.js', 'vips.wasm', 'vips.d.ts', 'manifest.json', 'features.json', 'versions.json']) {
+      await fs.copyFile(path.join(source, name), path.join(dest, name));
+    }
+    await fs.copyFile(path.join(root, 'builders', 'libvips', 'runtime', 'browser-libvips.js'), path.join(dest, 'browser-libvips.js'));
+    console.log(`[OK] staged libvips ${profile}`);
+    staged += 1;
+  }
+  return staged;
+}
+
+const staged = (await stageFfmpeg()) + (await stageLibarchive()) + (await stageImageMagick()) + (await stageLibvips());
 if (!staged) console.log('[info] No local release cores staged; the catalog can still be previewed.');

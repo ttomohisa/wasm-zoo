@@ -127,6 +127,39 @@ if (imagemagick) {
   assert(imagemagick.integration?.example?.includes("magick.dispose()"), "ImageMagick integration example must dispose the runner");
 }
 
+const libvips = packages.find((pkg) => pkg.slug === "libvips");
+if (libvips) {
+  const env = await readEnv(path.join(root, "builders", "libvips", "versions.env"));
+  assert(env.LIBVIPS_REF === `v${libvips.upstream.version}`, `libvips catalog version ${libvips.upstream.version} does not match LIBVIPS_REF=${env.LIBVIPS_REF}`);
+  assert(env.BUILDER_VERSION === libvips.zoo.builderVersion, `libvips builderVersion ${libvips.zoo.builderVersion} does not match versions.env ${env.BUILDER_VERSION}`);
+  assert(env.LIBVIPS_COMMIT === "7c28da9c2b8b5b8defe54f2ae92ee474c0e2d6e4", "libvips exact v8.18.5 commit pin is missing");
+  assert(env.EMSCRIPTEN_COMMIT === "4483d70a78098ed5d860dff2dc21f3025b2da2ee", "libvips exact Emscripten 6.0.7 commit pin is missing");
+  assert(env.WASM_VIPS_COMMIT === "ec8ead9f9c7cf2b08025736d76d10505984daf77", "libvips wasm-vips adapter commit pin is missing");
+  const ids = new Set(libvips.profiles.map((profile) => profile.id));
+  assert(ids.has("browser-core"), "libvips catalog must publish browser-core");
+  assert(ids.has("browser-full"), "libvips catalog must publish browser-full");
+  for (const profile of libvips.profiles) {
+    assert(profile.arbitraryCli === false, `libvips profile ${profile.id} must publish the library API rather than a synthetic CLI`);
+    assert(profile.threads === true && profile.sharedArrayBuffer === true, `libvips profile ${profile.id} must declare pthread/SAB requirements`);
+    assert(profile.simd === true, `libvips profile ${profile.id} must declare WASM SIMD`);
+    assert(profile.playground === true, `libvips profile ${profile.id} must be enabled in the Playground`);
+    assert(profile.playgroundPath === "./libvips-playground/", `libvips profile ${profile.id} must link to the libvips Playground`);
+  }
+  assert(libvips.release?.tag === `libvips-v${libvips.zoo.builderVersion}`, `libvips release tag must match builderVersion ${libvips.zoo.builderVersion}`);
+  for (const profileId of ["browser-core", "browser-full"]) {
+    const profile = libvips.profiles.find((entry) => entry.id === profileId);
+    const expectedAsset = `libvips-${profileId}-${libvips.upstream.version}-zoo-${libvips.zoo.builderVersion}.zip`;
+    assert(profile?.releaseAsset === expectedAsset, `libvips ${profileId} releaseAsset must be ${expectedAsset}`);
+  }
+  const core = libvips.profiles.find((entry) => entry.id === "browser-core");
+  assert(core?.features?.some((feature) => feature.includes("JPEG / PNG / WebP")), "libvips browser-core must declare JPEG/PNG/WebP support");
+  assert(core?.features?.some((feature) => feature.includes("TIFF / GIF") && feature.includes("removed")), "libvips browser-core must declare TIFF/GIF removal");
+  const expectedSource = `libvips-sources-${libvips.upstream.version}-zoo-${libvips.zoo.builderVersion}.tar.gz`;
+  assert(libvips.release?.sourceAsset === expectedSource, `libvips release.sourceAsset must be ${expectedSource}`);
+  assert(libvips.integration?.example?.includes("WasmZooLibvips.loadHosted"), "libvips integration example must use the public runtime loader");
+  assert(libvips.integration?.example?.includes("Image.newFromBuffer"), "libvips integration example must exercise the image library API");
+}
+
 const requiredSiteFiles = [
   "site/ffmpeg-playground/index.html",
   "site/ffmpeg-playground/app.js",
@@ -141,6 +174,9 @@ const requiredSiteFiles = [
   "site/imagemagick-playground/index.html",
   "site/imagemagick-playground/app.js",
   "site/imagemagick-playground/playground.css",
+  "site/libvips-playground/index.html",
+  "site/libvips-playground/app.js",
+  "site/libvips-playground/playground.css",
 ];
 for (const rel of requiredSiteFiles) {
   try { await fs.access(path.join(root, rel)); } catch { errors.push(`${rel} is missing`); }
@@ -166,10 +202,15 @@ try {
   assert(pages.includes("site/assets/imagemagick"), "Pages workflow must stage ImageMagick cores under site/assets/imagemagick");
   assert(pages.includes("cp builders/imagemagick/runtime/browser-imagemagick.js"), "Pages workflow must use the current ImageMagick runtime wrapper");
   assert(pages.includes('"builders/imagemagick/runtime/browser-imagemagick.js"'), "Pages workflow must redeploy when the ImageMagick runtime wrapper changes");
+  assert(pages.includes("site/assets/libvips"), "Pages workflow must stage libvips cores under site/assets/libvips");
+  assert(pages.includes("cp builders/libvips/runtime/browser-libvips.js"), "Pages workflow must use the current libvips runtime wrapper");
+  assert(pages.includes('"builders/libvips/runtime/browser-libvips.js"'), "Pages workflow must redeploy when the libvips runtime wrapper changes");
   const runtime = await fs.readFile(path.join(root, "builders/ffmpeg/runtime/browser-ffmpeg.js"), "utf8");
   assert(runtime.includes('self.addEventListener("error"'), "FFmpeg runtime wrapper must surface asynchronous pthread worker errors");
   const imageRuntime = await fs.readFile(path.join(root, "builders/imagemagick/runtime/browser-imagemagick.js"), "utf8");
   assert(!imageRuntime.includes("mainScriptUrlOrBlob") && !imageRuntime.includes("SharedArrayBuffer"), "ImageMagick runtime must stay single-threaded and must not require pthread bootstrap/SAB support");
+  const vipsRuntime = await fs.readFile(path.join(root, "builders/libvips/runtime/browser-libvips.js"), "utf8");
+  assert(vipsRuntime.includes("crossOriginIsolated") && vipsRuntime.includes("SharedArrayBuffer"), "libvips runtime must enforce cross-origin isolation for pthreads");
   const siteApp = await fs.readFile(path.join(root, "site/app.js"), "utf8");
   assert(siteApp.includes("Use in your app") && siteApp.includes("data-copy-code"), "Package details must render integration guidance with copyable examples");
   const readme = await fs.readFile(path.join(root, "README.md"), "utf8");

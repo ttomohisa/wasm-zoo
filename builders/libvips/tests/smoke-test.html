@@ -1,0 +1,32 @@
+<!doctype html><meta charset="utf-8"><title>libvips smoke</title>
+<script src="./browser-libvips.js"></script>
+<script>
+(async () => {
+  const phase = (name) => { location.hash = '#SMOKE_TEST_RUNNING_' + encodeURIComponent(name); };
+  try {
+    phase('runtime');
+    if (!crossOriginIsolated || typeof SharedArrayBuffer === 'undefined') throw new Error('cross-origin isolation missing');
+    const vips = await WasmZooLibvips.loadHosted({ baseUrl: './' });
+    if (String(vips.version()) !== '8.18.5') throw new Error('unexpected libvips version: ' + vips.version());
+    phase('png-decode');
+    const bytes = new Uint8Array(await (await fetch('./smoke-input.png')).arrayBuffer());
+    const image = vips.Image.newFromBuffer(bytes);
+    if (image.width !== 2 || image.height !== 2) throw new Error(`unexpected input size ${image.width}x${image.height}`);
+    phase('resize-jpeg');
+    const resized = image.resize(0.5);
+    if (resized.width !== 1 || resized.height !== 1) throw new Error(`unexpected resized size ${resized.width}x${resized.height}`);
+    const jpeg = resized.writeToBuffer('.jpg[Q=80]');
+    if (!jpeg || jpeg.byteLength < 20 || jpeg[0] !== 0xff || jpeg[1] !== 0xd8) throw new Error('JPEG encode failed');
+    phase('webp-encode');
+    const webp = resized.writeToBuffer('.webp[Q=80]');
+    if (!webp || webp.byteLength < 20) throw new Error('WebP encode failed');
+    const magic = String.fromCharCode(...webp.slice(0, 12));
+    if (!magic.startsWith('RIFF') || magic.slice(8, 12) !== 'WEBP') throw new Error('WebP encode signature mismatch');
+    resized.delete(); image.delete();
+    location.hash = '#SMOKE_TEST_PASS_' + encodeURIComponent('libvips 8.18.5 PNG decode + resize + JPEG/WebP encode');
+  } catch (error) {
+    console.error(error);
+    location.hash = '#SMOKE_TEST_FAIL_' + encodeURIComponent(error && error.stack || error);
+  }
+})();
+</script>

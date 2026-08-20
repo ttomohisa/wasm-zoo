@@ -2,7 +2,19 @@
 
 ## Unreleased
 
+- fix the libvips `browser-core` profile by explicitly disabling the `quantizr` fallback when `imagequant` is removed under upstream `-Dauto_features=enabled`;
+- add the `browser-core` libvips profile for JPEG/PNG/WebP, trimming TIFF/GIF/imagequant and legacy raster loaders while preserving pthreads/SIMD and the same public API;
+- add automatic raw/gzip size comparison for `browser-core` vs `browser-full`, profile selection in the Playground, and dual-profile build/release/Pages workflows;
+- fix libvips license collection to extract the upstream `LICENSE` file directly from the pinned v8.18.5 commit instead of referencing a non-existent `COPYING` path;
 - add a `Use in your app` section to every published package detail with required runtime files, a copyable minimal integration example and package-specific hosting/runtime notes;
+
+## v0.5.0
+
+- add libvips 8.18.5 as the fourth available package, exposed as a browser library API through the exact pinned wasm-vips adapter;
+- pin Emscripten 6.0.7, upstream libvips v8.18.5 and both wasm-vips compatibility patch heads to immutable commits;
+- add the `browser-full` libvips profile with pthreads, WebAssembly SIMD, SharedArrayBuffer/cross-origin-isolation requirements and a deliberately reduced optional delegate set;
+- add a Chromium smoke test covering libvips version reporting, real PNG decode, 2×2 → 1×1 resize and JPEG encode;
+- add libvips Playground, local staging, Pages release staging, build/release Actions, catalog metadata and validation.
 
 ## v0.4.0
 

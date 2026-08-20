@@ -1,0 +1,62 @@
+name: Release libvips WASM
+
+on:
+  push:
+    tags:
+      - "libvips-v*.*.*"
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 480
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Verify release tag
+        shell: bash
+        working-directory: builders/libvips
+        run: |
+          set -euo pipefail
+          source ./versions.env
+          test "${GITHUB_REF_NAME}" = "libvips-v${BUILDER_VERSION}"
+      - name: Static builder checks
+        run: node builders/libvips/scripts/check-repository.mjs
+      - name: Build and smoke-test browser-core and browser-full
+        shell: bash
+        working-directory: builders/libvips
+        env:
+          LIBVIPS_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh all
+      - name: Prepare binary, source, comparison and checksum assets
+        shell: bash
+        working-directory: builders/libvips
+        run: ./scripts/prepare-release.sh "${GITHUB_REF_NAME}"
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/libvips/versions.env
+          gh release create "${GITHUB_REF_NAME}" \
+            builders/libvips/release/* \
+            --verify-tag \
+            --title "WASM Zoo · libvips ${LIBVIPS_REF} · browser builds" \
+            --notes "Unofficial libvips browser library builds for WebAssembly. browser-core targets JPEG/PNG/WebP with a reduced delegate surface; browser-full additionally keeps TIFF/GIF/imagequant. Both profiles use the same pinned upstream API and pass real Chromium PNG decode + resize + JPEG/WebP encode smoke tests. The release includes raw/gzip size comparison, exact provenance, hashes and corresponding source/build recipes."
+      - name: Refresh Pages so the Playground stages this release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main

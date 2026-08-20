@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "slug": "libvips",
   "name": "libvips",
-  "summary": "Fast, low-memory image processing. Candidate for a current upstream vips CLI/library WebAssembly distribution.",
+  "summary": "Upstream libvips image-processing library compiled for browser WebAssembly with a pinned Emscripten adapter.",
   "category": "image",
-  "status": "planned",
+  "status": "available",
   "order": 30,
   "upstream": {
-    "version": null,
-    "ref": null,
-    "released": null,
+    "version": "8.18.5",
+    "ref": "v8.18.5",
+    "released": "2026-08-03",
     "homepage": "https://www.libvips.org/",
     "repository": "https://github.com/libvips/libvips",
     "license": "LGPL-2.1-or-later"
@@ -19,12 +19,124 @@
     "repository": "libvips/libvips"
   },
   "zoo": {
-    "builderVersion": null,
-    "reproducible": false
+    "builderVersion": "0.5.0",
+    "toolchain": "Emscripten 6.0.7",
+    "buildModel": "upstream-library-pinned-browser-adapter",
+    "reproducible": true,
+    "sourceBundle": true,
+    "checksums": true,
+    "browserSmokeTest": true,
+    "featureInventory": true
   },
-  "profiles": [],
-  "comparison": [],
+  "profiles": [
+    {
+      "id": "browser-core",
+      "label": "Browser Core",
+      "target": "browser",
+      "threads": true,
+      "simd": true,
+      "sharedArrayBuffer": true,
+      "worker": true,
+      "workerFs": false,
+      "arbitraryCli": false,
+      "network": false,
+      "features": [
+        "upstream libvips 8.18.5 library",
+        "pinned wasm-vips Embind browser adapter",
+        "JPEG / PNG / WebP raster processing",
+        "resize / thumbnail / colourspace / composite / convolution operations",
+        "TIFF / GIF / imagequant / quantizr / legacy PPM-Analyze-Radiance loaders removed",
+        "pthreads",
+        "WASM SIMD",
+        "Emscripten MEMFS and memory growth"
+      ],
+      "externalLibraries": [
+        "GLib, mozjpeg, libpng, libwebp and required dependencies built by the pinned wasm-vips recipe"
+      ],
+      "output": "Smaller generic libvips JavaScript API for JPEG/PNG/WebP Browser-Kitty-style image workflows",
+      "binaryLicense": "LGPL-2.1-or-later plus linked third-party licenses",
+      "size": "Loaded from the published release manifest",
+      "releaseAsset": "libvips-browser-core-8.18.5-zoo-0.5.0.zip",
+      "playground": true,
+      "playgroundPath": "./libvips-playground/"
+    },
+    {
+      "id": "browser-full",
+      "label": "Browser Full",
+      "target": "browser",
+      "threads": true,
+      "simd": true,
+      "sharedArrayBuffer": true,
+      "worker": true,
+      "workerFs": false,
+      "arbitraryCli": false,
+      "network": false,
+      "features": [
+        "upstream libvips 8.18.5 library",
+        "pinned wasm-vips Embind browser adapter",
+        "JPEG / PNG / WebP / TIFF / GIF raster processing",
+        "resize / thumbnail / colourspace / composite / convolution operations",
+        "pthreads",
+        "WASM SIMD",
+        "Emscripten MEMFS and memory growth"
+      ],
+      "externalLibraries": [
+        "GLib and image codec dependencies built by the pinned wasm-vips recipe"
+      ],
+      "output": "Generic libvips JavaScript API with JPEG/PNG/WebP plus TIFF/GIF support",
+      "binaryLicense": "LGPL-2.1-or-later plus linked third-party licenses",
+      "size": "Loaded from the published release manifest",
+      "releaseAsset": "libvips-browser-full-8.18.5-zoo-0.5.0.zip",
+      "playground": true,
+      "playgroundPath": "./libvips-playground/"
+    }
+  ],
+  "integration": {
+    "summary": "Use browser-core for JPEG/PNG/WebP by default; choose browser-full only when TIFF/GIF support is needed. Both expose the same upstream-style libvips API.",
+    "files": [
+      "browser-libvips.js",
+      "vips.js",
+      "vips.wasm"
+    ],
+    "example": "<script src=\"/vendor/libvips/browser-core/browser-libvips.js\"></script>\n<script type=\"module\">\nasync function resizeToJpeg(file, width = 640) {\n  const vips = await WasmZooLibvips.loadHosted({\n    baseUrl: \"/vendor/libvips/browser-core/\"\n  });\n\n  const input = vips.Image.newFromBuffer(new Uint8Array(await file.arrayBuffer()));\n  const resized = input.resize(width / input.width);\n  const output = resized.writeToBuffer(\".jpg[Q=85]\");\n  resized.delete();\n  input.delete();\n  return output;\n}\n</script>",
+    "notes": [
+      "browser-core is the recommended Browser-Kitty profile: JPEG/PNG/WebP only, with TIFF/GIF/imagequant/quantizr and legacy PPM/Analyze/Radiance loaders removed.",
+      "browser-full adds TIFF/GIF/imagequant while keeping the same JavaScript API.",
+      "Both profiles require SharedArrayBuffer and cross-origin isolation (COOP/COEP) because libvips uses pthreads.",
+      "The raw vips.js API is the primary distribution. browser-libvips.js is only a self-hosting convenience loader.",
+      "The browser adapter and both Emscripten/libvips compatibility patch heads are pinned to immutable commits.",
+      "AVIF/HEIC, JPEG XL, SVG/resvg and UltraHDR are intentionally disabled in v0.5.0."
+    ]
+  },
+  "comparison": [
+    {
+      "name": "Upstream native",
+      "version": "8.18.5",
+      "note": "Native builds can enable additional loaders, platform integrations and filesystem-backed workflows."
+    },
+    {
+      "name": "WASM Zoo",
+      "version": "8.18.5",
+      "note": "Exact upstream libvips release exposed through a pinned browser adapter with a deliberately reduced optional delegate set."
+    },
+    {
+      "name": "wasm-vips adapter",
+      "version": "0.0.18 / pinned commit",
+      "note": "Used as the browser binding/build adapter only; WASM Zoo pins and packages the corresponding upstream libvips version itself."
+    }
+  ],
   "notes": [
-    "Planned browser build; dependency surface needs to be profiled before shipping binaries."
-  ]
+    "libvips is published as a library API rather than a synthetic CLI wrapper.",
+    "browser-core is designed as the practical small default for Browser-Kitty-style JPEG/PNG/WebP processing; browser-full is the compatibility profile for TIFF/GIF.",
+    "Both profiles keep libvips threaded demand-driven execution, so Pages/local hosting must provide cross-origin isolation.",
+    "Build output records raw and gzip sizes and compare-profiles.mjs writes a machine-readable and Markdown core-vs-full comparison once both profiles exist.",
+    "Release archives include the exact build recipe, source bundle and third-party license notices needed to audit the statically linked browser artifact."
+  ],
+  "release": {
+    "tag": "libvips-v0.5.0",
+    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libvips-v0.5.0",
+    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/libvips-v0.5.0/",
+    "sourceAsset": "libvips-sources-8.18.5-zoo-0.5.0.tar.gz",
+    "checksumsAsset": "SHA256SUMS.txt"
+  }
 }

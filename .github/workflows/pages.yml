@@ -11,6 +11,7 @@ on:
       - "builders/ffmpeg/runtime/browser-ffmpeg.js"
       - "builders/libarchive/runtime/browser-libarchive.js"
       - "builders/imagemagick/runtime/browser-imagemagick.js"
+      - "builders/libvips/runtime/browser-libvips.js"
       - "VERSION"
       - ".github/workflows/pages.yml"
 
@@ -109,6 +110,31 @@ jobs:
           unzip -q -j "$work/$asset" magick-core.js magick-core.wasm manifest.json features.json -d "$dest"
           cp builders/imagemagick/runtime/browser-imagemagick.js "$dest/browser-imagemagick.js"
           echo "[OK] staged ImageMagick ${version} ${tag}"
+
+      - name: Stage published libvips release for Playground
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/libvips/versions.env
+          tag="libvips-v${BUILDER_VERSION}"
+          version="${LIBVIPS_REF#v}"
+          if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "[WARN] ${tag} is not published yet; libvips Playground assets will be staged after the release workflow completes."
+            exit 0
+          fi
+          work="${RUNNER_TEMP}/wasm-zoo-pages-libvips"
+          rm -rf "$work" && mkdir -p "$work"
+          for profile in browser-core browser-full; do
+            asset="libvips-${profile}-${version}-zoo-${BUILDER_VERSION}.zip"
+            gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir "$work"
+            dest="site/assets/libvips/${version}/${profile}"
+            mkdir -p "$dest"
+            unzip -q -j "$work/$asset" vips.js vips.wasm vips.d.ts manifest.json features.json versions.json -d "$dest"
+            cp builders/libvips/runtime/browser-libvips.js "$dest/browser-libvips.js"
+            echo "[OK] staged libvips ${version} ${profile} ${tag}"
+          done
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
