@@ -11,7 +11,7 @@
 WASM Zoo is an unofficial distribution project for native software whose WebAssembly builds benefit from current upstream pins, reproducible recipes and explicit capability reporting. Zoo publishes exact source/toolchain revisions, meaningful runtime smoke tests, machine-readable manifests, checksums, license notices and corresponding source.
 
 - Catalog: https://ttomohisa.github.io/wasm-zoo/
-- FFmpeg Playground: https://ttomohisa.github.io/wasm-zoo/playground/
+- FFmpeg Playground: https://ttomohisa.github.io/wasm-zoo/ffmpeg-playground/
 - libarchive Playground: https://ttomohisa.github.io/wasm-zoo/libarchive-playground/
 - ImageMagick Playground: https://ttomohisa.github.io/wasm-zoo/imagemagick-playground/
 
@@ -148,7 +148,7 @@ This regenerates the catalog, stages any locally built FFmpeg/libarchive artifac
 
 ```text
 http://localhost:4173/
-http://localhost:4173/playground/
+http://localhost:4173/ffmpeg-playground/
 http://localhost:4173/libarchive-playground/
 ```
 

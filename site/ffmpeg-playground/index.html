@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="Run the WASM Zoo FFmpeg 9.0.1 full browser builds directly in your browser.">
+  <meta name="theme-color" content="#f7f7f4">
+  <title>FFmpeg Playground · WASM Zoo</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23171714'/%3E%3Cpath d='M13 18h8l5 23 6-18h7l6 18 5-23h8L49 47h-8l-6-17-6 17h-8z' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../playground.css">
+</head>
+<body class="playground-page">
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="WASM Zoo home"><span class="brand-mark" aria-hidden="true">W</span><span>WASM Zoo</span></a>
+    <a class="github-link" href="https://github.com/ttomohisa/wasm-zoo" rel="noreferrer">GitHub</a>
+  </header>
+
+  <main class="playground-main">
+    <section class="playground-hero">
+      <div>
+        <span class="eyebrow">FFmpeg <span id="playground-ffmpeg-version">—</span> · Playground</span>
+        <h1>Run the upstream FFmpeg CLI in your browser.</h1>
+        <p>The exact <span id="playground-release-tag">published release</span> core is staged from GitHub Releases when this Pages site deploys. Files stay in this browser tab; the demo does not upload them to a server.</p>
+      </div>
+      <div class="runtime-state">
+        <span>Runtime</span>
+        <strong id="isolation-status" data-state="working">Checking cross-origin isolation…</strong>
+        <small>pthread builds need SharedArrayBuffer. This page installs a site-scoped Service Worker so FFmpeg pthread workers under /assets/ are isolated too; it may reload once.</small>
+      </div>
+    </section>
+
+    <section class="playground-grid">
+      <div class="playground-panel controls-panel">
+        <div class="panel-heading"><div><span class="eyebrow">01 · Build</span><h2>Choose a release profile</h2></div><span id="core-status" class="core-status">Not loaded</span></div>
+        <label>Profile<select id="profile"></select></label>
+        <div id="manifest-summary" class="manifest-summary"><span>Loading release manifest…</span></div>
+        <button id="load-core" class="primary-button" type="button">Load FFmpeg core</button>
+        <p class="panel-note">Browser Full is LGPL-oriented. Browser Full GPL adds libx264 and is distributed under GPL-2.0-or-later.</p>
+      </div>
+
+      <div class="playground-panel command-panel">
+        <div class="panel-heading"><div><span class="eyebrow">02 · Command</span><h2>Run a CLI command</h2></div></div>
+        <div class="preset-row">
+          <button type="button" data-preset="version">ffmpeg -version</button>
+          <button type="button" data-preset="remux">Remux 1 second</button>
+          <button type="button" data-preset="x264">x264 · 1 frame</button>
+        </div>
+        <label>Input file <span class="label-hint">used as <code>{input}</code></span><input id="input-file" type="file" accept="video/*,audio/*,.mkv,.mov,.avi,.webm,.ts,.m4a,.aac,.flac,.wav"></label>
+        <label>FFmpeg arguments <span class="label-hint"><code>{input}</code> / <code>{output}</code> are replaced automatically</span><textarea id="args" rows="5" spellcheck="false">-hide_banner -version</textarea></label>
+        <label>Output path <input id="output-name" type="text" value="/output.mp4" spellcheck="false"></label>
+        <button id="run" class="primary-button run-button" type="button">Run FFmpeg</button>
+        <div id="download-area" class="download-area"></div>
+      </div>
+    </section>
+
+    <section class="log-panel">
+      <div class="panel-heading"><div><span class="eyebrow">03 · Output</span><h2>FFmpeg log</h2></div><span class="local-badge">Local browser execution</span></div>
+      <div id="log" class="log-output" aria-live="polite"><div class="log-line info">Choose a preset or enter arbitrary ffmpeg arguments.</div></div>
+    </section>
+
+    <section class="playground-notes">
+      <div><strong>Large runtime</strong><span>These are capability-oriented full builds, so expect a larger download and memory footprint.</span></div>
+      <div><strong>Thread budget</strong><span>Very thread-heavy commands should set decoder/filter/encoder thread counts explicitly.</span></div>
+      <div><strong>Browser limits</strong><span>Native networking, capture devices and hardware acceleration backends are intentionally unavailable.</span></div>
+    </section>
+  </main>
+
+  <footer><p><strong>WASM Zoo</strong> · FFmpeg Playground</p><p><a href="../">Back to catalog</a></p></footer>
+  <script src="./coi-bootstrap.js" type="module"></script>
+  <script src="./app.js" type="module"></script>
+</body>
+</html>

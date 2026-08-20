@@ -6,6 +6,8 @@
 
 ## v0.4.0
 
+- improve package Details with prominent Playground / integration / download actions, and move the FFmpeg Playground to the explicit `/ffmpeg-playground/` URL while keeping `/playground/` as a compatibility redirect;
+
 - keep ImageMagick browser-full single-threaded while linking the final Wasm module at `-O1` with Emscripten function-pointer cast emulation and a 4 MiB WebAssembly stack, avoiding the Emscripten 6.0.6 O2+ Binaryen fpcast crash and the default-stack overflow;
 
 - make the ImageMagick browser-full runtime consistently single-threaded at configure, compile and final-link time; use the standard libpng port and avoid SharedArrayBuffer/cross-origin-isolation requirements;

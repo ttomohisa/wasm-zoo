@@ -70,7 +70,7 @@
           "size": "Loaded from the published release manifest",
           "releaseAsset": "ffmpeg-browser-full-9.0.1-zoo-0.2.6.zip",
           "playground": true,
-          "playgroundPath": "./playground/"
+          "playgroundPath": "./ffmpeg-playground/"
         },
         {
           "id": "browser-full-gpl",
@@ -99,7 +99,7 @@
           "size": "Loaded from the published release manifest",
           "releaseAsset": "ffmpeg-browser-full-gpl-9.0.1-zoo-0.2.6.zip",
           "playground": true,
-          "playgroundPath": "./playground/"
+          "playgroundPath": "./ffmpeg-playground/"
         }
       ],
       "integration": {

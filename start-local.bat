@@ -13,6 +13,6 @@ call npm run stage:playground
 if errorlevel 1 exit /b %errorlevel%
 echo.
 echo WASM Zoo:              http://localhost:4173
-echo FFmpeg Playground:     http://localhost:4173/playground/
+echo FFmpeg Playground:     http://localhost:4173/ffmpeg-playground/
 echo libarchive Playground: http://localhost:4173/libarchive-playground/
 call npx --yes serve site -l 4173

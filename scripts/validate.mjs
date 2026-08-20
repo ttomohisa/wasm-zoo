@@ -65,6 +65,7 @@ if (ffmpeg) {
     assert(profile.threads === true && profile.sharedArrayBuffer === true, `FFmpeg profile ${profile.id} must declare pthread/SAB requirements`);
     assert(profile.simd === true, `FFmpeg profile ${profile.id} must declare WASM SIMD`);
     assert(profile.playground === true, `FFmpeg profile ${profile.id} must be enabled in the Playground`);
+    assert(profile.playgroundPath === "./ffmpeg-playground/", `FFmpeg profile ${profile.id} must link to the FFmpeg Playground`);
   }
   assert(ffmpeg.release?.tag === `ffmpeg-v${ffmpeg.zoo.builderVersion}`, `FFmpeg release tag must match builderVersion ${ffmpeg.zoo.builderVersion}`);
   assert(ffmpeg.release?.page?.includes(ffmpeg.release.tag), "FFmpeg release.page must point at the declared tag");
@@ -127,11 +128,12 @@ if (imagemagick) {
 }
 
 const requiredSiteFiles = [
-  "site/playground/index.html",
-  "site/playground/app.js",
-  "site/playground/playground.css",
-  "site/playground/coi-bootstrap.js",
+  "site/ffmpeg-playground/index.html",
+  "site/ffmpeg-playground/app.js",
+  "site/ffmpeg-playground/coi-bootstrap.js",
+  "site/playground.css",
   "site/coi-serviceworker.js",
+  "site/playground/index.html",
   "site/playground/coi-serviceworker.js",
   "site/libarchive-playground/index.html",
   "site/libarchive-playground/app.js",
@@ -147,10 +149,12 @@ try {
   const sw = await fs.readFile(path.join(root, "site/coi-serviceworker.js"), "utf8");
   assert(sw.includes("Cross-Origin-Opener-Policy") && sw.includes("same-origin"), "Site-root Service Worker must add COOP");
   assert(sw.includes("Cross-Origin-Embedder-Policy") && sw.includes("require-corp"), "Site-root Service Worker must add COEP");
-  const bootstrap = await fs.readFile(path.join(root, "site/playground/coi-bootstrap.js"), "utf8");
+  const bootstrap = await fs.readFile(path.join(root, "site/ffmpeg-playground/coi-bootstrap.js"), "utf8");
   assert(bootstrap.includes("../coi-serviceworker.js"), "Playground must register the isolation Service Worker from the site root");
   assert(bootstrap.includes("scope: rootScopeUrl"), "Playground isolation Service Worker must use the WASM Zoo site-root scope");
-  assert(bootstrap.includes("getRegistrations") && bootstrap.includes("unregister"), "Playground must migrate the legacy /playground/ Service Worker registration");
+  assert(bootstrap.includes("getRegistrations") && bootstrap.includes("unregister"), "FFmpeg Playground must migrate legacy scoped Service Worker registrations");
+  const legacyPlayground = await fs.readFile(path.join(root, "site/playground/index.html"), "utf8");
+  assert(legacyPlayground.includes("../ffmpeg-playground/"), "Legacy /playground/ URL must redirect to /ffmpeg-playground/");
   const pages = await fs.readFile(path.join(root, ".github/workflows/pages.yml"), "utf8");
   assert(pages.includes("gh release download"), "Pages workflow must stage the published release, not rebuild a separate Playground core");
   assert(pages.includes("site/assets/ffmpeg"), "Pages workflow must stage FFmpeg cores under site/assets/ffmpeg");

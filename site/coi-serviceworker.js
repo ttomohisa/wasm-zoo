@@ -3,7 +3,7 @@
  *
  * Keep this worker at the Pages site root. Emscripten pthread builds load their core scripts from /assets/**, so the
  * Service Worker must control both Playground documents and published assets.
- * This currently covers FFmpeg and ImageMagick pthread runtimes. A Playground-only scope isolates the
+ * This currently covers the FFmpeg pthread runtime. A Playground-only scope isolates the
  * document but leaves pthread worker clients outside the isolated scope.
  */
 self.addEventListener('install', () => self.skipWaiting());

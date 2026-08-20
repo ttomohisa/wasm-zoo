@@ -64,9 +64,25 @@ function boolPill(label, value) { return `<span>${esc(label)}: ${value ? 'yes' :
 function releaseButtons(pkg, profile) {
   if (!pkg.release) return '';
   const asset = releaseUrl(pkg, profile.releaseAsset);
-  const playgroundPath = profile.playgroundPath || './playground/';
-  const playground = profile.playground ? `<a class="detail-action secondary" href="${esc(playgroundPath)}${playgroundPath.includes('?') ? '&' : '?'}profile=${encodeURIComponent(profile.id)}">Try in Playground</a>` : '';
+  const playgroundPath = profile.playgroundPath;
+  const playground = profile.playground && playgroundPath ? `<a class="detail-action secondary" href="${esc(playgroundPath)}${playgroundPath.includes('?') ? '&' : '?'}profile=${encodeURIComponent(profile.id)}">Try in Playground</a>` : '';
   return `<div class="profile-actions">${asset ? `<a class="detail-action" href="${esc(asset)}">Download ZIP</a>` : ''}${playground}</div>`;
+}
+
+function packageQuickActions(pkg) {
+  const profile = (pkg.profiles || []).find((item) => item.playground && item.playgroundPath) || (pkg.profiles || [])[0];
+  const playgroundPath = profile?.playgroundPath;
+  const playground = profile?.playground && playgroundPath
+    ? `<a class="package-quick-action primary" href="${esc(playgroundPath)}${playgroundPath.includes('?') ? '&' : '?'}profile=${encodeURIComponent(profile.id)}"><span>Try in Playground</span><small>Run the published core</small></a>`
+    : '';
+  const integration = pkg.integration
+    ? `<button class="package-quick-action" type="button" data-jump-section="integration"><span>Use in your app</span><small>Copy the minimal example</small></button>`
+    : '';
+  const download = (pkg.profiles || []).some((item) => item.releaseAsset)
+    ? `<button class="package-quick-action" type="button" data-jump-section="builds"><span>Download</span><small>Choose a published build</small></button>`
+    : '';
+  if (!playground && !integration && !download) return '';
+  return `<div class="package-quick-actions" aria-label="Package actions">${playground}${integration}${download}</div>`;
 }
 
 function integrationSection(pkg) {
@@ -78,7 +94,7 @@ function integrationSection(pkg) {
   const notes = Array.isArray(integration.notes) && integration.notes.length
     ? `<ul class="integration-notes">${integration.notes.map((note) => `<li>${esc(note)}</li>`).join('')}</ul>`
     : '';
-  return `<div class="detail-section integration-section">
+  return `<div class="detail-section integration-section" data-detail-section="integration">
     <div class="integration-title"><div><span class="eyebrow">Integration</span><h3>Use in your app</h3></div><span class="integration-badge">Copy · self-host · run</span></div>
     <p class="integration-summary">${esc(integration.summary)}</p>
     ${files}
@@ -91,6 +107,13 @@ function integrationSection(pkg) {
 }
 
 function wireIntegrationActions() {
+  dialogContent.querySelectorAll('[data-jump-section]').forEach((button) => button.addEventListener('click', () => {
+    const target = dialogContent.querySelector(`[data-detail-section="${button.dataset.jumpSection}"]`);
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    target.classList.add('detail-section-highlight');
+    setTimeout(() => target.classList.remove('detail-section-highlight'), 1200);
+  }));
   dialogContent.querySelectorAll('[data-copy-code]').forEach((button) => button.addEventListener('click', async () => {
     const code = button.closest('.integration-code')?.querySelector('code')?.textContent || '';
     if (!code) return;
@@ -125,11 +148,12 @@ function openPackage(slug) {
   if (!pkg) return;
   const comparison = pkg.comparison.length ? `<div class="detail-section"><h3>Version comparison</h3><table class="comparison"><thead><tr><th>Distribution</th><th>Version</th><th>Notes</th></tr></thead><tbody>${pkg.comparison.map((row) => `<tr><td><strong>${esc(row.name)}</strong></td><td><code>${esc(row.version)}</code></td><td>${esc(row.note)}</td></tr>`).join('')}</tbody></table></div>` : '';
   const matrix = pkg.capabilityMatrix?.length ? `<div class="detail-section"><h3>Native → WASM capability gap</h3><div class="table-scroll"><table class="comparison capability"><thead><tr><th>Capability</th><th>Native</th><th>Full</th><th>Full GPL</th></tr></thead><tbody>${pkg.capabilityMatrix.map((row) => `<tr><td><strong>${esc(row.feature)}</strong></td><td>${mark(row.native)}</td><td>${mark(row.browserFull)}</td><td>${mark(row.browserFullGpl)}</td></tr>`).join('')}</tbody></table></div></div>` : '';
-  const profiles = pkg.profiles.length ? `<div class="detail-section"><h3>Published builds</h3>${pkg.profiles.map((profile) => `<div class="profile-detail"><div class="profile-detail-head"><div><h4>${esc(profile.label)}</h4><div>${esc(profile.output)}</div></div>${profileSize(profile) ? `<strong class="profile-size">${esc(profileSize(profile))}</strong>` : ''}</div><div class="profile-meta">${boolPill('threads', profile.threads)}${boolPill('SIMD', profile.simd)}${boolPill('SharedArrayBuffer', profile.sharedArrayBuffer)}${boolPill('Worker', profile.worker)}${boolPill('network', profile.network)}${boolPill('arbitrary CLI', profile.arbitraryCli)}</div><div class="feature-list">${profile.features.map((feature) => `<span>${esc(feature)}</span>`).join('')}</div><div class="feature-list"><span>license: ${esc(profile.binaryLicense)}</span><span>target: ${esc(profile.target)}</span></div>${releaseButtons(pkg, profile)}</div>`).join('')}</div>` : `<div class="detail-section"><h3>Build status</h3><p>This package is being tracked, but WASM Zoo does not publish a binary for it yet.</p></div>`;
+  const profiles = pkg.profiles.length ? `<div class="detail-section" data-detail-section="builds"><h3>Published builds</h3>${pkg.profiles.map((profile) => `<div class="profile-detail"><div class="profile-detail-head"><div><h4>${esc(profile.label)}</h4><div>${esc(profile.output)}</div></div>${profileSize(profile) ? `<strong class="profile-size">${esc(profileSize(profile))}</strong>` : ''}</div><div class="profile-meta">${boolPill('threads', profile.threads)}${boolPill('SIMD', profile.simd)}${boolPill('SharedArrayBuffer', profile.sharedArrayBuffer)}${boolPill('Worker', profile.worker)}${boolPill('network', profile.network)}${boolPill('arbitrary CLI', profile.arbitraryCli)}</div><div class="feature-list">${profile.features.map((feature) => `<span>${esc(feature)}</span>`).join('')}</div><div class="feature-list"><span>license: ${esc(profile.binaryLicense)}</span><span>target: ${esc(profile.target)}</span></div>${releaseButtons(pkg, profile)}</div>`).join('')}</div>` : `<div class="detail-section"><h3>Build status</h3><p>This package is being tracked, but WASM Zoo does not publish a binary for it yet.</p></div>`;
+  const quickActions = packageQuickActions(pkg);
   const integration = integrationSection(pkg);
   const notes = pkg.notes?.length ? `<div class="detail-section"><h3>Notes</h3><ul class="notes">${pkg.notes.map((note) => `<li>${esc(note)}</li>`).join('')}</ul></div>` : '';
   const release = pkg.release ? `<div class="detail-section release-links"><h3>Release</h3><div class="profile-actions"><a class="detail-action" href="${esc(pkg.release.page)}">Release ${esc(pkg.release.tag)}</a>${pkg.release.sourceAsset ? `<a class="detail-action secondary" href="${esc(releaseUrl(pkg, pkg.release.sourceAsset))}">Corresponding source</a>` : ''}${pkg.release.checksumsAsset ? `<a class="detail-action secondary" href="${esc(releaseUrl(pkg, pkg.release.checksumsAsset))}">SHA-256</a>` : ''}</div></div>` : '';
-  dialogContent.innerHTML = `<div class="dialog-title"><span class="eyebrow">${esc(statusLabel(pkg.status))} · ${esc(pkg.category)}</span><h2>${esc(pkg.name)}</h2><p>${esc(pkg.summary)}</p></div><div class="version-table"><span>Upstream pin</span><strong>${displayVersion(pkg.upstream.version)}</strong><span>Zoo builder</span><strong>${displayVersion(pkg.zoo.builderVersion, 'Not published')}</strong><span>Upstream license</span><strong>${esc(pkg.upstream.license)}</strong></div>${release}${comparison}${matrix}${profiles}${integration}${notes}`;
+  dialogContent.innerHTML = `<div class="dialog-title"><span class="eyebrow">${esc(statusLabel(pkg.status))} · ${esc(pkg.category)}</span><h2>${esc(pkg.name)}</h2><p>${esc(pkg.summary)}</p></div>${quickActions}<div class="version-table"><span>Upstream pin</span><strong>${displayVersion(pkg.upstream.version)}</strong><span>Zoo builder</span><strong>${displayVersion(pkg.zoo.builderVersion, 'Not published')}</strong><span>Upstream license</span><strong>${esc(pkg.upstream.license)}</strong></div>${release}${comparison}${matrix}${profiles}${integration}${notes}`;
   wireIntegrationActions();
   dialog.showModal();
 }
