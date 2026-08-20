@@ -1,0 +1,178 @@
+name: Test upstream candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: Package slug
+        required: true
+        type: choice
+        options: [ffmpeg, libarchive, imagemagick, libvips]
+      version:
+        description: Upstream version
+        required: true
+        type: string
+      ref:
+        description: Upstream Git ref/tag
+        required: true
+        type: string
+      commit:
+        description: Resolved upstream commit SHA
+        required: true
+        type: string
+      issue_number:
+        description: Upstream watcher issue to comment on
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  ffmpeg:
+    if: inputs.slug == 'ffmpeg'
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [browser-full, browser-full-gpl]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Prepare candidate pin
+        run: node scripts/prepare-candidate.mjs --slug ffmpeg --version "${{ inputs.version }}" --ref "${{ inputs.ref }}" --commit "${{ inputs.commit }}"
+      - name: Build candidate and run browser smoke test
+        shell: bash
+        working-directory: builders/ffmpeg
+        env:
+          FFMPEG_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh "${{ matrix.profile }}"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: candidate-ffmpeg-${{ inputs.version }}-${{ matrix.profile }}
+          path: builders/ffmpeg/dist/${{ matrix.profile }}/
+          retention-days: 14
+
+  libarchive:
+    if: inputs.slug == 'libarchive'
+    runs-on: ubuntu-latest
+    timeout-minutes: 220
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Prepare candidate pin
+        run: node scripts/prepare-candidate.mjs --slug libarchive --version "${{ inputs.version }}" --ref "${{ inputs.ref }}" --commit "${{ inputs.commit }}"
+      - name: Build candidate and run browser smoke test
+        shell: bash
+        working-directory: builders/libarchive
+        env:
+          LIBARCHIVE_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - uses: actions/upload-artifact@v7
+        with:
+          name: candidate-libarchive-${{ inputs.version }}-browser-full
+          path: builders/libarchive/dist/browser-full/
+          retention-days: 14
+
+  imagemagick:
+    if: inputs.slug == 'imagemagick'
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Prepare candidate pin
+        run: node scripts/prepare-candidate.mjs --slug imagemagick --version "${{ inputs.version }}" --ref "${{ inputs.ref }}" --commit "${{ inputs.commit }}"
+      - name: Build candidate and run browser smoke test
+        shell: bash
+        working-directory: builders/imagemagick
+        env:
+          IMAGEMAGICK_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - uses: actions/upload-artifact@v7
+        with:
+          name: candidate-imagemagick-${{ inputs.version }}-browser-full
+          path: builders/imagemagick/dist/browser-full/
+          retention-days: 14
+
+  libvips-readiness:
+    if: inputs.slug == 'libvips'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Explain adapter gate
+        shell: bash
+        run: |
+          cat <<'MSG' >> "$GITHUB_STEP_SUMMARY"
+          ## libvips candidate is adapter-gated
+
+          WASM Zoo pins libvips together with the wasm-vips adapter and two compatibility patch commits.
+          A newly detected libvips release is not automatically substituted into the existing adapter because doing so could silently test the old libvips source or an incompatible patch set.
+
+          Update the wasm-vips adapter/patch pins first, then run the normal libvips build matrix and browser smoke tests.
+          MSG
+          echo "adapter-gated candidate: manual adapter pin review required"
+
+  report:
+    if: always()
+    needs: [ffmpeg, libarchive, imagemagick, libvips-readiness]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build candidate result
+        id: result
+        shell: bash
+        run: |
+          slug='${{ inputs.slug }}'
+          case "$slug" in
+            ffmpeg) result='${{ needs.ffmpeg.result }}' ;;
+            libarchive) result='${{ needs.libarchive.result }}' ;;
+            imagemagick) result='${{ needs.imagemagick.result }}' ;;
+            libvips) result='adapter-gated' ;;
+            *) result='unknown' ;;
+          esac
+          echo "result=$result" >> "$GITHUB_OUTPUT"
+          {
+            echo '## Upstream candidate result'
+            echo
+            echo "- Package: **${{ inputs.slug }}**"
+            echo "- Candidate: **${{ inputs.version }}**"
+            echo "- Ref: \`${{ inputs.ref }}\`"
+            echo "- Commit: \`${{ inputs.commit }}\`"
+            echo "- Result: **$result**"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Comment on watcher issue
+        if: inputs.issue_number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ steps.result.outputs.result }}
+        shell: bash
+        run: |
+          body=$(cat <<EOF_BODY
+          Candidate workflow finished for **${{ inputs.slug }} ${{ inputs.version }}**.
+
+          - ref: \`${{ inputs.ref }}\`
+          - commit: \`${{ inputs.commit }}\`
+          - result: **${RESULT}**
+          - run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+
+          A successful candidate is still not promoted automatically. Update the reviewed pins and require the normal repository/build checks before release.
+          EOF_BODY
+          )
+          gh issue comment "${{ inputs.issue_number }}" --repo "$GITHUB_REPOSITORY" --body "$body"

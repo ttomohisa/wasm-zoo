@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "slug": "libvips",
   "name": "libvips",
   "summary": "Upstream libvips image-processing library compiled for browser WebAssembly with a pinned Emscripten adapter.",
@@ -16,7 +16,12 @@
   },
   "tracker": {
     "type": "github-releases",
-    "repository": "libvips/libvips"
+    "repository": "libvips/libvips",
+    "candidateMode": "adapter-gated",
+    "candidateProfiles": [
+      "browser-core",
+      "browser-full"
+    ]
   },
   "zoo": {
     "builderVersion": "0.5.0",
@@ -138,5 +143,105 @@
     "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/libvips-v0.5.0/",
     "sourceAsset": "libvips-sources-8.18.5-zoo-0.5.0.tar.gz",
     "checksumsAsset": "SHA256SUMS.txt"
-  }
+  },
+  "referenceWasm": {
+    "name": "wasm-vips",
+    "packageVersion": "0.0.18",
+    "upstreamVersion": "8.18.5",
+    "repository": "https://github.com/kleisauke/wasm-vips",
+    "checkedAt": "2026-08-21",
+    "note": "WASM Zoo uses a pinned wasm-vips adapter commit but independently pins and packages the upstream libvips release."
+  },
+  "capabilityMatrix": [
+    {
+      "feature": "libvips image-processing API",
+      "native": "included",
+      "profiles": {
+        "browser-core": "included",
+        "browser-full": "included"
+      },
+      "note": "Exposed through the pinned wasm-vips Embind adapter."
+    },
+    {
+      "feature": "JPEG",
+      "native": "optional",
+      "profiles": {
+        "browser-core": "included",
+        "browser-full": "included"
+      },
+      "note": "mozjpeg-backed raster load/save."
+    },
+    {
+      "feature": "PNG",
+      "native": "optional",
+      "profiles": {
+        "browser-core": "included",
+        "browser-full": "included"
+      },
+      "note": "Included in both browser profiles."
+    },
+    {
+      "feature": "WebP",
+      "native": "optional",
+      "profiles": {
+        "browser-core": "included",
+        "browser-full": "included"
+      },
+      "note": "Included in both browser profiles."
+    },
+    {
+      "feature": "TIFF",
+      "native": "optional",
+      "profiles": {
+        "browser-core": "excluded",
+        "browser-full": "included"
+      },
+      "note": "Removed from Core to reduce transfer size."
+    },
+    {
+      "feature": "GIF / palette quantization",
+      "native": "optional",
+      "profiles": {
+        "browser-core": "excluded",
+        "browser-full": "included"
+      },
+      "note": "cgif/imagequant path is only built in Full."
+    },
+    {
+      "feature": "AVIF / HEIC / JPEG XL / SVG",
+      "native": "optional",
+      "profiles": {
+        "browser-core": "excluded",
+        "browser-full": "excluded"
+      },
+      "note": "Large optional delegate families intentionally excluded from both current profiles."
+    },
+    {
+      "feature": "pthreads",
+      "native": "optional",
+      "profiles": {
+        "browser-core": "included",
+        "browser-full": "included"
+      },
+      "note": "Both profiles require SharedArrayBuffer / cross-origin isolation."
+    },
+    {
+      "feature": "WASM SIMD",
+      "native": "na",
+      "profiles": {
+        "browser-core": "included",
+        "browser-full": "included"
+      },
+      "note": "Target-specific optimization enabled for browser builds."
+    },
+    {
+      "feature": "Native filesystem-backed workflows",
+      "native": "included",
+      "profiles": {
+        "browser-core": "na",
+        "browser-full": "na"
+      },
+      "note": "Browser builds use MEMFS and byte-buffer APIs rather than host filesystem semantics."
+    }
+  ]
 }

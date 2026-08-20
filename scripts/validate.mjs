@@ -10,7 +10,7 @@ const seen = new Set();
 
 for (const pkg of packages) {
   const at = `packages/${pkg.slug || "?"}/package.json`;
-  assert(pkg.schemaVersion === 1, `${at}: schemaVersion must be 1`);
+  assert(pkg.schemaVersion === 2, `${at}: schemaVersion must be 2`);
   assert(/^[a-z0-9][a-z0-9-]*$/.test(pkg.slug || ""), `${at}: invalid slug`);
   assert(!seen.has(pkg.slug), `${at}: duplicate slug ${pkg.slug}`);
   seen.add(pkg.slug);
@@ -19,7 +19,16 @@ for (const pkg of packages) {
   assert(isHttps(pkg.upstream?.repository), `${at}: upstream.repository must use https`);
   assert(typeof pkg.upstream?.license === "string" && pkg.upstream.license.length > 0, `${at}: upstream.license is required`);
   assert(typeof pkg.tracker?.repository === "string" && pkg.tracker.repository.includes("/"), `${at}: tracker.repository is required`);
+  assert(["github-releases", "github-tags"].includes(pkg.tracker?.type), `${at}: tracker.type is invalid`);
+  assert(["auto", "adapter-gated", "none"].includes(pkg.tracker?.candidateMode), `${at}: tracker.candidateMode is invalid`);
+  assert(Array.isArray(pkg.tracker?.candidateProfiles), `${at}: tracker.candidateProfiles must be an array`);
   assert(Array.isArray(pkg.profiles), `${at}: profiles must be an array`);
+  if (pkg.referenceWasm) {
+    assert(typeof pkg.referenceWasm.name === "string" && pkg.referenceWasm.name.length > 0, `${at}: referenceWasm.name is required`);
+    assert(typeof pkg.referenceWasm.packageVersion === "string" && pkg.referenceWasm.packageVersion.length > 0, `${at}: referenceWasm.packageVersion is required`);
+    assert(isHttps(pkg.referenceWasm.repository), `${at}: referenceWasm.repository must use https`);
+    assert(/^\d{4}-\d{2}-\d{2}$/.test(pkg.referenceWasm.checkedAt || ""), `${at}: referenceWasm.checkedAt must be YYYY-MM-DD`);
+  }
 
   const profileIds = new Set();
   for (const profile of pkg.profiles || []) {
@@ -29,10 +38,21 @@ for (const pkg of packages) {
     assert(typeof profile.binaryLicense === "string" && profile.binaryLicense.length > 0, `${at}: profile ${profile.id} binaryLicense is required`);
   }
 
+  const matrixStates = new Set(["included", "excluded", "na", "optional", "platform", "unknown"]);
+  assert(Array.isArray(pkg.capabilityMatrix), `${at}: capabilityMatrix must be an array`);
+  for (const [index, row] of (pkg.capabilityMatrix || []).entries()) {
+    assert(typeof row.feature === "string" && row.feature.length > 0, `${at}: capabilityMatrix[${index}].feature is required`);
+    assert(matrixStates.has(row.native), `${at}: capabilityMatrix[${index}].native has invalid state ${row.native}`);
+    assert(row.profiles && typeof row.profiles === "object" && !Array.isArray(row.profiles), `${at}: capabilityMatrix[${index}].profiles is required`);
+    for (const profile of pkg.profiles || []) assert(matrixStates.has(row.profiles?.[profile.id]), `${at}: capabilityMatrix[${index}] missing/invalid state for ${profile.id}`);
+    assert(typeof row.note === "string" && row.note.length > 0, `${at}: capabilityMatrix[${index}].note is required`);
+  }
+
   if (pkg.status === "available") {
     assert(Boolean(pkg.upstream.version), `${at}: available package needs upstream.version`);
     assert(Boolean(pkg.zoo?.builderVersion), `${at}: available package needs zoo.builderVersion`);
     assert(pkg.profiles.length > 0, `${at}: available package needs at least one profile`);
+    assert(pkg.capabilityMatrix.length > 0, `${at}: available package needs a capabilityMatrix`);
     assert(typeof pkg.integration?.summary === "string" && pkg.integration.summary.length > 0, `${at}: available package needs integration.summary`);
     assert(Array.isArray(pkg.integration?.files) && pkg.integration.files.length > 0 && pkg.integration.files.every((file) => typeof file === "string" && file.length > 0), `${at}: available package needs integration.files`);
     assert(typeof pkg.integration?.example === "string" && pkg.integration.example.length > 0, `${at}: available package needs integration.example`);
@@ -177,6 +197,11 @@ const requiredSiteFiles = [
   "site/libvips-playground/index.html",
   "site/libvips-playground/app.js",
   "site/libvips-playground/playground.css",
+  "site/upstream-status.json",
+  ".github/workflows/check-upstream.yml",
+  ".github/workflows/upstream-candidate.yml",
+  "scripts/check-upstream.mjs",
+  "scripts/prepare-candidate.mjs",
 ];
 for (const rel of requiredSiteFiles) {
   try { await fs.access(path.join(root, rel)); } catch { errors.push(`${rel} is missing`); }
@@ -213,6 +238,24 @@ try {
   assert(vipsRuntime.includes("crossOriginIsolated") && vipsRuntime.includes("SharedArrayBuffer"), "libvips runtime must enforce cross-origin isolation for pthreads");
   const siteApp = await fs.readFile(path.join(root, "site/app.js"), "utf8");
   assert(siteApp.includes("Use in your app") && siteApp.includes("data-copy-code"), "Package details must render integration guidance with copyable examples");
+  assert(siteApp.includes("renderVersionGap") && siteApp.includes("renderFeatureMatrix"), "Pages must render Version Gap Dashboard and Feature Matrix");
+  assert(siteApp.includes("matrix-state") && siteApp.includes("Intentionally excluded"), "Feature Matrix must distinguish excluded vs target-inapplicable states");
+  const siteHtml = await fs.readFile(path.join(root, "site/index.html"), "utf8");
+  assert(siteHtml.includes('id="freshness"') && siteHtml.includes("Version Gap Dashboard"), "Pages must expose the Version Gap Dashboard section");
+  assert(siteHtml.includes('id="features"') && siteHtml.includes("Feature Matrix"), "Pages must expose the Feature Matrix section");
+  const watcher = await fs.readFile(path.join(root, ".github/workflows/check-upstream.yml"), "utf8");
+  assert(watcher.includes('cron: "23 3 * * *"'), "Upstream watcher must run daily");
+  assert(watcher.includes("site/upstream-status.json") && watcher.includes("gh issue create") && watcher.includes("upstream-candidate.yml"), "Upstream watcher must publish status, open issues and dispatch candidates");
+  assert(watcher.includes("gh workflow run pages.yml"), "Upstream watcher must explicitly refresh Pages after the bot snapshot commit");
+  const upstreamScript = await fs.readFile(path.join(root, "scripts/check-upstream.mjs"), "utf8");
+  assert(upstreamScript.includes("refusing to replace the last good Pages snapshot"), "Upstream checker must preserve the last good snapshot when all trackers fail");
+  const verifyWorkflow = await fs.readFile(path.join(root, ".github/workflows/verify.yml"), "utf8");
+  assert(verifyWorkflow.includes("builders/libvips/scripts/check-repository.mjs"), "Verify workflow must include libvips repository checks");
+  const candidate = await fs.readFile(path.join(root, ".github/workflows/upstream-candidate.yml"), "utf8");
+  assert(candidate.includes("prepare-candidate.mjs") && candidate.includes("browser smoke test"), "Candidate workflow must substitute isolated pins and run browser smoke tests");
+  assert(candidate.includes("adapter-gated") && candidate.includes("libvips-readiness"), "libvips candidate workflow must preserve the adapter gate");
+  const prepareCandidate = await fs.readFile(path.join(root, "scripts/prepare-candidate.mjs"), "utf8");
+  assert(!prepareCandidate.includes("package.json"), "Candidate preparation must not rewrite reviewed package catalog pins");
   const readme = await fs.readFile(path.join(root, "README.md"), "utf8");
   assert(!readme.includes('ffmpeg-v0.2.6 -m "WASM Zoo FFmpeg v0.2.5"'), "README release tag example has a stale v0.2.5 message");
 } catch (error) {
@@ -222,8 +265,14 @@ try {
 const catalogPath = path.join(root, "site", "catalog.json");
 try {
   const catalog = await readJson(catalogPath);
+  assert(catalog.schemaVersion === 2, "site/catalog.json schemaVersion must be 2");
   assert(catalog.stats?.packages === packages.length, "site/catalog.json is stale; run npm run catalog");
+  assert(catalog.stats?.featureMatrices === packages.filter((pkg) => pkg.capabilityMatrix?.length).length, "site/catalog.json featureMatrices stat is stale");
+  assert(catalog.stats?.referenceBuilds === packages.filter((pkg) => pkg.referenceWasm).length, "site/catalog.json referenceBuilds stat is stale");
   assert(catalog.project?.name === "WASM Zoo", "site/catalog.json project metadata is invalid");
+  const status = await readJson(path.join(root, "site", "upstream-status.json"));
+  assert(status.schemaVersion === 2 && Array.isArray(status.packages), "site/upstream-status.json schema is invalid");
+  for (const pkg of packages) assert(status.packages.some((item) => item.slug === pkg.slug), `site/upstream-status.json missing ${pkg.slug}`);
 } catch {
   errors.push("site/catalog.json is missing or invalid; run npm run catalog");
 }

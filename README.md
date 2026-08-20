@@ -6,6 +6,7 @@
 [![Pages](https://github.com/ttomohisa/wasm-zoo/actions/workflows/pages.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/pages.yml)
 [![ImageMagick build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-imagemagick.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-imagemagick.yml)
 [![libvips build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libvips.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libvips.yml)
+[![Upstream watcher](https://github.com/ttomohisa/wasm-zoo/actions/workflows/check-upstream.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/check-upstream.yml)
 
 **Current upstream software, compiled for WebAssembly.**
 
@@ -26,7 +27,31 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 | ImageMagick | 7.1.2-29 | 0.4.0 | `browser-full` | yes |
 | libvips | 8.18.5 | 0.5.0 | `browser-core`, `browser-full` | yes |
 
-The project version is **WASM Zoo v0.5.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+The project version is **WASM Zoo v0.6.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+
+## Freshness dashboard and capability matrix
+
+WASM Zoo v0.6.0 makes freshness and target differences first-class catalog data instead of burying them in package notes. The Pages home now includes:
+
+- **Version Gap Dashboard** — latest tracked upstream, current Zoo pin, representative third-party WASM build, gap state and watcher verification date;
+- **Feature Matrix** — Native vs every published browser profile using a shared state vocabulary: Included, Intentionally excluded, Browser N/A, Optional/platform-dependent and Unknown/not tested;
+- **Upstream Watcher** — daily stable-release discovery with a committed `site/upstream-status.json` snapshot, one issue per newly detected release and an isolated candidate workflow where automatic testing is safe.
+
+The watcher deliberately does **not** change reviewed pins or publish releases. For FFmpeg, libarchive and ImageMagick, a newly detected stable release can be substituted only inside the candidate workflow and must pass the existing real Chromium smoke test. libvips is marked `adapter-gated`: a new libvips release first needs reviewed wasm-vips/compatibility patch pins before a candidate build would be meaningful.
+
+Run the watcher manually:
+
+```text
+npm run check:upstream
+```
+
+Refresh the Pages snapshot from the current upstream state:
+
+```text
+npm run check:upstream:write
+```
+
+The representative WASM projects are informational comparisons only and carry a `checkedAt` date in each package manifest; WASM Zoo does not treat those external projects as release dependencies.
 
 ## What a Zoo package contains
 

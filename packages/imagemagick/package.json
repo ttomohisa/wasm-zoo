@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "slug": "imagemagick",
   "name": "ImageMagick",
   "summary": "Upstream magick CLI compiled for browser WebAssembly with reproducible source and toolchain pins.",
@@ -16,7 +16,11 @@
   },
   "tracker": {
     "type": "github-releases",
-    "repository": "ImageMagick/ImageMagick"
+    "repository": "ImageMagick/ImageMagick",
+    "candidateMode": "auto",
+    "candidateProfiles": [
+      "browser-full"
+    ]
   },
   "zoo": {
     "builderVersion": "0.4.0",
@@ -106,5 +110,87 @@
     "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/imagemagick-v0.4.0/",
     "sourceAsset": "imagemagick-sources-7.1.2-29-zoo-0.4.0.tar.gz",
     "checksumsAsset": "SHA256SUMS.txt"
-  }
+  },
+  "referenceWasm": {
+    "name": "magick-wasm",
+    "packageVersion": "0.0.40",
+    "upstreamVersion": "7.1.2-19",
+    "repository": "https://github.com/dlemstra/magick-wasm",
+    "checkedAt": "2026-08-21",
+    "note": "Reference project release 0.0.40 bundles ImageMagick 7.1.2-19."
+  },
+  "capabilityMatrix": [
+    {
+      "feature": "Upstream magick CLI",
+      "native": "included",
+      "profiles": {
+        "browser-full": "included"
+      },
+      "note": "WASM Zoo keeps the CLI-style interface instead of wrapping a reduced custom API."
+    },
+    {
+      "feature": "PNG read / write",
+      "native": "optional",
+      "profiles": {
+        "browser-full": "included"
+      },
+      "note": "Backed by the pinned Emscripten libpng port."
+    },
+    {
+      "feature": "JPEG read / write",
+      "native": "optional",
+      "profiles": {
+        "browser-full": "included"
+      },
+      "note": "Backed by the pinned Emscripten libjpeg port."
+    },
+    {
+      "feature": "WebP / TIFF / HEIC / JPEG XL",
+      "native": "optional",
+      "profiles": {
+        "browser-full": "excluded"
+      },
+      "note": "Optional delegate families intentionally omitted from the first browser profile."
+    },
+    {
+      "feature": "Ghostscript / PDF delegate",
+      "native": "optional",
+      "profiles": {
+        "browser-full": "excluded"
+      },
+      "note": "PDF/PS delegate support is intentionally outside this profile."
+    },
+    {
+      "feature": "Font rendering",
+      "native": "optional",
+      "profiles": {
+        "browser-full": "excluded"
+      },
+      "note": "FreeType/fontconfig/pango delegates are not linked."
+    },
+    {
+      "feature": "Color management",
+      "native": "optional",
+      "profiles": {
+        "browser-full": "excluded"
+      },
+      "note": "LCMS is intentionally disabled."
+    },
+    {
+      "feature": "Threaded ImageMagick core",
+      "native": "optional",
+      "profiles": {
+        "browser-full": "excluded"
+      },
+      "note": "The browser profile is deliberately single-threaded and runs inside an outer Worker."
+    },
+    {
+      "feature": "Native filesystem / process integrations",
+      "native": "platform",
+      "profiles": {
+        "browser-full": "na"
+      },
+      "note": "The browser runtime uses Emscripten MEMFS and cannot mirror desktop process semantics."
+    }
+  ]
 }

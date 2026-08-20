@@ -1,6 +1,6 @@
 {
   "name": "wasm-zoo",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "description": "Current upstream software compiled into reproducible, generic WebAssembly distributions.",
   "type": "module",
@@ -9,6 +9,8 @@
     "check": "node scripts/validate.mjs",
     "check:upstream": "node scripts/check-upstream.mjs",
     "build:site": "node scripts/generate-catalog.mjs && node scripts/validate.mjs",
-    "stage:playground": "node scripts/stage-local-playground.mjs"
+    "stage:playground": "node scripts/stage-local-playground.mjs",
+    "check:upstream:write": "node scripts/check-upstream.mjs --write-site",
+    "candidate:prepare": "node scripts/prepare-candidate.mjs"
   }
 }

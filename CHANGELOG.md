@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## v0.6.0
+
+- add a Version Gap Dashboard to Pages showing latest upstream, Zoo pin, representative WASM build, gap state and watcher verification date;
+- add normalized Native → browser Feature Matrices for FFmpeg, libarchive, ImageMagick and libvips with Included / Excluded / N/A / Optional / Unknown semantics;
+- replace the weekly generic upstream check with a daily snapshot-producing Upstream Watcher that updates `site/upstream-status.json`, opens one issue per newly detected release and dispatches isolated candidate checks;
+- add candidate builds for FFmpeg, libarchive and ImageMagick that temporarily substitute only the detected upstream ref/commit, run the existing browser smoke tests and never promote the reviewed pin automatically;
+- mark libvips candidate updates as adapter-gated so stale wasm-vips compatibility patches cannot masquerade as a successful test of a newer libvips release;
+- add representative WASM comparison metadata for ffmpeg.wasm, magick-wasm, libarchive-wasm and wasm-vips;
+- fix Ghostscript tracking to use the actual `ghostpdl-downloads` release stream while Ghostscript remains planned.
+
+
 - fix the libvips `browser-core` profile by explicitly disabling the `quantizr` fallback when `imagequant` is removed under upstream `-Dauto_features=enabled`;
 - add the `browser-core` libvips profile for JPEG/PNG/WebP, trimming TIFF/GIF/imagequant and legacy raster loaders while preserving pthreads/SIMD and the same public API;
 - add automatic raw/gzip size comparison for `browser-core` vs `browser-full`, profile selection in the Playground, and dual-profile build/release/Pages workflows;

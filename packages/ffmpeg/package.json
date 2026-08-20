@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "slug": "ffmpeg",
   "name": "FFmpeg",
   "summary": "Current upstream ffmpeg CLI compiled as a generic, full-featured browser WebAssembly distribution.",
@@ -17,7 +17,12 @@
   "tracker": {
     "type": "github-tags",
     "repository": "FFmpeg/FFmpeg",
-    "tagPattern": "^n([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)$"
+    "tagPattern": "^n([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)$",
+    "candidateMode": "auto",
+    "candidateProfiles": [
+      "browser-full",
+      "browser-full-gpl"
+    ]
   },
   "zoo": {
     "builderVersion": "0.2.6",
@@ -121,58 +126,85 @@
   ],
   "capabilityMatrix": [
     {
-      "feature": "upstream ffmpeg CLI",
-      "native": true,
-      "browserFull": true,
-      "browserFullGpl": true
+      "feature": "Upstream CLI surface",
+      "native": "included",
+      "profiles": {
+        "browser-full": "included",
+        "browser-full-gpl": "included"
+      },
+      "note": "WASM Zoo exposes the real fftools/ffmpeg command surface."
     },
     {
-      "feature": "arbitrary CLI arguments",
-      "native": true,
-      "browserFull": true,
-      "browserFullGpl": true
+      "feature": "Arbitrary CLI arguments",
+      "native": "included",
+      "profiles": {
+        "browser-full": "included",
+        "browser-full-gpl": "included"
+      },
+      "note": "Arguments run against MEMFS paths in the browser."
     },
     {
-      "feature": "software codecs / formats / filters",
-      "native": true,
-      "browserFull": true,
-      "browserFullGpl": true
-    },
-    {
-      "feature": "libx264 encode",
+      "feature": "Broad software codecs / formats / filters",
       "native": "optional",
-      "browserFull": false,
-      "browserFullGpl": true
+      "profiles": {
+        "browser-full": "included",
+        "browser-full-gpl": "included"
+      },
+      "note": "Native breadth varies by configure options; Zoo keeps a broad software-only set."
+    },
+    {
+      "feature": "libx264 H.264 encode",
+      "native": "optional",
+      "profiles": {
+        "browser-full": "excluded",
+        "browser-full-gpl": "included"
+      },
+      "note": "Kept in the GPL profile only because it changes the binary license."
     },
     {
       "feature": "pthreads",
-      "native": true,
-      "browserFull": true,
-      "browserFullGpl": true
+      "native": "optional",
+      "profiles": {
+        "browser-full": "included",
+        "browser-full-gpl": "included"
+      },
+      "note": "Browser builds require SharedArrayBuffer / cross-origin isolation."
     },
     {
       "feature": "WASM SIMD",
-      "native": false,
-      "browserFull": true,
-      "browserFullGpl": true
+      "native": "na",
+      "profiles": {
+        "browser-full": "included",
+        "browser-full-gpl": "included"
+      },
+      "note": "Target-specific optimization rather than a native capability."
     },
     {
-      "feature": "native network protocols",
-      "native": true,
-      "browserFull": false,
-      "browserFullGpl": false
+      "feature": "Native network protocols",
+      "native": "included",
+      "profiles": {
+        "browser-full": "excluded",
+        "browser-full-gpl": "excluded"
+      },
+      "note": "Intentionally excluded from the generic browser target."
     },
     {
-      "feature": "native capture devices",
-      "native": true,
-      "browserFull": false,
-      "browserFullGpl": false
+      "feature": "Native capture devices",
+      "native": "included",
+      "profiles": {
+        "browser-full": "na",
+        "browser-full-gpl": "na"
+      },
+      "note": "Browser media capture belongs to Web APIs rather than libavdevice hardware backends."
     },
     {
       "feature": "CUDA / VAAPI / VideoToolbox / V4L2",
       "native": "platform",
-      "browserFull": false,
-      "browserFullGpl": false
+      "profiles": {
+        "browser-full": "na",
+        "browser-full-gpl": "na"
+      },
+      "note": "Native hardware/platform backends do not map to this browser WASM target."
     }
   ],
   "notes": [
@@ -187,5 +219,13 @@
     "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/ffmpeg-v0.2.6/",
     "sourceAsset": "ffmpeg-sources-9.0.1-zoo-0.2.6.tar.gz",
     "checksumsAsset": "SHA256SUMS.txt"
+  },
+  "referenceWasm": {
+    "name": "ffmpeg.wasm",
+    "packageVersion": "core 0.12.10",
+    "upstreamVersion": "5.1.4",
+    "repository": "https://github.com/ffmpegwasm/ffmpeg.wasm",
+    "checkedAt": "2026-08-21",
+    "note": "Reference comparison only. The latest published core line remains based on FFmpeg 5.1.4."
   }
 }

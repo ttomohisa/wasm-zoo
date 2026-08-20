@@ -1,19 +1,21 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "project": {
     "name": "WASM Zoo",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "tagline": "Upstream software, compiled for WebAssembly.",
     "unofficial": true
   },
   "stats": {
     "packages": 5,
     "available": 4,
-    "profiles": 6
+    "profiles": 6,
+    "featureMatrices": 4,
+    "referenceBuilds": 4
   },
   "packages": [
     {
-      "schemaVersion": 1,
+      "schemaVersion": 2,
       "slug": "ffmpeg",
       "name": "FFmpeg",
       "summary": "Current upstream ffmpeg CLI compiled as a generic, full-featured browser WebAssembly distribution.",
@@ -31,7 +33,12 @@
       "tracker": {
         "type": "github-tags",
         "repository": "FFmpeg/FFmpeg",
-        "tagPattern": "^n([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)$"
+        "tagPattern": "^n([0-9]+\\.[0-9]+(?:\\.[0-9]+)?)$",
+        "candidateMode": "auto",
+        "candidateProfiles": [
+          "browser-full",
+          "browser-full-gpl"
+        ]
       },
       "zoo": {
         "builderVersion": "0.2.6",
@@ -135,58 +142,85 @@
       ],
       "capabilityMatrix": [
         {
-          "feature": "upstream ffmpeg CLI",
-          "native": true,
-          "browserFull": true,
-          "browserFullGpl": true
+          "feature": "Upstream CLI surface",
+          "native": "included",
+          "profiles": {
+            "browser-full": "included",
+            "browser-full-gpl": "included"
+          },
+          "note": "WASM Zoo exposes the real fftools/ffmpeg command surface."
         },
         {
-          "feature": "arbitrary CLI arguments",
-          "native": true,
-          "browserFull": true,
-          "browserFullGpl": true
+          "feature": "Arbitrary CLI arguments",
+          "native": "included",
+          "profiles": {
+            "browser-full": "included",
+            "browser-full-gpl": "included"
+          },
+          "note": "Arguments run against MEMFS paths in the browser."
         },
         {
-          "feature": "software codecs / formats / filters",
-          "native": true,
-          "browserFull": true,
-          "browserFullGpl": true
-        },
-        {
-          "feature": "libx264 encode",
+          "feature": "Broad software codecs / formats / filters",
           "native": "optional",
-          "browserFull": false,
-          "browserFullGpl": true
+          "profiles": {
+            "browser-full": "included",
+            "browser-full-gpl": "included"
+          },
+          "note": "Native breadth varies by configure options; Zoo keeps a broad software-only set."
+        },
+        {
+          "feature": "libx264 H.264 encode",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "excluded",
+            "browser-full-gpl": "included"
+          },
+          "note": "Kept in the GPL profile only because it changes the binary license."
         },
         {
           "feature": "pthreads",
-          "native": true,
-          "browserFull": true,
-          "browserFullGpl": true
+          "native": "optional",
+          "profiles": {
+            "browser-full": "included",
+            "browser-full-gpl": "included"
+          },
+          "note": "Browser builds require SharedArrayBuffer / cross-origin isolation."
         },
         {
           "feature": "WASM SIMD",
-          "native": false,
-          "browserFull": true,
-          "browserFullGpl": true
+          "native": "na",
+          "profiles": {
+            "browser-full": "included",
+            "browser-full-gpl": "included"
+          },
+          "note": "Target-specific optimization rather than a native capability."
         },
         {
-          "feature": "native network protocols",
-          "native": true,
-          "browserFull": false,
-          "browserFullGpl": false
+          "feature": "Native network protocols",
+          "native": "included",
+          "profiles": {
+            "browser-full": "excluded",
+            "browser-full-gpl": "excluded"
+          },
+          "note": "Intentionally excluded from the generic browser target."
         },
         {
-          "feature": "native capture devices",
-          "native": true,
-          "browserFull": false,
-          "browserFullGpl": false
+          "feature": "Native capture devices",
+          "native": "included",
+          "profiles": {
+            "browser-full": "na",
+            "browser-full-gpl": "na"
+          },
+          "note": "Browser media capture belongs to Web APIs rather than libavdevice hardware backends."
         },
         {
           "feature": "CUDA / VAAPI / VideoToolbox / V4L2",
           "native": "platform",
-          "browserFull": false,
-          "browserFullGpl": false
+          "profiles": {
+            "browser-full": "na",
+            "browser-full-gpl": "na"
+          },
+          "note": "Native hardware/platform backends do not map to this browser WASM target."
         }
       ],
       "notes": [
@@ -201,10 +235,18 @@
         "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/ffmpeg-v0.2.6/",
         "sourceAsset": "ffmpeg-sources-9.0.1-zoo-0.2.6.tar.gz",
         "checksumsAsset": "SHA256SUMS.txt"
+      },
+      "referenceWasm": {
+        "name": "ffmpeg.wasm",
+        "packageVersion": "core 0.12.10",
+        "upstreamVersion": "5.1.4",
+        "repository": "https://github.com/ffmpegwasm/ffmpeg.wasm",
+        "checkedAt": "2026-08-21",
+        "note": "Reference comparison only. The latest published core line remains based on FFmpeg 5.1.4."
       }
     },
     {
-      "schemaVersion": 1,
+      "schemaVersion": 2,
       "slug": "imagemagick",
       "name": "ImageMagick",
       "summary": "Upstream magick CLI compiled for browser WebAssembly with reproducible source and toolchain pins.",
@@ -221,7 +263,11 @@
       },
       "tracker": {
         "type": "github-releases",
-        "repository": "ImageMagick/ImageMagick"
+        "repository": "ImageMagick/ImageMagick",
+        "candidateMode": "auto",
+        "candidateProfiles": [
+          "browser-full"
+        ]
       },
       "zoo": {
         "builderVersion": "0.4.0",
@@ -311,10 +357,92 @@
         "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/imagemagick-v0.4.0/",
         "sourceAsset": "imagemagick-sources-7.1.2-29-zoo-0.4.0.tar.gz",
         "checksumsAsset": "SHA256SUMS.txt"
-      }
+      },
+      "referenceWasm": {
+        "name": "magick-wasm",
+        "packageVersion": "0.0.40",
+        "upstreamVersion": "7.1.2-19",
+        "repository": "https://github.com/dlemstra/magick-wasm",
+        "checkedAt": "2026-08-21",
+        "note": "Reference project release 0.0.40 bundles ImageMagick 7.1.2-19."
+      },
+      "capabilityMatrix": [
+        {
+          "feature": "Upstream magick CLI",
+          "native": "included",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "WASM Zoo keeps the CLI-style interface instead of wrapping a reduced custom API."
+        },
+        {
+          "feature": "PNG read / write",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "Backed by the pinned Emscripten libpng port."
+        },
+        {
+          "feature": "JPEG read / write",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "Backed by the pinned Emscripten libjpeg port."
+        },
+        {
+          "feature": "WebP / TIFF / HEIC / JPEG XL",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "excluded"
+          },
+          "note": "Optional delegate families intentionally omitted from the first browser profile."
+        },
+        {
+          "feature": "Ghostscript / PDF delegate",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "excluded"
+          },
+          "note": "PDF/PS delegate support is intentionally outside this profile."
+        },
+        {
+          "feature": "Font rendering",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "excluded"
+          },
+          "note": "FreeType/fontconfig/pango delegates are not linked."
+        },
+        {
+          "feature": "Color management",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "excluded"
+          },
+          "note": "LCMS is intentionally disabled."
+        },
+        {
+          "feature": "Threaded ImageMagick core",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "excluded"
+          },
+          "note": "The browser profile is deliberately single-threaded and runs inside an outer Worker."
+        },
+        {
+          "feature": "Native filesystem / process integrations",
+          "native": "platform",
+          "profiles": {
+            "browser-full": "na"
+          },
+          "note": "The browser runtime uses Emscripten MEMFS and cannot mirror desktop process semantics."
+        }
+      ]
     },
     {
-      "schemaVersion": 1,
+      "schemaVersion": 2,
       "slug": "libarchive",
       "name": "libarchive",
       "summary": "Upstream archive command-line tools compiled for browser WebAssembly with reproducible source and toolchain pins.",
@@ -331,7 +459,11 @@
       },
       "tracker": {
         "type": "github-releases",
-        "repository": "libarchive/libarchive"
+        "repository": "libarchive/libarchive",
+        "candidateMode": "auto",
+        "candidateProfiles": [
+          "browser-full"
+        ]
       },
       "zoo": {
         "builderVersion": "0.3.0",
@@ -416,10 +548,92 @@
         "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/libarchive-v0.3.0/",
         "sourceAsset": "libarchive-sources-3.8.9-zoo-0.3.0.tar.gz",
         "checksumsAsset": "SHA256SUMS.txt"
-      }
+      },
+      "referenceWasm": {
+        "name": "libarchive-wasm",
+        "packageVersion": "1.2.0",
+        "upstreamVersion": "3.7.7",
+        "repository": "https://github.com/ofk/libarchive-wasm",
+        "checkedAt": "2026-08-21",
+        "note": "Reference package 1.2.0 currently builds libarchive 3.7.7."
+      },
+      "capabilityMatrix": [
+        {
+          "feature": "bsdtar / bsdcpio / bsdcat / bsdunzip CLIs",
+          "native": "included",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "The Zoo build publishes all four upstream CLI entry points."
+        },
+        {
+          "feature": "ZIP / TAR family formats",
+          "native": "included",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "Core archive formats remain compiled into the static tools."
+        },
+        {
+          "feature": "zlib / gzip / deflate",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "Uses the pinned Emscripten zlib port."
+        },
+        {
+          "feature": "bzip2",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "Uses the pinned Emscripten bzip2 port."
+        },
+        {
+          "feature": "xz / LZMA",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "excluded"
+          },
+          "note": "External LZMA backend intentionally disabled in v0.3.0."
+        },
+        {
+          "feature": "Zstandard / LZ4 / LZO",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "excluded"
+          },
+          "note": "Compression backends intentionally not linked."
+        },
+        {
+          "feature": "Crypto backends",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "excluded"
+          },
+          "note": "OpenSSL, mbedTLS and Nettle are not linked."
+        },
+        {
+          "feature": "ACL / xattr / native filesystem semantics",
+          "native": "platform",
+          "profiles": {
+            "browser-full": "na"
+          },
+          "note": "Browser execution uses MEMFS; host ACL/xattr behavior does not map directly."
+        },
+        {
+          "feature": "Threads / SharedArrayBuffer",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "excluded"
+          },
+          "note": "This browser profile remains single-threaded and does not require cross-origin isolation."
+        }
+      ]
     },
     {
-      "schemaVersion": 1,
+      "schemaVersion": 2,
       "slug": "libvips",
       "name": "libvips",
       "summary": "Upstream libvips image-processing library compiled for browser WebAssembly with a pinned Emscripten adapter.",
@@ -436,7 +650,12 @@
       },
       "tracker": {
         "type": "github-releases",
-        "repository": "libvips/libvips"
+        "repository": "libvips/libvips",
+        "candidateMode": "adapter-gated",
+        "candidateProfiles": [
+          "browser-core",
+          "browser-full"
+        ]
       },
       "zoo": {
         "builderVersion": "0.5.0",
@@ -558,10 +777,110 @@
         "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/libvips-v0.5.0/",
         "sourceAsset": "libvips-sources-8.18.5-zoo-0.5.0.tar.gz",
         "checksumsAsset": "SHA256SUMS.txt"
-      }
+      },
+      "referenceWasm": {
+        "name": "wasm-vips",
+        "packageVersion": "0.0.18",
+        "upstreamVersion": "8.18.5",
+        "repository": "https://github.com/kleisauke/wasm-vips",
+        "checkedAt": "2026-08-21",
+        "note": "WASM Zoo uses a pinned wasm-vips adapter commit but independently pins and packages the upstream libvips release."
+      },
+      "capabilityMatrix": [
+        {
+          "feature": "libvips image-processing API",
+          "native": "included",
+          "profiles": {
+            "browser-core": "included",
+            "browser-full": "included"
+          },
+          "note": "Exposed through the pinned wasm-vips Embind adapter."
+        },
+        {
+          "feature": "JPEG",
+          "native": "optional",
+          "profiles": {
+            "browser-core": "included",
+            "browser-full": "included"
+          },
+          "note": "mozjpeg-backed raster load/save."
+        },
+        {
+          "feature": "PNG",
+          "native": "optional",
+          "profiles": {
+            "browser-core": "included",
+            "browser-full": "included"
+          },
+          "note": "Included in both browser profiles."
+        },
+        {
+          "feature": "WebP",
+          "native": "optional",
+          "profiles": {
+            "browser-core": "included",
+            "browser-full": "included"
+          },
+          "note": "Included in both browser profiles."
+        },
+        {
+          "feature": "TIFF",
+          "native": "optional",
+          "profiles": {
+            "browser-core": "excluded",
+            "browser-full": "included"
+          },
+          "note": "Removed from Core to reduce transfer size."
+        },
+        {
+          "feature": "GIF / palette quantization",
+          "native": "optional",
+          "profiles": {
+            "browser-core": "excluded",
+            "browser-full": "included"
+          },
+          "note": "cgif/imagequant path is only built in Full."
+        },
+        {
+          "feature": "AVIF / HEIC / JPEG XL / SVG",
+          "native": "optional",
+          "profiles": {
+            "browser-core": "excluded",
+            "browser-full": "excluded"
+          },
+          "note": "Large optional delegate families intentionally excluded from both current profiles."
+        },
+        {
+          "feature": "pthreads",
+          "native": "optional",
+          "profiles": {
+            "browser-core": "included",
+            "browser-full": "included"
+          },
+          "note": "Both profiles require SharedArrayBuffer / cross-origin isolation."
+        },
+        {
+          "feature": "WASM SIMD",
+          "native": "na",
+          "profiles": {
+            "browser-core": "included",
+            "browser-full": "included"
+          },
+          "note": "Target-specific optimization enabled for browser builds."
+        },
+        {
+          "feature": "Native filesystem-backed workflows",
+          "native": "included",
+          "profiles": {
+            "browser-core": "na",
+            "browser-full": "na"
+          },
+          "note": "Browser builds use MEMFS and byte-buffer APIs rather than host filesystem semantics."
+        }
+      ]
     },
     {
-      "schemaVersion": 1,
+      "schemaVersion": 2,
       "slug": "ghostscript",
       "name": "Ghostscript",
       "summary": "PostScript/PDF interpreter and renderer. Candidate for a current upstream gs CLI WebAssembly distribution.",
@@ -578,7 +897,10 @@
       },
       "tracker": {
         "type": "github-releases",
-        "repository": "ArtifexSoftware/ghostpdl"
+        "repository": "ArtifexSoftware/ghostpdl-downloads",
+        "versionPattern": "(\\d+\\.\\d+\\.\\d+)",
+        "candidateMode": "none",
+        "candidateProfiles": []
       },
       "zoo": {
         "builderVersion": null,
@@ -588,7 +910,9 @@
       "comparison": [],
       "notes": [
         "License and redistribution requirements must be reviewed before publishing binaries."
-      ]
+      ],
+      "referenceWasm": null,
+      "capabilityMatrix": []
     }
   ]
 }

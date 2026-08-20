@@ -1,47 +1,107 @@
-name: Check upstream releases
+name: Watch upstream releases
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "23 3 * * 1"
+    - cron: "23 3 * * *"
 
 permissions:
-  contents: read
+  contents: write
   issues: write
+  actions: write
+
+concurrency:
+  group: upstream-watcher
+  cancel-in-progress: false
 
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Generate upstream report
+        with:
+          ref: main
+      - name: Generate upstream status
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: node scripts/check-upstream.mjs --json > upstream-report.json
-      - name: Add report to job summary
+        run: node scripts/check-upstream.mjs --json --write-site > upstream-report.json
+      - name: Add compact report to job summary
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/check-upstream.mjs --markdown >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish freshness snapshot when it changed
+        id: snapshot
         shell: bash
         run: |
-          echo '## WASM Zoo upstream report' >> "$GITHUB_STEP_SUMMARY"
-          echo '```json' >> "$GITHUB_STEP_SUMMARY"
-          cat upstream-report.json >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-      - name: Open one update issue when a pinned package is behind
+          set -euo pipefail
+          if git diff --quiet -- site/upstream-status.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/upstream-status.json
+          git commit -m "chore: refresh upstream status"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      - name: Refresh GitHub Pages after snapshot
+        if: steps.snapshot.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY"
+      - name: Open per-package issues and dispatch first candidate check
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          HAS_UPDATES="$(node -e 'const r=require("./upstream-report.json");process.stdout.write(String(r.hasUpdates))')"
-          test "$HAS_UPDATES" = "true" || exit 0
-          EXISTING="$(gh issue list --state open --search 'WASM Zoo upstream update in:title' --json number --jq 'length')"
-          test "$EXISTING" = "0" || exit 0
-          {
-            echo 'An upstream release is newer than a pinned WASM Zoo build.'
-            echo
-            echo '```json'
-            cat upstream-report.json
-            echo '```'
-            echo
-            echo 'Update one dependency at a time and require the full build + browser smoke-test matrix to pass before changing the catalog pin.'
-          } > issue-body.md
-          gh issue create --title "WASM Zoo upstream update" --body-file issue-body.md
+          jq -c '.packages[] | select(.status == "ok" and .updateAvailable == true)' upstream-report.json | while read -r item; do
+            slug="$(jq -r '.slug' <<<"$item")"
+            name="$(jq -r '.name' <<<"$item")"
+            pinned="$(jq -r '.pinned' <<<"$item")"
+            latest="$(jq -r '.latest' <<<"$item")"
+            ref="$(jq -r '.latestRef' <<<"$item")"
+            commit="$(jq -r '.latestCommit' <<<"$item")"
+            url="$(jq -r '.url' <<<"$item")"
+            mode="$(jq -r '.candidate.mode' <<<"$item")"
+            lag="$(jq -r '.lagDays' <<<"$item")"
+            title="[upstream] ${name} ${latest} detected"
+            issue="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "${title} in:title" --json number,title | jq -r --arg t "$title" '.[] | select(.title == $t) | .number' | head -n1)"
+            if [ -n "$issue" ]; then
+              echo "[skip] existing issue #${issue}: ${title}"
+              continue
+            fi
+            body_file="$(mktemp)"
+            cat > "$body_file" <<EOF_BODY
+          A newer upstream release was detected by the WASM Zoo watcher.
+
+          | Field | Value |
+          | --- | --- |
+          | Project | ${name} |
+          | Zoo pin | ${pinned} |
+          | Upstream | ${latest} |
+          | Ref | \`${ref}\` |
+          | Commit | \`${commit}\` |
+          | Release-age gap | ${lag} day(s) |
+          | Candidate mode | ${mode} |
+
+          Upstream: ${url}
+
+          The watcher never changes the reviewed Zoo pin automatically. Promotion requires the normal exact-pin repository checks, build matrix and browser smoke tests.
+          EOF_BODY
+            issue_url="$(gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body_file")"
+            rm -f "$body_file"
+            issue="${issue_url##*/}"
+            echo "[issue] #${issue} ${title}"
+            if [ "$mode" = "auto" ]; then
+              gh workflow run upstream-candidate.yml --repo "$GITHUB_REPOSITORY" \
+                -f slug="$slug" -f version="$latest" -f ref="$ref" -f commit="$commit" -f issue_number="$issue"
+              echo "[candidate] dispatched ${slug} ${latest}"
+            elif [ "$mode" = "adapter-gated" ]; then
+              gh workflow run upstream-candidate.yml --repo "$GITHUB_REPOSITORY" \
+                -f slug="$slug" -f version="$latest" -f ref="$ref" -f commit="$commit" -f issue_number="$issue"
+              echo "[candidate] dispatched adapter-readiness report for ${slug} ${latest}"
+            else
+              echo "[candidate] automatic candidate disabled for ${slug}"
+            fi
+          done

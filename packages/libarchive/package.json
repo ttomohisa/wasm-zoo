@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "slug": "libarchive",
   "name": "libarchive",
   "summary": "Upstream archive command-line tools compiled for browser WebAssembly with reproducible source and toolchain pins.",
@@ -16,7 +16,11 @@
   },
   "tracker": {
     "type": "github-releases",
-    "repository": "libarchive/libarchive"
+    "repository": "libarchive/libarchive",
+    "candidateMode": "auto",
+    "candidateProfiles": [
+      "browser-full"
+    ]
   },
   "zoo": {
     "builderVersion": "0.3.0",
@@ -101,5 +105,87 @@
     "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/libarchive-v0.3.0/",
     "sourceAsset": "libarchive-sources-3.8.9-zoo-0.3.0.tar.gz",
     "checksumsAsset": "SHA256SUMS.txt"
-  }
+  },
+  "referenceWasm": {
+    "name": "libarchive-wasm",
+    "packageVersion": "1.2.0",
+    "upstreamVersion": "3.7.7",
+    "repository": "https://github.com/ofk/libarchive-wasm",
+    "checkedAt": "2026-08-21",
+    "note": "Reference package 1.2.0 currently builds libarchive 3.7.7."
+  },
+  "capabilityMatrix": [
+    {
+      "feature": "bsdtar / bsdcpio / bsdcat / bsdunzip CLIs",
+      "native": "included",
+      "profiles": {
+        "browser-full": "included"
+      },
+      "note": "The Zoo build publishes all four upstream CLI entry points."
+    },
+    {
+      "feature": "ZIP / TAR family formats",
+      "native": "included",
+      "profiles": {
+        "browser-full": "included"
+      },
+      "note": "Core archive formats remain compiled into the static tools."
+    },
+    {
+      "feature": "zlib / gzip / deflate",
+      "native": "optional",
+      "profiles": {
+        "browser-full": "included"
+      },
+      "note": "Uses the pinned Emscripten zlib port."
+    },
+    {
+      "feature": "bzip2",
+      "native": "optional",
+      "profiles": {
+        "browser-full": "included"
+      },
+      "note": "Uses the pinned Emscripten bzip2 port."
+    },
+    {
+      "feature": "xz / LZMA",
+      "native": "optional",
+      "profiles": {
+        "browser-full": "excluded"
+      },
+      "note": "External LZMA backend intentionally disabled in v0.3.0."
+    },
+    {
+      "feature": "Zstandard / LZ4 / LZO",
+      "native": "optional",
+      "profiles": {
+        "browser-full": "excluded"
+      },
+      "note": "Compression backends intentionally not linked."
+    },
+    {
+      "feature": "Crypto backends",
+      "native": "optional",
+      "profiles": {
+        "browser-full": "excluded"
+      },
+      "note": "OpenSSL, mbedTLS and Nettle are not linked."
+    },
+    {
+      "feature": "ACL / xattr / native filesystem semantics",
+      "native": "platform",
+      "profiles": {
+        "browser-full": "na"
+      },
+      "note": "Browser execution uses MEMFS; host ACL/xattr behavior does not map directly."
+    },
+    {
+      "feature": "Threads / SharedArrayBuffer",
+      "native": "optional",
+      "profiles": {
+        "browser-full": "excluded"
+      },
+      "note": "This browser profile remains single-threaded and does not require cross-origin isolation."
+    }
+  ]
 }

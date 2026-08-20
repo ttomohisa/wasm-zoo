@@ -12,9 +12,12 @@ on:
       - "builders/ffmpeg/versions.env"
       - "builders/libarchive/**"
       - "builders/imagemagick/**"
+      - "builders/libvips/**"
       - "package.json"
       - "VERSION"
       - ".github/workflows/verify.yml"
+      - ".github/workflows/check-upstream.yml"
+      - ".github/workflows/upstream-candidate.yml"
   pull_request:
 
 permissions:
@@ -35,5 +38,7 @@ jobs:
         run: node builders/libarchive/scripts/check-repository.mjs
       - name: Validate ImageMagick builder
         run: node builders/imagemagick/scripts/check-repository.mjs
+      - name: Validate libvips builder
+        run: node builders/libvips/scripts/check-repository.mjs
       - name: Ensure generated catalog is committed
         run: git diff --exit-code -- site/catalog.json
