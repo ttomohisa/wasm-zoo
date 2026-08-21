@@ -25,7 +25,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 | Package | Upstream | Zoo builder | Browser profile | Playground |
 | --- | --- | --- | --- | --- |
 | FFmpeg | 9.0.1 | 0.2.6 | `browser-full`, `browser-full-gpl` | yes |
-| libarchive | 3.8.9 | 0.3.0 | `browser-full` | yes |
+| libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes |
 | ImageMagick | 7.1.2-29 | 0.4.0 | `browser-full` | yes |
 | libvips | 8.18.5 | 0.5.0 | `browser-core`, `browser-full` | yes |
 | Ghostscript | 10.07.1 | 0.7.0 | `browser-full` | yes |
@@ -148,7 +148,7 @@ The first profile enables:
 - bzip2 1.0.6 through the pinned Emscripten 6.0.6 toolchain;
 - upstream archive formats that are compiled into the four static CLI executables.
 
-The following optional external backends are intentionally left disabled in v0.3.0 and recorded as capability gaps: xz/LZMA, Zstandard, LZ4, LZO, XML and crypto libraries.
+The following optional external backends are intentionally left disabled in `browser-full` and recorded as capability gaps: xz/LZMA, Zstandard, LZ4, LZO, XML and crypto libraries.
 
 The browser smoke test uses a real ZIP/Deflate fixture, verifies `bsdtar -tf`, extracts the archive with `bsdtar -xf`, checks extracted bytes, exercises `bsdunzip -l`, and instantiates `bsdcpio`/`bsdcat`.
 
@@ -167,11 +167,13 @@ Linux/macOS:
 Release tag after the real build passes:
 
 ```text
-git tag -a libarchive-v0.3.0 -m "WASM Zoo libarchive v0.3.0"
-git push origin libarchive-v0.3.0
+git tag -a libarchive-v0.3.1 -m "WASM Zoo libarchive v0.3.1"
+git push origin libarchive-v0.3.1
 ```
 
 The release workflow rebuilds from the exact pin, runs the Chromium smoke test, publishes binary/source/checksum assets, then asks the Pages workflow to refresh the libarchive Playground.
+
+`libarchive-v0.3.1` is the first production canary for the v0.8.0 supply-chain contract. It intentionally keeps the 0.3.0 Wasm feature set unchanged and adds standalone `provenance-browser-full.json` and `sbom-browser-full.cdx.json` release assets after the real Chromium smoke test passes.
 
 ## libarchive browser API
 
@@ -226,12 +228,14 @@ The catalog still works when no local Wasm build has been staged.
 
 Every metadata-enabled package release includes a binary ZIP, corresponding source/build recipe, build information, standalone provenance/SBOM assets and `SHA256SUMS.txt`. Releases published before the v0.8.0 contract remain valid and gain these standalone files on their next package release.
 
-libarchive v0.3.0 uses:
+libarchive v0.3.1 uses:
 
 ```text
-libarchive-browser-full-3.8.9-zoo-0.3.0.zip
-libarchive-sources-3.8.9-zoo-0.3.0.tar.gz
+libarchive-browser-full-3.8.9-zoo-0.3.1.zip
+libarchive-sources-3.8.9-zoo-0.3.1.tar.gz
 BUILDINFO-browser-full.txt
+provenance-browser-full.json
+sbom-browser-full.cdx.json
 SHA256SUMS.txt
 ```
 

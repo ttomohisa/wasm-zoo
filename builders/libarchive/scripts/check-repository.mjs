@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const errors=[]; const read=(p)=>fs.readFileSync(path.join(root,p),'utf8'); const need=(ok,msg)=>{if(!ok)errors.push(msg)};
 const env=read('versions.env');
-need(env.includes('BUILDER_VERSION=0.3.0'),'builder version must be 0.3.0');
+need(env.includes('BUILDER_VERSION=0.3.1'),'builder version must be 0.3.1');
 need(env.includes('LIBARCHIVE_REF=v3.8.9'),'libarchive must pin v3.8.9');
 need(env.includes('LIBARCHIVE_COMMIT=27cbc7827172698143e440801fc0ba39ccb4f1f5'),'libarchive exact commit pin is missing');
 const build=read('scripts/build-full.sh');
@@ -26,6 +26,9 @@ need(playground.includes('isObviousNonArchive'),'Playground must detect obvious 
 need(playground.includes('Use “Create TAR”'),'Playground must explain how to archive arbitrary regular files');
 need(playground.includes("activePreset === 'unzip'"),'Playground must distinguish ZIP-only bsdunzip input from general archive input');
 need(playgroundHtml.includes('id="file-guidance"'),'Playground must expose preset-specific file guidance');
+const psBuild=read('scripts/build.ps1');
+need(psBuild.includes('generate-build-metadata.mjs'),'Windows build must generate provenance/SBOM after the browser smoke test');
+need(psBuild.includes('--slug libarchive --profile $Profile --dist $out'),'Windows metadata generation must target the selected libarchive profile output');
 const smoke=read('tests/smoke-test.html');
 need(smoke.includes("['-tf', '/fixture.zip']"),'smoke test must list a real ZIP');
 need(smoke.includes("['-xf', '/fixture.zip', '-C', '/out']"),'smoke test must extract a real ZIP');

@@ -99,7 +99,7 @@ cat > /out/features.json <<EOF_JSON
   "runtimeTested": ["ZIP/Deflate list", "ZIP/Deflate extraction"],
   "notes": [
     "Upstream bsdtar/bsdcpio enable libarchive formats compiled into the static executable.",
-    "External xz/LZMA, Zstandard, LZ4, LZO, XML and crypto backends are intentionally not linked in v0.3.0."
+    "External xz/LZMA, Zstandard, LZ4, LZO, XML and crypto backends are intentionally not linked in the browser-full profile."
   ]
 }
 EOF_JSON
@@ -181,7 +181,7 @@ Browser target:
 - zlib 1.3.2 and bzip2 1.0.6 from the pinned Emscripten 6.0.6 toolchain
 - no SharedArrayBuffer requirement
 - no native filesystem, process spawning or networking semantics
-- xz/LZMA, zstd, lz4, lzo, XML and crypto backends intentionally disabled in v0.3.0
+- xz/LZMA, zstd, lz4, lzo, XML and crypto backends intentionally disabled in the browser-full profile
 EOF_TXT
 
 cp /src/libarchive/COPYING /out/LICENSE-libarchive.txt

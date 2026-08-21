@@ -114,7 +114,7 @@ if (libarchive) {
   assert(ids.has("browser-full"), "libarchive catalog must publish browser-full");
   for (const profile of libarchive.profiles) {
     assert(profile.arbitraryCli === true, `libarchive profile ${profile.id} must expose upstream CLI arguments`);
-    assert(profile.threads === false && profile.sharedArrayBuffer === false, `libarchive profile ${profile.id} must remain single-threaded/no-SAB in v0.3.0`);
+    assert(profile.threads === false && profile.sharedArrayBuffer === false, `libarchive profile ${profile.id} must remain single-threaded/no-SAB in browser-full`);
     assert(profile.playground === true, `libarchive profile ${profile.id} must be enabled in the Playground`);
     assert(profile.playgroundPath === "./libarchive-playground/", `libarchive profile ${profile.id} must link to libarchive Playground`);
   }

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- publish libarchive builder 0.3.1 as the first v0.8.0 metadata-enabled canary, keeping libarchive 3.8.9 and its browser-full feature set unchanged while requiring standalone SLSA provenance and CycloneDX SBOM release assets covered by checksums;
+
 ## v0.8.0
 
 - add Release Health Dashboard covering release workflow gates, required assets, Playground reachability, upstream freshness and supply-chain metadata state for all five published packages;
