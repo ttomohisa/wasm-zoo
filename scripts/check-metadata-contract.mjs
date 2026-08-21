@@ -11,8 +11,10 @@ for (const pkg of packages) {
   assert(String(pkg.zoo?.provenance).includes('SLSA Provenance v1'), `${pkg.slug}: provenance contract missing`);
   assert(String(pkg.zoo?.sbom).includes('CycloneDX 1.6'), `${pkg.slug}: SBOM contract missing`);
   const build = await fs.readFile(path.join(root, 'builders', pkg.slug, 'build.sh'), 'utf8');
+  const buildPs1 = await fs.readFile(path.join(root, 'builders', pkg.slug, 'scripts', 'build.ps1'), 'utf8');
   const release = await fs.readFile(path.join(root, 'builders', pkg.slug, 'scripts', 'prepare-release.sh'), 'utf8');
   assert(build.includes('generate-build-metadata.mjs'), `${pkg.slug}: build.sh must generate supply-chain metadata after smoke testing`);
+  assert(buildPs1.includes('generate-build-metadata.mjs'), `${pkg.slug}: Windows build.ps1 must generate supply-chain metadata after smoke testing`);
   assert(release.includes('provenance.json') && release.includes('sbom.cdx.json'), `${pkg.slug}: binary release must contain provenance and SBOM`);
   assert(release.includes('provenance-') && release.includes('sbom-'), `${pkg.slug}: GitHub Release must expose standalone provenance and SBOM assets`);
 

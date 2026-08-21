@@ -20,7 +20,7 @@ The initial profile is intentionally conservative:
 - Emscripten MEMFS;
 - PNG + JPEG delegates enabled through the pinned Emscripten ports;
 - no SharedArrayBuffer or cross-origin isolation requirement;
-- no Ghostscript/PDF, TIFF, WebP, HEIC, OpenEXR, color-management or font-stack integration in v0.4.0.
+- no Ghostscript/PDF, TIFF, WebP, HEIC, OpenEXR, color-management or font-stack integration in the current browser-full profile.
 
 ### Single-threaded browser runtime
 

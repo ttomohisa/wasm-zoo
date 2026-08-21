@@ -24,11 +24,11 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 
 | Package | Upstream | Zoo builder | Browser profile | Playground |
 | --- | --- | --- | --- | --- |
-| FFmpeg | 9.0.1 | 0.2.6 | `browser-full`, `browser-full-gpl` | yes |
+| FFmpeg | 9.0.1 | 0.2.7 | `browser-full`, `browser-full-gpl` | yes |
 | libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes |
-| ImageMagick | 7.1.2-29 | 0.4.0 | `browser-full` | yes |
-| libvips | 8.18.5 | 0.5.0 | `browser-core`, `browser-full` | yes |
-| Ghostscript | 10.07.1 | 0.7.0 | `browser-full` | yes |
+| ImageMagick | 7.1.2-29 | 0.4.1 | `browser-full` | yes |
+| libvips | 8.18.5 | 0.5.1 | `browser-core`, `browser-full` | yes |
+| Ghostscript | 10.07.1 | 0.7.1 | `browser-full` | yes |
 
 The project version is **WASM Zoo v0.8.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
@@ -51,6 +51,8 @@ After a builder's real browser smoke test succeeds, every profile now generates:
 - `sbom.cdx.json` — CycloneDX 1.6 JSON describing the Zoo profile, upstream project and linked/bundled component inventory available from the pinned build inputs.
 
 The files are included in the binary ZIP and are also exposed as `provenance-<profile>.json` and `sbom-<profile>.cdx.json` on metadata-enabled package releases. See [`docs/SUPPLY_CHAIN.md`](docs/SUPPLY_CHAIN.md).
+
+The v0.8.0 metadata rollout uses patch-only builder releases with unchanged upstream pins: libarchive `0.3.1` (canary), FFmpeg `0.2.7`, ImageMagick `0.4.1`, libvips `0.5.1`, and Ghostscript `0.7.1`.
 
 Run the live release health check manually:
 
@@ -126,7 +128,7 @@ build-ffmpeg.bat browser-full-gpl
 Release tag:
 
 ```text
-ffmpeg-v0.2.6
+ffmpeg-v0.2.7
 ```
 
 ## libarchive 3.8.9
@@ -273,8 +275,8 @@ Linux/macOS:
 Release tag after the real build passes:
 
 ```text
-git tag -a imagemagick-v0.4.0 -m "WASM Zoo ImageMagick v0.4.0"
-git push origin imagemagick-v0.4.0
+git tag -a imagemagick-v0.4.1 -m "WASM Zoo ImageMagick v0.4.1"
+git push origin imagemagick-v0.4.1
 ```
 
 The release workflow rebuilds from the exact pin, runs the Chromium smoke test, publishes binary/source/checksum assets, then asks the Pages workflow to refresh the ImageMagick Playground.
@@ -329,8 +331,8 @@ Linux/macOS:
 Release tag after the real build passes:
 
 ```text
-git tag -a libvips-v0.5.0 -m "WASM Zoo libvips v0.5.0"
-git push origin libvips-v0.5.0
+git tag -a libvips-v0.5.1 -m "WASM Zoo libvips v0.5.1"
+git push origin libvips-v0.5.1
 ```
 
 ### libvips browser API
@@ -372,8 +374,8 @@ On bash:
 Release tag:
 
 ```bash
-git tag -a ghostscript-v0.7.0 -m "WASM Zoo Ghostscript v0.7.0"
-git push origin ghostscript-v0.7.0
+git tag -a ghostscript-v0.7.1 -m "WASM Zoo Ghostscript v0.7.1"
+git push origin ghostscript-v0.7.1
 ```
 
 ### Ghostscript browser API

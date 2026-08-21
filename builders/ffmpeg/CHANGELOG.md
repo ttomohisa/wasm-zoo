@@ -1,5 +1,11 @@
 # FFmpeg builder changelog
 
+## 0.2.7 - 2026-08-21
+
+- Metadata-enabled patch release for WASM Zoo v0.8.0; FFmpeg 9.0.1 and both browser profile feature sets are unchanged.
+- Publish standalone SLSA provenance and CycloneDX 1.6 SBOM assets after the real browser smoke test.
+- Generate the same provenance/SBOM files from the Windows build path.
+
 ## 0.2.6 - 2026-08-19
 
 - Fixed the GPL browser smoke deadlock caused by FFmpeg input decoder/filter auto-threading exhausting the fixed Emscripten pthread pool.

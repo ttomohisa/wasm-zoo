@@ -42,7 +42,7 @@
         ]
       },
       "zoo": {
-        "builderVersion": "0.2.6",
+        "builderVersion": "0.2.7",
         "toolchain": "Emscripten 6.0.6",
         "buildModel": "upstream-cli-full",
         "reproducible": true,
@@ -79,7 +79,7 @@
           "output": "Generic ffmpeg CLI; output is chosen by CLI arguments",
           "binaryLicense": "LGPL-2.1-or-later",
           "size": "Loaded from the published release manifest",
-          "releaseAsset": "ffmpeg-browser-full-9.0.1-zoo-0.2.6.zip",
+          "releaseAsset": "ffmpeg-browser-full-9.0.1-zoo-0.2.7.zip",
           "playground": true,
           "playgroundPath": "./ffmpeg-playground/"
         },
@@ -108,7 +108,7 @@
           "output": "Generic ffmpeg CLI with GPL/libx264 features",
           "binaryLicense": "GPL-2.0-or-later",
           "size": "Loaded from the published release manifest",
-          "releaseAsset": "ffmpeg-browser-full-gpl-9.0.1-zoo-0.2.6.zip",
+          "releaseAsset": "ffmpeg-browser-full-gpl-9.0.1-zoo-0.2.7.zip",
           "playground": true,
           "playgroundPath": "./ffmpeg-playground/"
         }
@@ -228,16 +228,17 @@
         }
       ],
       "notes": [
+        "v0.2.7 is the first metadata-enabled FFmpeg patch release for WASM Zoo v0.8.0: the WebAssembly feature set and upstream pin are unchanged while standalone SLSA provenance and CycloneDX SBOM assets are added to the release contract.",
         "Full means a broad software FFmpeg build for the browser target, not every capability of every native FFmpeg build.",
         "Both full profiles require SharedArrayBuffer and COOP/COEP because the upstream FFmpeg CLI requires a working thread backend.",
         "Native networking, libavdevice capture APIs and hardware acceleration backends are deliberately reported as unsupported rather than hidden.",
         "Each built release records actual file sizes, SHA-256 hashes, enabled FFmpeg CONFIG entries, features.json and ffmpeg-config.mak."
       ],
       "release": {
-        "tag": "ffmpeg-v0.2.6",
-        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.6",
-        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/ffmpeg-v0.2.6/",
-        "sourceAsset": "ffmpeg-sources-9.0.1-zoo-0.2.6.tar.gz",
+        "tag": "ffmpeg-v0.2.7",
+        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.7",
+        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/ffmpeg-v0.2.7/",
+        "sourceAsset": "ffmpeg-sources-9.0.1-zoo-0.2.7.tar.gz",
         "checksumsAsset": "SHA256SUMS.txt"
       },
       "referenceWasm": {
@@ -274,7 +275,7 @@
         ]
       },
       "zoo": {
-        "builderVersion": "0.4.0",
+        "builderVersion": "0.4.1",
         "toolchain": "Emscripten 6.0.6",
         "buildModel": "upstream-cli-full",
         "reproducible": true,
@@ -317,7 +318,7 @@
           "output": "Generic upstream magick CLI; input and output paths are chosen by CLI arguments",
           "binaryLicense": "ImageMagick License",
           "size": "Loaded from the published release manifest",
-          "releaseAsset": "imagemagick-browser-full-7.1.2-29-zoo-0.4.0.zip",
+          "releaseAsset": "imagemagick-browser-full-7.1.2-29-zoo-0.4.1.zip",
           "playground": true,
           "playgroundPath": "./imagemagick-playground/"
         }
@@ -332,7 +333,7 @@
         "example": "<script src=\"/vendor/imagemagick/browser-imagemagick.js\"></script>\n<script type=\"module\">\nasync function resizeToJpeg(file) {\n  const magick = WasmZooImageMagick.loadHosted({\n    baseUrl: \"/vendor/imagemagick/\"\n  });\n\n  try {\n    const result = await magick.exec(\n      [\"/input.png\", \"-resize\", \"640x640>\", \"/out/output.jpg\"],\n      {\n        files: [{ name: \"/input.png\", data: file }],\n        dirs: [\"/out\"],\n        outputs: [\"/out/output.jpg\"]\n      }\n    );\n    return result.files[0].data;\n  } finally {\n    magick.dispose();\n  }\n}\n</script>",
         "notes": [
           "No SharedArrayBuffer or cross-origin isolation is required for browser-full.",
-          "v0.4.0 intentionally focuses on PNG/JPEG conversion, identify and basic image transforms; unsupported delegates remain documented in the package notes.",
+          "The current profile intentionally focuses on PNG/JPEG conversion, identify and basic image transforms; unsupported delegates remain documented in the package notes.",
           "Input and output paths are MEMFS paths and the returned file data is a Uint8Array."
         ]
       },
@@ -349,20 +350,21 @@
         }
       ],
       "notes": [
+        "v0.4.1 is the first metadata-enabled ImageMagick patch release for WASM Zoo v0.8.0: the WebAssembly feature set and upstream pin are unchanged while standalone SLSA provenance and CycloneDX SBOM assets are added to the release contract.",
         "The browser-full profile is deliberately single-threaded: ImageMagick thread support and OpenMP are disabled, the CLI runs inside an outer Worker, and SharedArrayBuffer/cross-origin isolation are not required.",
         "Files live in Emscripten MEMFS during each command; native filesystem watches, device access, fonts and shell pipes are not equivalent to a desktop build.",
         "ImageMagick zero-configuration mode is enabled so the browser build does not depend on external delegates.xml/config files.",
-        "v0.4.0 enables zlib, PNG and JPEG support. Optional delegates such as TIFF, WebP, HEIC, OpenEXR, LCMS, XML, Ghostscript/PDF and font stacks remain disabled and are recorded as capability gaps.",
+        "The feature set introduced in v0.4.0 remains unchanged: zlib, PNG and JPEG support are enabled. Optional delegates such as TIFF, WebP, HEIC, OpenEXR, LCMS, XML, Ghostscript/PDF and font stacks remain disabled and are recorded as capability gaps.",
         "The real Chromium smoke test runs magick -version, identifies a PNG fixture, resizes it and writes a JPEG output.",
         "Pages stages the published release core and uses the current runtime wrapper for the Playground, matching the FFmpeg/libarchive pattern.",
         "ImageMagick 7.1.2 detects PNG through pkg-config; Emscripten 6.0.6 provides libpng 1.6.58 without libpng.pc, so the builder supplies a target-only pkg-config shim that points back to the pinned Emscripten port.",
         "The browser-full builder applies a narrowly scoped source patch for zero-configuration mode: the one-time anonymous pixel-cache mmap decision is initialized to disabled. With an empty built-in policy and no working Emscripten mmap this preserves the effective behavior while avoiding ImageMagick's policy/semaphore initialization cycle during first pixel-cache open."
       ],
       "release": {
-        "tag": "imagemagick-v0.4.0",
-        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.0",
-        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/imagemagick-v0.4.0/",
-        "sourceAsset": "imagemagick-sources-7.1.2-29-zoo-0.4.0.tar.gz",
+        "tag": "imagemagick-v0.4.1",
+        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.1",
+        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/imagemagick-v0.4.1/",
+        "sourceAsset": "imagemagick-sources-7.1.2-29-zoo-0.4.1.tar.gz",
         "checksumsAsset": "SHA256SUMS.txt"
       },
       "referenceWasm": {
@@ -669,7 +671,7 @@
         ]
       },
       "zoo": {
-        "builderVersion": "0.5.0",
+        "builderVersion": "0.5.1",
         "toolchain": "Emscripten 6.0.7",
         "buildModel": "upstream-library-pinned-browser-adapter",
         "reproducible": true,
@@ -709,7 +711,7 @@
           "output": "Smaller generic libvips JavaScript API for JPEG/PNG/WebP Browser-Kitty-style image workflows",
           "binaryLicense": "LGPL-2.1-or-later plus linked third-party licenses",
           "size": "Loaded from the published release manifest",
-          "releaseAsset": "libvips-browser-core-8.18.5-zoo-0.5.0.zip",
+          "releaseAsset": "libvips-browser-core-8.18.5-zoo-0.5.1.zip",
           "playground": true,
           "playgroundPath": "./libvips-playground/"
         },
@@ -739,7 +741,7 @@
           "output": "Generic libvips JavaScript API with JPEG/PNG/WebP plus TIFF/GIF support",
           "binaryLicense": "LGPL-2.1-or-later plus linked third-party licenses",
           "size": "Loaded from the published release manifest",
-          "releaseAsset": "libvips-browser-full-8.18.5-zoo-0.5.0.zip",
+          "releaseAsset": "libvips-browser-full-8.18.5-zoo-0.5.1.zip",
           "playground": true,
           "playgroundPath": "./libvips-playground/"
         }
@@ -758,7 +760,7 @@
           "Both profiles require SharedArrayBuffer and cross-origin isolation (COOP/COEP) because libvips uses pthreads.",
           "The raw vips.js API is the primary distribution. browser-libvips.js is only a self-hosting convenience loader.",
           "The browser adapter and both Emscripten/libvips compatibility patch heads are pinned to immutable commits.",
-          "AVIF/HEIC, JPEG XL, SVG/resvg and UltraHDR are intentionally disabled in v0.5.0."
+          "AVIF/HEIC, JPEG XL, SVG/resvg and UltraHDR remain intentionally disabled in the 0.5.1 metadata patch release."
         ]
       },
       "comparison": [
@@ -779,6 +781,7 @@
         }
       ],
       "notes": [
+        "v0.5.1 is the first metadata-enabled libvips patch release for WASM Zoo v0.8.0: the WebAssembly feature set and upstream pin are unchanged while standalone SLSA provenance and CycloneDX SBOM assets are added to the release contract.",
         "libvips is published as a library API rather than a synthetic CLI wrapper.",
         "browser-core is designed as the practical small default for Browser-Kitty-style JPEG/PNG/WebP processing; browser-full is the compatibility profile for TIFF/GIF.",
         "Both profiles keep libvips threaded demand-driven execution, so Pages/local hosting must provide cross-origin isolation.",
@@ -786,10 +789,10 @@
         "Release archives include the exact build recipe, source bundle and third-party license notices needed to audit the statically linked browser artifact."
       ],
       "release": {
-        "tag": "libvips-v0.5.0",
-        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libvips-v0.5.0",
-        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/libvips-v0.5.0/",
-        "sourceAsset": "libvips-sources-8.18.5-zoo-0.5.0.tar.gz",
+        "tag": "libvips-v0.5.1",
+        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libvips-v0.5.1",
+        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/libvips-v0.5.1/",
+        "sourceAsset": "libvips-sources-8.18.5-zoo-0.5.1.tar.gz",
         "checksumsAsset": "SHA256SUMS.txt"
       },
       "referenceWasm": {
@@ -919,7 +922,7 @@
         ]
       },
       "zoo": {
-        "builderVersion": "0.7.0",
+        "builderVersion": "0.7.1",
         "toolchain": "Emscripten 6.0.7",
         "buildModel": "official-release-archive-upstream-cli",
         "reproducible": true,
@@ -957,7 +960,7 @@
           "output": "Generic Ghostscript gs CLI for local PostScript/PDF rendering and conversion",
           "binaryLicense": "AGPL-3.0-or-later",
           "size": "Loaded from the published release manifest",
-          "releaseAsset": "ghostscript-browser-full-10.07.1-zoo-0.7.0.zip",
+          "releaseAsset": "ghostscript-browser-full-10.07.1-zoo-0.7.1.zip",
           "playground": true,
           "playgroundPath": "./ghostscript-playground/"
         }
@@ -989,16 +992,17 @@
         }
       ],
       "notes": [
+        "v0.7.1 is the first metadata-enabled Ghostscript patch release for WASM Zoo v0.8.0: the WebAssembly feature set and upstream pin are unchanged while standalone SLSA provenance and CycloneDX SBOM assets are added to the release contract.",
         "Official Ghostscript 10.07.1 release source archive is pinned by SHA-256 in addition to the source branch commit.",
         "The real Chromium smoke test renders a PDF to PNG and converts PostScript to PDF with pdfwrite.",
         "Automatic upstream candidate substitution is intentionally disabled for Ghostscript until the watcher also captures and verifies the new official source-asset digest.",
         "GhostPCL and GhostXPS remain outside this package even though they share the GhostPDL source tree."
       ],
       "release": {
-        "tag": "ghostscript-v0.7.0",
-        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.0",
-        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/ghostscript-v0.7.0/",
-        "sourceAsset": "ghostscript-sources-10.07.1-zoo-0.7.0.tar.gz",
+        "tag": "ghostscript-v0.7.1",
+        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.1",
+        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/ghostscript-v0.7.1/",
+        "sourceAsset": "ghostscript-sources-10.07.1-zoo-0.7.1.tar.gz",
         "checksumsAsset": "SHA256SUMS.txt"
       },
       "referenceWasm": {

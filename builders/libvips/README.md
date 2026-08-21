@@ -9,7 +9,7 @@ The libvips source is the exact upstream `v8.18.5` release. The browser adapter,
 - `browser-core` — recommended small profile: JPEG / PNG / WebP. Removes TIFF, GIF, imagequant/quantizr and legacy PPM / Analyze / Radiance loaders.
 - `browser-full` — JPEG / PNG / WebP / TIFF / GIF plus imagequant.
 
-Both profiles retain libvips pthreads and WebAssembly SIMD, so they require SharedArrayBuffer plus cross-origin isolation. AVIF/HEIC, JPEG XL, SVG/resvg and UltraHDR are disabled in both v0.5.0 profiles.
+Both profiles retain libvips pthreads and WebAssembly SIMD, so they require SharedArrayBuffer plus cross-origin isolation. AVIF/HEIC, JPEG XL, SVG/resvg and UltraHDR are disabled in both current profiles.
 
 ## Windows
 

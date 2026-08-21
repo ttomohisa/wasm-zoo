@@ -23,7 +23,7 @@
     ]
   },
   "zoo": {
-    "builderVersion": "0.4.0",
+    "builderVersion": "0.4.1",
     "toolchain": "Emscripten 6.0.6",
     "buildModel": "upstream-cli-full",
     "reproducible": true,
@@ -66,7 +66,7 @@
       "output": "Generic upstream magick CLI; input and output paths are chosen by CLI arguments",
       "binaryLicense": "ImageMagick License",
       "size": "Loaded from the published release manifest",
-      "releaseAsset": "imagemagick-browser-full-7.1.2-29-zoo-0.4.0.zip",
+      "releaseAsset": "imagemagick-browser-full-7.1.2-29-zoo-0.4.1.zip",
       "playground": true,
       "playgroundPath": "./imagemagick-playground/"
     }
@@ -81,7 +81,7 @@
     "example": "<script src=\"/vendor/imagemagick/browser-imagemagick.js\"></script>\n<script type=\"module\">\nasync function resizeToJpeg(file) {\n  const magick = WasmZooImageMagick.loadHosted({\n    baseUrl: \"/vendor/imagemagick/\"\n  });\n\n  try {\n    const result = await magick.exec(\n      [\"/input.png\", \"-resize\", \"640x640>\", \"/out/output.jpg\"],\n      {\n        files: [{ name: \"/input.png\", data: file }],\n        dirs: [\"/out\"],\n        outputs: [\"/out/output.jpg\"]\n      }\n    );\n    return result.files[0].data;\n  } finally {\n    magick.dispose();\n  }\n}\n</script>",
     "notes": [
       "No SharedArrayBuffer or cross-origin isolation is required for browser-full.",
-      "v0.4.0 intentionally focuses on PNG/JPEG conversion, identify and basic image transforms; unsupported delegates remain documented in the package notes.",
+      "The current profile intentionally focuses on PNG/JPEG conversion, identify and basic image transforms; unsupported delegates remain documented in the package notes.",
       "Input and output paths are MEMFS paths and the returned file data is a Uint8Array."
     ]
   },
@@ -98,20 +98,21 @@
     }
   ],
   "notes": [
+    "v0.4.1 is the first metadata-enabled ImageMagick patch release for WASM Zoo v0.8.0: the WebAssembly feature set and upstream pin are unchanged while standalone SLSA provenance and CycloneDX SBOM assets are added to the release contract.",
     "The browser-full profile is deliberately single-threaded: ImageMagick thread support and OpenMP are disabled, the CLI runs inside an outer Worker, and SharedArrayBuffer/cross-origin isolation are not required.",
     "Files live in Emscripten MEMFS during each command; native filesystem watches, device access, fonts and shell pipes are not equivalent to a desktop build.",
     "ImageMagick zero-configuration mode is enabled so the browser build does not depend on external delegates.xml/config files.",
-    "v0.4.0 enables zlib, PNG and JPEG support. Optional delegates such as TIFF, WebP, HEIC, OpenEXR, LCMS, XML, Ghostscript/PDF and font stacks remain disabled and are recorded as capability gaps.",
+    "The feature set introduced in v0.4.0 remains unchanged: zlib, PNG and JPEG support are enabled. Optional delegates such as TIFF, WebP, HEIC, OpenEXR, LCMS, XML, Ghostscript/PDF and font stacks remain disabled and are recorded as capability gaps.",
     "The real Chromium smoke test runs magick -version, identifies a PNG fixture, resizes it and writes a JPEG output.",
     "Pages stages the published release core and uses the current runtime wrapper for the Playground, matching the FFmpeg/libarchive pattern.",
     "ImageMagick 7.1.2 detects PNG through pkg-config; Emscripten 6.0.6 provides libpng 1.6.58 without libpng.pc, so the builder supplies a target-only pkg-config shim that points back to the pinned Emscripten port.",
     "The browser-full builder applies a narrowly scoped source patch for zero-configuration mode: the one-time anonymous pixel-cache mmap decision is initialized to disabled. With an empty built-in policy and no working Emscripten mmap this preserves the effective behavior while avoiding ImageMagick's policy/semaphore initialization cycle during first pixel-cache open."
   ],
   "release": {
-    "tag": "imagemagick-v0.4.0",
-    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.0",
-    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/imagemagick-v0.4.0/",
-    "sourceAsset": "imagemagick-sources-7.1.2-29-zoo-0.4.0.tar.gz",
+    "tag": "imagemagick-v0.4.1",
+    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.1",
+    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/imagemagick-v0.4.1/",
+    "sourceAsset": "imagemagick-sources-7.1.2-29-zoo-0.4.1.tar.gz",
     "checksumsAsset": "SHA256SUMS.txt"
   },
   "referenceWasm": {

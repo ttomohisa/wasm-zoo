@@ -7,7 +7,7 @@ const errors=[]; const read=(p)=>fs.readFileSync(path.join(root,p),'utf8'); cons
 for(const rel of ['scripts/smoke-test.mjs','runtime/browser-ghostscript.js','../../site/ghostscript-playground/app.js']) { const r=spawnSync(process.execPath,['--check',path.resolve(root,rel)],{encoding:'utf8'}); if(r.status!==0) errors.push(`JavaScript syntax check failed: ${rel}: ${r.stderr||r.stdout}`); }
 const env=read('versions.env');
 for(const pair of [
- ['BUILDER_VERSION=0.7.0','builder version must be 0.7.0'],
+ ['BUILDER_VERSION=0.7.1','builder version must be 0.7.1'],
  ['EMSDK_VERSION=6.0.7','Emscripten must pin 6.0.7'],
  ['EMSCRIPTEN_COMMIT=4483d70a78098ed5d860dff2dc21f3025b2da2ee','exact Emscripten commit pin is missing'],
  ['GHOSTSCRIPT_VERSION=10.07.1','Ghostscript must pin 10.07.1'],
@@ -28,7 +28,7 @@ need(build.includes('LDFLAGS="$CONFIGURE_LINK_FLAGS"'),'configure must not recei
 need(build.includes('generated Ghostscript Makefile has no LDFLAGS assignment'),'build must inject final browser flags after configure');
 need(build.includes('emcc $OPT_FLAGS -sDEFAULT_TO_CXX=1 /tmp/wasm-zoo-cxx-link.o'),'build must preflight the C++ runtime with the same emcc final-link mode');
 need(build.includes('Emscripten C++ runtime final-link preflight failed'),'C++ runtime preflight must fail with an actionable diagnostic');
-need(!build.includes('-pthread'),'Ghostscript browser-full must stay single-threaded in v0.7.0');
+need(!build.includes('-pthread'),'Ghostscript browser-full must stay single-threaded ');
 need(build.includes('THIRD-PARTY-LICENSES') && build.includes('COPYRIGHT*'), 'build must collect bundled third-party license/copyright notices');
 const runtime=read('runtime/browser-ghostscript.js');
 for(const s of ['createGhostscriptCore','gs-core.js','gs-core.wasm','WasmZooGhostscript','collectDirs','Ghostscript CLI timed out after']) need(runtime.includes(s),`runtime contract missing: ${s}`);

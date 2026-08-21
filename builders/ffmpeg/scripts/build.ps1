@@ -43,4 +43,7 @@ Write-Host "WASM Zoo / FFmpeg $Profile" -ForegroundColor Cyan
 if ($LASTEXITCODE -ne 0) { throw "Docker build failed with exit code $LASTEXITCODE" }
 & node (Join-Path $Root "scripts\smoke-test.mjs") $Profile
 if ($LASTEXITCODE -ne 0) { throw "Browser smoke test failed with exit code $LASTEXITCODE" }
-Write-Host "[OK] FFmpeg $Profile build + browser smoke test passed" -ForegroundColor Green
+$RepoRoot = Split-Path -Parent (Split-Path -Parent $Root)
+& node (Join-Path $RepoRoot "scripts\generate-build-metadata.mjs") --slug ffmpeg --profile $Profile --dist $out
+if ($LASTEXITCODE -ne 0) { throw "Supply-chain metadata generation failed with exit code $LASTEXITCODE" }
+Write-Host "[OK] FFmpeg $Profile build + browser smoke test + provenance/SBOM passed" -ForegroundColor Green

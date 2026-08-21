@@ -25,7 +25,7 @@
     ]
   },
   "zoo": {
-    "builderVersion": "0.2.6",
+    "builderVersion": "0.2.7",
     "toolchain": "Emscripten 6.0.6",
     "buildModel": "upstream-cli-full",
     "reproducible": true,
@@ -62,7 +62,7 @@
       "output": "Generic ffmpeg CLI; output is chosen by CLI arguments",
       "binaryLicense": "LGPL-2.1-or-later",
       "size": "Loaded from the published release manifest",
-      "releaseAsset": "ffmpeg-browser-full-9.0.1-zoo-0.2.6.zip",
+      "releaseAsset": "ffmpeg-browser-full-9.0.1-zoo-0.2.7.zip",
       "playground": true,
       "playgroundPath": "./ffmpeg-playground/"
     },
@@ -91,7 +91,7 @@
       "output": "Generic ffmpeg CLI with GPL/libx264 features",
       "binaryLicense": "GPL-2.0-or-later",
       "size": "Loaded from the published release manifest",
-      "releaseAsset": "ffmpeg-browser-full-gpl-9.0.1-zoo-0.2.6.zip",
+      "releaseAsset": "ffmpeg-browser-full-gpl-9.0.1-zoo-0.2.7.zip",
       "playground": true,
       "playgroundPath": "./ffmpeg-playground/"
     }
@@ -211,16 +211,17 @@
     }
   ],
   "notes": [
+    "v0.2.7 is the first metadata-enabled FFmpeg patch release for WASM Zoo v0.8.0: the WebAssembly feature set and upstream pin are unchanged while standalone SLSA provenance and CycloneDX SBOM assets are added to the release contract.",
     "Full means a broad software FFmpeg build for the browser target, not every capability of every native FFmpeg build.",
     "Both full profiles require SharedArrayBuffer and COOP/COEP because the upstream FFmpeg CLI requires a working thread backend.",
     "Native networking, libavdevice capture APIs and hardware acceleration backends are deliberately reported as unsupported rather than hidden.",
     "Each built release records actual file sizes, SHA-256 hashes, enabled FFmpeg CONFIG entries, features.json and ffmpeg-config.mak."
   ],
   "release": {
-    "tag": "ffmpeg-v0.2.6",
-    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.6",
-    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/ffmpeg-v0.2.6/",
-    "sourceAsset": "ffmpeg-sources-9.0.1-zoo-0.2.6.tar.gz",
+    "tag": "ffmpeg-v0.2.7",
+    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.7",
+    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/ffmpeg-v0.2.7/",
+    "sourceAsset": "ffmpeg-sources-9.0.1-zoo-0.2.7.tar.gz",
     "checksumsAsset": "SHA256SUMS.txt"
   },
   "referenceWasm": {

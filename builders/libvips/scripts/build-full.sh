@@ -247,7 +247,7 @@ Browser target:
 - SharedArrayBuffer and cross-origin isolation required
 - Emscripten MEMFS and memory growth
 - raster formats: $PROFILE_FORMAT_SUMMARY
-- AVIF/HEIC, JPEG XL, SVG/resvg and UltraHDR disabled in v0.5.0
+- AVIF/HEIC, JPEG XL, SVG/resvg and UltraHDR disabled in the current profiles
 - browser-core additionally removes TIFF, GIF, imagequant/quantizr, PPM, Analyze and Radiance support
 EOF_TXT
 

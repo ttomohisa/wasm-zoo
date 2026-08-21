@@ -19,7 +19,7 @@ for (const rel of ['scripts/smoke-test.mjs', 'scripts/compare-profiles.mjs', 'ru
 
 const env = read('versions.env');
 for (const expected of [
-  'BUILDER_VERSION=0.5.0',
+  'BUILDER_VERSION=0.5.1',
   'EMSDK_VERSION=6.0.7',
   'EMSCRIPTEN_COMMIT=4483d70a78098ed5d860dff2dc21f3025b2da2ee',
   'LIBVIPS_REF=v8.18.5',

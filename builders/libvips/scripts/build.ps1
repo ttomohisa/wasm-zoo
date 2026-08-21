@@ -4,6 +4,7 @@ Set-StrictMode -Version Latest
 $Root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 function Read-EnvFile([string]$Path) { $map=@{}; Get-Content -LiteralPath $Path | ForEach-Object { $line=$_.Trim(); if(-not $line -or $line.StartsWith('#') -or -not $line.Contains('=')){return}; $i=$line.IndexOf('='); $map[$line.Substring(0,$i)]=$line.Substring($i+1).Trim('"') }; return $map }
 $envs=Read-EnvFile (Join-Path $Root 'versions.env')
+$RepoRoot = Split-Path -Parent (Split-Path -Parent $Root)
 foreach($script in @('scripts\smoke-test.mjs','scripts\compare-profiles.mjs','runtime\browser-libvips.js')) {
   & node --check (Join-Path $Root $script)
   if($LASTEXITCODE -ne 0){throw "libvips JavaScript syntax error: $script"}
@@ -31,7 +32,9 @@ function Invoke-ProfileBuild([string]$Name) {
   if($LASTEXITCODE -ne 0){throw "Docker build failed with exit code $LASTEXITCODE"}
   & node (Join-Path $Root 'scripts\smoke-test.mjs') $Name
   if($LASTEXITCODE -ne 0){throw "Browser smoke test failed with exit code $LASTEXITCODE"}
-  Write-Host "[OK] libvips $Name build + browser smoke test passed" -ForegroundColor Green
+  & node (Join-Path $RepoRoot 'scripts\generate-build-metadata.mjs') --slug libvips --profile $Name --dist $out
+  if($LASTEXITCODE -ne 0){throw "Supply-chain metadata generation failed with exit code $LASTEXITCODE"}
+  Write-Host "[OK] libvips $Name build + browser smoke test + provenance/SBOM passed" -ForegroundColor Green
 }
 $profiles = if($Profile -eq 'all') { @('browser-core','browser-full') } else { @($Profile) }
 foreach($name in $profiles){ Invoke-ProfileBuild $name }

@@ -24,7 +24,7 @@
     ]
   },
   "zoo": {
-    "builderVersion": "0.7.0",
+    "builderVersion": "0.7.1",
     "toolchain": "Emscripten 6.0.7",
     "buildModel": "official-release-archive-upstream-cli",
     "reproducible": true,
@@ -62,7 +62,7 @@
       "output": "Generic Ghostscript gs CLI for local PostScript/PDF rendering and conversion",
       "binaryLicense": "AGPL-3.0-or-later",
       "size": "Loaded from the published release manifest",
-      "releaseAsset": "ghostscript-browser-full-10.07.1-zoo-0.7.0.zip",
+      "releaseAsset": "ghostscript-browser-full-10.07.1-zoo-0.7.1.zip",
       "playground": true,
       "playgroundPath": "./ghostscript-playground/"
     }
@@ -94,16 +94,17 @@
     }
   ],
   "notes": [
+    "v0.7.1 is the first metadata-enabled Ghostscript patch release for WASM Zoo v0.8.0: the WebAssembly feature set and upstream pin are unchanged while standalone SLSA provenance and CycloneDX SBOM assets are added to the release contract.",
     "Official Ghostscript 10.07.1 release source archive is pinned by SHA-256 in addition to the source branch commit.",
     "The real Chromium smoke test renders a PDF to PNG and converts PostScript to PDF with pdfwrite.",
     "Automatic upstream candidate substitution is intentionally disabled for Ghostscript until the watcher also captures and verifies the new official source-asset digest.",
     "GhostPCL and GhostXPS remain outside this package even though they share the GhostPDL source tree."
   ],
   "release": {
-    "tag": "ghostscript-v0.7.0",
-    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.0",
-    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/ghostscript-v0.7.0/",
-    "sourceAsset": "ghostscript-sources-10.07.1-zoo-0.7.0.tar.gz",
+    "tag": "ghostscript-v0.7.1",
+    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.1",
+    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/ghostscript-v0.7.1/",
+    "sourceAsset": "ghostscript-sources-10.07.1-zoo-0.7.1.tar.gz",
     "checksumsAsset": "SHA256SUMS.txt"
   },
   "referenceWasm": {

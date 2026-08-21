@@ -238,7 +238,7 @@ cat > /out/features.json <<EOF_JSON
     "PNG uses Emscripten 6.0.6's standard single-threaded libpng port; a target-only libpng.pc shim bridges ImageMagick's pkg-config detection to that pinned port.",
     "ImageMagick and the final Emscripten module are built without pthreads; the CLI runs inside an outer Worker and does not require SharedArrayBuffer or cross-origin isolation.",
     "The zero-configuration browser build fixes ImageMagick's one-time anonymous pixel-cache mmap decision to disabled; the empty built-in policy plus Emscripten's unavailable working mmap make this behavior-equivalent while avoiding the policy/semaphore initialization cycle during first pixel-cache open.",
-    "Optional delegates such as Ghostscript/PDF, TIFF, WebP, HEIC, XML, font rendering and color management are intentionally disabled in v0.4.0."
+    "Optional delegates such as Ghostscript/PDF, TIFF, WebP, HEIC, XML, font rendering and color management are intentionally disabled in the current browser-full profile."
   ]
 }
 EOF_JSON
@@ -326,7 +326,7 @@ Browser target:
 - ImageMagick zero-configuration mode for a self-contained browser runtime
 - browser-only zero-config patch skips the behavior-equivalent anonymous pixel-cache mmap policy probe during first cache open
 - no native filesystem, device access, shell pipes or subprocess semantics
-- PDF/Ghostscript, TIFF, WebP, HEIC, XML, font stacks and color management intentionally disabled in v0.4.0
+- PDF/Ghostscript, TIFF, WebP, HEIC, XML, font stacks and color management intentionally disabled in the current browser-full profile
 EOF_TXT
 
 cp /src/imagemagick/LICENSE /out/LICENSE-imagemagick.txt

@@ -137,7 +137,7 @@ if (imagemagick) {
   assert(ids.has("browser-full"), "ImageMagick catalog must publish browser-full");
   for (const profile of imagemagick.profiles) {
     assert(profile.arbitraryCli === true, `ImageMagick profile ${profile.id} must expose upstream CLI arguments`);
-    assert(profile.threads === false && profile.sharedArrayBuffer === false, `ImageMagick profile ${profile.id} must remain single-threaded/no-SAB in v0.4.0`);
+    assert(profile.threads === false && profile.sharedArrayBuffer === false, `ImageMagick profile ${profile.id} must remain single-threaded/no-SAB`);
     assert(profile.playground === true, `ImageMagick profile ${profile.id} must be enabled in the Playground`);
     assert(profile.playgroundPath === "./imagemagick-playground/", `ImageMagick profile ${profile.id} must link to the ImageMagick Playground`);
   }
@@ -196,7 +196,7 @@ if (ghostscript) {
   assert(ids.has("browser-full"), "Ghostscript catalog must publish browser-full");
   const profile = ghostscript.profiles.find((entry) => entry.id === "browser-full");
   assert(profile?.arbitraryCli === true, "Ghostscript browser-full must expose the upstream gs CLI");
-  assert(profile?.threads === false && profile?.sharedArrayBuffer === false, "Ghostscript browser-full must remain single-threaded/no-SAB in v0.7.0");
+  assert(profile?.threads === false && profile?.sharedArrayBuffer === false, "Ghostscript browser-full must remain single-threaded/no-SAB");
   assert(profile?.worker === true, "Ghostscript browser-full must run commands in a Worker");
   assert(profile?.playground === true && profile?.playgroundPath === "./ghostscript-playground/", "Ghostscript browser-full must link to the Ghostscript Playground");
   assert(ghostscript.release?.tag === `ghostscript-v${ghostscript.zoo.builderVersion}`, `Ghostscript release tag must match builderVersion ${ghostscript.zoo.builderVersion}`);
@@ -279,7 +279,7 @@ try {
   assert(vipsRuntime.includes("crossOriginIsolated") && vipsRuntime.includes("SharedArrayBuffer"), "libvips runtime must enforce cross-origin isolation for pthreads");
   const ghostRuntime = await fs.readFile(path.join(root, "builders/ghostscript/runtime/browser-ghostscript.js"), "utf8");
   assert(ghostRuntime.includes("Worker") && ghostRuntime.includes("core.FS"), "Ghostscript runtime must use an isolated Worker with Emscripten FS/MEMFS");
-  assert(!ghostRuntime.includes("SharedArrayBuffer"), "Ghostscript runtime must not require SharedArrayBuffer in v0.7.0");
+  assert(!ghostRuntime.includes("SharedArrayBuffer"), "Ghostscript runtime must not require SharedArrayBuffer");
   const siteApp = await fs.readFile(path.join(root, "site/app.js"), "utf8");
   assert(siteApp.includes("Use in your app") && siteApp.includes("data-copy-code"), "Package details must render integration guidance with copyable examples");
   assert(siteApp.includes("renderVersionGap") && siteApp.includes("renderFeatureMatrix"), "Pages must render Version Gap Dashboard and Feature Matrix");
@@ -306,7 +306,7 @@ try {
   const prepareCandidate = await fs.readFile(path.join(root, "scripts/prepare-candidate.mjs"), "utf8");
   assert(!prepareCandidate.includes("package.json"), "Candidate preparation must not rewrite reviewed package catalog pins");
   const readme = await fs.readFile(path.join(root, "README.md"), "utf8");
-  assert(!readme.includes('ffmpeg-v0.2.6 -m "WASM Zoo FFmpeg v0.2.5"'), "README release tag example has a stale v0.2.5 message");
+  assert(readme.includes('ffmpeg-v0.2.7'), "README must show the current FFmpeg metadata-enabled release tag");
 } catch (error) {
   errors.push(`site/release validation failed: ${error.message}`);
 }

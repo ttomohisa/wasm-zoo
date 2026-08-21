@@ -15,7 +15,7 @@ for (const rel of syntaxFiles) {
 }
 const errors=[]; const read=(p)=>fs.readFileSync(path.join(root,p),'utf8'); const need=(ok,msg)=>{if(!ok)errors.push(msg)};
 const env=read('versions.env');
-need(env.includes('BUILDER_VERSION=0.4.0'),'builder version must be 0.4.0');
+need(env.includes('BUILDER_VERSION=0.4.1'),'builder version must be 0.4.1');
 need(env.includes('IMAGEMAGICK_REF=7.1.2-29'),'ImageMagick must pin 7.1.2-29');
 need(env.includes('IMAGEMAGICK_COMMIT=360eda5'),'ImageMagick exact commit pin is missing');
 const profile=read('profiles/browser-full/profile.env');
