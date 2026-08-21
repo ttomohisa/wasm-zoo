@@ -52,6 +52,10 @@ jobs:
           source builders/ffmpeg/versions.env
           tag="ffmpeg-v${BUILDER_VERSION}"
           version="${FFMPEG_REF#n}"
+          if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "[WARN] ${tag} is not published yet; FFmpeg Playground assets will be staged after the release workflow completes."
+            exit 0
+          fi
           work="${RUNNER_TEMP}/wasm-zoo-pages-ffmpeg"
           rm -rf "$work" && mkdir -p "$work"
           for profile in browser-full browser-full-gpl; do
