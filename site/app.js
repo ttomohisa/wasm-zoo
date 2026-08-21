@@ -2,11 +2,13 @@ const grid = document.querySelector('#package-grid');
 const dialog = document.querySelector('#package-dialog');
 const dialogContent = document.querySelector('#dialog-content');
 const closeButton = document.querySelector('#dialog-close');
+const healthBody = document.querySelector('#release-health-body');
 const gapBody = document.querySelector('#version-gap-body');
 const matrixTabs = document.querySelector('#matrix-tabs');
 const matrixHost = document.querySelector('#feature-matrix');
 let catalog;
 let upstreamStatus = { generatedAt: null, packages: [] };
+let releaseHealth = { generatedAt: null, packages: [], summary: {} };
 let filter = 'all';
 let matrixSlug = null;
 
@@ -14,7 +16,40 @@ const esc = (value = '') => String(value).replace(/[&<>'"]/g, (c) => ({'&':'&amp
 const displayVersion = (value, fallback = 'Not pinned') => value ? esc(value) : fallback;
 const statusLabel = (status) => ({available:'Available',experimental:'Experimental',planned:'Planned',paused:'Paused'}[status] || status);
 const upstreamFor = (slug) => upstreamStatus.packages?.find((item) => item.slug === slug);
+const healthFor = (slug) => releaseHealth.packages?.find((item) => item.slug === slug);
 const profileLabel = (pkg, id) => pkg.profiles?.find((profile) => profile.id === id)?.label || id;
+
+
+const healthStates = {
+  ok: { symbol: '✓', label: 'OK', className: 'ok' },
+  warn: { symbol: '!', label: 'Review', className: 'warn' },
+  error: { symbol: '×', label: 'Failed', className: 'error' },
+  pending: { symbol: '…', label: 'Pending', className: 'pending' },
+  unknown: { symbol: '?', label: 'Unknown', className: 'unknown' },
+  na: { symbol: '—', label: 'N/A', className: 'unknown' }
+};
+function healthBadge(check) {
+  const meta = healthStates[check?.state] || healthStates.unknown;
+  const label = check?.label || meta.label;
+  return `<span class="health-badge ${meta.className}" title="${esc(label)}"><b>${meta.symbol}</b><span>${esc(label)}</span></span>`;
+}
+function renderReleaseHealth() {
+  if (!healthBody) return;
+  const rows = catalog.packages.filter((pkg) => pkg.status === 'available').map((pkg) => {
+    const item = healthFor(pkg.slug);
+    if (!item) return `<tr><td><button class="gap-project" data-open="${esc(pkg.slug)}"><strong>${esc(pkg.name)}</strong><small>${esc(pkg.release?.tag || '')}</small></button></td><td colspan="6">Live health snapshot unavailable.</td></tr>`;
+    return `<tr><td><button class="gap-project" data-open="${esc(pkg.slug)}"><strong>${esc(pkg.name)}</strong><small>${esc(item.tag || pkg.release?.tag || '')}</small></button></td><td>${healthBadge(item.buildGate)}</td><td>${healthBadge(item.release)}</td><td>${healthBadge(item.playground)}</td><td>${healthBadge(item.freshness)}</td><td>${healthBadge(item.supplyChain)}</td><td>${healthBadge(item.overall)}</td></tr>`;
+  }).join('');
+  healthBody.innerHTML = rows || '<tr><td colspan="7">No published packages.</td></tr>';
+  healthBody.querySelectorAll('[data-open]').forEach((button) => button.addEventListener('click', () => openPackage(button.dataset.open)));
+  const total = Number(releaseHealth.summary?.total || catalog.stats.available || 0);
+  const healthy = Number(releaseHealth.summary?.healthy || 0);
+  const supply = Number(releaseHealth.summary?.supplyChainPublished || 0);
+  const summary = document.querySelector('#release-health-summary');
+  if (summary) summary.textContent = releaseHealth.generatedAt ? `${healthy}/${total} releases healthy · ${supply}/${total} currently expose standalone provenance + SBOM assets.` : 'Live release checks run on Pages deploy and the daily watcher.';
+  const generated = document.querySelector('#release-health-generated');
+  if (generated) generated.textContent = releaseHealth.generatedAt ? `Checked ${new Date(releaseHealth.generatedAt).toISOString().replace('T',' ').slice(0,16)} UTC` : 'Pending live check';
+}
 
 const matrixStates = {
   included: { symbol: '✓', label: 'Included' },
@@ -190,6 +225,18 @@ function referenceSection(pkg) {
   const ref = pkg.referenceWasm;
   return `<div class="detail-section"><h3>Version freshness</h3><table class="comparison"><thead><tr><th>Distribution</th><th>Version</th><th>Notes</th></tr></thead><tbody><tr><td><strong>Upstream latest</strong></td><td><code>${esc(status?.latest || pkg.upstream.version || 'Unknown')}</code></td><td>${status?.updateAvailable ? `Zoo review required; ${esc(status.gap?.label || 'update available')}.` : pkg.upstream.version ? 'Zoo pin is current in the latest watcher snapshot.' : 'Tracked before the first Zoo build is pinned.'}</td></tr><tr><td><strong>WASM Zoo</strong></td><td><code>${esc(pkg.status === 'available' ? pkg.upstream.version : 'Planned')}</code></td><td>${esc(pkg.zoo.buildModel || 'tracking only')}</td></tr>${ref ? `<tr><td><strong>${esc(ref.name)}</strong></td><td><code>${esc(ref.upstreamVersion || ref.packageVersion)}</code></td><td>Reference ${esc(ref.packageVersion)} · checked ${esc(ref.checkedAt)}. ${esc(ref.note)}</td></tr>` : ''}</tbody></table></div>`;
 }
+
+function supplyChainSection(pkg) {
+  if (!pkg.zoo?.supplyChainMetadata || !pkg.release) return '';
+  const health = healthFor(pkg.slug);
+  const published = health?.supplyChain?.state === 'ok';
+  const links = published ? pkg.profiles.flatMap((profile) => [
+    `<a class="detail-action secondary" href="${esc(releaseUrl(pkg, `provenance-${profile.id}.json`))}">${esc(profile.label)} provenance</a>`,
+    `<a class="detail-action secondary" href="${esc(releaseUrl(pkg, `sbom-${profile.id}.cdx.json`))}">${esc(profile.label)} SBOM</a>`
+  ]).join('') : '';
+  return `<div class="detail-section supply-chain-detail"><h3>Supply-chain metadata</h3><p>${published ? 'This release exposes build provenance and CycloneDX SBOM files as standalone assets.' : 'The v0.8.0 build contract generates provenance and SBOM after a successful browser smoke test. Existing package releases remain valid; standalone metadata appears on the next metadata-enabled package release.'}</p><div class="feature-list"><span>${esc(pkg.zoo.provenance)}</span><span>${esc(pkg.zoo.sbom)}</span></div>${links ? `<div class="profile-actions">${links}</div>` : ''}</div>`;
+}
+
 function openPackage(slug) {
   const pkg = catalog.packages.find((item) => item.slug === slug);
   if (!pkg) return;
@@ -197,9 +244,10 @@ function openPackage(slug) {
   const profiles = pkg.profiles.length ? `<div class="detail-section" data-detail-section="builds"><h3>Published builds</h3>${pkg.profiles.map((profile) => `<div class="profile-detail"><div class="profile-detail-head"><div><h4>${esc(profile.label)}</h4><div>${esc(profile.output)}</div></div>${profileSize(profile) ? `<strong class="profile-size">${esc(profileSize(profile))}</strong>` : ''}</div><div class="profile-meta">${boolPill('threads', profile.threads)}${boolPill('SIMD', profile.simd)}${boolPill('SharedArrayBuffer', profile.sharedArrayBuffer)}${boolPill('Worker', profile.worker)}${boolPill('network', profile.network)}${boolPill('arbitrary CLI', profile.arbitraryCli)}</div><div class="feature-list">${profile.features.map((feature) => `<span>${esc(feature)}</span>`).join('')}</div><div class="feature-list"><span>license: ${esc(profile.binaryLicense)}</span><span>target: ${esc(profile.target)}</span></div>${releaseButtons(pkg, profile)}</div>`).join('')}</div>` : `<div class="detail-section"><h3>Build status</h3><p>This package is being tracked, but WASM Zoo does not publish a binary for it yet.</p></div>`;
   const quickActions = packageQuickActions(pkg);
   const integration = integrationSection(pkg);
+  const supplyChain = supplyChainSection(pkg);
   const notes = pkg.notes?.length ? `<div class="detail-section"><h3>Notes</h3><ul class="notes">${pkg.notes.map((note) => `<li>${esc(note)}</li>`).join('')}</ul></div>` : '';
   const release = pkg.release ? `<div class="detail-section release-links"><h3>Release</h3><div class="profile-actions"><a class="detail-action" href="${esc(pkg.release.page)}">Release ${esc(pkg.release.tag)}</a>${pkg.release.sourceAsset ? `<a class="detail-action secondary" href="${esc(releaseUrl(pkg, pkg.release.sourceAsset))}">Corresponding source</a>` : ''}${pkg.release.checksumsAsset ? `<a class="detail-action secondary" href="${esc(releaseUrl(pkg, pkg.release.checksumsAsset))}">SHA-256</a>` : ''}</div></div>` : '';
-  dialogContent.innerHTML = `<div class="dialog-title"><span class="eyebrow">${esc(statusLabel(pkg.status))} · ${esc(pkg.category)}</span><h2>${esc(pkg.name)}</h2><p>${esc(pkg.summary)}</p></div>${quickActions}<div class="version-table"><span>Upstream pin</span><strong>${displayVersion(pkg.upstream.version)}</strong><span>Zoo builder</span><strong>${displayVersion(pkg.zoo.builderVersion, 'Not published')}</strong><span>Freshness</span><strong>${freshnessBadge(pkg)}</strong><span>Upstream license</span><strong>${esc(pkg.upstream.license)}</strong></div>${release}${referenceSection(pkg)}${matrix}${profiles}${integration}${notes}`;
+  dialogContent.innerHTML = `<div class="dialog-title"><span class="eyebrow">${esc(statusLabel(pkg.status))} · ${esc(pkg.category)}</span><h2>${esc(pkg.name)}</h2><p>${esc(pkg.summary)}</p></div>${quickActions}<div class="version-table"><span>Upstream pin</span><strong>${displayVersion(pkg.upstream.version)}</strong><span>Zoo builder</span><strong>${displayVersion(pkg.zoo.builderVersion, 'Not published')}</strong><span>Freshness</span><strong>${freshnessBadge(pkg)}</strong><span>Upstream license</span><strong>${esc(pkg.upstream.license)}</strong></div>${release}${supplyChain}${referenceSection(pkg)}${matrix}${profiles}${integration}${notes}`;
   wireIntegrationActions();
   dialog.showModal();
 }
@@ -222,10 +270,11 @@ dialog.addEventListener('click', (event) => { if (event.target === dialog) dialo
 document.querySelectorAll('.filter').forEach((button) => button.addEventListener('click', () => { document.querySelectorAll('.filter').forEach((item) => item.classList.remove('active')); button.classList.add('active'); filter = button.dataset.filter; render(); }));
 
 try {
-  const [catalogResponse, statusResponse] = await Promise.all([fetch('./catalog.json', { cache: 'no-store' }), fetch('./upstream-status.json', { cache: 'no-store' }).catch(() => null)]);
+  const [catalogResponse, statusResponse, healthResponse] = await Promise.all([fetch('./catalog.json', { cache: 'no-store' }), fetch('./upstream-status.json', { cache: 'no-store' }).catch(() => null), fetch('./release-health.json', { cache: 'no-store' }).catch(() => null)]);
   if (!catalogResponse.ok) throw new Error(`Catalog HTTP ${catalogResponse.status}`);
   catalog = await catalogResponse.json();
   if (statusResponse?.ok) upstreamStatus = await statusResponse.json();
+  if (healthResponse?.ok) releaseHealth = await healthResponse.json();
   document.querySelector('#stat-packages').textContent = catalog.stats.packages;
   document.querySelector('#stat-available').textContent = catalog.stats.available;
   document.querySelector('#stat-profiles').textContent = catalog.stats.profiles;
@@ -241,6 +290,7 @@ try {
     if (featuredVersion) featuredVersion.textContent = item.upstream.version || 'current';
     if (releaseLink && item.release?.page) { releaseLink.href = item.release.page; releaseLink.textContent = item.release.tag; }
   }
+  renderReleaseHealth();
   renderVersionGap();
   renderFeatureMatrix();
   await enrichReleaseManifests();

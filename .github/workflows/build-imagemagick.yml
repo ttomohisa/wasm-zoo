@@ -49,6 +49,8 @@ jobs:
             builders/imagemagick/dist/browser-full/magick-core.wasm
             builders/imagemagick/dist/browser-full/manifest.json
             builders/imagemagick/dist/browser-full/features.json
+            builders/imagemagick/dist/browser-full/provenance.json
+            builders/imagemagick/dist/browser-full/sbom.cdx.json
             builders/imagemagick/dist/browser-full/imagemagick-config.txt
             builders/imagemagick/dist/browser-full/browser-imagemagick.js
           if-no-files-found: error

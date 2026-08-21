@@ -41,4 +41,5 @@ for file in ffmpeg-core.js ffmpeg-core.wasm manifest.json browser-ffmpeg.js smok
   [[ -s "$OUT/$file" ]] || { echo "Missing build output: $file" >&2; exit 1; }
 done
 node "$ROOT/scripts/smoke-test.mjs" "$PROFILE"
+node "$ROOT/../../scripts/generate-build-metadata.mjs" --slug ffmpeg --profile "$PROFILE" --dist "$OUT"
 printf '\n[OK] FFmpeg %s build + browser smoke test passed\n' "$PROFILE"

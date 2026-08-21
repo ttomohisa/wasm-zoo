@@ -50,7 +50,7 @@ jobs:
         run: |
           set -euo pipefail
           source builders/imagemagick/versions.env
-          gh release create "${GITHUB_REF_NAME}"             builders/imagemagick/release/*             --verify-tag             --title "WASM Zoo · ImageMagick ${IMAGEMAGICK_REF} · browser build"             --notes "Unofficial upstream ImageMagick magick CLI build for WebAssembly. Includes machine-readable build inventory, exact hashes and corresponding source/build recipe. The browser build passed a real Chromium PNG identify + resize smoke test before publication."
+          gh release create "${GITHUB_REF_NAME}"             builders/imagemagick/release/*             --verify-tag             --title "WASM Zoo · ImageMagick ${IMAGEMAGICK_REF} · browser build"             --notes "Unofficial upstream ImageMagick magick CLI build for WebAssembly. Includes machine-readable build inventory, exact hashes and corresponding source/build recipe. The browser build passed a real Chromium PNG identify + resize smoke test before publication. Metadata-enabled releases also publish in-toto/SLSA provenance and a CycloneDX 1.6 SBOM."
       - name: Refresh Pages so the Playground stages this release
         shell: bash
         env:

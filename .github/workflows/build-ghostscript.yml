@@ -49,6 +49,8 @@ jobs:
             builders/ghostscript/dist/browser-full/gs-core.wasm
             builders/ghostscript/dist/browser-full/manifest.json
             builders/ghostscript/dist/browser-full/features.json
+            builders/ghostscript/dist/browser-full/provenance.json
+            builders/ghostscript/dist/browser-full/sbom.cdx.json
             builders/ghostscript/dist/browser-full/ghostscript-config.txt
             builders/ghostscript/dist/browser-full/browser-ghostscript.js
             builders/ghostscript/dist/browser-full/LICENSE-Ghostscript.txt

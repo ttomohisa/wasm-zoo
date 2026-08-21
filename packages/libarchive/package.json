@@ -30,7 +30,10 @@
     "sourceBundle": true,
     "checksums": true,
     "browserSmokeTest": true,
-    "featureInventory": true
+    "featureInventory": true,
+    "provenance": "in-toto Statement + SLSA Provenance v1",
+    "sbom": "CycloneDX 1.6 JSON",
+    "supplyChainMetadata": true
   },
   "profiles": [
     {

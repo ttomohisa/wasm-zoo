@@ -51,6 +51,9 @@ for (const pkg of packages) {
   if (pkg.status === "available") {
     assert(Boolean(pkg.upstream.version), `${at}: available package needs upstream.version`);
     assert(Boolean(pkg.zoo?.builderVersion), `${at}: available package needs zoo.builderVersion`);
+    assert(pkg.zoo?.supplyChainMetadata === true, `${at}: available package must enable supply-chain metadata`);
+    assert(String(pkg.zoo?.provenance || "").includes("SLSA Provenance v1"), `${at}: available package must declare SLSA provenance`);
+    assert(String(pkg.zoo?.sbom || "").includes("CycloneDX 1.6"), `${at}: available package must declare CycloneDX 1.6 SBOM`);
     assert(pkg.profiles.length > 0, `${at}: available package needs at least one profile`);
     assert(pkg.capabilityMatrix.length > 0, `${at}: available package needs a capabilityMatrix`);
     assert(typeof pkg.integration?.summary === "string" && pkg.integration.summary.length > 0, `${at}: available package needs integration.summary`);
@@ -228,9 +231,13 @@ const requiredSiteFiles = [
   "site/ghostscript-playground/app.js",
   "site/ghostscript-playground/playground.css",
   "site/upstream-status.json",
+  "site/release-health.json",
   ".github/workflows/check-upstream.yml",
   ".github/workflows/upstream-candidate.yml",
   "scripts/check-upstream.mjs",
+  "scripts/check-release-health.mjs",
+  "scripts/generate-build-metadata.mjs",
+  "scripts/check-metadata-contract.mjs",
   "scripts/prepare-candidate.mjs",
 ];
 for (const rel of requiredSiteFiles) {
@@ -248,6 +255,7 @@ try {
   assert(legacyPlayground.includes("../ffmpeg-playground/"), "Legacy /playground/ URL must redirect to /ffmpeg-playground/");
   const pages = await fs.readFile(path.join(root, ".github/workflows/pages.yml"), "utf8");
   assert(pages.includes("gh release download"), "Pages workflow must stage the published release, not rebuild a separate Playground core");
+  assert(pages.includes("check-release-health.mjs --write-site"), "Pages workflow must publish a live Release Health snapshot");
   assert(pages.includes("site/assets/ffmpeg"), "Pages workflow must stage FFmpeg cores under site/assets/ffmpeg");
   assert(pages.includes("cp builders/ffmpeg/runtime/browser-ffmpeg.js"), "Pages workflow must use the current runtime wrapper with the published core");
   assert(pages.includes('"builders/ffmpeg/runtime/browser-ffmpeg.js"'), "Pages workflow must redeploy when the FFmpeg runtime wrapper changes");
@@ -275,19 +283,23 @@ try {
   const siteApp = await fs.readFile(path.join(root, "site/app.js"), "utf8");
   assert(siteApp.includes("Use in your app") && siteApp.includes("data-copy-code"), "Package details must render integration guidance with copyable examples");
   assert(siteApp.includes("renderVersionGap") && siteApp.includes("renderFeatureMatrix"), "Pages must render Version Gap Dashboard and Feature Matrix");
+  assert(siteApp.includes("renderReleaseHealth") && siteApp.includes("release-health.json"), "Pages must render Release Health Dashboard from the live snapshot");
   assert(siteApp.includes("matrix-state") && siteApp.includes("Intentionally excluded"), "Feature Matrix must distinguish excluded vs target-inapplicable states");
   const siteHtml = await fs.readFile(path.join(root, "site/index.html"), "utf8");
+  assert(siteHtml.includes('id="health"') && siteHtml.includes("Release Health Dashboard"), "Pages must expose the Release Health Dashboard section");
   assert(siteHtml.includes('id="freshness"') && siteHtml.includes("Version Gap Dashboard"), "Pages must expose the Version Gap Dashboard section");
   assert(siteHtml.includes('id="features"') && siteHtml.includes("Feature Matrix"), "Pages must expose the Feature Matrix section");
   const watcher = await fs.readFile(path.join(root, ".github/workflows/check-upstream.yml"), "utf8");
   assert(watcher.includes('cron: "23 3 * * *"'), "Upstream watcher must run daily");
   assert(watcher.includes("site/upstream-status.json") && watcher.includes("gh issue create") && watcher.includes("upstream-candidate.yml"), "Upstream watcher must publish status, open issues and dispatch candidates");
+  assert(watcher.includes("site/release-health.json") && watcher.includes("check-release-health.mjs"), "Daily watcher must refresh Release Health alongside upstream freshness");
   assert(watcher.includes("gh workflow run pages.yml"), "Upstream watcher must explicitly refresh Pages after the bot snapshot commit");
   const upstreamScript = await fs.readFile(path.join(root, "scripts/check-upstream.mjs"), "utf8");
   assert(upstreamScript.includes("refusing to replace the last good Pages snapshot"), "Upstream checker must preserve the last good snapshot when all trackers fail");
   const verifyWorkflow = await fs.readFile(path.join(root, ".github/workflows/verify.yml"), "utf8");
   assert(verifyWorkflow.includes("builders/libvips/scripts/check-repository.mjs"), "Verify workflow must include libvips repository checks");
   assert(verifyWorkflow.includes("builders/ghostscript/scripts/check-repository.mjs"), "Verify workflow must include Ghostscript repository checks");
+  assert(verifyWorkflow.includes("check-metadata-contract.mjs"), "Verify workflow must validate provenance/SBOM release contracts");
   const candidate = await fs.readFile(path.join(root, ".github/workflows/upstream-candidate.yml"), "utf8");
   assert(candidate.includes("prepare-candidate.mjs") && candidate.includes("browser smoke test"), "Candidate workflow must substitute isolated pins and run browser smoke tests");
   assert(candidate.includes("adapter-gated") && candidate.includes("libvips-readiness"), "libvips candidate workflow must preserve the adapter gate");
@@ -306,10 +318,14 @@ try {
   assert(catalog.stats?.packages === packages.length, "site/catalog.json is stale; run npm run catalog");
   assert(catalog.stats?.featureMatrices === packages.filter((pkg) => pkg.capabilityMatrix?.length).length, "site/catalog.json featureMatrices stat is stale");
   assert(catalog.stats?.referenceBuilds === packages.filter((pkg) => pkg.referenceWasm).length, "site/catalog.json referenceBuilds stat is stale");
+  assert(catalog.stats?.supplyChainProfiles === packages.reduce((sum, pkg) => sum + (pkg.zoo?.supplyChainMetadata ? pkg.profiles.length : 0), 0), "site/catalog.json supplyChainProfiles stat is stale");
   assert(catalog.project?.name === "WASM Zoo", "site/catalog.json project metadata is invalid");
   const status = await readJson(path.join(root, "site", "upstream-status.json"));
   assert(status.schemaVersion === 2 && Array.isArray(status.packages), "site/upstream-status.json schema is invalid");
   for (const pkg of packages) assert(status.packages.some((item) => item.slug === pkg.slug), `site/upstream-status.json missing ${pkg.slug}`);
+  const health = await readJson(path.join(root, "site", "release-health.json"));
+  assert(health.schemaVersion === 1 && Array.isArray(health.packages), "site/release-health.json schema is invalid");
+  for (const pkg of packages.filter((item) => item.status === "available")) assert(health.packages.some((item) => item.slug === pkg.slug), `site/release-health.json missing ${pkg.slug}`);
 } catch {
   errors.push("site/catalog.json is missing or invalid; run npm run catalog");
 }

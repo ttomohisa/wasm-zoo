@@ -21,7 +21,7 @@ Each builder emits `manifest.json` beside the Wasm files. A published build shou
 
 Package-specific companion inventories are allowed. FFmpeg emits `features.json` plus `ffmpeg-config.mak`; libarchive emits `features.json` plus `libarchive-config.txt`.
 
-A release also carries build information, applicable license notices, corresponding source/build recipe and `SHA256SUMS.txt`.
+After the real browser smoke test succeeds, the host build wrapper also generates `provenance.json` (in-toto Statement + SLSA Provenance v1) and `sbom.cdx.json` (CycloneDX 1.6). A metadata-enabled release carries those files inside the binary ZIP and as standalone per-profile assets, alongside build information, applicable license notices, corresponding source/build recipe and `SHA256SUMS.txt`.
 
 The catalog must never claim “full” means every feature of every native build. Target and optional-library gaps are part of the artifact identity.
 

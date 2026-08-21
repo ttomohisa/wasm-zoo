@@ -3,48 +3,159 @@
   "$id": "https://wasm-zoo.dev/schema/package.schema.json",
   "title": "WASM Zoo package metadata",
   "type": "object",
-  "required": ["schemaVersion", "slug", "name", "summary", "category", "status", "upstream", "tracker", "zoo", "profiles"],
+  "required": [
+    "schemaVersion",
+    "slug",
+    "name",
+    "summary",
+    "category",
+    "status",
+    "upstream",
+    "tracker",
+    "zoo",
+    "profiles"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 },
-    "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
-    "name": { "type": "string", "minLength": 1 },
-    "summary": { "type": "string", "minLength": 1 },
-    "category": { "type": "string", "minLength": 1 },
-    "status": { "enum": ["available", "experimental", "planned", "paused"] },
+    "schemaVersion": {
+      "const": 2
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "available",
+        "experimental",
+        "planned",
+        "paused"
+      ]
+    },
     "upstream": {
       "type": "object",
-      "required": ["version", "homepage", "repository", "license"]
+      "required": [
+        "version",
+        "homepage",
+        "repository",
+        "license"
+      ]
     },
     "tracker": {
       "type": "object",
-      "required": ["type", "repository"]
+      "required": [
+        "type",
+        "repository"
+      ]
     },
-    "zoo": { "type": "object" },
-    "profiles": { "type": "array" },
+    "zoo": {
+      "type": "object",
+      "properties": {
+        "builderVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provenance": {
+          "type": "string"
+        },
+        "sbom": {
+          "type": "string"
+        },
+        "supplyChainMetadata": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "profiles": {
+      "type": "array"
+    },
     "release": {
       "type": "object",
-      "required": ["tag", "page", "downloadBase", "sourceAsset", "checksumsAsset"],
+      "required": [
+        "tag",
+        "page",
+        "downloadBase",
+        "sourceAsset",
+        "checksumsAsset"
+      ],
       "properties": {
-        "tag": { "type": "string", "minLength": 1 },
-        "page": { "type": "string", "pattern": "^https://" },
-        "downloadBase": { "type": "string", "pattern": "^https://" },
-        "sourceAsset": { "type": "string", "minLength": 1 },
-        "checksumsAsset": { "type": "string", "minLength": 1 }
+        "tag": {
+          "type": "string",
+          "minLength": 1
+        },
+        "page": {
+          "type": "string",
+          "pattern": "^https://"
+        },
+        "downloadBase": {
+          "type": "string",
+          "pattern": "^https://"
+        },
+        "sourceAsset": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checksumsAsset": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "integration": {
       "type": "object",
-      "required": ["summary", "files", "example"],
+      "required": [
+        "summary",
+        "files",
+        "example"
+      ],
       "properties": {
-        "summary": { "type": "string", "minLength": 1 },
-        "files": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
-        "example": { "type": "string", "minLength": 1 },
-        "notes": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "example": {
+          "type": "string",
+          "minLength": 1
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
       },
       "additionalProperties": false
     },
-    "comparison": { "type": "array" },
-    "notes": { "type": "array", "items": { "type": "string" } }
+    "comparison": {
+      "type": "array"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
   },
   "additionalProperties": true
 }

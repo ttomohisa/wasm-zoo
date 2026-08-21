@@ -7,7 +7,7 @@ TAG="${1:-libvips-v${BUILDER_VERSION}}"; EXPECTED="libvips-v${BUILDER_VERSION}"
 [[ "$TAG" == "$EXPECTED" ]] || { echo "Release tag must be $EXPECTED" >&2; exit 1; }
 for cmd in git tar sha256sum zip node; do command -v "$cmd" >/dev/null || { echo "Missing release tool: $cmd" >&2; exit 1; }; done
 profiles=(browser-core browser-full)
-required=(vips.js vips.wasm vips.d.ts vips.js.gz vips.wasm.gz versions.json manifest.json features.json browser-libvips.js BUILDINFO.txt LICENSE-libvips.txt LICENSE-wasm-vips.txt THIRD-PARTY-NOTICES-wasm-vips.md)
+required=(vips.js vips.wasm vips.d.ts vips.js.gz vips.wasm.gz versions.json manifest.json features.json provenance.json sbom.cdx.json browser-libvips.js BUILDINFO.txt LICENSE-libvips.txt LICENSE-wasm-vips.txt THIRD-PARTY-NOTICES-wasm-vips.md)
 for profile in "${profiles[@]}"; do
   dist="$ROOT/dist/$profile"
   for file in "${required[@]}"; do [[ -s "$dist/$file" ]] || { echo "Missing $dist/$file" >&2; exit 1; }; done
@@ -21,7 +21,7 @@ assets=()
 for profile in "${profiles[@]}"; do
   dist="$ROOT/dist/$profile"
   stage="$work/binary-$profile"; mkdir -p "$stage/LICENSES"
-  for file in vips.js vips.wasm vips.d.ts vips.js.gz vips.wasm.gz versions.json manifest.json features.json browser-libvips.js BUILDINFO.txt; do cp "$dist/$file" "$stage/"; done
+  for file in vips.js vips.wasm vips.d.ts vips.js.gz vips.wasm.gz versions.json manifest.json features.json provenance.json sbom.cdx.json browser-libvips.js BUILDINFO.txt; do cp "$dist/$file" "$stage/"; done
   cp "$dist/LICENSE-libvips.txt" "$stage/LICENSES/libvips-LICENSE.txt"
   cp "$dist/LICENSE-wasm-vips.txt" "$stage/LICENSES/wasm-vips-LICENSE.txt"
   cp "$dist/THIRD-PARTY-NOTICES-wasm-vips.md" "$stage/LICENSES/THIRD-PARTY-NOTICES-wasm-vips.md"
@@ -37,6 +37,8 @@ EOT
   (cd "$stage" && zip -X -9 -q -r "$release/$asset" .)
   assets+=("$asset")
   cp "$dist/BUILDINFO.txt" "$release/BUILDINFO-${profile}.txt"
+  cp "$dist/provenance.json" "$release/provenance-${profile}.json"
+  cp "$dist/sbom.cdx.json" "$release/sbom-${profile}.cdx.json"
 done
 cp "$ROOT/dist/size-comparison.json" "$release/size-comparison.json"
 cp "$ROOT/dist/size-comparison.md" "$release/size-comparison.md"
@@ -82,6 +84,8 @@ source_name="libvips-sources-${version}-zoo-${BUILDER_VERSION}.tar.gz"
 tar --sort=name --mtime='UTC 1980-01-01' --owner=0 --group=0 --numeric-owner -C "$work" -czf "$release/$source_name" source-bundle
 (
   cd "$release"
-  sha256sum "${assets[@]}" "$source_name" BUILDINFO-browser-core.txt BUILDINFO-browser-full.txt size-comparison.json size-comparison.md > SHA256SUMS.txt
+  sha256sum "${assets[@]}" "$source_name" BUILDINFO-browser-core.txt BUILDINFO-browser-full.txt size-comparison.json size-comparison.md \
+    provenance-browser-core.json provenance-browser-full.json \
+    sbom-browser-core.cdx.json sbom-browser-full.cdx.json > SHA256SUMS.txt
 )
 echo "[OK] libvips release assets prepared in $release"

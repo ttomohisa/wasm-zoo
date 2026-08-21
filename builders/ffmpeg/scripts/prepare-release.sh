@@ -11,7 +11,7 @@ for cmd in git tar gzip sha256sum zip; do command -v "$cmd" >/dev/null || { echo
 
 for profile in "${PROFILES[@]}"; do
   dist="$ROOT/dist/$profile"
-  for file in ffmpeg-core.js ffmpeg-core.wasm ffmpeg-core.js.gz ffmpeg-core.wasm.gz manifest.json features.json ffmpeg-config.mak browser-ffmpeg.js; do
+  for file in ffmpeg-core.js ffmpeg-core.wasm ffmpeg-core.js.gz ffmpeg-core.wasm.gz manifest.json features.json provenance.json sbom.cdx.json ffmpeg-config.mak browser-ffmpeg.js; do
     [[ -s "$dist/$file" ]] || { echo "Missing $dist/$file; build both profiles first" >&2; exit 1; }
   done
 done
@@ -89,7 +89,7 @@ make_zip() {
   source "$ROOT/profiles/$profile/profile.env"
   local stage="$work/binary-$profile"
   mkdir -p "$stage/LICENSES"
-  for file in ffmpeg-core.js ffmpeg-core.wasm ffmpeg-core.js.gz ffmpeg-core.wasm.gz manifest.json features.json ffmpeg-config.mak browser-ffmpeg.js; do cp "$ROOT/dist/$profile/$file" "$stage/"; done
+  for file in ffmpeg-core.js ffmpeg-core.wasm ffmpeg-core.js.gz ffmpeg-core.wasm.gz manifest.json features.json provenance.json sbom.cdx.json ffmpeg-config.mak browser-ffmpeg.js; do cp "$ROOT/dist/$profile/$file" "$stage/"; done
   cp "$info" "$stage/BUILDINFO.txt"
   cp "$ffsrc/LICENSE.md" "$stage/LICENSES/FFmpeg-LICENSE.md"
   if [[ "$PROFILE_BINARY_LICENSE" == GPL-* ]]; then cp "$ffsrc/COPYING.GPLv2" "$stage/LICENSES/FFmpeg-COPYING.GPLv2"; else cp "$ffsrc/COPYING.LGPLv2.1" "$stage/LICENSES/FFmpeg-COPYING.LGPLv2.1"; fi
@@ -110,6 +110,8 @@ for profile in "${PROFILES[@]}"; do
   info="$release/BUILDINFO-${profile}.txt"
   write_buildinfo "$profile" "$info"
   make_zip "$profile" "$info"
+  cp "$ROOT/dist/$profile/provenance.json" "$release/provenance-${profile}.json"
+  cp "$ROOT/dist/$profile/sbom.cdx.json" "$release/sbom-${profile}.cdx.json"
 done
 
 rm -rf "$ffsrc/.git" "$xsrc/.git"
@@ -134,6 +136,8 @@ tar --sort=name --mtime='UTC 1980-01-01' --owner=0 --group=0 --numeric-owner -C 
     "ffmpeg-browser-full-${FFMPEG_REF#n}-zoo-${BUILDER_VERSION}.zip" \
     "ffmpeg-browser-full-gpl-${FFMPEG_REF#n}-zoo-${BUILDER_VERSION}.zip" \
     "$source_name" \
-    BUILDINFO-browser-full.txt BUILDINFO-browser-full-gpl.txt > SHA256SUMS.txt
+    BUILDINFO-browser-full.txt BUILDINFO-browser-full-gpl.txt \
+    provenance-browser-full.json provenance-browser-full-gpl.json \
+    sbom-browser-full.cdx.json sbom-browser-full-gpl.cdx.json > SHA256SUMS.txt
 )
 echo "[OK] release assets prepared in $release"

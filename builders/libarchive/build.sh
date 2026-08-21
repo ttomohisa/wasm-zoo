@@ -27,4 +27,5 @@ docker buildx build \
 for file in browser-libarchive.js manifest.json features.json libarchive-config.txt smoke-test.html smoke-input.zip; do [[ -s "$OUT/$file" ]] || { echo "Missing build output: $file" >&2; exit 1; }; done
 for tool in bsdtar bsdcpio bsdcat bsdunzip; do for suffix in core.js core.wasm; do [[ -s "$OUT/${tool}-${suffix}" ]] || { echo "Missing build output: ${tool}-${suffix}" >&2; exit 1; }; done; done
 node "$ROOT/scripts/smoke-test.mjs" "$PROFILE"
+node "$ROOT/../../scripts/generate-build-metadata.mjs" --slug libarchive --profile "$PROFILE" --dist "$OUT"
 printf '\n[OK] libarchive %s build + browser smoke test passed\n' "$PROFILE"

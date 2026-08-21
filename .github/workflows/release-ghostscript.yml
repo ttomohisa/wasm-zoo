@@ -50,7 +50,7 @@ jobs:
         run: |
           set -euo pipefail
           source builders/ghostscript/versions.env
-          gh release create "${GITHUB_REF_NAME}"             builders/ghostscript/release/*             --verify-tag             --title "WASM Zoo · Ghostscript ${GHOSTSCRIPT_VERSION} · browser build"             --notes "Unofficial upstream Ghostscript gs CLI build for browser WebAssembly. The release includes the AGPL license, exact official release source archive/build recipe, machine-readable manifests and SHA-256 checksums. Chromium smoke testing verifies real PDF → PNG rendering and PostScript → PDF conversion before publication."
+          gh release create "${GITHUB_REF_NAME}"             builders/ghostscript/release/*             --verify-tag             --title "WASM Zoo · Ghostscript ${GHOSTSCRIPT_VERSION} · browser build"             --notes "Unofficial upstream Ghostscript gs CLI build for browser WebAssembly. The release includes the AGPL license, exact official release source archive/build recipe, machine-readable manifests, in-toto/SLSA provenance, a CycloneDX 1.6 SBOM and SHA-256 checksums. Chromium smoke testing verifies real PDF → PNG rendering and PostScript → PDF conversion before publication."
       - name: Refresh Pages so the Playground stages this release
         shell: bash
         env:

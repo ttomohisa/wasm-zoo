@@ -55,4 +55,4 @@ jobs:
             builders/ffmpeg/release/* \
             --verify-tag \
             --title "WASM Zoo · FFmpeg ${FFMPEG_REF#n} · full browser builds" \
-            --notes "Unofficial generic upstream ffmpeg CLI builds for WebAssembly. Includes browser-full and browser-full-gpl, feature inventories, exact hashes and corresponding source/build recipe. Both profiles passed the real Chromium pthread smoke test before publication."
+            --notes "Unofficial generic upstream ffmpeg CLI builds for WebAssembly. Includes browser-full and browser-full-gpl, feature inventories, exact hashes and corresponding source/build recipe. Both profiles passed the real Chromium pthread smoke test before publication. Metadata-enabled releases also publish per-profile in-toto/SLSA provenance and CycloneDX 1.6 SBOM assets."

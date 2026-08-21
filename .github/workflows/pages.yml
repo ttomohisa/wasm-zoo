@@ -38,6 +38,10 @@ jobs:
         run: |
           npm run catalog
           npm run check
+      - name: Refresh live release health snapshot
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/check-release-health.mjs --write-site
 
       - name: Stage published FFmpeg release for Playground
         shell: bash

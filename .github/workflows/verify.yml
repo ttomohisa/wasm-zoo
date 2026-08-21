@@ -32,7 +32,9 @@ jobs:
       - name: Generate catalog
         run: npm run catalog
       - name: Validate repository
-        run: npm run check
+        run: |
+          npm run check
+          node scripts/check-metadata-contract.mjs
       - name: Validate FFmpeg builder
         run: node builders/ffmpeg/scripts/check-repository.mjs
       - name: Validate libarchive builder

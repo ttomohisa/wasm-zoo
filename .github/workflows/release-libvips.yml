@@ -54,7 +54,7 @@ jobs:
             builders/libvips/release/* \
             --verify-tag \
             --title "WASM Zoo · libvips ${LIBVIPS_REF} · browser builds" \
-            --notes "Unofficial libvips browser library builds for WebAssembly. browser-core targets JPEG/PNG/WebP with a reduced delegate surface; browser-full additionally keeps TIFF/GIF/imagequant. Both profiles use the same pinned upstream API and pass real Chromium PNG decode + resize + JPEG/WebP encode smoke tests. The release includes raw/gzip size comparison, exact provenance, hashes and corresponding source/build recipes."
+            --notes "Unofficial libvips browser library builds for WebAssembly. browser-core targets JPEG/PNG/WebP with a reduced delegate surface; browser-full additionally keeps TIFF/GIF/imagequant. Both profiles use the same pinned upstream API and pass real Chromium PNG decode + resize + JPEG/WebP encode smoke tests. The release includes raw/gzip size comparison, per-profile in-toto/SLSA provenance, CycloneDX 1.6 SBOMs, hashes and corresponding source/build recipes."
       - name: Refresh Pages so the Playground stages this release
         shell: bash
         env:

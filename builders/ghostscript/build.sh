@@ -31,4 +31,5 @@ for file in browser-ghostscript.js gs-core.js gs-core.wasm manifest.json feature
 done
 [[ -s "$OUT/THIRD-PARTY-LICENSES/INDEX.txt" ]] || { echo "Missing third-party license inventory" >&2; exit 1; }
 node "$ROOT/scripts/smoke-test.mjs" "$PROFILE"
+node "$ROOT/../../scripts/generate-build-metadata.mjs" --slug ghostscript --profile "$PROFILE" --dist "$OUT"
 printf '\n[OK] Ghostscript %s build + browser smoke test passed\n' "$PROFILE"

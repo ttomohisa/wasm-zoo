@@ -17,6 +17,7 @@ docker buildx build   "${cache_args[@]}"   --file "$ROOT/docker/Dockerfile"   --
 for file in browser-imagemagick.js manifest.json features.json imagemagick-config.txt smoke-test.html smoke-input.png; do [[ -s "$OUT/$file" ]] || { echo "Missing build output: $file" >&2; exit 1; }; done
 for file in magick-core.js magick-core.wasm; do [[ -s "$OUT/$file" ]] || { echo "Missing build output: $file" >&2; exit 1; }; done
 node "$ROOT/scripts/smoke-test.mjs" "$PROFILE"
+node "$ROOT/../../scripts/generate-build-metadata.mjs" --slug imagemagick --profile "$PROFILE" --dist "$OUT"
 printf '
 [OK] ImageMagick %s build + browser smoke test passed
 ' "$PROFILE"

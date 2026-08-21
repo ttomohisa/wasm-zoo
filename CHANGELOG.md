@@ -2,7 +2,16 @@
 
 ## Unreleased
 
-- Fix Ghostscript final linking under Emscripten 6.0.7 by enabling `DEFAULT_TO_CXX` and add a fast C++ runtime preflight before the long compile.
+## v0.8.0
+
+- add Release Health Dashboard covering release workflow gates, required assets, Playground reachability, upstream freshness and supply-chain metadata state for all five published packages;
+- add `site/release-health.json`, refreshed both during Pages deployment and by the daily watcher;
+- generate per-profile `provenance.json` as an in-toto Statement with the SLSA Provenance v1 predicate after the real browser smoke test succeeds;
+- generate per-profile CycloneDX 1.6 `sbom.cdx.json`, using exact pinned inputs and available linked/bundled dependency inventories;
+- include provenance/SBOM inside metadata-enabled binary ZIPs and expose standalone `provenance-<profile>.json` / `sbom-<profile>.cdx.json` GitHub Release assets covered by `SHA256SUMS.txt`;
+- add a supply-chain metadata contract fixture test for every published profile and document the v0.8.0 trust model;
+- preserve pre-v0.8 package releases as valid legacy releases while explicitly reporting that standalone provenance/SBOM assets will appear on the next metadata-enabled package release;
+- fix Ghostscript final linking under Emscripten 6.0.7 by enabling `DEFAULT_TO_CXX` and add a fast C++ runtime preflight before the long compile.
 
 ## v0.7.0
 

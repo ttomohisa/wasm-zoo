@@ -39,6 +39,7 @@ build_profile() {
     --output "type=local,dest=$out" \
     "$ROOT"
   node "$ROOT/scripts/smoke-test.mjs" "$profile"
+  node "$ROOT/../../scripts/generate-build-metadata.mjs" --slug libvips --profile "$profile" --dist "$out"
   echo "[OK] libvips $profile build + browser smoke test passed"
 }
 

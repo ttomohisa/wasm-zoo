@@ -11,7 +11,7 @@
 
 **Current upstream software, compiled for WebAssembly.**
 
-WASM Zoo is an unofficial distribution project for native software whose WebAssembly builds benefit from current upstream pins, reproducible recipes and explicit capability reporting. Zoo publishes exact source/toolchain revisions, meaningful runtime smoke tests, machine-readable manifests, checksums, license notices and corresponding source.
+WASM Zoo is an unofficial distribution project for native software whose WebAssembly builds benefit from current upstream pins, reproducible recipes and explicit capability reporting. Zoo publishes exact source/toolchain revisions, meaningful runtime smoke tests, machine-readable manifests, release health checks, in-toto/SLSA provenance, CycloneDX SBOMs, checksums, license notices and corresponding source.
 
 - Catalog: https://ttomohisa.github.io/wasm-zoo/
 - FFmpeg Playground: https://ttomohisa.github.io/wasm-zoo/ffmpeg-playground/
@@ -30,7 +30,39 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 | libvips | 8.18.5 | 0.5.0 | `browser-core`, `browser-full` | yes |
 | Ghostscript | 10.07.1 | 0.7.0 | `browser-full` | yes |
 
-The project version is **WASM Zoo v0.7.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+The project version is **WASM Zoo v0.8.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+
+## Release health and supply-chain metadata
+
+WASM Zoo v0.8.0 adds a distribution-level health layer instead of treating a successful compile as the whole release contract. The Pages home now checks each published package across:
+
+- release workflow/build gate status;
+- required GitHub Release assets;
+- deployed Playground reachability;
+- upstream freshness;
+- standalone provenance and SBOM assets;
+- an aggregate health state.
+
+`site/release-health.json` is refreshed during Pages deployment and by the daily watcher. Older package releases remain valid when they predate the v0.8.0 supply-chain contract; they are shown as waiting for metadata rather than falsely marked broken.
+
+After a builder's real browser smoke test succeeds, every profile now generates:
+
+- `provenance.json` — an in-toto Statement using the SLSA Provenance v1 predicate, with artifact digests, reviewed build parameters, pinned Git/material dependencies, Emscripten toolchain information and best-effort Docker base-image digest resolution;
+- `sbom.cdx.json` — CycloneDX 1.6 JSON describing the Zoo profile, upstream project and linked/bundled component inventory available from the pinned build inputs.
+
+The files are included in the binary ZIP and are also exposed as `provenance-<profile>.json` and `sbom-<profile>.cdx.json` on metadata-enabled package releases. See [`docs/SUPPLY_CHAIN.md`](docs/SUPPLY_CHAIN.md).
+
+Run the live release health check manually:
+
+```text
+npm run health:release
+```
+
+Validate the metadata contract without compiling the large WASM targets:
+
+```text
+npm run metadata:check
+```
 
 ## Freshness dashboard and capability matrix
 
@@ -67,6 +99,8 @@ WASM Zoo aims to preserve the **upstream program/API shape** where practical. A 
 - target/runtime limitations stated explicitly;
 - a real runtime smoke test that exercises meaningful functionality;
 - `manifest.json` plus package-specific build/feature inventory;
+- `provenance.json` using in-toto + SLSA Provenance v1;
+- `sbom.cdx.json` using CycloneDX 1.6;
 - immutable release assets, SHA-256 checksums and corresponding source.
 
 `full` means a broad, useful build for the declared WebAssembly target. It never means every feature available on every native operating system.
@@ -190,7 +224,7 @@ The catalog still works when no local Wasm build has been staged.
 
 ## Release assets
 
-Every package release includes a binary ZIP, corresponding source/build recipe, build information and `SHA256SUMS.txt`.
+Every metadata-enabled package release includes a binary ZIP, corresponding source/build recipe, build information, standalone provenance/SBOM assets and `SHA256SUMS.txt`. Releases published before the v0.8.0 contract remain valid and gain these standalone files on their next package release.
 
 libarchive v0.3.0 uses:
 

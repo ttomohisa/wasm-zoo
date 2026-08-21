@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "project": {
     "name": "WASM Zoo",
-    "version": "0.7.0",
+    "version": "0.8.0",
     "tagline": "Upstream software, compiled for WebAssembly.",
     "unofficial": true
   },
@@ -11,7 +11,8 @@
     "available": 5,
     "profiles": 7,
     "featureMatrices": 5,
-    "referenceBuilds": 5
+    "referenceBuilds": 5,
+    "supplyChainProfiles": 7
   },
   "packages": [
     {
@@ -48,7 +49,10 @@
         "sourceBundle": true,
         "checksums": true,
         "browserSmokeTest": true,
-        "featureInventory": true
+        "featureInventory": true,
+        "provenance": "in-toto Statement + SLSA Provenance v1",
+        "sbom": "CycloneDX 1.6 JSON",
+        "supplyChainMetadata": true
       },
       "profiles": [
         {
@@ -277,7 +281,10 @@
         "sourceBundle": true,
         "checksums": true,
         "browserSmokeTest": true,
-        "featureInventory": true
+        "featureInventory": true,
+        "provenance": "in-toto Statement + SLSA Provenance v1",
+        "sbom": "CycloneDX 1.6 JSON",
+        "supplyChainMetadata": true
       },
       "profiles": [
         {
@@ -473,7 +480,10 @@
         "sourceBundle": true,
         "checksums": true,
         "browserSmokeTest": true,
-        "featureInventory": true
+        "featureInventory": true,
+        "provenance": "in-toto Statement + SLSA Provenance v1",
+        "sbom": "CycloneDX 1.6 JSON",
+        "supplyChainMetadata": true
       },
       "profiles": [
         {
@@ -665,7 +675,10 @@
         "sourceBundle": true,
         "checksums": true,
         "browserSmokeTest": true,
-        "featureInventory": true
+        "featureInventory": true,
+        "provenance": "in-toto Statement + SLSA Provenance v1",
+        "sbom": "CycloneDX 1.6 JSON",
+        "supplyChainMetadata": true
       },
       "profiles": [
         {
@@ -912,7 +925,10 @@
         "sourceBundle": true,
         "checksums": true,
         "browserSmokeTest": true,
-        "featureInventory": true
+        "featureInventory": true,
+        "provenance": "in-toto Statement + SLSA Provenance v1",
+        "sbom": "CycloneDX 1.6 JSON",
+        "supplyChainMetadata": true
       },
       "profiles": [
         {

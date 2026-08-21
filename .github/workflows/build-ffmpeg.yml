@@ -53,6 +53,8 @@ jobs:
             builders/ffmpeg/dist/${{ matrix.profile }}/ffmpeg-core.wasm
             builders/ffmpeg/dist/${{ matrix.profile }}/manifest.json
             builders/ffmpeg/dist/${{ matrix.profile }}/features.json
+            builders/ffmpeg/dist/${{ matrix.profile }}/provenance.json
+            builders/ffmpeg/dist/${{ matrix.profile }}/sbom.cdx.json
             builders/ffmpeg/dist/${{ matrix.profile }}/ffmpeg-config.mak
             builders/ffmpeg/dist/${{ matrix.profile }}/browser-ffmpeg.js
           if-no-files-found: error

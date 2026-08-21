@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": null,
+  "repository": "ttomohisa/wasm-zoo",
+  "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
+  "packages": [
+    {
+      "slug": "ffmpeg",
+      "name": "FFmpeg",
+      "tag": "ffmpeg-v0.2.6",
+      "buildGate": {
+        "state": "unknown",
+        "label": "Pending live check"
+      },
+      "release": {
+        "state": "unknown",
+        "label": "Pending live check",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.6"
+      },
+      "playground": {
+        "state": "unknown",
+        "label": "Pending live check"
+      },
+      "freshness": {
+        "state": "unknown",
+        "label": "Pending live check"
+      },
+      "supplyChain": {
+        "state": "pending",
+        "label": "Publishes on next metadata-enabled package release",
+        "expected": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json",
+          "provenance-browser-full-gpl.json",
+          "sbom-browser-full-gpl.cdx.json"
+        ],
+        "missing": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json",
+          "provenance-browser-full-gpl.json",
+          "sbom-browser-full-gpl.cdx.json"
+        ]
+      },
+      "overall": {
+        "state": "pending",
+        "label": "Pending live check"
+      }
+    },
+    {
+      "slug": "libarchive",
+      "name": "libarchive",
+      "tag": "libarchive-v0.3.0",
+      "buildGate": {
+        "state": "unknown",
+        "label": "Pending live check"
+      },
+      "release": {
+        "state": "unknown",
+        "label": "Pending live check",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libarchive-v0.3.0"
+      },
+      "playground": {
+        "state": "unknown",
+        "label": "Pending live check"
+      },
+      "freshness": {
+        "state": "unknown",
+        "label": "Pending live check"
+      },
+      "supplyChain": {
+        "state": "pending",
+        "label": "Publishes on next metadata-enabled package release",
+        "expected": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ],
+        "missing": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ]
+      },
+      "overall": {
+        "state": "pending",
+        "label": "Pending live check"
+      }
+    },
+    {
+      "slug": "imagemagick",
+      "name": "ImageMagick",
+      "tag": "imagemagick-v0.4.0",
+      "buildGate": {
+        "state": "unknown",
+        "label": "Pending live check"
+      },
+      "release": {
+        "state": "unknown",
+        "label": "Pending live check",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.0"
+      },
+      "playground": {
+        "state": "unknown",
+        "label": "Pending live check"
+      },
+      "freshness": {
+        "state": "unknown",
+        "label": "Pending live check"
+      },
+      "supplyChain": {
+        "state": "pending",
+        "label": "Publishes on next metadata-enabled package release",
+        "expected": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ],
+        "missing": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ]
+      },
+      "overall": {
+        "state": "pending",
+        "label": "Pending live check"
+      }
+    },
+    {
+      "slug": "libvips",
+      "name": "libvips",
+      "tag": "libvips-v0.5.0",
+      "buildGate": {
+        "state": "unknown",
+        "label": "Pending live check"
+      },
+      "release": {
+        "state": "unknown",
+        "label": "Pending live check",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libvips-v0.5.0"
+      },
+      "playground": {
+        "state": "unknown",
+        "label": "Pending live check"
+      },
+      "freshness": {
+        "state": "unknown",
+        "label": "Pending live check"
+      },
+      "supplyChain": {
+        "state": "pending",
+        "label": "Publishes on next metadata-enabled package release",
+        "expected": [
+          "provenance-browser-core.json",
+          "sbom-browser-core.cdx.json",
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ],
+        "missing": [
+          "provenance-browser-core.json",
+          "sbom-browser-core.cdx.json",
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ]
+      },
+      "overall": {
+        "state": "pending",
+        "label": "Pending live check"
+      }
+    },
+    {
+      "slug": "ghostscript",
+      "name": "Ghostscript",
+      "tag": "ghostscript-v0.7.0",
+      "buildGate": {
+        "state": "unknown",
+        "label": "Pending live check"
+      },
+      "release": {
+        "state": "unknown",
+        "label": "Pending live check",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.0"
+      },
+      "playground": {
+        "state": "unknown",
+        "label": "Pending live check"
+      },
+      "freshness": {
+        "state": "unknown",
+        "label": "Pending live check"
+      },
+      "supplyChain": {
+        "state": "pending",
+        "label": "Publishes on next metadata-enabled package release",
+        "expected": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ],
+        "missing": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ]
+      },
+      "overall": {
+        "state": "pending",
+        "label": "Pending live check"
+      }
+    }
+  ],
+  "summary": {
+    "healthy": 0,
+    "warning": 0,
+    "error": 0,
+    "supplyChainPublished": 0,
+    "total": 5
+  }
+}

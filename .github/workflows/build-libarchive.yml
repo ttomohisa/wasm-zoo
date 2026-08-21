@@ -49,6 +49,8 @@ jobs:
             builders/libarchive/dist/browser-full/*-core.wasm
             builders/libarchive/dist/browser-full/manifest.json
             builders/libarchive/dist/browser-full/features.json
+            builders/libarchive/dist/browser-full/provenance.json
+            builders/libarchive/dist/browser-full/sbom.cdx.json
             builders/libarchive/dist/browser-full/libarchive-config.txt
             builders/libarchive/dist/browser-full/browser-libarchive.js
           if-no-files-found: error
