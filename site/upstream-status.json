@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-21T00:00:00.000Z",
+  "generatedAt": "2026-08-21T04:06:04.131Z",
   "hasUpdates": false,
   "packages": [
     {
@@ -13,7 +13,7 @@
       "latest": "9.0.1",
       "latestRef": "n9.0.1",
       "latestCommit": "bf1b838f2ab88b4f8fd83443325c782ea0e0f7fa",
-      "latestReleased": "2026-08-12T00:00:00Z",
+      "latestReleased": "2026-08-12T03:24:31Z",
       "updateAvailable": false,
       "lagDays": 0,
       "gap": {
@@ -31,6 +31,32 @@
       }
     },
     {
+      "slug": "imagemagick",
+      "name": "ImageMagick",
+      "status": "ok",
+      "pinned": "7.1.2-29",
+      "pinnedRef": "7.1.2-29",
+      "pinnedReleased": "2026-07-27",
+      "latest": "7.1.2-29",
+      "latestRef": "7.1.2-29",
+      "latestCommit": "360eda553586e389c9c725fc49df94f209a8a3c7",
+      "latestReleased": "2026-07-27T19:00:27Z",
+      "updateAvailable": false,
+      "lagDays": 0,
+      "gap": {
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
+      },
+      "url": "https://github.com/ImageMagick/ImageMagick/releases/tag/7.1.2-29",
+      "candidate": {
+        "mode": "auto",
+        "profiles": [
+          "browser-full"
+        ]
+      }
+    },
+    {
       "slug": "libarchive",
       "name": "libarchive",
       "status": "ok",
@@ -40,7 +66,7 @@
       "latest": "3.8.9",
       "latestRef": "v3.8.9",
       "latestCommit": "27cbc7827172698143e440801fc0ba39ccb4f1f5",
-      "latestReleased": "2026-07-28T10:13:00Z",
+      "latestReleased": "2026-07-28T10:13:39Z",
       "updateAvailable": false,
       "lagDays": 0,
       "gap": {
@@ -49,32 +75,6 @@
         "versionsBehind": 0
       },
       "url": "https://github.com/libarchive/libarchive/releases/tag/v3.8.9",
-      "candidate": {
-        "mode": "auto",
-        "profiles": [
-          "browser-full"
-        ]
-      }
-    },
-    {
-      "slug": "imagemagick",
-      "name": "ImageMagick",
-      "status": "ok",
-      "pinned": "7.1.2-29",
-      "pinnedRef": "7.1.2-29",
-      "pinnedReleased": "2026-07-27",
-      "latest": "7.1.2-29",
-      "latestRef": "7.1.2-29",
-      "latestCommit": "360eda5",
-      "latestReleased": "2026-07-27T00:00:00Z",
-      "updateAvailable": false,
-      "lagDays": 0,
-      "gap": {
-        "kind": "current",
-        "label": "Current",
-        "versionsBehind": 0
-      },
-      "url": "https://github.com/ImageMagick/ImageMagick/releases/tag/7.1.2-29",
       "candidate": {
         "mode": "auto",
         "profiles": [
@@ -92,7 +92,7 @@
       "latest": "8.18.5",
       "latestRef": "v8.18.5",
       "latestCommit": "7c28da9c2b8b5b8defe54f2ae92ee474c0e2d6e4",
-      "latestReleased": "2026-08-03T00:00:00Z",
+      "latestReleased": "2026-08-03T13:35:15Z",
       "updateAvailable": false,
       "lagDays": 0,
       "gap": {

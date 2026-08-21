@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": null,
+  "generatedAt": "2026-08-21T04:06:11.609Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -8,22 +8,13 @@
       "slug": "ffmpeg",
       "name": "FFmpeg",
       "tag": "ffmpeg-v0.2.6",
-      "buildGate": {
-        "state": "unknown",
-        "label": "Pending live check"
-      },
       "release": {
-        "state": "unknown",
-        "label": "Pending live check",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.6"
-      },
-      "playground": {
-        "state": "unknown",
-        "label": "Pending live check"
-      },
-      "freshness": {
-        "state": "unknown",
-        "label": "Pending live check"
+        "state": "ok",
+        "label": "Assets present",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.6",
+        "publishedAt": "2026-08-18T17:49:50Z",
+        "assetCount": 6,
+        "missingAssets": []
       },
       "supplyChain": {
         "state": "pending",
@@ -41,69 +32,37 @@
           "sbom-browser-full-gpl.cdx.json"
         ]
       },
-      "overall": {
-        "state": "pending",
-        "label": "Pending live check"
-      }
-    },
-    {
-      "slug": "libarchive",
-      "name": "libarchive",
-      "tag": "libarchive-v0.3.0",
       "buildGate": {
-        "state": "unknown",
-        "label": "Pending live check"
-      },
-      "release": {
-        "state": "unknown",
-        "label": "Pending live check",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libarchive-v0.3.0"
+        "state": "ok",
+        "label": "Passed",
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32166970957",
+        "runId": 32166970957
       },
       "playground": {
-        "state": "unknown",
-        "label": "Pending live check"
+        "state": "ok",
+        "label": "HTTP 200",
+        "url": "https://ttomohisa.github.io/wasm-zoo/ffmpeg-playground/"
       },
       "freshness": {
-        "state": "unknown",
-        "label": "Pending live check"
-      },
-      "supplyChain": {
-        "state": "pending",
-        "label": "Publishes on next metadata-enabled package release",
-        "expected": [
-          "provenance-browser-full.json",
-          "sbom-browser-full.cdx.json"
-        ],
-        "missing": [
-          "provenance-browser-full.json",
-          "sbom-browser-full.cdx.json"
-        ]
+        "state": "ok",
+        "label": "Current"
       },
       "overall": {
-        "state": "pending",
-        "label": "Pending live check"
+        "state": "ok",
+        "label": "Healthy"
       }
     },
     {
       "slug": "imagemagick",
       "name": "ImageMagick",
       "tag": "imagemagick-v0.4.0",
-      "buildGate": {
-        "state": "unknown",
-        "label": "Pending live check"
-      },
       "release": {
-        "state": "unknown",
-        "label": "Pending live check",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.0"
-      },
-      "playground": {
-        "state": "unknown",
-        "label": "Pending live check"
-      },
-      "freshness": {
-        "state": "unknown",
-        "label": "Pending live check"
+        "state": "ok",
+        "label": "Assets present",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.0",
+        "publishedAt": "2026-08-19T23:43:56Z",
+        "assetCount": 4,
+        "missingAssets": []
       },
       "supplyChain": {
         "state": "pending",
@@ -117,31 +76,81 @@
           "sbom-browser-full.cdx.json"
         ]
       },
+      "buildGate": {
+        "state": "ok",
+        "label": "Passed",
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32314215021",
+        "runId": 32314215021
+      },
+      "playground": {
+        "state": "ok",
+        "label": "HTTP 200",
+        "url": "https://ttomohisa.github.io/wasm-zoo/imagemagick-playground/"
+      },
+      "freshness": {
+        "state": "ok",
+        "label": "Current"
+      },
       "overall": {
+        "state": "ok",
+        "label": "Healthy"
+      }
+    },
+    {
+      "slug": "libarchive",
+      "name": "libarchive",
+      "tag": "libarchive-v0.3.0",
+      "release": {
+        "state": "ok",
+        "label": "Assets present",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libarchive-v0.3.0",
+        "publishedAt": "2026-08-19T01:39:15Z",
+        "assetCount": 4,
+        "missingAssets": []
+      },
+      "supplyChain": {
         "state": "pending",
-        "label": "Pending live check"
+        "label": "Publishes on next metadata-enabled package release",
+        "expected": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ],
+        "missing": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ]
+      },
+      "buildGate": {
+        "state": "ok",
+        "label": "Passed",
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32205181618",
+        "runId": 32205181618
+      },
+      "playground": {
+        "state": "ok",
+        "label": "HTTP 200",
+        "url": "https://ttomohisa.github.io/wasm-zoo/libarchive-playground/"
+      },
+      "freshness": {
+        "state": "ok",
+        "label": "Current"
+      },
+      "overall": {
+        "state": "ok",
+        "label": "Healthy"
       }
     },
     {
       "slug": "libvips",
       "name": "libvips",
       "tag": "libvips-v0.5.0",
-      "buildGate": {
-        "state": "unknown",
-        "label": "Pending live check"
-      },
       "release": {
-        "state": "unknown",
-        "label": "Pending live check",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libvips-v0.5.0"
-      },
-      "playground": {
-        "state": "unknown",
-        "label": "Pending live check"
-      },
-      "freshness": {
-        "state": "unknown",
-        "label": "Pending live check"
+        "state": "ok",
+        "label": "Assets present",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libvips-v0.5.0",
+        "publishedAt": "2026-08-20T15:42:48Z",
+        "assetCount": 8,
+        "missingAssets": []
       },
       "supplyChain": {
         "state": "pending",
@@ -159,31 +168,37 @@
           "sbom-browser-full.cdx.json"
         ]
       },
+      "buildGate": {
+        "state": "ok",
+        "label": "Passed",
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32386336897",
+        "runId": 32386336897
+      },
+      "playground": {
+        "state": "ok",
+        "label": "HTTP 200",
+        "url": "https://ttomohisa.github.io/wasm-zoo/libvips-playground/"
+      },
+      "freshness": {
+        "state": "ok",
+        "label": "Current"
+      },
       "overall": {
-        "state": "pending",
-        "label": "Pending live check"
+        "state": "ok",
+        "label": "Healthy"
       }
     },
     {
       "slug": "ghostscript",
       "name": "Ghostscript",
       "tag": "ghostscript-v0.7.0",
-      "buildGate": {
-        "state": "unknown",
-        "label": "Pending live check"
-      },
       "release": {
-        "state": "unknown",
-        "label": "Pending live check",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.0"
-      },
-      "playground": {
-        "state": "unknown",
-        "label": "Pending live check"
-      },
-      "freshness": {
-        "state": "unknown",
-        "label": "Pending live check"
+        "state": "ok",
+        "label": "Assets present",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.0",
+        "publishedAt": "2026-08-21T00:24:00Z",
+        "assetCount": 3,
+        "missingAssets": []
       },
       "supplyChain": {
         "state": "pending",
@@ -197,14 +212,29 @@
           "sbom-browser-full.cdx.json"
         ]
       },
+      "buildGate": {
+        "state": "ok",
+        "label": "Passed",
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32431993141",
+        "runId": 32431993141
+      },
+      "playground": {
+        "state": "ok",
+        "label": "HTTP 200",
+        "url": "https://ttomohisa.github.io/wasm-zoo/ghostscript-playground/"
+      },
+      "freshness": {
+        "state": "ok",
+        "label": "Current"
+      },
       "overall": {
-        "state": "pending",
-        "label": "Pending live check"
+        "state": "ok",
+        "label": "Healthy"
       }
     }
   ],
   "summary": {
-    "healthy": 0,
+    "healthy": 5,
     "warning": 0,
     "error": 0,
     "supplyChainPublished": 0,
