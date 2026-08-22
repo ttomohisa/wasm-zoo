@@ -1,42 +1,37 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-21T04:06:11.609Z",
+  "generatedAt": "2026-08-22T04:00:20.415Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
     {
       "slug": "ffmpeg",
       "name": "FFmpeg",
-      "tag": "ffmpeg-v0.2.6",
+      "tag": "ffmpeg-v0.2.7",
       "release": {
         "state": "ok",
         "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.6",
-        "publishedAt": "2026-08-18T17:49:50Z",
-        "assetCount": 6,
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.7",
+        "publishedAt": "2026-08-21T07:55:02Z",
+        "assetCount": 10,
         "missingAssets": []
       },
       "supplyChain": {
-        "state": "pending",
-        "label": "Publishes on next metadata-enabled package release",
+        "state": "ok",
+        "label": "Provenance + SBOM published",
         "expected": [
           "provenance-browser-full.json",
           "sbom-browser-full.cdx.json",
           "provenance-browser-full-gpl.json",
           "sbom-browser-full-gpl.cdx.json"
         ],
-        "missing": [
-          "provenance-browser-full.json",
-          "sbom-browser-full.cdx.json",
-          "provenance-browser-full-gpl.json",
-          "sbom-browser-full-gpl.cdx.json"
-        ]
+        "missing": []
       },
       "buildGate": {
         "state": "ok",
         "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32166970957",
-        "runId": 32166970957
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32459868805",
+        "runId": 32459868805
       },
       "playground": {
         "state": "ok",
@@ -55,32 +50,29 @@
     {
       "slug": "imagemagick",
       "name": "ImageMagick",
-      "tag": "imagemagick-v0.4.0",
+      "tag": "imagemagick-v0.4.1",
       "release": {
         "state": "ok",
         "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.0",
-        "publishedAt": "2026-08-19T23:43:56Z",
-        "assetCount": 4,
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.1",
+        "publishedAt": "2026-08-21T08:01:06Z",
+        "assetCount": 6,
         "missingAssets": []
       },
       "supplyChain": {
-        "state": "pending",
-        "label": "Publishes on next metadata-enabled package release",
+        "state": "ok",
+        "label": "Provenance + SBOM published",
         "expected": [
           "provenance-browser-full.json",
           "sbom-browser-full.cdx.json"
         ],
-        "missing": [
-          "provenance-browser-full.json",
-          "sbom-browser-full.cdx.json"
-        ]
+        "missing": []
       },
       "buildGate": {
         "state": "ok",
         "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32314215021",
-        "runId": 32314215021
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32460900924",
+        "runId": 32460900924
       },
       "playground": {
         "state": "ok",
@@ -99,32 +91,29 @@
     {
       "slug": "libarchive",
       "name": "libarchive",
-      "tag": "libarchive-v0.3.0",
+      "tag": "libarchive-v0.3.1",
       "release": {
         "state": "ok",
         "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libarchive-v0.3.0",
-        "publishedAt": "2026-08-19T01:39:15Z",
-        "assetCount": 4,
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libarchive-v0.3.1",
+        "publishedAt": "2026-08-21T06:16:27Z",
+        "assetCount": 6,
         "missingAssets": []
       },
       "supplyChain": {
-        "state": "pending",
-        "label": "Publishes on next metadata-enabled package release",
+        "state": "ok",
+        "label": "Provenance + SBOM published",
         "expected": [
           "provenance-browser-full.json",
           "sbom-browser-full.cdx.json"
         ],
-        "missing": [
-          "provenance-browser-full.json",
-          "sbom-browser-full.cdx.json"
-        ]
+        "missing": []
       },
       "buildGate": {
         "state": "ok",
         "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32205181618",
-        "runId": 32205181618
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32453231076",
+        "runId": 32453231076
       },
       "playground": {
         "state": "ok",
@@ -143,36 +132,31 @@
     {
       "slug": "libvips",
       "name": "libvips",
-      "tag": "libvips-v0.5.0",
+      "tag": "libvips-v0.5.1",
       "release": {
         "state": "ok",
         "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libvips-v0.5.0",
-        "publishedAt": "2026-08-20T15:42:48Z",
-        "assetCount": 8,
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libvips-v0.5.1",
+        "publishedAt": "2026-08-21T08:22:28Z",
+        "assetCount": 12,
         "missingAssets": []
       },
       "supplyChain": {
-        "state": "pending",
-        "label": "Publishes on next metadata-enabled package release",
+        "state": "ok",
+        "label": "Provenance + SBOM published",
         "expected": [
           "provenance-browser-core.json",
           "sbom-browser-core.cdx.json",
           "provenance-browser-full.json",
           "sbom-browser-full.cdx.json"
         ],
-        "missing": [
-          "provenance-browser-core.json",
-          "sbom-browser-core.cdx.json",
-          "provenance-browser-full.json",
-          "sbom-browser-full.cdx.json"
-        ]
+        "missing": []
       },
       "buildGate": {
         "state": "ok",
         "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32386336897",
-        "runId": 32386336897
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32461346029",
+        "runId": 32461346029
       },
       "playground": {
         "state": "ok",
@@ -191,18 +175,16 @@
     {
       "slug": "ghostscript",
       "name": "Ghostscript",
-      "tag": "ghostscript-v0.7.0",
+      "tag": "ghostscript-v0.7.1",
       "release": {
-        "state": "ok",
-        "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.0",
-        "publishedAt": "2026-08-21T00:24:00Z",
-        "assetCount": 3,
-        "missingAssets": []
+        "state": "error",
+        "label": "Release unavailable",
+        "error": "404 Not Found",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.1"
       },
       "supplyChain": {
-        "state": "pending",
-        "label": "Publishes on next metadata-enabled package release",
+        "state": "unknown",
+        "label": "Not inspectable",
         "expected": [
           "provenance-browser-full.json",
           "sbom-browser-full.cdx.json"
@@ -213,10 +195,8 @@
         ]
       },
       "buildGate": {
-        "state": "ok",
-        "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32431993141",
-        "runId": 32431993141
+        "state": "unknown",
+        "label": "Not inspectable"
       },
       "playground": {
         "state": "ok",
@@ -228,16 +208,16 @@
         "label": "Current"
       },
       "overall": {
-        "state": "ok",
-        "label": "Healthy"
+        "state": "error",
+        "label": "Action required"
       }
     }
   ],
   "summary": {
-    "healthy": 5,
+    "healthy": 4,
     "warning": 0,
-    "error": 0,
-    "supplyChainPublished": 0,
+    "error": 1,
+    "supplyChainPublished": 4,
     "total": 5
   }
 }
