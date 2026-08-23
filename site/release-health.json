@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-22T04:00:20.415Z",
+  "generatedAt": "2026-08-23T04:06:29.997Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -177,26 +177,27 @@
       "name": "Ghostscript",
       "tag": "ghostscript-v0.7.1",
       "release": {
-        "state": "error",
-        "label": "Release unavailable",
-        "error": "404 Not Found",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.1"
+        "state": "ok",
+        "label": "Assets present",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.1",
+        "publishedAt": "2026-08-22T06:05:49Z",
+        "assetCount": 5,
+        "missingAssets": []
       },
       "supplyChain": {
-        "state": "unknown",
-        "label": "Not inspectable",
+        "state": "ok",
+        "label": "Provenance + SBOM published",
         "expected": [
           "provenance-browser-full.json",
           "sbom-browser-full.cdx.json"
         ],
-        "missing": [
-          "provenance-browser-full.json",
-          "sbom-browser-full.cdx.json"
-        ]
+        "missing": []
       },
       "buildGate": {
-        "state": "unknown",
-        "label": "Not inspectable"
+        "state": "ok",
+        "label": "Passed",
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32555743280",
+        "runId": 32555743280
       },
       "playground": {
         "state": "ok",
@@ -208,16 +209,16 @@
         "label": "Current"
       },
       "overall": {
-        "state": "error",
-        "label": "Action required"
+        "state": "ok",
+        "label": "Healthy"
       }
     }
   ],
   "summary": {
-    "healthy": 4,
+    "healthy": 5,
     "warning": 0,
-    "error": 1,
-    "supplyChainPublished": 4,
+    "error": 0,
+    "supplyChainPublished": 5,
     "total": 5
   }
 }
