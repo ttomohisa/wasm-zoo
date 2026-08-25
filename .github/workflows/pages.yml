@@ -39,6 +39,10 @@ jobs:
         run: |
           npm run catalog
           npm run check
+      - name: Refresh live upstream status snapshot
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/check-upstream.mjs --write-site
       - name: Refresh live release health snapshot
         env:
           GITHUB_TOKEN: ${{ github.token }}
