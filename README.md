@@ -26,7 +26,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 | --- | --- | --- | --- | --- |
 | FFmpeg | 9.0.1 | 0.2.7 | `browser-full`, `browser-full-gpl` | yes |
 | libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes |
-| ImageMagick | 7.1.2-29 | 0.4.1 | `browser-full` | yes |
+| ImageMagick | 7.1.2-30 | 0.4.2 | `browser-full` | yes |
 | libvips | 8.18.5 | 0.5.1 | `browser-core`, `browser-full` | yes |
 | Ghostscript | 10.07.1 | 0.7.1 | `browser-full` | yes |
 
@@ -53,6 +53,8 @@ After a builder's real browser smoke test succeeds, every profile now generates:
 The files are included in the binary ZIP and are also exposed as `provenance-<profile>.json` and `sbom-<profile>.cdx.json` on metadata-enabled package releases. See [`docs/SUPPLY_CHAIN.md`](docs/SUPPLY_CHAIN.md).
 
 The v0.8.0 metadata rollout uses patch-only builder releases with unchanged upstream pins: libarchive `0.3.1` (canary), FFmpeg `0.2.7`, ImageMagick `0.4.1`, libvips `0.5.1`, and Ghostscript `0.7.1`.
+
+ImageMagick `0.4.2` is the first post-rollout upstream promotion: the isolated candidate workflow passed for ImageMagick `7.1.2-30` before the reviewed Zoo pin was updated.
 
 Run the live release health check manually:
 
@@ -243,7 +245,7 @@ SHA256SUMS.txt
 
 Its binary ZIP contains four `*-core.js` / `*-core.wasm` pairs, gzip copies, `browser-libarchive.js`, `manifest.json`, `features.json`, `libarchive-config.txt`, build information, libarchive/zlib/bzip2 license notices and toolchain attribution.
 
-## ImageMagick 7.1.2-29
+## ImageMagick 7.1.2-30
 
 WASM Zoo v0.4.0 adds ImageMagick as the third available package.
 
@@ -275,8 +277,8 @@ Linux/macOS:
 Release tag after the real build passes:
 
 ```text
-git tag -a imagemagick-v0.4.1 -m "WASM Zoo ImageMagick v0.4.1"
-git push origin imagemagick-v0.4.1
+git tag -a imagemagick-v0.4.2 -m "WASM Zoo ImageMagick v0.4.2"
+git push origin imagemagick-v0.4.2
 ```
 
 The release workflow rebuilds from the exact pin, runs the Chromium smoke test, publishes binary/source/checksum assets, then asks the Pages workflow to refresh the ImageMagick Playground.
@@ -285,7 +287,7 @@ The release workflow rebuilds from the exact pin, runs the Chromium smoke test, 
 
 ```js
 const image = WasmZooImageMagick.loadHosted({
-  baseUrl: "/assets/imagemagick/7.1.2-29/browser-full/"
+  baseUrl: "/assets/imagemagick/7.1.2-30/browser-full/"
 });
 
 const result = await image.exec([

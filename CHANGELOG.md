@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- promote ImageMagick 7.1.2-30 to builder 0.4.2 after the isolated candidate build and real Chromium smoke test passed, keeping the existing browser-full feature set and Emscripten 6.0.6 toolchain while moving the reviewed source pin to the exact 7.1.2-30 commit;
 - complete the v0.8.0 metadata rollout with patch-only releases FFmpeg 0.2.7, ImageMagick 0.4.1, libvips 0.5.1 and Ghostscript 0.7.1, keeping upstream pins and Wasm feature sets unchanged while publishing standalone provenance/SBOM assets;
 - make Windows builds for all five packages generate the same provenance/SBOM files after browser smoke testing as the Linux/GitHub Actions path, and enforce that parity in the metadata contract check;
 - publish libarchive builder 0.3.1 as the first v0.8.0 metadata-enabled canary, keeping libarchive 3.8.9 and its browser-full feature set unchanged while requiring standalone SLSA provenance and CycloneDX SBOM release assets covered by checksums;
