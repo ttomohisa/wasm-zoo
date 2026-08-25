@@ -17,3 +17,4 @@ expected="${IMAGEMAGICK_COMMIT,,}"
 [[ "${actual:0:${#expected}}" == "$expected" ]] || {
   echo "ImageMagick commit mismatch: expected $IMAGEMAGICK_COMMIT got $actual" >&2
   exit 1
+}

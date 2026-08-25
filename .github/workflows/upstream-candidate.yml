@@ -96,6 +96,10 @@ jobs:
       - name: Set up Chrome
         id: chrome
         uses: browser-actions/setup-chrome@v2.2.0
+      - name: Check ImageMagick shell syntax
+        shell: bash
+        run: |
+          bash -n builders/imagemagick/build.sh builders/imagemagick/scripts/*.sh
       - name: Prepare candidate pin
         run: node scripts/prepare-candidate.mjs --slug imagemagick --version "${{ inputs.version }}" --ref "${{ inputs.ref }}" --commit "${{ inputs.commit }}"
       - name: Build candidate and run browser smoke test

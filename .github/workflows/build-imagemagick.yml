@@ -29,7 +29,10 @@ jobs:
         id: chrome
         uses: browser-actions/setup-chrome@v2.2.0
       - name: Static builder checks
-        run: node builders/imagemagick/scripts/check-repository.mjs
+        shell: bash
+        run: |
+          bash -n builders/imagemagick/build.sh builders/imagemagick/scripts/*.sh
+          node builders/imagemagick/scripts/check-repository.mjs
       - name: Build upstream magick CLI and run browser smoke test
         shell: bash
         working-directory: builders/imagemagick
