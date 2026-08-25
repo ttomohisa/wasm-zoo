@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-24T04:11:14.879Z",
+  "generatedAt": "2026-08-25T15:11:02.157Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -50,12 +50,12 @@
     {
       "slug": "imagemagick",
       "name": "ImageMagick",
-      "tag": "imagemagick-v0.4.1",
+      "tag": "imagemagick-v0.4.2",
       "release": {
         "state": "ok",
         "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.1",
-        "publishedAt": "2026-08-21T08:01:06Z",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.2",
+        "publishedAt": "2026-08-25T00:50:51Z",
         "assetCount": 6,
         "missingAssets": []
       },
@@ -71,8 +71,8 @@
       "buildGate": {
         "state": "ok",
         "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32460900924",
-        "runId": 32460900924
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32794985145",
+        "runId": 32794985145
       },
       "playground": {
         "state": "ok",
@@ -80,12 +80,12 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/imagemagick-playground/"
       },
       "freshness": {
-        "state": "warn",
-        "label": "Update available"
+        "state": "ok",
+        "label": "Current"
       },
       "overall": {
-        "state": "warn",
-        "label": "Upstream review"
+        "state": "ok",
+        "label": "Healthy"
       }
     },
     {
@@ -119,6 +119,47 @@
         "state": "ok",
         "label": "HTTP 200",
         "url": "https://ttomohisa.github.io/wasm-zoo/libarchive-playground/"
+      },
+      "freshness": {
+        "state": "ok",
+        "label": "Current"
+      },
+      "overall": {
+        "state": "ok",
+        "label": "Healthy"
+      }
+    },
+    {
+      "slug": "jq",
+      "name": "jq",
+      "tag": "jq-v0.9.0",
+      "release": {
+        "state": "ok",
+        "label": "Assets present",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/jq-v0.9.0",
+        "publishedAt": "2026-08-25T06:54:22Z",
+        "assetCount": 6,
+        "missingAssets": []
+      },
+      "supplyChain": {
+        "state": "ok",
+        "label": "Provenance + SBOM published",
+        "expected": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ],
+        "missing": []
+      },
+      "buildGate": {
+        "state": "ok",
+        "label": "Passed",
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32818858292",
+        "runId": 32818858292
+      },
+      "playground": {
+        "state": "ok",
+        "label": "HTTP 200",
+        "url": "https://ttomohisa.github.io/wasm-zoo/jq-playground/"
       },
       "freshness": {
         "state": "ok",
@@ -212,53 +253,13 @@
         "state": "ok",
         "label": "Healthy"
       }
-    },
-    {
-      "slug": "jq",
-      "name": "jq",
-      "tag": "jq-v0.9.0",
-      "release": {
-        "state": "error",
-        "label": "Release unavailable",
-        "error": "Not published yet",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/jq-v0.9.0"
-      },
-      "supplyChain": {
-        "state": "unknown",
-        "label": "Not inspectable",
-        "expected": [
-          "provenance-browser-full.json",
-          "sbom-browser-full.cdx.json"
-        ],
-        "missing": [
-          "provenance-browser-full.json",
-          "sbom-browser-full.cdx.json"
-        ]
-      },
-      "buildGate": {
-        "state": "unknown",
-        "label": "Not inspectable"
-      },
-      "playground": {
-        "state": "unknown",
-        "label": "Publishes after first jq release",
-        "url": "https://ttomohisa.github.io/wasm-zoo/jq-playground/"
-      },
-      "freshness": {
-        "state": "ok",
-        "label": "Current"
-      },
-      "overall": {
-        "state": "error",
-        "label": "Action required"
-      }
     }
   ],
   "summary": {
-    "healthy": 4,
-    "warning": 1,
-    "error": 1,
-    "supplyChainPublished": 5,
+    "healthy": 6,
+    "warning": 0,
+    "error": 0,
+    "supplyChainPublished": 6,
     "total": 6
   }
 }
