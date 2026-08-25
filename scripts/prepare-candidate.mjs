@@ -14,7 +14,8 @@ for (const key of ["slug", "version", "ref", "commit"]) if (!values[key]) throw 
 const configs = {
   ffmpeg: { dir: "ffmpeg", refKey: "FFMPEG_REF", commitKey: "FFMPEG_COMMIT" },
   libarchive: { dir: "libarchive", refKey: "LIBARCHIVE_REF", commitKey: "LIBARCHIVE_COMMIT" },
-  imagemagick: { dir: "imagemagick", refKey: "IMAGEMAGICK_REF", commitKey: "IMAGEMAGICK_COMMIT" }
+  imagemagick: { dir: "imagemagick", refKey: "IMAGEMAGICK_REF", commitKey: "IMAGEMAGICK_COMMIT" },
+  jq: { dir: "jq", refKey: "JQ_REF", commitKey: "JQ_COMMIT", submodule: { repository: "jqlang/jq", path: "vendor/oniguruma", commitKey: "ONIGURUMA_COMMIT" } }
 };
 const config = configs[values.slug];
 if (!config) throw new Error(`${values.slug} does not support automatic candidate builds`);
@@ -27,6 +28,17 @@ function replaceEnv(key, value) {
 }
 replaceEnv(config.refKey, values.ref);
 replaceEnv(config.commitKey, values.commit);
+let submoduleCommit = null;
+if (config.submodule) {
+  const headers = { Accept: "application/vnd.github+json", "User-Agent": "wasm-zoo-candidate-preparer", ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}) };
+  const url = `https://api.github.com/repos/${config.submodule.repository}/contents/${config.submodule.path}?ref=${encodeURIComponent(values.commit)}`;
+  const response = await fetch(url, { headers });
+  if (!response.ok) throw new Error(`Could not resolve ${config.submodule.path} for ${values.commit}: ${response.status} ${response.statusText}`);
+  const data = await response.json();
+  if (data.type !== "submodule" || !/^[0-9a-f]{40}$/i.test(data.sha || "")) throw new Error(`Invalid submodule metadata for ${config.submodule.path}`);
+  submoduleCommit = data.sha;
+  replaceEnv(config.submodule.commitKey, submoduleCommit);
+}
 await fs.writeFile(file, text);
 const info = {
   schemaVersion: 1,
@@ -35,7 +47,8 @@ const info = {
   ref: values.ref,
   commit: values.commit,
   preparedAt: new Date().toISOString(),
-  versionsFile: path.relative(root, file).replaceAll(path.sep, "/")
+  versionsFile: path.relative(root, file).replaceAll(path.sep, "/"),
+  ...(submoduleCommit ? { submoduleCommit } : {})
 };
 await fs.writeFile(path.join(root, "candidate-info.json"), `${JSON.stringify(info, null, 2)}\n`);
 console.log(`[OK] prepared ${values.slug} upstream candidate ${values.version} (${values.ref} @ ${values.commit.slice(0, 12)})`);

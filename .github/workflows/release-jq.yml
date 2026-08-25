@@ -1,0 +1,61 @@
+name: Release jq WASM
+
+on:
+  push:
+    tags:
+      - "jq-v*.*.*"
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Verify release tag
+        shell: bash
+        working-directory: builders/jq
+        run: |
+          set -euo pipefail
+          source ./versions.env
+          test "${GITHUB_REF_NAME}" = "jq-v${BUILDER_VERSION}"
+      - name: Static builder checks
+        shell: bash
+        run: |
+          bash -n builders/jq/build.sh builders/jq/scripts/*.sh
+          node builders/jq/scripts/check-repository.mjs
+      - name: Build and smoke-test browser-full
+        shell: bash
+        working-directory: builders/jq
+        env:
+          JQ_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - name: Prepare binary, corresponding source and checksum assets
+        shell: bash
+        working-directory: builders/jq
+        run: ./scripts/prepare-release.sh
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/jq/versions.env
+          gh release create "${GITHUB_REF_NAME}" builders/jq/release/* --verify-tag --title "WASM Zoo · jq ${JQ_REF#jq-} · browser build" --notes "Unofficial current-upstream jq CLI build for browser WebAssembly. Built from exact jq and Oniguruma commits with Emscripten 6.0.7. The release includes corresponding source/build recipe, in-toto/SLSA provenance, CycloneDX 1.6 SBOM and SHA-256 checksums. Chromium smoke testing verifies jq version output, real JSON transformation and Oniguruma-backed regex before publication."
+      - name: Refresh Pages so the Playground stages this release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main

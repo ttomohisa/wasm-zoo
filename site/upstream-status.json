@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-25T04:05:15.416Z",
-  "hasUpdates": false,
+  "generatedAt": "2026-08-24T04:11:07.656Z",
+  "hasUpdates": true,
   "packages": [
     {
       "slug": "ffmpeg",
@@ -34,19 +34,19 @@
       "slug": "imagemagick",
       "name": "ImageMagick",
       "status": "ok",
-      "pinned": "7.1.2-30",
-      "pinnedRef": "7.1.2-30",
-      "pinnedReleased": "2026-08-23",
+      "pinned": "7.1.2-29",
+      "pinnedRef": "7.1.2-29",
+      "pinnedReleased": "2026-07-27",
       "latest": "7.1.2-30",
       "latestRef": "7.1.2-30",
       "latestCommit": "344e9056f43764bfdf82456faf3bc2feee98a6fe",
       "latestReleased": "2026-08-23T17:17:49Z",
-      "updateAvailable": false,
-      "lagDays": 0,
+      "updateAvailable": true,
+      "lagDays": 27,
       "gap": {
-        "kind": "current",
-        "label": "Current",
-        "versionsBehind": 0
+        "kind": "behind",
+        "label": "Update available",
+        "versionsBehind": 1
       },
       "url": "https://github.com/ImageMagick/ImageMagick/releases/tag/7.1.2-30",
       "candidate": {
@@ -130,6 +130,32 @@
       "url": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/tag/gs10071",
       "candidate": {
         "mode": "none",
+        "profiles": [
+          "browser-full"
+        ]
+      }
+    },
+    {
+      "slug": "jq",
+      "name": "jq",
+      "status": "ok",
+      "pinned": "1.8.2",
+      "pinnedRef": "jq-1.8.2",
+      "pinnedReleased": "2026-06-20",
+      "latest": "1.8.2",
+      "latestRef": "jq-1.8.2",
+      "latestCommit": "34f7186b86743a083a589741b6cea95293524108",
+      "latestReleased": "2026-06-20T14:11:00Z",
+      "updateAvailable": false,
+      "lagDays": 0,
+      "gap": {
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
+      },
+      "url": "https://github.com/jqlang/jq/releases/tag/jq-1.8.2",
+      "candidate": {
+        "mode": "auto",
         "profiles": [
           "browser-full"
         ]

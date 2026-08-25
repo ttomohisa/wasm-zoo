@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-25T04:05:21.743Z",
+  "generatedAt": "2026-08-24T04:11:14.879Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -50,12 +50,12 @@
     {
       "slug": "imagemagick",
       "name": "ImageMagick",
-      "tag": "imagemagick-v0.4.2",
+      "tag": "imagemagick-v0.4.1",
       "release": {
         "state": "ok",
         "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.2",
-        "publishedAt": "2026-08-25T00:50:51Z",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.1",
+        "publishedAt": "2026-08-21T08:01:06Z",
         "assetCount": 6,
         "missingAssets": []
       },
@@ -71,8 +71,8 @@
       "buildGate": {
         "state": "ok",
         "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32794985145",
-        "runId": 32794985145
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32460900924",
+        "runId": 32460900924
       },
       "playground": {
         "state": "ok",
@@ -80,12 +80,12 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/imagemagick-playground/"
       },
       "freshness": {
-        "state": "ok",
-        "label": "Current"
+        "state": "warn",
+        "label": "Update available"
       },
       "overall": {
-        "state": "ok",
-        "label": "Healthy"
+        "state": "warn",
+        "label": "Upstream review"
       }
     },
     {
@@ -212,13 +212,53 @@
         "state": "ok",
         "label": "Healthy"
       }
+    },
+    {
+      "slug": "jq",
+      "name": "jq",
+      "tag": "jq-v0.9.0",
+      "release": {
+        "state": "error",
+        "label": "Release unavailable",
+        "error": "Not published yet",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/jq-v0.9.0"
+      },
+      "supplyChain": {
+        "state": "unknown",
+        "label": "Not inspectable",
+        "expected": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ],
+        "missing": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ]
+      },
+      "buildGate": {
+        "state": "unknown",
+        "label": "Not inspectable"
+      },
+      "playground": {
+        "state": "unknown",
+        "label": "Publishes after first jq release",
+        "url": "https://ttomohisa.github.io/wasm-zoo/jq-playground/"
+      },
+      "freshness": {
+        "state": "ok",
+        "label": "Current"
+      },
+      "overall": {
+        "state": "error",
+        "label": "Action required"
+      }
     }
   ],
   "summary": {
-    "healthy": 5,
-    "warning": 0,
-    "error": 0,
+    "healthy": 4,
+    "warning": 1,
+    "error": 1,
     "supplyChainPublished": 5,
-    "total": 5
+    "total": 6
   }
 }

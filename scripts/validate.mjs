@@ -210,6 +210,25 @@ if (ghostscript) {
   assert(ghostscript.tracker?.candidateMode === "none", "Ghostscript automatic candidate substitution must remain source-digest gated");
 }
 
+const jq = packages.find((pkg) => pkg.slug === "jq");
+if (jq) {
+  const env = await readEnv(path.join(root, "builders", "jq", "versions.env"));
+  assert(env.JQ_REF === `jq-${jq.upstream.version}`, `jq catalog version ${jq.upstream.version} does not match JQ_REF=${env.JQ_REF}`);
+  assert(env.BUILDER_VERSION === jq.zoo.builderVersion, `jq builderVersion ${jq.zoo.builderVersion} does not match versions.env ${env.BUILDER_VERSION}`);
+  assert(env.JQ_COMMIT === "34f7186b86743a083a589741b6cea95293524108", "jq exact 1.8.2 commit pin is missing");
+  assert(env.ONIGURUMA_COMMIT === "4ef89209a239c1aea328cf13c05a2807e5c146d1", "jq exact Oniguruma 6.9.10 submodule pin is missing");
+  assert(env.EMSCRIPTEN_COMMIT === "4483d70a78098ed5d860dff2dc21f3025b2da2ee", "jq exact Emscripten 6.0.7 commit pin is missing");
+  const profile = jq.profiles.find((entry) => entry.id === "browser-full");
+  assert(profile?.arbitraryCli === true, "jq browser-full must expose the upstream jq CLI");
+  assert(profile?.threads === false && profile?.sharedArrayBuffer === false, "jq browser-full must remain single-threaded/no-SAB");
+  assert(profile?.worker === true && profile?.playgroundPath === "./jq-playground/", "jq browser-full must use a Worker and link to the jq Playground");
+  assert(jq.release?.tag === `jq-v${jq.zoo.builderVersion}`, `jq release tag must match builderVersion ${jq.zoo.builderVersion}`);
+  assert(profile?.releaseAsset === `jq-browser-full-${jq.upstream.version}-zoo-${jq.zoo.builderVersion}.zip`, "jq releaseAsset naming mismatch");
+  assert(jq.release?.sourceAsset === `jq-sources-${jq.upstream.version}-zoo-${jq.zoo.builderVersion}.tar.gz`, "jq source asset naming mismatch");
+  assert(jq.integration?.example?.includes("WasmZooJq.loadHosted") && jq.integration?.example?.includes("result.stdout"), "jq integration example must use the public CLI wrapper and captured stdout");
+  assert(jq.referenceWasm?.upstreamVersion === "1.7.1", "jq reference WASM gap must record jq-web's jq 1.7.1 pin");
+}
+
 const requiredSiteFiles = [
   "site/ffmpeg-playground/index.html",
   "site/ffmpeg-playground/app.js",
@@ -230,6 +249,11 @@ const requiredSiteFiles = [
   "site/ghostscript-playground/index.html",
   "site/ghostscript-playground/app.js",
   "site/ghostscript-playground/playground.css",
+  "site/jq-playground/index.html",
+  "site/jq-playground/app.js",
+  "site/jq-playground/playground.css",
+  ".github/workflows/build-jq.yml",
+  ".github/workflows/release-jq.yml",
   "site/upstream-status.json",
   "site/release-health.json",
   ".github/workflows/check-upstream.yml",
@@ -271,6 +295,8 @@ try {
   assert(pages.includes("site/assets/ghostscript"), "Pages workflow must stage Ghostscript cores under site/assets/ghostscript");
   assert(pages.includes("cp builders/ghostscript/runtime/browser-ghostscript.js"), "Pages workflow must use the current Ghostscript runtime wrapper");
   assert(pages.includes('"builders/ghostscript/runtime/browser-ghostscript.js"'), "Pages workflow must redeploy when the Ghostscript runtime wrapper changes");
+  assert(pages.includes("site/assets/jq") && pages.includes("cp builders/jq/runtime/browser-jq.js"), "Pages workflow must stage jq release assets and current runtime wrapper");
+  assert(pages.includes('"builders/jq/runtime/browser-jq.js"'), "Pages workflow must redeploy when the jq runtime wrapper changes");
   const runtime = await fs.readFile(path.join(root, "builders/ffmpeg/runtime/browser-ffmpeg.js"), "utf8");
   assert(runtime.includes('self.addEventListener("error"'), "FFmpeg runtime wrapper must surface asynchronous pthread worker errors");
   const imageRuntime = await fs.readFile(path.join(root, "builders/imagemagick/runtime/browser-imagemagick.js"), "utf8");
@@ -280,6 +306,9 @@ try {
   const ghostRuntime = await fs.readFile(path.join(root, "builders/ghostscript/runtime/browser-ghostscript.js"), "utf8");
   assert(ghostRuntime.includes("Worker") && ghostRuntime.includes("core.FS"), "Ghostscript runtime must use an isolated Worker with Emscripten FS/MEMFS");
   assert(!ghostRuntime.includes("SharedArrayBuffer"), "Ghostscript runtime must not require SharedArrayBuffer");
+  const jqRuntime = await fs.readFile(path.join(root, "builders/jq/runtime/browser-jq.js"), "utf8");
+  assert(jqRuntime.includes("core.callMain") && jqRuntime.includes("core.FS.writeFile"), "jq runtime must use upstream CLI callMain with MEMFS");
+  assert(!jqRuntime.includes("SharedArrayBuffer"), "jq runtime must not require SharedArrayBuffer");
   const siteApp = await fs.readFile(path.join(root, "site/app.js"), "utf8");
   assert(siteApp.includes("Use in your app") && siteApp.includes("data-copy-code"), "Package details must render integration guidance with copyable examples");
   assert(siteApp.includes("renderVersionGap") && siteApp.includes("renderFeatureMatrix"), "Pages must render Version Gap Dashboard and Feature Matrix");
@@ -299,10 +328,12 @@ try {
   const verifyWorkflow = await fs.readFile(path.join(root, ".github/workflows/verify.yml"), "utf8");
   assert(verifyWorkflow.includes("builders/libvips/scripts/check-repository.mjs"), "Verify workflow must include libvips repository checks");
   assert(verifyWorkflow.includes("builders/ghostscript/scripts/check-repository.mjs"), "Verify workflow must include Ghostscript repository checks");
+  assert(verifyWorkflow.includes("builders/jq/scripts/check-repository.mjs"), "Verify workflow must include jq repository checks");
   assert(verifyWorkflow.includes("check-metadata-contract.mjs"), "Verify workflow must validate provenance/SBOM release contracts");
   const candidate = await fs.readFile(path.join(root, ".github/workflows/upstream-candidate.yml"), "utf8");
   assert(candidate.includes("prepare-candidate.mjs") && candidate.includes("browser smoke test"), "Candidate workflow must substitute isolated pins and run browser smoke tests");
   assert(candidate.includes("adapter-gated") && candidate.includes("libvips-readiness"), "libvips candidate workflow must preserve the adapter gate");
+  assert(candidate.includes("inputs.slug == 'jq'") && candidate.includes("JQ_WASM_BROWSER"), "Candidate workflow must support isolated jq upstream candidates");
   const prepareCandidate = await fs.readFile(path.join(root, "scripts/prepare-candidate.mjs"), "utf8");
   assert(!prepareCandidate.includes("package.json"), "Candidate preparation must not rewrite reviewed package catalog pins");
   const readme = await fs.readFile(path.join(root, "README.md"), "utf8");

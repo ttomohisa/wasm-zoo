@@ -1,0 +1,64 @@
+name: Build jq browser WASM
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "builders/jq/**"
+      - "packages/jq/**"
+      - "site/jq-playground/**"
+      - ".github/workflows/build-jq.yml"
+  pull_request:
+    paths:
+      - "builders/jq/**"
+      - "packages/jq/**"
+      - "site/jq-playground/**"
+      - ".github/workflows/build-jq.yml"
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Static builder checks
+        shell: bash
+        run: |
+          bash -n builders/jq/build.sh builders/jq/scripts/*.sh
+          node builders/jq/scripts/check-repository.mjs
+      - name: Build upstream jq CLI and run browser smoke test
+        shell: bash
+        working-directory: builders/jq
+        env:
+          JQ_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - name: Show generated manifest
+        run: cat builders/jq/dist/browser-full/manifest.json
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-zoo-jq-browser-full-${{ github.sha }}
+          path: |
+            builders/jq/dist/browser-full/jq-core.js
+            builders/jq/dist/browser-full/jq-core.wasm
+            builders/jq/dist/browser-full/manifest.json
+            builders/jq/dist/browser-full/features.json
+            builders/jq/dist/browser-full/provenance.json
+            builders/jq/dist/browser-full/sbom.cdx.json
+            builders/jq/dist/browser-full/jq-config.txt
+            builders/jq/dist/browser-full/browser-jq.js
+            builders/jq/dist/browser-full/LICENSE-jq.txt
+            builders/jq/dist/browser-full/LICENSE-oniguruma.txt
+          if-no-files-found: error
+          retention-days: 30

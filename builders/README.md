@@ -8,4 +8,6 @@ Each builder produces a generic distribution artifact for one upstream project.
 - `libvips/` — upstream libvips browser library (`browser-core`, `browser-full`) through a pinned wasm-vips adapter, retaining pthreads/SIMD with real PNG decode → resize → JPEG/WebP testing and automatic profile-size comparison.
 - `ghostscript/` — upstream Ghostscript `gs` browser CLI (`browser-full`) from the exact official 10.07.1 source archive, single-threaded with MEMFS and real PDF → PNG / PostScript → PDF Chromium testing.
 
+- `jq/` — upstream jq CLI (`browser-full`) with builtin Oniguruma, single-threaded Worker/MEMFS execution and real JSON/regex Chromium testing.
+
 Builders prioritize upstream-oriented, reproducible distributions with explicit capability and target metadata.

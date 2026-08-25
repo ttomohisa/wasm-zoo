@@ -7,7 +7,7 @@ on:
         description: Package slug
         required: true
         type: choice
-        options: [ffmpeg, libarchive, imagemagick, libvips]
+        options: [ffmpeg, libarchive, imagemagick, libvips, jq]
       version:
         description: Upstream version
         required: true
@@ -116,6 +116,38 @@ jobs:
           path: builders/imagemagick/dist/browser-full/
           retention-days: 14
 
+  jq:
+    if: inputs.slug == 'jq'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Check jq shell syntax
+        shell: bash
+        run: bash -n builders/jq/build.sh builders/jq/scripts/*.sh
+      - name: Prepare candidate pin
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/prepare-candidate.mjs --slug jq --version "${{ inputs.version }}" --ref "${{ inputs.ref }}" --commit "${{ inputs.commit }}"
+      - name: Build candidate and run browser smoke test
+        shell: bash
+        working-directory: builders/jq
+        env:
+          JQ_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - uses: actions/upload-artifact@v7
+        with:
+          name: candidate-jq-${{ inputs.version }}-browser-full
+          path: builders/jq/dist/browser-full/
+          retention-days: 14
+
+
   libvips-readiness:
     if: inputs.slug == 'libvips'
     runs-on: ubuntu-latest
@@ -136,7 +168,7 @@ jobs:
 
   report:
     if: always()
-    needs: [ffmpeg, libarchive, imagemagick, libvips-readiness]
+    needs: [ffmpeg, libarchive, imagemagick, libvips-readiness, jq]
     runs-on: ubuntu-latest
     steps:
       - name: Build candidate result
@@ -148,6 +180,7 @@ jobs:
             ffmpeg) result='${{ needs.ffmpeg.result }}' ;;
             libarchive) result='${{ needs.libarchive.result }}' ;;
             imagemagick) result='${{ needs.imagemagick.result }}' ;;
+            jq) result='${{ needs.jq.result }}' ;;
             libvips) result='adapter-gated' ;;
             *) result='unknown' ;;
           esac

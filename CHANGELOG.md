@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## v0.9.0
+
+- add jq 1.8.2 as the sixth WASM Zoo package with exact jq/Oniguruma/Emscripten pins, a single-threaded Worker + MEMFS browser-full CLI runtime, real Chromium JSON/regex smoke tests, Playground, upstream watcher candidates, Release Health integration, corresponding source, provenance and CycloneDX SBOM assets;
 - promote ImageMagick 7.1.2-30 to builder 0.4.2 after the isolated candidate build and real Chromium smoke test passed, keeping the existing browser-full feature set and Emscripten 6.0.6 toolchain while moving the reviewed source pin to the exact 7.1.2-30 commit;
 - complete the v0.8.0 metadata rollout with patch-only releases FFmpeg 0.2.7, ImageMagick 0.4.1, libvips 0.5.1 and Ghostscript 0.7.1, keeping upstream pins and Wasm feature sets unchanged while publishing standalone provenance/SBOM assets;
 - make Windows builds for all five packages generate the same provenance/SBOM files after browser smoke testing as the Linux/GitHub Actions path, and enforce that parity in the metadata contract check;

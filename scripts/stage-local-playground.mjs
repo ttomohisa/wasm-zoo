@@ -87,5 +87,26 @@ async function stageGhostscript() {
   return 1;
 }
 
-const staged = (await stageFfmpeg()) + (await stageLibarchive()) + (await stageImageMagick()) + (await stageLibvips()) + (await stageGhostscript());
+async function stageJq() {
+  const env = await readEnv(path.join(root, 'builders', 'jq', 'versions.env'));
+  const version = env.JQ_REF.replace(/^jq-/, '');
+  const profile = 'browser-full';
+  const source = path.join(root, 'builders', 'jq', 'dist', profile);
+  const dest = path.join(root, 'site', 'assets', 'jq', version, profile);
+  try {
+    await fs.access(path.join(source, 'manifest.json'));
+  } catch {
+    console.log('[skip] jq browser-full: build it first for local Playground');
+    return 0;
+  }
+  await fs.mkdir(dest, { recursive: true });
+  for (const name of ['jq-core.js', 'jq-core.wasm', 'manifest.json', 'features.json']) {
+    await fs.copyFile(path.join(source, name), path.join(dest, name));
+  }
+  await fs.copyFile(path.join(root, 'builders', 'jq', 'runtime', 'browser-jq.js'), path.join(dest, 'browser-jq.js'));
+  console.log('[OK] staged jq browser-full');
+  return 1;
+}
+
+const staged = (await stageFfmpeg()) + (await stageLibarchive()) + (await stageImageMagick()) + (await stageLibvips()) + (await stageGhostscript()) + (await stageJq());
 if (!staged) console.log('[info] No local release cores staged; the catalog can still be previewed.');

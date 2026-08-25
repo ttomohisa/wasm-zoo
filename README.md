@@ -7,6 +7,7 @@
 [![ImageMagick build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-imagemagick.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-imagemagick.yml)
 [![libvips build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libvips.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libvips.yml)
 [![Ghostscript build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-ghostscript.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-ghostscript.yml)
+[![jq build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-jq.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-jq.yml)
 [![Upstream watcher](https://github.com/ttomohisa/wasm-zoo/actions/workflows/check-upstream.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/check-upstream.yml)
 
 **Current upstream software, compiled for WebAssembly.**
@@ -19,6 +20,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 - ImageMagick Playground: https://ttomohisa.github.io/wasm-zoo/imagemagick-playground/
 - libvips Playground: https://ttomohisa.github.io/wasm-zoo/libvips-playground/
 - Ghostscript Playground: https://ttomohisa.github.io/wasm-zoo/ghostscript-playground/
+- jq Playground: https://ttomohisa.github.io/wasm-zoo/jq-playground/
 
 ## Available packages
 
@@ -29,8 +31,9 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 | ImageMagick | 7.1.2-30 | 0.4.2 | `browser-full` | yes |
 | libvips | 8.18.5 | 0.5.1 | `browser-core`, `browser-full` | yes |
 | Ghostscript | 10.07.1 | 0.7.1 | `browser-full` | yes |
+| jq | 1.8.2 | 0.9.0 | `browser-full` | yes |
 
-The project version is **WASM Zoo v0.8.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+The project version is **WASM Zoo v0.9.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
 ## Release health and supply-chain metadata
 
@@ -76,7 +79,7 @@ WASM Zoo v0.6.0 makes freshness and target differences first-class catalog data 
 - **Feature Matrix** — Native vs every published browser profile using a shared state vocabulary: Included, Intentionally excluded, Browser N/A, Optional/platform-dependent and Unknown/not tested;
 - **Upstream Watcher** — daily stable-release discovery with a committed `site/upstream-status.json` snapshot, one issue per newly detected release and an isolated candidate workflow where automatic testing is safe.
 
-The watcher deliberately does **not** change reviewed pins or publish releases. For FFmpeg, libarchive and ImageMagick, a newly detected stable release can be substituted only inside the candidate workflow and must pass the existing real Chromium smoke test. libvips is marked `adapter-gated`: a new libvips release first needs reviewed wasm-vips/compatibility patch pins before a candidate build would be meaningful. Ghostscript is tracked daily but automatic candidate substitution is intentionally disabled until the watcher can also capture and verify the official source-asset SHA-256.
+The watcher deliberately does **not** change reviewed pins or publish releases. For FFmpeg, libarchive, ImageMagick and jq, a newly detected stable release can be substituted only inside the candidate workflow and must pass the existing real Chromium smoke test. libvips is marked `adapter-gated`: a new libvips release first needs reviewed wasm-vips/compatibility patch pins before a candidate build would be meaningful. Ghostscript is tracked daily but automatic candidate substitution is intentionally disabled until the watcher can also capture and verify the official source-asset SHA-256.
 
 Run the watcher manually:
 
@@ -215,7 +218,7 @@ In the libarchive Playground, List/Extract expects an archive input, while Creat
 start-local.bat
 ```
 
-This regenerates the catalog, stages any locally built FFmpeg/libarchive/ImageMagick/libvips/Ghostscript artifacts under ignored `site/assets/`, and serves:
+This regenerates the catalog, stages any locally built FFmpeg/libarchive/ImageMagick/libvips/Ghostscript/jq artifacts under ignored `site/assets/`, and serves:
 
 ```text
 http://localhost:4173/
@@ -224,6 +227,7 @@ http://localhost:4173/libarchive-playground/
 http://localhost:4173/imagemagick-playground/
 http://localhost:4173/libvips-playground/
 http://localhost:4173/ghostscript-playground/
+http://localhost:4173/jq-playground/
 ```
 
 The catalog still works when no local Wasm build has been staged.
@@ -352,6 +356,41 @@ input.delete();
 ```
 
 The release workflow rebuilds both profiles, runs the Chromium smoke tests, publishes both binary archives plus the profile size comparison/source/checksum assets, then refreshes the libvips Playground through Pages.
+
+## jq 1.8.2
+
+WASM Zoo adds jq as the sixth available package. `browser-full` builds the exact upstream `jq-1.8.2` commit with its exact Oniguruma 6.9.10 submodule using Emscripten 6.0.7. The normal jq CLI is preserved, while a thin Worker/MEMFS wrapper stages files and captures stdout/stderr. No SharedArrayBuffer or cross-origin isolation is required.
+
+The representative `jq-web` 0.6.2 package currently pins jq 1.7.1 and documents Emscripten 3.1.31 as its known-working compiler; WASM Zoo instead tracks current jq 1.8.2 with exact source/toolchain pins, real Chromium smoke tests, provenance and SBOM metadata.
+
+Build on Windows:
+
+```text
+build-jq.bat browser-full
+```
+
+Release tag after the real browser build passes:
+
+```text
+git tag -a jq-v0.9.0 -m "WASM Zoo jq v0.9.0"
+git push origin jq-v0.9.0
+```
+
+The smoke test verifies `jq --version`, a real `select`/`map` JSON transformation and an Oniguruma-backed `test()` regular expression.
+
+### jq browser API
+
+```js
+const jq = WasmZooJq.loadHosted({
+  baseUrl: "/assets/jq/1.8.2/browser-full/"
+});
+const input = new TextEncoder().encode(JSON.stringify({ users: [{name: "A", active: true}] }));
+const result = await jq.exec([
+  "-c", ".users | map(select(.active)) | map(.name)", "/input.json"
+], { files: [{ name: "/input.json", data: input }] });
+console.log(result.stdout);
+jq.dispose();
+```
 
 ## Ghostscript 10.07.1
 

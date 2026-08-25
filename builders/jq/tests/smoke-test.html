@@ -1,0 +1,22 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>WASM Zoo jq smoke test</title>
+<pre id="log">boot</pre>
+<script src="./browser-jq.js"></script>
+<script>
+const logEl=document.querySelector('#log'); const lines=[];
+const onLog=({stream,message})=>{lines.push(`${stream}: ${message}`);logEl.textContent=lines.slice(-100).join('\n');};
+const fail=(error)=>{console.error(error);location.hash=`#SMOKE_TEST_FAIL_${encodeURIComponent(error?.message||String(error))}`;};
+(async()=>{try{
+  const jq=WasmZooJq.loadHosted({baseUrl:'./'});
+  const version=await jq.exec(['--version'],{timeoutMs:30000,onLog});
+  if(!version.stdout.includes('jq-1.8.2')) throw new Error(`jq --version mismatch: ${version.stdout}`);
+  const input=await (await fetch('./smoke-input.json')).arrayBuffer();
+  const transformed=await jq.exec(['-M','-c','.items | map(select(.enabled)) | map(.name)','/input.json'],{files:[{name:'/input.json',data:input}],timeoutMs:30000,onLog});
+  if(transformed.stdout.trim()!== '["alpha","gamma"]') throw new Error(`JSON transform mismatch: ${JSON.stringify(transformed.stdout)}`);
+  const regex=await jq.exec(['-M','-n','-r','"WASM-Zoo" | test("^[A-Z]+-[A-Za-z]+$")'],{timeoutMs:30000,onLog});
+  if(regex.stdout.trim()!=='true') throw new Error(`Oniguruma regex test mismatch: ${JSON.stringify(regex.stdout)}`);
+  jq.dispose();
+  location.hash='#SMOKE_TEST_PASS_jq_1.8.2_transform_and_Oniguruma_regex';
+}catch(error){fail(error);}})();
+</script>

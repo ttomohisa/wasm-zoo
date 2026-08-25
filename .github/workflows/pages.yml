@@ -13,6 +13,7 @@ on:
       - "builders/imagemagick/runtime/browser-imagemagick.js"
       - "builders/libvips/runtime/browser-libvips.js"
       - "builders/ghostscript/runtime/browser-ghostscript.js"
+      - "builders/jq/runtime/browser-jq.js"
       - "VERSION"
       - ".github/workflows/pages.yml"
 
@@ -167,6 +168,29 @@ jobs:
           unzip -q -j "$work/$asset" gs-core.js gs-core.wasm manifest.json features.json -d "$dest"
           cp builders/ghostscript/runtime/browser-ghostscript.js "$dest/browser-ghostscript.js"
           echo "[OK] staged Ghostscript ${version} ${tag}"
+
+      - name: Stage published jq release for Playground
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/jq/versions.env
+          tag="jq-v${BUILDER_VERSION}"
+          version="${JQ_REF#jq-}"
+          if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "[WARN] ${tag} is not published yet; jq Playground assets will be staged after the release workflow completes."
+            exit 0
+          fi
+          work="${RUNNER_TEMP}/wasm-zoo-pages-jq"
+          rm -rf "$work" && mkdir -p "$work"
+          asset="jq-browser-full-${version}-zoo-${BUILDER_VERSION}.zip"
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir "$work"
+          dest="site/assets/jq/${version}/browser-full"
+          mkdir -p "$dest"
+          unzip -q -j "$work/$asset" jq-core.js jq-core.wasm manifest.json features.json -d "$dest"
+          cp builders/jq/runtime/browser-jq.js "$dest/browser-jq.js"
+          echo "[OK] staged jq ${version} ${tag}"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

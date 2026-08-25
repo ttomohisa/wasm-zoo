@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 2,
+  "slug": "jq",
+  "name": "jq",
+  "summary": "Current upstream jq CLI compiled for browser WebAssembly with an isolated Worker/MEMFS runtime and exact source pins.",
+  "category": "data",
+  "status": "available",
+  "order": 25,
+  "upstream": {
+    "version": "1.8.2",
+    "ref": "jq-1.8.2",
+    "released": "2026-06-20",
+    "homepage": "https://jqlang.org/",
+    "repository": "https://github.com/jqlang/jq",
+    "license": "MIT (jq) / ICU (decNumber); bundled Oniguruma BSD-style license"
+  },
+  "tracker": {
+    "type": "github-releases",
+    "repository": "jqlang/jq",
+    "versionPattern": "jq[ -]?(\\d+\\.\\d+\\.\\d+)",
+    "candidateMode": "auto",
+    "candidateProfiles": [
+      "browser-full"
+    ]
+  },
+  "zoo": {
+    "builderVersion": "0.9.0",
+    "toolchain": "Emscripten 6.0.7",
+    "buildModel": "upstream-cli-builtin-oniguruma",
+    "reproducible": true,
+    "sourceBundle": true,
+    "checksums": true,
+    "browserSmokeTest": true,
+    "featureInventory": true,
+    "provenance": "in-toto Statement + SLSA Provenance v1",
+    "sbom": "CycloneDX 1.6 JSON",
+    "supplyChainMetadata": true
+  },
+  "profiles": [
+    {
+      "id": "browser-full",
+      "label": "Browser Full",
+      "target": "browser",
+      "threads": false,
+      "simd": false,
+      "sharedArrayBuffer": false,
+      "worker": true,
+      "workerFs": false,
+      "arbitraryCli": true,
+      "network": false,
+      "features": [
+        "upstream jq CLI",
+        "JSON filters, pipes, map/select/reduce and streaming-oriented CLI flags",
+        "Oniguruma 6.9.10 regular expressions from the exact jq submodule pin",
+        "module/data file loading through Emscripten MEMFS",
+        "single-threaded outer Worker runtime",
+        "machine-readable build inventory"
+      ],
+      "externalLibraries": [
+        "Oniguruma 6.9.10 (jq pinned submodule)"
+      ],
+      "output": "Generic upstream jq CLI for local JSON filtering and transformation",
+      "binaryLicense": "MIT / ICU / BSD-style Oniguruma",
+      "size": "Loaded from the published release manifest",
+      "releaseAsset": "jq-browser-full-1.8.2-zoo-0.9.0.zip",
+      "playground": true,
+      "playgroundPath": "./jq-playground/"
+    }
+  ],
+  "integration": {
+    "summary": "Self-host jq-core.js/jq-core.wasm plus the Zoo wrapper, then execute normal jq CLI arguments against JSON files staged in MEMFS.",
+    "files": [
+      "browser-jq.js",
+      "jq-core.js",
+      "jq-core.wasm"
+    ],
+    "example": "<script src=\"/vendor/jq/browser-jq.js\"></script>\n<script type=\"module\">\nconst jq = WasmZooJq.loadHosted({ baseUrl: \"/vendor/jq/\" });\ntry {\n  const input = new TextEncoder().encode(JSON.stringify({ users: [{ name: \"A\", active: true }] }));\n  const result = await jq.exec([\"-c\", \".users | map(select(.active)) | map(.name)\", \"/input.json\"], {\n    files: [{ name: \"/input.json\", data: input }]\n  });\n  console.log(result.stdout);\n} finally {\n  jq.dispose();\n}\n</script>",
+    "notes": [
+      "No SharedArrayBuffer or cross-origin isolation is required for browser-full.",
+      "The wrapper preserves jq's CLI argument model and adds only MEMFS file staging plus stdout/stderr capture.",
+      "Native terminal/pipe semantics and host filesystem access are not available; files must be staged into MEMFS."
+    ]
+  },
+  "comparison": [
+    {
+      "name": "Upstream native",
+      "version": "1.8.2",
+      "note": "Current jq CLI with normal host stdin/stdout/filesystem and OS process integration."
+    },
+    {
+      "name": "WASM Zoo",
+      "version": "1.8.2",
+      "note": "Current upstream jq CLI with builtin Oniguruma, isolated Worker execution and browser MEMFS constraints."
+    }
+  ],
+  "notes": [
+    "jq 1.8.2 is pinned to exact commit 34f7186b86743a083a589741b6cea95293524108; the matching upstream Oniguruma submodule is pinned to 4ef89209a239c1aea328cf13c05a2807e5c146d1 (6.9.10).",
+    "The representative jq-web 0.6.2 browser package currently pins jq 1.7.1, while this Zoo profile tracks jq 1.8.2 and uses Emscripten 6.0.7.",
+    "The Chromium smoke test verifies jq --version, a real JSON select/map transformation, and an Oniguruma-backed test() regular expression.",
+    "jq 1.8.2 includes upstream security fixes released after 1.8.1; WASM Zoo still treats browser execution as untrusted-input processing and isolates each CLI invocation in a fresh Worker."
+  ],
+  "release": {
+    "tag": "jq-v0.9.0",
+    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/jq-v0.9.0",
+    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/jq-v0.9.0/",
+    "sourceAsset": "jq-sources-1.8.2-zoo-0.9.0.tar.gz",
+    "checksumsAsset": "SHA256SUMS.txt"
+  },
+  "referenceWasm": {
+    "name": "jq-web",
+    "packageVersion": "0.6.2",
+    "upstreamVersion": "1.7.1",
+    "repository": "https://github.com/fiatjaf/jq-web",
+    "checkedAt": "2026-08-25",
+    "note": "jq-web 0.6.2 uses jq submodule commit 71c2ab509a8628dbbad4bc7b3f98a64aa90d3297, which is jq 1.7.1, and documents Emscripten 3.1.31 as the known-working build version."
+  },
+  "capabilityMatrix": [
+    {
+      "feature": "jq filter language and upstream CLI",
+      "native": "included",
+      "profiles": {
+        "browser-full": "included"
+      },
+      "note": "The browser artifact builds the upstream jq executable rather than reimplementing the query language in JavaScript."
+    },
+    {
+      "feature": "Oniguruma regular expressions",
+      "native": "included",
+      "profiles": {
+        "browser-full": "included"
+      },
+      "note": "Built from jq's exact pinned Oniguruma 6.9.10 submodule and exercised by the browser smoke test."
+    },
+    {
+      "feature": "JSON files and module/data files",
+      "native": "included",
+      "profiles": {
+        "browser-full": "included"
+      },
+      "note": "Files can be staged into MEMFS and addressed by ordinary jq CLI paths/options."
+    },
+    {
+      "feature": "stdin/stdout terminal and shell pipelines",
+      "native": "platform",
+      "profiles": {
+        "browser-full": "na"
+      },
+      "note": "The browser wrapper captures stdout/stderr and stages input files; native shell pipe/TTY semantics are not present."
+    },
+    {
+      "feature": "native host filesystem",
+      "native": "platform",
+      "profiles": {
+        "browser-full": "na"
+      },
+      "note": "Browser execution is intentionally limited to Emscripten MEMFS."
+    },
+    {
+      "feature": "network access",
+      "native": "platform",
+      "profiles": {
+        "browser-full": "na"
+      },
+      "note": "jq itself has no network client in this profile and the Worker exposes no Zoo network API."
+    },
+    {
+      "feature": "threads / SharedArrayBuffer",
+      "native": "optional",
+      "profiles": {
+        "browser-full": "excluded"
+      },
+      "note": "jq browser-full is single-threaded and does not need cross-origin isolation."
+    }
+  ]
+}

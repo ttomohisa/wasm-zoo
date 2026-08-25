@@ -15,4 +15,8 @@ echo.
 echo WASM Zoo:              http://localhost:4173
 echo FFmpeg Playground:     http://localhost:4173/ffmpeg-playground/
 echo libarchive Playground: http://localhost:4173/libarchive-playground/
+echo ImageMagick Playground: http://localhost:4173/imagemagick-playground/
+echo libvips Playground:     http://localhost:4173/libvips-playground/
+echo Ghostscript Playground: http://localhost:4173/ghostscript-playground/
+echo jq Playground:          http://localhost:4173/jq-playground/
 call npx --yes serve site -l 4173

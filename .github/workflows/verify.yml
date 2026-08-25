@@ -14,6 +14,7 @@ on:
       - "builders/imagemagick/**"
       - "builders/libvips/**"
       - "builders/ghostscript/**"
+      - "builders/jq/**"
       - "package.json"
       - "VERSION"
       - ".github/workflows/verify.yml"
@@ -45,5 +46,7 @@ jobs:
         run: node builders/libvips/scripts/check-repository.mjs
       - name: Validate Ghostscript builder
         run: node builders/ghostscript/scripts/check-repository.mjs
+      - name: Validate jq builder
+        run: node builders/jq/scripts/check-repository.mjs
       - name: Ensure generated catalog is committed
         run: git diff --exit-code -- site/catalog.json
