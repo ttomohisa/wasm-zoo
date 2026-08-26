@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-25T15:11:02.157Z",
+  "generatedAt": "2026-08-26T04:07:30.688Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -205,12 +205,12 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/libvips-playground/"
       },
       "freshness": {
-        "state": "ok",
-        "label": "Current"
+        "state": "warn",
+        "label": "Update available"
       },
       "overall": {
-        "state": "ok",
-        "label": "Healthy"
+        "state": "warn",
+        "label": "Upstream review"
       }
     },
     {
@@ -256,8 +256,8 @@
     }
   ],
   "summary": {
-    "healthy": 6,
-    "warning": 0,
+    "healthy": 5,
+    "warning": 1,
     "error": 0,
     "supplyChainPublished": 6,
     "total": 6

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-25T15:10:51.757Z",
-  "hasUpdates": false,
+  "generatedAt": "2026-08-26T04:07:21.688Z",
+  "hasUpdates": true,
   "packages": [
     {
       "slug": "ffmpeg",
@@ -115,18 +115,18 @@
       "pinned": "8.18.5",
       "pinnedRef": "v8.18.5",
       "pinnedReleased": "2026-08-03",
-      "latest": "8.18.5",
-      "latestRef": "v8.18.5",
-      "latestCommit": "7c28da9c2b8b5b8defe54f2ae92ee474c0e2d6e4",
-      "latestReleased": "2026-08-03T13:35:15Z",
-      "updateAvailable": false,
-      "lagDays": 0,
+      "latest": "8.18.6",
+      "latestRef": "v8.18.6",
+      "latestCommit": "426af3f44246fce9cfa8dd51a353aa4dfd48c553",
+      "latestReleased": "2026-08-25T15:34:01Z",
+      "updateAvailable": true,
+      "lagDays": 22,
       "gap": {
-        "kind": "current",
-        "label": "Current",
-        "versionsBehind": 0
+        "kind": "behind",
+        "label": "Update available",
+        "versionsBehind": 1
       },
-      "url": "https://github.com/libvips/libvips/releases/tag/v8.18.5",
+      "url": "https://github.com/libvips/libvips/releases/tag/v8.18.6",
       "candidate": {
         "mode": "adapter-gated",
         "profiles": [
