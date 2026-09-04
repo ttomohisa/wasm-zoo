@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- promote ImageMagick 7.1.2-31 to builder 0.4.3 after the isolated candidate build and real Chromium smoke test passed, keeping the browser-full feature set and Emscripten 6.0.6 toolchain unchanged while moving the reviewed source pin to commit `fb965f1b54a65ddb633f8c2eac4452c782c66d7f`;
+
 ## v0.9.0
 
 - add jq 1.8.2 as the sixth WASM Zoo package with exact jq/Oniguruma/Emscripten pins, a single-threaded Worker + MEMFS browser-full CLI runtime, real Chromium JSON/regex smoke tests, Playground, upstream watcher candidates, Release Health integration, corresponding source, provenance and CycloneDX SBOM assets;
