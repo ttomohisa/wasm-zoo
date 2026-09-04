@@ -155,9 +155,12 @@ if (libvips) {
   const env = await readEnv(path.join(root, "builders", "libvips", "versions.env"));
   assert(env.LIBVIPS_REF === `v${libvips.upstream.version}`, `libvips catalog version ${libvips.upstream.version} does not match LIBVIPS_REF=${env.LIBVIPS_REF}`);
   assert(env.BUILDER_VERSION === libvips.zoo.builderVersion, `libvips builderVersion ${libvips.zoo.builderVersion} does not match versions.env ${env.BUILDER_VERSION}`);
-  assert(env.LIBVIPS_COMMIT === "7c28da9c2b8b5b8defe54f2ae92ee474c0e2d6e4", "libvips exact v8.18.5 commit pin is missing");
-  assert(env.EMSCRIPTEN_COMMIT === "4483d70a78098ed5d860dff2dc21f3025b2da2ee", "libvips exact Emscripten 6.0.7 commit pin is missing");
-  assert(env.WASM_VIPS_COMMIT === "ec8ead9f9c7cf2b08025736d76d10505984daf77", "libvips wasm-vips adapter commit pin is missing");
+  assert(env.LIBVIPS_COMMIT === "426af3f44246fce9cfa8dd51a353aa4dfd48c553", "libvips exact v8.18.6 commit pin is missing");
+  assert(env.EMSCRIPTEN_COMMIT === "aeb67926e7de656da38bc807d83050af93578758", "libvips exact Emscripten 6.0.8 commit pin is missing");
+  assert(env.WASM_VIPS_COMMIT === "79103664d21ce00982e80571cf12f58bd3dcc5f3", "libvips wasm-vips 8.18.6 adapter commit pin is missing");
+  assert(env.WASM_VIPS_VERSION === "0.0.18", "libvips wasm-vips adapter version pin is missing");
+  assert(env.WASM_VIPS_LIBVIPS_PATCH_COMMIT === "13e85e04f69050fe634fa24539a045be731838fd", "libvips wasm-vips compatibility patch commit pin is missing");
+  assert(env.WASM_VIPS_EMSCRIPTEN_PATCH_COMMIT === "4bc39ffdd215e69e29d1b01c93217334cc732bd4", "libvips Emscripten compatibility patch commit pin is missing");
   const ids = new Set(libvips.profiles.map((profile) => profile.id));
   assert(ids.has("browser-core"), "libvips catalog must publish browser-core");
   assert(ids.has("browser-full"), "libvips catalog must publish browser-full");

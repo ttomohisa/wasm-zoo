@@ -2,8 +2,8 @@
 
 The Zoo build has three separately pinned inputs:
 
-1. upstream libvips `v8.18.5`;
-2. Emscripten `6.0.7`;
+1. upstream libvips `v8.18.6`;
+2. Emscripten `6.0.8`;
 3. the browser binding/build adapter from `kleisauke/wasm-vips` at an exact commit.
 
 The adapter is required because upstream libvips does not ship a ready-to-host browser JavaScript binding. Its compatibility changes are not trusted through moving branches: the builder fetches the exact upstream and fork commits and reconstructs the two patch sets with `git diff` inside the Docker build.

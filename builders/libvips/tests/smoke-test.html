@@ -7,7 +7,7 @@
     phase('runtime');
     if (!crossOriginIsolated || typeof SharedArrayBuffer === 'undefined') throw new Error('cross-origin isolation missing');
     const vips = await WasmZooLibvips.loadHosted({ baseUrl: './' });
-    if (String(vips.version()) !== '8.18.5') throw new Error('unexpected libvips version: ' + vips.version());
+    if (String(vips.version()) !== '8.18.6') throw new Error('unexpected libvips version: ' + vips.version());
     phase('png-decode');
     const bytes = new Uint8Array(await (await fetch('./smoke-input.png')).arrayBuffer());
     const image = vips.Image.newFromBuffer(bytes);
@@ -23,7 +23,7 @@
     const magic = String.fromCharCode(...webp.slice(0, 12));
     if (!magic.startsWith('RIFF') || magic.slice(8, 12) !== 'WEBP') throw new Error('WebP encode signature mismatch');
     resized.delete(); image.delete();
-    location.hash = '#SMOKE_TEST_PASS_' + encodeURIComponent('libvips 8.18.5 PNG decode + resize + JPEG/WebP encode');
+    location.hash = '#SMOKE_TEST_PASS_' + encodeURIComponent('libvips 8.18.6 PNG decode + resize + JPEG/WebP encode');
   } catch (error) {
     console.error(error);
     location.hash = '#SMOKE_TEST_FAIL_' + encodeURIComponent(error && error.stack || error);
