@@ -831,9 +831,9 @@
       "status": "available",
       "order": 30,
       "upstream": {
-        "version": "8.18.5",
-        "ref": "v8.18.5",
-        "released": "2026-08-03",
+        "version": "8.18.6",
+        "ref": "v8.18.6",
+        "released": "2026-08-25",
         "homepage": "https://www.libvips.org/",
         "repository": "https://github.com/libvips/libvips",
         "license": "LGPL-2.1-or-later"
@@ -848,8 +848,8 @@
         ]
       },
       "zoo": {
-        "builderVersion": "0.5.1",
-        "toolchain": "Emscripten 6.0.7",
+        "builderVersion": "0.5.2",
+        "toolchain": "Emscripten 6.0.8",
         "buildModel": "upstream-library-pinned-browser-adapter",
         "reproducible": true,
         "sourceBundle": true,
@@ -873,7 +873,7 @@
           "arbitraryCli": false,
           "network": false,
           "features": [
-            "upstream libvips 8.18.5 library",
+            "upstream libvips 8.18.6 library",
             "pinned wasm-vips Embind browser adapter",
             "JPEG / PNG / WebP raster processing",
             "resize / thumbnail / colourspace / composite / convolution operations",
@@ -888,7 +888,7 @@
           "output": "Smaller generic libvips JavaScript API for JPEG/PNG/WebP Browser-Kitty-style image workflows",
           "binaryLicense": "LGPL-2.1-or-later plus linked third-party licenses",
           "size": "Loaded from the published release manifest",
-          "releaseAsset": "libvips-browser-core-8.18.5-zoo-0.5.1.zip",
+          "releaseAsset": "libvips-browser-core-8.18.6-zoo-0.5.2.zip",
           "playground": true,
           "playgroundPath": "./libvips-playground/"
         },
@@ -904,7 +904,7 @@
           "arbitraryCli": false,
           "network": false,
           "features": [
-            "upstream libvips 8.18.5 library",
+            "upstream libvips 8.18.6 library",
             "pinned wasm-vips Embind browser adapter",
             "JPEG / PNG / WebP / TIFF / GIF raster processing",
             "resize / thumbnail / colourspace / composite / convolution operations",
@@ -918,7 +918,7 @@
           "output": "Generic libvips JavaScript API with JPEG/PNG/WebP plus TIFF/GIF support",
           "binaryLicense": "LGPL-2.1-or-later plus linked third-party licenses",
           "size": "Loaded from the published release manifest",
-          "releaseAsset": "libvips-browser-full-8.18.5-zoo-0.5.1.zip",
+          "releaseAsset": "libvips-browser-full-8.18.6-zoo-0.5.2.zip",
           "playground": true,
           "playgroundPath": "./libvips-playground/"
         }
@@ -937,18 +937,18 @@
           "Both profiles require SharedArrayBuffer and cross-origin isolation (COOP/COEP) because libvips uses pthreads.",
           "The raw vips.js API is the primary distribution. browser-libvips.js is only a self-hosting convenience loader.",
           "The browser adapter and both Emscripten/libvips compatibility patch heads are pinned to immutable commits.",
-          "AVIF/HEIC, JPEG XL, SVG/resvg and UltraHDR remain intentionally disabled in the 0.5.1 metadata patch release."
+          "AVIF/HEIC, JPEG XL, SVG/resvg and UltraHDR remain intentionally disabled in the 0.5.2 upstream promotion release."
         ]
       },
       "comparison": [
         {
           "name": "Upstream native",
-          "version": "8.18.5",
+          "version": "8.18.6",
           "note": "Native builds can enable additional loaders, platform integrations and filesystem-backed workflows."
         },
         {
           "name": "WASM Zoo",
-          "version": "8.18.5",
+          "version": "8.18.6",
           "note": "Exact upstream libvips release exposed through a pinned browser adapter with a deliberately reduced optional delegate set."
         },
         {
@@ -958,6 +958,7 @@
         }
       ],
       "notes": [
+        "v0.5.2 promotes libvips 8.18.6 with the wasm-vips 0.0.18 adapter commit that explicitly targets 8.18.6, Emscripten 6.0.8, and immutable compatibility-patch heads reconstructed from the matching upstream commits; browser-core/browser-full feature policy remains unchanged.",
         "v0.5.1 is the first metadata-enabled libvips patch release for WASM Zoo v0.8.0: the WebAssembly feature set and upstream pin are unchanged while standalone SLSA provenance and CycloneDX SBOM assets are added to the release contract.",
         "libvips is published as a library API rather than a synthetic CLI wrapper.",
         "browser-core is designed as the practical small default for Browser-Kitty-style JPEG/PNG/WebP processing; browser-full is the compatibility profile for TIFF/GIF.",
@@ -966,18 +967,18 @@
         "Release archives include the exact build recipe, source bundle and third-party license notices needed to audit the statically linked browser artifact."
       ],
       "release": {
-        "tag": "libvips-v0.5.1",
-        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libvips-v0.5.1",
-        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/libvips-v0.5.1/",
-        "sourceAsset": "libvips-sources-8.18.5-zoo-0.5.1.tar.gz",
+        "tag": "libvips-v0.5.2",
+        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libvips-v0.5.2",
+        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/libvips-v0.5.2/",
+        "sourceAsset": "libvips-sources-8.18.6-zoo-0.5.2.tar.gz",
         "checksumsAsset": "SHA256SUMS.txt"
       },
       "referenceWasm": {
         "name": "wasm-vips",
         "packageVersion": "0.0.18",
-        "upstreamVersion": "8.18.5",
+        "upstreamVersion": "8.18.6",
         "repository": "https://github.com/kleisauke/wasm-vips",
-        "checkedAt": "2026-08-21",
+        "checkedAt": "2026-09-04",
         "note": "WASM Zoo uses a pinned wasm-vips adapter commit but independently pins and packages the upstream libvips release."
       },
       "capabilityMatrix": [

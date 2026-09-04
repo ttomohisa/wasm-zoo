@@ -29,7 +29,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 | FFmpeg | 9.0.1 | 0.2.7 | `browser-full`, `browser-full-gpl` | yes |
 | libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes |
 | ImageMagick | 7.1.2-31 | 0.4.3 | `browser-full` | yes |
-| libvips | 8.18.5 | 0.5.1 | `browser-core`, `browser-full` | yes |
+| libvips | 8.18.6 | 0.5.2 | `browser-core`, `browser-full` | yes |
 | Ghostscript | 10.07.1 | 0.7.1 | `browser-full` | yes |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes |
 
@@ -305,11 +305,11 @@ const result = await image.exec([
 });
 ```
 
-## libvips 8.18.5
+## libvips 8.18.6
 
-WASM Zoo v0.5.0 adds libvips as the fourth available package. Unlike FFmpeg, libarchive and ImageMagick, libvips is published as a **library API** rather than a synthetic command-line wrapper.
+WASM Zoo v0.5.0 introduced libvips as the fourth available package. Unlike FFmpeg, libarchive and ImageMagick, libvips is published as a **library API** rather than a synthetic command-line wrapper.
 
-Both profiles use the pinned `wasm-vips` browser adapter while keeping libvips itself at the exact upstream `v8.18.5` release. **`browser-core` is the recommended small profile** for Browser-Kitty-style work: JPEG/PNG/WebP plus the normal resize, thumbnail, colourspace, composite and convolution APIs. It removes TIFF, GIF, imagequant/quantizr and legacy PPM/Analyze/Radiance loaders. `browser-full` keeps JPEG/PNG/WebP/TIFF/GIF and imagequant. AVIF/HEIC, JPEG XL, SVG/resvg and UltraHDR remain disabled in both profiles.
+Both profiles use the pinned `wasm-vips` browser adapter while keeping libvips itself at the exact upstream `v8.18.6` release. The 0.5.2 promotion also moves the reviewed toolchain to Emscripten 6.0.8 and pins the matching libvips/Emscripten compatibility-patch heads. **`browser-core` is the recommended small profile** for Browser-Kitty-style work: JPEG/PNG/WebP plus the normal resize, thumbnail, colourspace, composite and convolution APIs. It removes TIFF, GIF, imagequant/quantizr and legacy PPM/Analyze/Radiance loaders. `browser-full` keeps JPEG/PNG/WebP/TIFF/GIF and imagequant. AVIF/HEIC, JPEG XL, SVG/resvg and UltraHDR remain disabled in both profiles.
 
 libvips retains its pthread + WebAssembly SIMD execution model. Therefore both browser profiles require **SharedArrayBuffer and cross-origin isolation (COOP/COEP)**.
 
@@ -337,15 +337,15 @@ Linux/macOS:
 Release tag after the real build passes:
 
 ```text
-git tag -a libvips-v0.5.1 -m "WASM Zoo libvips v0.5.1"
-git push origin libvips-v0.5.1
+git tag -a libvips-v0.5.2 -m "WASM Zoo libvips v0.5.2"
+git push origin libvips-v0.5.2
 ```
 
 ### libvips browser API
 
 ```js
 const vips = await WasmZooLibvips.loadHosted({
-  baseUrl: "/assets/libvips/8.18.5/browser-core/"
+  baseUrl: "/assets/libvips/8.18.6/browser-core/"
 });
 
 const input = vips.Image.newFromBuffer(new Uint8Array(await file.arrayBuffer()));

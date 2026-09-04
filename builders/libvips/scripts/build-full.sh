@@ -109,8 +109,8 @@ for file in lib/vips.js lib/vips.wasm lib/vips.d.ts build/target/versions.json; 
   [[ -s "$file" ]] || { echo "Missing wasm-vips output: $file" >&2; exit 1; }
 done
 
-grep -q '"vips": "8.18.5"' build/target/versions.json || { echo "Built versions.json does not contain libvips 8.18.5" >&2; exit 1; }
-grep -q '"emscripten": "6.0.7"' build/target/versions.json || { echo "Built versions.json does not contain Emscripten 6.0.7" >&2; exit 1; }
+grep -q '"vips": "8.18.6"' build/target/versions.json || { echo "Built versions.json does not contain libvips 8.18.6" >&2; exit 1; }
+grep -q '"emscripten": "6.0.8"' build/target/versions.json || { echo "Built versions.json does not contain Emscripten 6.0.8" >&2; exit 1; }
 
 cp lib/vips.js /out/vips.js
 cp lib/vips.wasm /out/vips.wasm
@@ -156,7 +156,7 @@ cat > /out/features.json <<EOF_JSON
   },
   "runtimeTested": ["libvips version", "PNG decode", "2x2 -> 1x1 resize", "JPEG encode", "WebP encode"],
   "notes": [
-    "The JavaScript binding is built from the exact pinned wasm-vips adapter commit; libvips itself is the exact upstream v8.18.5 release.",
+    "The JavaScript binding is built from the exact pinned wasm-vips adapter commit; libvips itself is the exact upstream v8.18.6 release.",
     "AVIF/HEIC, JPEG XL, SVG/resvg and UltraHDR are disabled in both profiles to reduce build and download surface.",
     "browser-core additionally disables TIFF, GIF, imagequant/quantizr, PPM, Analyze and Radiance support while keeping JPEG, PNG and WebP.",
     "SharedArrayBuffer and cross-origin isolation are required because libvips retains its pthread execution model."

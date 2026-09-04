@@ -19,14 +19,15 @@ for (const rel of ['scripts/smoke-test.mjs', 'scripts/compare-profiles.mjs', 'ru
 
 const env = read('versions.env');
 for (const expected of [
-  'BUILDER_VERSION=0.5.1',
-  'EMSDK_VERSION=6.0.7',
-  'EMSCRIPTEN_COMMIT=4483d70a78098ed5d860dff2dc21f3025b2da2ee',
-  'LIBVIPS_REF=v8.18.5',
-  'LIBVIPS_COMMIT=7c28da9c2b8b5b8defe54f2ae92ee474c0e2d6e4',
-  'WASM_VIPS_COMMIT=ec8ead9f9c7cf2b08025736d76d10505984daf77',
-  'WASM_VIPS_LIBVIPS_PATCH_COMMIT=9cf194014a7047064b0647e20d0606b2dc29d83c',
-  'WASM_VIPS_EMSCRIPTEN_PATCH_COMMIT=408c8147747c66216a3a47620eb5287b96438492'
+  'BUILDER_VERSION=0.5.2',
+  'EMSDK_VERSION=6.0.8',
+  'EMSCRIPTEN_COMMIT=aeb67926e7de656da38bc807d83050af93578758',
+  'LIBVIPS_REF=v8.18.6',
+  'LIBVIPS_COMMIT=426af3f44246fce9cfa8dd51a353aa4dfd48c553',
+  'WASM_VIPS_COMMIT=79103664d21ce00982e80571cf12f58bd3dcc5f3',
+  'WASM_VIPS_VERSION=0.0.18',
+  'WASM_VIPS_LIBVIPS_PATCH_COMMIT=13e85e04f69050fe634fa24539a045be731838fd',
+  'WASM_VIPS_EMSCRIPTEN_PATCH_COMMIT=4bc39ffdd215e69e29d1b01c93217334cc732bd4'
 ]) need(env.includes(expected), `pin missing: ${expected}`);
 
 for (const profile of ['browser-core', 'browser-full']) {
