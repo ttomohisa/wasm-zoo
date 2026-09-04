@@ -7,9 +7,9 @@
   "status": "available",
   "order": 15,
   "upstream": {
-    "version": "7.1.2-30",
-    "ref": "7.1.2-30",
-    "released": "2026-08-23",
+    "version": "7.1.2-31",
+    "ref": "7.1.2-31",
+    "released": "2026-09-03",
     "homepage": "https://imagemagick.org/",
     "repository": "https://github.com/ImageMagick/ImageMagick",
     "license": "ImageMagick License"
@@ -23,7 +23,7 @@
     ]
   },
   "zoo": {
-    "builderVersion": "0.4.2",
+    "builderVersion": "0.4.3",
     "toolchain": "Emscripten 6.0.6",
     "buildModel": "upstream-cli-full",
     "reproducible": true,
@@ -66,7 +66,7 @@
       "output": "Generic upstream magick CLI; input and output paths are chosen by CLI arguments",
       "binaryLicense": "ImageMagick License",
       "size": "Loaded from the published release manifest",
-      "releaseAsset": "imagemagick-browser-full-7.1.2-30-zoo-0.4.2.zip",
+      "releaseAsset": "imagemagick-browser-full-7.1.2-31-zoo-0.4.3.zip",
       "playground": true,
       "playgroundPath": "./imagemagick-playground/"
     }
@@ -88,16 +88,17 @@
   "comparison": [
     {
       "name": "Upstream native",
-      "version": "7.1.2-30",
+      "version": "7.1.2-31",
       "note": "Feature set depends on optional delegate libraries and platform integration available in the native build."
     },
     {
       "name": "WASM Zoo",
-      "version": "7.1.2-30",
+      "version": "7.1.2-31",
       "note": "Upstream magick CLI with browser filesystem constraints and PNG/JPEG-focused delegate set."
     }
   ],
   "notes": [
+    "v0.4.3 promotes ImageMagick 7.1.2-31 after the isolated upstream candidate build and real Chromium smoke test passed; the browser-full feature set and Emscripten 6.0.6 toolchain remain unchanged.",
     "v0.4.2 promotes ImageMagick 7.1.2-30 after the isolated upstream candidate build and real Chromium smoke test passed; the browser-full feature set and Emscripten 6.0.6 toolchain remain unchanged.",
     "v0.4.1 is the first metadata-enabled ImageMagick patch release for WASM Zoo v0.8.0: the WebAssembly feature set and upstream pin are unchanged while standalone SLSA provenance and CycloneDX SBOM assets are added to the release contract.",
     "The browser-full profile is deliberately single-threaded: ImageMagick thread support and OpenMP are disabled, the CLI runs inside an outer Worker, and SharedArrayBuffer/cross-origin isolation are not required.",
@@ -110,10 +111,10 @@
     "The browser-full builder applies a narrowly scoped source patch for zero-configuration mode: the one-time anonymous pixel-cache mmap decision is initialized to disabled. With an empty built-in policy and no working Emscripten mmap this preserves the effective behavior while avoiding ImageMagick's policy/semaphore initialization cycle during first pixel-cache open."
   ],
   "release": {
-    "tag": "imagemagick-v0.4.2",
-    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.2",
-    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/imagemagick-v0.4.2/",
-    "sourceAsset": "imagemagick-sources-7.1.2-30-zoo-0.4.2.tar.gz",
+    "tag": "imagemagick-v0.4.3",
+    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.3",
+    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/imagemagick-v0.4.3/",
+    "sourceAsset": "imagemagick-sources-7.1.2-31-zoo-0.4.3.tar.gz",
     "checksumsAsset": "SHA256SUMS.txt"
   },
   "referenceWasm": {
