@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-04T08:05:01.765Z",
+  "generatedAt": "2026-09-05T07:45:35.744Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -50,12 +50,12 @@
     {
       "slug": "imagemagick",
       "name": "ImageMagick",
-      "tag": "imagemagick-v0.4.2",
+      "tag": "imagemagick-v0.4.3",
       "release": {
         "state": "ok",
         "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.2",
-        "publishedAt": "2026-08-25T00:50:51Z",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.3",
+        "publishedAt": "2026-09-04T13:41:41Z",
         "assetCount": 6,
         "missingAssets": []
       },
@@ -71,8 +71,8 @@
       "buildGate": {
         "state": "ok",
         "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32794985145",
-        "runId": 32794985145
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/33879128731",
+        "runId": 33879128731
       },
       "playground": {
         "state": "ok",
@@ -80,12 +80,12 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/imagemagick-playground/"
       },
       "freshness": {
-        "state": "warn",
-        "label": "Update available"
+        "state": "ok",
+        "label": "Current"
       },
       "overall": {
-        "state": "warn",
-        "label": "Upstream review"
+        "state": "ok",
+        "label": "Healthy"
       }
     },
     {
@@ -173,12 +173,12 @@
     {
       "slug": "libvips",
       "name": "libvips",
-      "tag": "libvips-v0.5.1",
+      "tag": "libvips-v0.5.2",
       "release": {
         "state": "ok",
         "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libvips-v0.5.1",
-        "publishedAt": "2026-08-21T08:22:28Z",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libvips-v0.5.2",
+        "publishedAt": "2026-09-05T05:06:50Z",
         "assetCount": 12,
         "missingAssets": []
       },
@@ -196,8 +196,8 @@
       "buildGate": {
         "state": "ok",
         "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32461346029",
-        "runId": 32461346029
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/33945471956",
+        "runId": 33945471956
       },
       "playground": {
         "state": "ok",
@@ -205,12 +205,12 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/libvips-playground/"
       },
       "freshness": {
-        "state": "warn",
-        "label": "Update available"
+        "state": "ok",
+        "label": "Current"
       },
       "overall": {
-        "state": "warn",
-        "label": "Upstream review"
+        "state": "ok",
+        "label": "Healthy"
       }
     },
     {
@@ -256,8 +256,8 @@
     }
   ],
   "summary": {
-    "healthy": 4,
-    "warning": 2,
+    "healthy": 6,
+    "warning": 0,
     "error": 0,
     "supplyChainPublished": 6,
     "total": 6

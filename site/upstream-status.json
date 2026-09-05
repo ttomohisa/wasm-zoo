@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-04T08:04:51.090Z",
-  "hasUpdates": true,
+  "generatedAt": "2026-09-05T07:45:27.784Z",
+  "hasUpdates": false,
   "packages": [
     {
       "slug": "ffmpeg",
@@ -34,19 +34,19 @@
       "slug": "imagemagick",
       "name": "ImageMagick",
       "status": "ok",
-      "pinned": "7.1.2-30",
-      "pinnedRef": "7.1.2-30",
-      "pinnedReleased": "2026-08-23",
+      "pinned": "7.1.2-31",
+      "pinnedRef": "7.1.2-31",
+      "pinnedReleased": "2026-09-03",
       "latest": "7.1.2-31",
       "latestRef": "7.1.2-31",
       "latestCommit": "fb965f1b54a65ddb633f8c2eac4452c782c66d7f",
       "latestReleased": "2026-09-03T21:26:23Z",
-      "updateAvailable": true,
-      "lagDays": 11,
+      "updateAvailable": false,
+      "lagDays": 0,
       "gap": {
-        "kind": "behind",
-        "label": "Update available",
-        "versionsBehind": 1
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
       },
       "url": "https://github.com/ImageMagick/ImageMagick/releases/tag/7.1.2-31",
       "candidate": {
@@ -112,19 +112,19 @@
       "slug": "libvips",
       "name": "libvips",
       "status": "ok",
-      "pinned": "8.18.5",
-      "pinnedRef": "v8.18.5",
-      "pinnedReleased": "2026-08-03",
+      "pinned": "8.18.6",
+      "pinnedRef": "v8.18.6",
+      "pinnedReleased": "2026-08-25",
       "latest": "8.18.6",
       "latestRef": "v8.18.6",
       "latestCommit": "426af3f44246fce9cfa8dd51a353aa4dfd48c553",
       "latestReleased": "2026-08-25T15:34:01Z",
-      "updateAvailable": true,
-      "lagDays": 22,
+      "updateAvailable": false,
+      "lagDays": 0,
       "gap": {
-        "kind": "behind",
-        "label": "Update available",
-        "versionsBehind": 1
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
       },
       "url": "https://github.com/libvips/libvips/releases/tag/v8.18.6",
       "candidate": {
