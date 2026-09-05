@@ -109,7 +109,7 @@ if (libarchive) {
   const env = await readEnv(path.join(root, "builders", "libarchive", "versions.env"));
   assert(env.LIBARCHIVE_REF === `v${libarchive.upstream.version}`, `libarchive catalog version ${libarchive.upstream.version} does not match LIBARCHIVE_REF=${env.LIBARCHIVE_REF}`);
   assert(env.BUILDER_VERSION === libarchive.zoo.builderVersion, `libarchive builderVersion ${libarchive.zoo.builderVersion} does not match versions.env ${env.BUILDER_VERSION}`);
-  assert(env.LIBARCHIVE_COMMIT === "27cbc7827172698143e440801fc0ba39ccb4f1f5", "libarchive exact v3.8.9 commit pin is missing");
+  assert(/^[0-9a-f]{40}$/i.test(env.LIBARCHIVE_COMMIT || ""), "libarchive exact 40-character commit pin is missing");
   const ids = new Set(libarchive.profiles.map((profile) => profile.id));
   assert(ids.has("browser-full"), "libarchive catalog must publish browser-full");
   for (const profile of libarchive.profiles) {
@@ -218,8 +218,8 @@ if (jq) {
   const env = await readEnv(path.join(root, "builders", "jq", "versions.env"));
   assert(env.JQ_REF === `jq-${jq.upstream.version}`, `jq catalog version ${jq.upstream.version} does not match JQ_REF=${env.JQ_REF}`);
   assert(env.BUILDER_VERSION === jq.zoo.builderVersion, `jq builderVersion ${jq.zoo.builderVersion} does not match versions.env ${env.BUILDER_VERSION}`);
-  assert(env.JQ_COMMIT === "34f7186b86743a083a589741b6cea95293524108", "jq exact 1.8.2 commit pin is missing");
-  assert(env.ONIGURUMA_COMMIT === "4ef89209a239c1aea328cf13c05a2807e5c146d1", "jq exact Oniguruma 6.9.10 submodule pin is missing");
+  assert(/^[0-9a-f]{40}$/i.test(env.JQ_COMMIT || ""), "jq exact 40-character upstream commit pin is missing");
+  assert(/^[0-9a-f]{40}$/i.test(env.ONIGURUMA_COMMIT || ""), "jq exact 40-character Oniguruma submodule pin is missing");
   assert(env.EMSCRIPTEN_COMMIT === "4483d70a78098ed5d860dff2dc21f3025b2da2ee", "jq exact Emscripten 6.0.7 commit pin is missing");
   const profile = jq.profiles.find((entry) => entry.id === "browser-full");
   assert(profile?.arbitraryCli === true, "jq browser-full must expose the upstream jq CLI");
@@ -266,6 +266,8 @@ const requiredSiteFiles = [
   "scripts/generate-build-metadata.mjs",
   "scripts/check-metadata-contract.mjs",
   "scripts/prepare-candidate.mjs",
+  "scripts/prepare-promotion.mjs",
+  "scripts/upstream-config.mjs",
 ];
 for (const rel of requiredSiteFiles) {
   try { await fs.access(path.join(root, rel)); } catch { errors.push(`${rel} is missing`); }
@@ -324,6 +326,7 @@ try {
   const watcher = await fs.readFile(path.join(root, ".github/workflows/check-upstream.yml"), "utf8");
   assert(watcher.includes('cron: "23 3 * * *"'), "Upstream watcher must run daily");
   assert(watcher.includes("site/upstream-status.json") && watcher.includes("gh issue create") && watcher.includes("upstream-candidate.yml"), "Upstream watcher must publish status, open issues and dispatch candidates");
+  assert(watcher.includes('-f released="$released"'), "Upstream watcher must pass the detected release date into candidate/promotion automation");
   assert(watcher.includes("site/release-health.json") && watcher.includes("check-release-health.mjs"), "Daily watcher must refresh Release Health alongside upstream freshness");
   assert(watcher.includes("gh workflow run pages.yml"), "Upstream watcher must explicitly refresh Pages after the bot snapshot commit");
   const upstreamScript = await fs.readFile(path.join(root, "scripts/check-upstream.mjs"), "utf8");
@@ -337,10 +340,14 @@ try {
   assert(candidate.includes("prepare-candidate.mjs") && candidate.includes("browser smoke test"), "Candidate workflow must substitute isolated pins and run browser smoke tests");
   assert(candidate.includes("adapter-gated") && candidate.includes("libvips-readiness"), "libvips candidate workflow must preserve the adapter gate");
   assert(candidate.includes("inputs.slug == 'jq'") && candidate.includes("JQ_WASM_BROWSER"), "Candidate workflow must support isolated jq upstream candidates");
+  assert(candidate.includes("prepare-promotion.mjs") && candidate.includes("gh pr create"), "Successful automatic candidates must create review-only promotion PRs");
+  assert(candidate.includes("gh workflow run verify.yml") && candidate.includes("build-${{ inputs.slug }}.yml"), "Promotion automation must dispatch repository/build checks explicitly");
   const prepareCandidate = await fs.readFile(path.join(root, "scripts/prepare-candidate.mjs"), "utf8");
-  assert(!prepareCandidate.includes("package.json"), "Candidate preparation must not rewrite reviewed package catalog pins");
+  assert(!prepareCandidate.includes("packages/"), "Candidate preparation must not rewrite reviewed package catalog pins");
+  const promotion = await fs.readFile(path.join(root, "scripts/prepare-promotion.mjs"), "utf8");
+  assert(promotion.includes("candidateMode !== \"auto\"") && promotion.includes("BUILDER_VERSION"), "Promotion preparation must stay limited to auto candidates and bump the builder patch version");
   const readme = await fs.readFile(path.join(root, "README.md"), "utf8");
-  assert(readme.includes('ffmpeg-v0.2.7'), "README must show the current FFmpeg metadata-enabled release tag");
+  assert(readme.includes(ffmpeg.release.tag), `README must show the current FFmpeg release tag ${ffmpeg.release.tag}`);
 } catch (error) {
   errors.push(`site/release validation failed: ${error.message}`);
 }

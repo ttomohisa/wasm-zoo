@@ -14,6 +14,7 @@
     "candidate:prepare": "node scripts/prepare-candidate.mjs",
     "health:release": "node scripts/check-release-health.mjs",
     "health:release:write": "node scripts/check-release-health.mjs --write-site",
-    "metadata:check": "node scripts/check-metadata-contract.mjs"
+    "metadata:check": "node scripts/check-metadata-contract.mjs",
+    "promotion:prepare": "node scripts/prepare-promotion.mjs"
   }
 }
