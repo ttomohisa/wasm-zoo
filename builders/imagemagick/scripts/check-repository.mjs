@@ -15,9 +15,11 @@ for (const rel of syntaxFiles) {
 }
 const errors=[]; const read=(p)=>fs.readFileSync(path.join(root,p),'utf8'); const need=(ok,msg)=>{if(!ok)errors.push(msg)};
 const env=read('versions.env');
-need(env.includes('BUILDER_VERSION=0.4.3'),'builder version must be 0.4.3');
-need(env.includes('IMAGEMAGICK_REF=7.1.2-31'),'ImageMagick must pin 7.1.2-31');
-need(env.includes('IMAGEMAGICK_COMMIT=fb965f1b54a65ddb633f8c2eac4452c782c66d7f'),'ImageMagick exact commit pin is missing');
+const pkg=JSON.parse(fs.readFileSync(path.join(root,'../../packages/imagemagick/package.json'),'utf8'));
+need(env.includes(`BUILDER_VERSION=${pkg.zoo.builderVersion}`),`builder version must match package metadata: ${pkg.zoo.builderVersion}`);
+need(env.includes(`IMAGEMAGICK_REF=${pkg.upstream.ref}`),`ImageMagick must pin reviewed ref ${pkg.upstream.ref}`);
+const imageMagickCommit=env.match(/^IMAGEMAGICK_COMMIT=([0-9a-f]{40})$/m)?.[1];
+need(Boolean(imageMagickCommit),'ImageMagick exact 40-character commit pin is missing');
 const profile=read('profiles/browser-full/profile.env');
 need(profile.includes('PROFILE_DISPLAY_NAME="Browser Full"'),'profile display name with spaces must be shell-quoted');
 const build=read('scripts/build-full.sh');

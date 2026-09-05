@@ -12,3 +12,9 @@ For a new package:
 6. run `npm run build:site && npm run check`.
 
 Do not publish third-party binaries until license/source obligations are understood and the release workflow can produce the required notices/checksums/source handoff.
+
+## Upstream promotion PRs
+
+For packages with `tracker.candidateMode: auto`, the daily watcher owns the routine promotion preparation. A successful isolated candidate build opens a review-only PR; contributors should review the exact pin diff and the dispatched repository/build checks, merge only after they are green, and create the package release tag manually from the verified `main` commit.
+
+`adapter-gated` and `none` packages are intentionally excluded from automatic promotion PR creation. See `docs/AUTOMATED_PROMOTIONS.md`.

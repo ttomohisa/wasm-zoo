@@ -20,6 +20,10 @@ on:
         description: Resolved upstream commit SHA
         required: true
         type: string
+      released:
+        description: Upstream release/commit timestamp (ISO 8601)
+        required: false
+        type: string
       issue_number:
         description: Upstream watcher issue to comment on
         required: false
@@ -170,6 +174,8 @@ jobs:
     if: always()
     needs: [ffmpeg, libarchive, imagemagick, libvips-readiness, jq]
     runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.result.outputs.result }}
     steps:
       - name: Build candidate result
         id: result
@@ -209,7 +215,164 @@ jobs:
           - result: **${RESULT}**
           - run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
 
-          A successful candidate is still not promoted automatically. Update the reviewed pins and require the normal repository/build checks before release.
+          For `auto` packages, a successful candidate is eligible for a review-only promotion PR. The automation never merges the PR, creates a release tag, or publishes a release. `adapter-gated` / `none` packages retain their manual gate.
           EOF_BODY
           )
           gh issue comment "${{ inputs.issue_number }}" --repo "$GITHUB_REPOSITORY" --body "$body"
+
+  promotion-pr:
+    if: needs.report.outputs.result == 'success'
+    needs: [report]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: write
+    steps:
+      - name: Checkout reviewed main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Prepare review-only promotion changes
+        id: prepare
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          node scripts/prepare-promotion.mjs
+          --slug "${{ inputs.slug }}"
+          --version "${{ inputs.version }}"
+          --ref "${{ inputs.ref }}"
+          --commit "${{ inputs.commit }}"
+          --released "${{ inputs.released }}"
+      - name: Regenerate and validate reviewed metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run catalog
+          npm run check
+          npm run metadata:check
+          case "${{ inputs.slug }}" in
+            ffmpeg) node builders/ffmpeg/scripts/check-repository.mjs ;;
+            libarchive) node builders/libarchive/scripts/check-repository.mjs ;;
+            imagemagick) node builders/imagemagick/scripts/check-repository.mjs ;;
+            jq) node builders/jq/scripts/check-repository.mjs ;;
+            *) echo "automatic promotion is not supported for ${{ inputs.slug }}" >&2; exit 1 ;;
+          esac
+          git diff --check
+      - name: Create or reuse promotion PR
+        id: pr
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          slug="${{ inputs.slug }}"
+          version="${{ inputs.version }}"
+          builder="${{ steps.prepare.outputs.builder_version }}"
+          issue="${{ inputs.issue_number }}"
+          safe_version="$(tr -cs 'A-Za-z0-9._-' '-' <<<"$version" | sed 's/^-//;s/-$//')"
+          branch="automation/promote-${slug}-${safe_version}"
+
+          existing="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$branch" --json url --jq '.[0].url // empty')"
+          if [ -n "$existing" ]; then
+            echo "[promotion] reusing existing PR: $existing"
+            echo "url=$existing" >> "$GITHUB_OUTPUT"
+            echo "branch=$branch" >> "$GITHUB_OUTPUT"
+            echo "created=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git diff --quiet; then
+            echo "[promotion] no changes remain; candidate may already be promoted"
+            echo "url=" >> "$GITHUB_OUTPUT"
+            echo "branch=" >> "$GITHUB_OUTPUT"
+            echo "created=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            branch="${branch}-run-${GITHUB_RUN_ID}"
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add -A
+          git commit -m "chore(${slug}): promote ${version} to builder ${builder}"
+          git push -u origin "$branch"
+
+          body_file="$(mktemp)"
+          {
+            echo "## Summary"
+            echo
+            echo "- promote **${slug}** to upstream **${version}**"
+            echo "- update the reviewed exact source pin to \`${{ inputs.commit }}\`"
+            echo "- bump the package builder to **${builder}**"
+            echo "- regenerate package/catalog/release metadata"
+            if [ -n "$issue" ]; then
+              echo
+              echo "Refs #${issue}"
+            fi
+            echo
+            echo "## Candidate gate"
+            echo
+            echo "The isolated upstream candidate build and browser smoke test passed before this PR was generated."
+            echo
+            echo "Candidate run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo
+            echo "## Safety"
+            echo
+            echo "This PR is review-only. Automation does **not** merge it, create a release tag, or publish a release."
+            echo "Repository validation and the package build workflow are dispatched explicitly below because this PR is created with the repository GITHUB_TOKEN."
+          } > "$body_file"
+
+          pr_url="$(gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$branch" \
+            --title "chore(${slug}): promote ${version} to builder ${builder}" --body-file "$body_file")"
+          rm -f "$body_file"
+          echo "[promotion] created $pr_url"
+          echo "url=$pr_url" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "created=true" >> "$GITHUB_OUTPUT"
+      - name: Dispatch promotion CI
+        if: steps.pr.outputs.url != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          branch="${{ steps.pr.outputs.branch }}"
+          gh workflow run verify.yml --repo "$GITHUB_REPOSITORY" --ref "$branch"
+          gh workflow run "build-${{ inputs.slug }}.yml" --repo "$GITHUB_REPOSITORY" --ref "$branch"
+          echo "[promotion] dispatched Verify catalog + build-${{ inputs.slug }}.yml on $branch"
+      - name: Comment promotion PR on watcher issue
+        if: inputs.issue_number != '' && steps.pr.outputs.url != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          body=$(cat <<EOF_BODY
+          Review-only promotion PR: ${{ steps.pr.outputs.url }}
+
+          - upstream: **${{ inputs.version }}**
+          - commit: \`${{ inputs.commit }}\`
+          - builder: **${{ steps.prepare.outputs.builder_version }}**
+          - validation: `Verify catalog` and `build-${{ inputs.slug }}.yml` dispatched on the promotion branch
+
+          Merge, release tag and publication remain manual.
+          EOF_BODY
+          )
+          gh issue comment "${{ inputs.issue_number }}" --repo "$GITHUB_REPOSITORY" --body "$body"
+      - name: Add promotion summary
+        if: steps.pr.outputs.url != ''
+        shell: bash
+        run: |
+          {
+            echo "## Promotion PR"
+            echo
+            echo "- PR: ${{ steps.pr.outputs.url }}"
+            echo "- Branch: \`${{ steps.pr.outputs.branch }}\`"
+            echo "- Builder: \`${{ steps.prepare.outputs.builder_version }}\`"
+            echo "- Merge/tag/release: **manual**"
+          } >> "$GITHUB_STEP_SUMMARY"

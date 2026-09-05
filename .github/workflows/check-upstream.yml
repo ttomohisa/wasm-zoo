@@ -71,6 +71,7 @@ jobs:
             url="$(jq -r '.url' <<<"$item")"
             mode="$(jq -r '.candidate.mode' <<<"$item")"
             lag="$(jq -r '.lagDays' <<<"$item")"
+            released="$(jq -r '.latestReleased // ""' <<<"$item")"
             title="[upstream] ${name} ${latest} detected"
             issue="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "${title} in:title" --json number,title | jq -r --arg t "$title" '.[] | select(.title == $t) | .number' | head -n1)"
             if [ -n "$issue" ]; then
@@ -93,7 +94,7 @@ jobs:
 
           Upstream: ${url}
 
-          The watcher never changes the reviewed Zoo pin automatically. Promotion requires the normal exact-pin repository checks, build matrix and browser smoke tests.
+          The watcher never changes the reviewed Zoo pin on main automatically. For `auto` candidates, a successful isolated candidate build opens a review-only promotion PR and dispatches the normal repository/build checks; merge, release tag and publication remain manual. `adapter-gated` / `none` candidates still require their existing manual gate.
           EOF_BODY
             issue_url="$(gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body_file")"
             rm -f "$body_file"
@@ -101,11 +102,11 @@ jobs:
             echo "[issue] #${issue} ${title}"
             if [ "$mode" = "auto" ]; then
               gh workflow run upstream-candidate.yml --repo "$GITHUB_REPOSITORY" \
-                -f slug="$slug" -f version="$latest" -f ref="$ref" -f commit="$commit" -f issue_number="$issue"
+                -f slug="$slug" -f version="$latest" -f ref="$ref" -f commit="$commit" -f released="$released" -f issue_number="$issue"
               echo "[candidate] dispatched ${slug} ${latest}"
             elif [ "$mode" = "adapter-gated" ]; then
               gh workflow run upstream-candidate.yml --repo "$GITHUB_REPOSITORY" \
-                -f slug="$slug" -f version="$latest" -f ref="$ref" -f commit="$commit" -f issue_number="$issue"
+                -f slug="$slug" -f version="$latest" -f ref="$ref" -f commit="$commit" -f released="$released" -f issue_number="$issue"
               echo "[candidate] dispatched adapter-readiness report for ${slug} ${latest}"
             else
               echo "[candidate] automatic candidate disabled for ${slug}"
