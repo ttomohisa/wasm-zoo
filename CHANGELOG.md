@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- add the v0.12 npm-distribution canary for `@wasm-zoo/jq`: generate a bundler-aware ESM entry from the immutable reviewed jq Release asset, bundle the core Wasm/runtime/metadata/licenses, validate `npm pack`, and add a manual pack/publish/stage workflow designed to move to npm Trusted Publishing after first-package bootstrap;
+
 ## v0.11.0
 
 - add Consumer API v1 ESM wrappers for all published browser packages, providing a shared `load()` / `exec()` integration model for CLI-style packages while exposing libvips through `runtime.api`;

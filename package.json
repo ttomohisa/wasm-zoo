@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "catalog": "node scripts/generate-catalog.mjs",
-    "check": "node scripts/validate.mjs && node scripts/check-consumer-api.mjs",
+    "check": "node scripts/validate.mjs && node scripts/check-consumer-api.mjs && node scripts/check-npm-distribution.mjs",
     "consumer:check": "node scripts/check-consumer-api.mjs",
     "check:upstream": "node scripts/check-upstream.mjs",
     "build:site": "node scripts/generate-catalog.mjs && npm run check",
@@ -16,6 +16,8 @@
     "health:release": "node scripts/check-release-health.mjs",
     "health:release:write": "node scripts/check-release-health.mjs --write-site",
     "metadata:check": "node scripts/check-metadata-contract.mjs",
-    "promotion:prepare": "node scripts/prepare-promotion.mjs"
+    "promotion:prepare": "node scripts/prepare-promotion.mjs",
+    "npm:prepare": "node scripts/prepare-npm-package.mjs",
+    "npm:check": "node scripts/check-npm-distribution.mjs"
   }
 }

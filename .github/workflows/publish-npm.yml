@@ -1,0 +1,98 @@
+name: Package / publish npm canary
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: npm package canary
+        required: true
+        type: choice
+        options: [jq]
+      mode:
+        description: Pack only, publish directly, or stage a new version of an existing package for review
+        required: true
+        default: pack
+        type: choice
+        options: [pack, publish, stage]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+      - name: Require current npm CLI
+        run: npm install --global npm@12.0.2
+      - name: Resolve reviewed release asset
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          slug='${{ inputs.slug }}'
+          node - <<'NODE' "$slug" >> "$GITHUB_OUTPUT"
+          const fs = require('fs');
+          const slug = process.argv[2];
+          const pkg = JSON.parse(fs.readFileSync(`packages/${slug}/package.json`, 'utf8'));
+          const profile = pkg.npm?.profile;
+          const meta = pkg.profiles.find((entry) => entry.id === profile);
+          if (!pkg.npm || pkg.npm.status !== 'canary' || !meta) throw new Error(`${slug} is not an npm canary`);
+          console.log(`tag=${pkg.release.tag}`);
+          console.log(`asset=${meta.releaseAsset}`);
+          console.log(`npm_name=${pkg.npm.package}`);
+          console.log(`npm_version=${pkg.npm.version}`);
+          NODE
+      - name: Download immutable Zoo release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p npm-work/release
+          gh release download '${{ steps.meta.outputs.tag }}' --repo "$GITHUB_REPOSITORY" \
+            --pattern '${{ steps.meta.outputs.asset }}' --dir npm-work
+          unzip -q "npm-work/${{ steps.meta.outputs.asset }}" -d npm-work/release
+      - name: Prepare npm package
+        run: node scripts/prepare-npm-package.mjs --slug '${{ inputs.slug }}' --input npm-work/release --output npm-work/package
+      - name: Validate npm package contents
+        run: |
+          npm run npm:check
+          mkdir -p npm-work/artifacts
+          npm pack ./npm-work/package --json --ignore-scripts --pack-destination npm-work/artifacts | tee npm-work/npm-pack.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: npm-${{ inputs.slug }}-${{ steps.meta.outputs.npm_version }}
+          path: |
+            npm-work/artifacts/*.tgz
+            npm-work/npm-pack.json
+          retention-days: 14
+      - name: Publish public package
+        if: inputs.mode == 'publish'
+        working-directory: npm-work/package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+      - name: Stage new version of existing package for review
+        if: inputs.mode == 'stage'
+        working-directory: npm-work/package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm stage publish
+      - name: Summary
+        shell: bash
+        run: |
+          {
+            echo '## npm distribution'
+            echo
+            echo '- Package: `${{ steps.meta.outputs.npm_name }}@${{ steps.meta.outputs.npm_version }}`'
+            echo '- Source release: `${{ steps.meta.outputs.tag }}` / `${{ steps.meta.outputs.asset }}`'
+            echo '- Mode: `${{ inputs.mode }}`'
+            echo '- Existing GitHub Release assets: unchanged'
+          } >> "$GITHUB_STEP_SUMMARY"

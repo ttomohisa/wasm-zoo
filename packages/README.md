@@ -30,3 +30,18 @@ Available packages should publish `capabilityMatrix` rows using the shared state
 - `unknown` — not yet verified.
 
 Each row contains `native`, a `profiles` object keyed by profile id, and an explanatory `note`. Do not use a plain false value when the more precise distinction is `na` or `unknown`.
+
+## npm distribution metadata
+
+`npm` is optional and means the reviewed package also has an npm distribution contract. While a package is being proven, use `status: canary`; move it to `published` only after the registry package and browser/bundler gates are confirmed.
+
+Required npm fields are:
+
+- `package` — scoped package name under `@wasm-zoo/`;
+- `version` — must match `zoo.builderVersion` so the npm artifact identifies the same Zoo distribution revision;
+- `profile` — one existing published profile whose immutable GitHub Release ZIP supplies the binary assets;
+- `entry` — currently `index.mjs` for the bundler-aware entry;
+- `bundledAssets` — must be `true`; npm packages must not silently fetch their core WASM from a third-party CDN;
+- `publishWorkflow` — currently `publish-npm.yml`.
+
+Automatic upstream promotion must bump `npm.version` together with the builder version. Existing GitHub Release assets remain immutable; npm packaging is a separate distribution step derived from the declared release asset.

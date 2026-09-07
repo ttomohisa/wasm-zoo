@@ -208,4 +208,10 @@ Consumer API v1 is an additive distribution layer:
 - when self-hosting an older already-published release during the transition, copy the matching package's `runtime/wasm-zoo.mjs` beside the extracted assets;
 - the existing `browser-*.js` file and `WasmZoo*` global remain supported for applications that already use them.
 
+## npm distribution
+
+Consumer API v1 remains usable without a package manager, but WASM Zoo v0.12 also uses it as the stable interface for optional npm packages. The first canary is `@wasm-zoo/jq`; its default npm entry adds static asset URL references for bundlers while `@wasm-zoo/jq/self-hosted` keeps the normal relocatable `baseUrl` contract.
+
+See [`NPM_DISTRIBUTION.md`](NPM_DISTRIBUTION.md) for package/version mapping, immutable Release handoff, first-publish bootstrap and Trusted Publisher rules.
+
 A future API-breaking consumer change must use a new `API_VERSION`; it must not silently change the v1 contract.

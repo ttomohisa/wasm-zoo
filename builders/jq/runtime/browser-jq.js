@@ -46,8 +46,14 @@
   const assertSupported = () => { if (typeof Worker === "undefined" || typeof WebAssembly === "undefined") throw new Error("WASM Zoo jq browser-full requires Web Workers and WebAssembly support."); };
   const createOuterWorker = () => { const url = URL.createObjectURL(new Blob([WORKER_SOURCE], { type: "text/javascript" })); const worker = new Worker(url); setTimeout(() => URL.revokeObjectURL(url), 0); return worker; };
   class JqRunner {
-    constructor({ baseUrl }) { this.baseUrl = new URL(baseUrl, document.baseURI); this.wasm = null; this.disposed = false; }
-    async load() { assertSupported(); if (this.wasm) return; const response = await fetch(new URL("jq-core.wasm", this.baseUrl)); if (!response.ok) throw new Error(`Failed to load jq WASM: ${response.status} ${response.statusText}`); this.wasm = await response.arrayBuffer(); }
+    constructor({ baseUrl, coreJsUrl, wasmUrl }) {
+      this.baseUrl = new URL(baseUrl, document.baseURI);
+      this.coreJsUrl = new URL(coreJsUrl || "jq-core.js", this.baseUrl).href;
+      this.wasmUrl = new URL(wasmUrl || "jq-core.wasm", this.baseUrl).href;
+      this.wasm = null;
+      this.disposed = false;
+    }
+    async load() { assertSupported(); if (this.wasm) return; const response = await fetch(this.wasmUrl); if (!response.ok) throw new Error(`Failed to load jq WASM: ${response.status} ${response.statusText}`); this.wasm = await response.arrayBuffer(); }
     async exec(args = [], options = {}) {
       if (this.disposed) throw new Error("jq runner has been disposed."); assertSupported(); if (!Array.isArray(args)) throw new TypeError("args must be an array of CLI arguments."); await this.load();
       const files = [], transfer = [];
@@ -64,10 +70,10 @@
           if (message?.type === "error") { const error = new Error(message.message || "jq worker failed."); error.name = message.name || "Error"; error.stack = message.stack || error.stack; error.files = Array.isArray(message.files) ? message.files.map((file) => ({ name: file.name, data: new Uint8Array(file.data) })) : []; rejectOnce(error); }
         };
         worker.onerror = (event) => rejectOnce(event.error instanceof Error ? event.error : new Error(event.message || "jq worker failed."));
-        worker.postMessage({ coreJsUrl: new URL("jq-core.js", this.baseUrl).href, wasmBytes, args: [...args], files, outputs: Array.isArray(options.outputs) ? [...options.outputs] : [], collectDirs: Array.isArray(options.collectDirs) ? [...options.collectDirs] : [], dirs: Array.isArray(options.dirs) ? [...options.dirs] : [] }, transfer);
+        worker.postMessage({ coreJsUrl: this.coreJsUrl, wasmBytes, args: [...args], files, outputs: Array.isArray(options.outputs) ? [...options.outputs] : [], collectDirs: Array.isArray(options.collectDirs) ? [...options.collectDirs] : [], dirs: Array.isArray(options.dirs) ? [...options.dirs] : [] }, transfer);
       });
     }
     dispose() { this.disposed = true; this.wasm = null; }
   }
-  window.WasmZooJq = Object.freeze({ loadHosted: ({ baseUrl }) => new JqRunner({ baseUrl }), isSupported: () => typeof Worker !== "undefined" && typeof WebAssembly !== "undefined" });
+  window.WasmZooJq = Object.freeze({ loadHosted: ({ baseUrl, coreJsUrl, wasmUrl }) => new JqRunner({ baseUrl, coreJsUrl, wasmUrl }), isSupported: () => typeof Worker !== "undefined" && typeof WebAssembly !== "undefined" });
 })();
