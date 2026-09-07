@@ -33,7 +33,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 | Ghostscript | 10.07.1 | 0.7.1 | `browser-full` | yes |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes |
 
-The project version is **WASM Zoo v0.9.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+The project version is **WASM Zoo v0.11.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
 ## Release health and supply-chain metadata
 
