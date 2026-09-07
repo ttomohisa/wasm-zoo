@@ -63,7 +63,7 @@ for (const pkg of packages) {
     if (pkg.npm !== undefined) {
       assert(["canary", "published", "disabled"].includes(pkg.npm?.status), `${at}: npm.status is invalid`);
       assert(/^@wasm-zoo\/[a-z0-9][a-z0-9-]*$/.test(pkg.npm?.package || ""), `${at}: npm.package must use the @wasm-zoo scope`);
-      assert(pkg.npm?.version === pkg.zoo.builderVersion, `${at}: npm.version must match zoo.builderVersion`);
+      assert(/^\d+\.\d+\.\d+$/.test(pkg.npm?.version || ""), `${at}: npm.version must be a stable semver distribution version`);
       assert(pkg.profiles.some((profile) => profile.id === pkg.npm?.profile), `${at}: npm.profile must name a published profile`);
       assert(pkg.npm?.entry === "index.mjs", `${at}: npm.entry must be index.mjs`);
       assert(pkg.npm?.bundledAssets === true, `${at}: npm package must bundle its reviewed runtime assets`);

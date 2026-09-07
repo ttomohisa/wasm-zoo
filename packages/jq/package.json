@@ -176,7 +176,7 @@
   "npm": {
     "status": "canary",
     "package": "@wasm-zoo/jq",
-    "version": "0.9.0",
+    "version": "0.9.1",
     "profile": "browser-full",
     "entry": "index.mjs",
     "bundledAssets": true,

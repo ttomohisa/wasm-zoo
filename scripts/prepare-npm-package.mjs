@@ -59,6 +59,7 @@ for (const rel of [...config.required, ...config.optional]) {
   await fs.mkdir(path.dirname(dst), { recursive: true });
   await fs.copyFile(src, dst);
 }
+await fs.copyFile(path.join(root, "builders", args.slug, "runtime", config.classicScript), path.join(output, config.classicScript));
 await fs.copyFile(path.join(root, "builders", args.slug, "runtime", "wasm-zoo.mjs"), path.join(output, "wasm-zoo.mjs"));
 await fs.copyFile(path.join(root, "LICENSE"), path.join(output, "LICENSE.wasm-zoo.txt"));
 
@@ -98,7 +99,7 @@ await fs.writeFile(path.join(output, "README.md"), readme);
 
 const npmPackage = {
   name: config.npmName,
-  version: pkg.zoo.builderVersion,
+  version: pkg.npm.version,
   description: `jq ${pkg.upstream.version} compiled for browser WebAssembly by WASM Zoo, with Consumer API v1 and bundled runtime assets.`,
   type: "module",
   exports: {
@@ -139,6 +140,8 @@ const npmPackage = {
     slug: args.slug,
     upstreamVersion: pkg.upstream.version,
     builderVersion: pkg.zoo.builderVersion,
+    npmVersion: pkg.npm.version,
+    distributionOverlay: [config.classicScript, "wasm-zoo.mjs", "index.mjs"],
     profile,
     releaseTag: pkg.release.tag,
     releaseAsset: profileMeta.releaseAsset,
