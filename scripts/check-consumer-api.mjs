@@ -50,7 +50,12 @@ async function testNormalCli(spec, mod) {
   defineGlobal(spec.global, legacy);
   const stdout = [];
   const stderr = [];
-  const runtime = await mod.load({ baseUrl: `https://example.test/${spec.slug}/` });
+  const loadOptions = { baseUrl: `https://example.test/${spec.slug}/` };
+  if (spec.slug === "jq") {
+    loadOptions.coreJsUrl = "https://cdn.example.test/jq-core.js";
+    loadOptions.wasmUrl = "https://cdn.example.test/jq-core.wasm";
+  }
+  const runtime = await mod.load(loadOptions);
   const result = await runtime.exec(["--version"], { onStdout: (line) => stdout.push(line), onStderr: (line) => stderr.push(line) });
   need(runtime.apiVersion === 1 && runtime.kind === "cli", `${spec.slug}: loaded runtime must expose CLI Consumer API v1`);
   need(result.exitCode === 0 && Array.isArray(result.files), `${spec.slug}: exec result shape is invalid`);
@@ -66,6 +71,10 @@ async function testNormalCli(spec, mod) {
     need(hostedOptions?.wasmUrl === "https://example.test/ffmpeg/ffmpeg-core.wasm", "ffmpeg: WASM URL must resolve from baseUrl");
   } else {
     need(hostedOptions?.baseUrl === `https://example.test/${spec.slug}/`, `${spec.slug}: baseUrl must be forwarded to the legacy loader`);
+    if (spec.slug === "jq") {
+      need(hostedOptions?.coreJsUrl === "https://cdn.example.test/jq-core.js", "jq: explicit core JS URL must be forwarded for bundlers");
+      need(hostedOptions?.wasmUrl === "https://cdn.example.test/jq-core.wasm", "jq: explicit WASM URL must be forwarded for bundlers");
+    }
     need(loaded, `${spec.slug}: Consumer load() must eagerly initialize the legacy runtime`);
   }
   runtime.dispose();

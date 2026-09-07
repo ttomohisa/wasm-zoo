@@ -100,6 +100,7 @@ pkg.upstream.version = values.version;
 pkg.upstream.ref = values.ref;
 pkg.upstream.released = released;
 pkg.zoo.builderVersion = newBuilder;
+if (pkg.npm) pkg.npm.version = newBuilder;
 for (const profile of pkg.profiles || []) {
   profile.releaseAsset = `${values.slug}-${profile.id}-${values.version}-zoo-${newBuilder}.zip`;
 }

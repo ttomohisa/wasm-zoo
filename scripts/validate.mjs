@@ -60,6 +60,15 @@ for (const pkg of packages) {
     assert(Array.isArray(pkg.integration?.files) && pkg.integration.files.length > 0 && pkg.integration.files.every((file) => typeof file === "string" && file.length > 0), `${at}: available package needs integration.files`);
     assert(typeof pkg.integration?.example === "string" && pkg.integration.example.length > 0, `${at}: available package needs integration.example`);
     if (pkg.integration?.notes !== undefined) assert(Array.isArray(pkg.integration.notes) && pkg.integration.notes.every((note) => typeof note === "string" && note.length > 0), `${at}: integration.notes must be a string array`);
+    if (pkg.npm !== undefined) {
+      assert(["canary", "published", "disabled"].includes(pkg.npm?.status), `${at}: npm.status is invalid`);
+      assert(/^@wasm-zoo\/[a-z0-9][a-z0-9-]*$/.test(pkg.npm?.package || ""), `${at}: npm.package must use the @wasm-zoo scope`);
+      assert(pkg.npm?.version === pkg.zoo.builderVersion, `${at}: npm.version must match zoo.builderVersion`);
+      assert(pkg.profiles.some((profile) => profile.id === pkg.npm?.profile), `${at}: npm.profile must name a published profile`);
+      assert(pkg.npm?.entry === "index.mjs", `${at}: npm.entry must be index.mjs`);
+      assert(pkg.npm?.bundledAssets === true, `${at}: npm package must bundle its reviewed runtime assets`);
+      assert(pkg.npm?.publishWorkflow === "publish-npm.yml", `${at}: npm.publishWorkflow must be publish-npm.yml`);
+    }
     if (pkg.release) {
       assert(typeof pkg.release.tag === "string" && pkg.release.tag.length > 0, `${at}: release.tag is required when release metadata is present`);
       assert(isHttps(pkg.release.page), `${at}: release.page must use https`);
