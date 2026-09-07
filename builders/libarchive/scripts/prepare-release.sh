@@ -15,6 +15,7 @@ src="$work/libarchive-$LIBARCHIVE_REF"; git -C "$work" init -q source-fetch; git
 stage="$work/binary"; mkdir -p "$stage/LICENSES"
 for tool in bsdtar bsdcpio bsdcat bsdunzip; do for suffix in core.js core.wasm core.js.gz core.wasm.gz; do cp "$dist/${tool}-${suffix}" "$stage/"; done; done
 for file in manifest.json features.json provenance.json sbom.cdx.json libarchive-config.txt browser-libarchive.js BUILDINFO.txt; do cp "$dist/$file" "$stage/"; done
+cp "$ROOT/runtime/wasm-zoo.mjs" "$stage/wasm-zoo.mjs"
 cp "$src/COPYING" "$stage/LICENSES/libarchive-COPYING"
 cp "$ROOT/LICENSES/zlib-LICENSE.txt" "$stage/LICENSES/zlib-LICENSE.txt"
 cp "$ROOT/LICENSES/bzip2-LICENSE.txt" "$stage/LICENSES/bzip2-LICENSE.txt"

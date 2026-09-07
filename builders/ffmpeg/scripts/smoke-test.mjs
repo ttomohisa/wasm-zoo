@@ -90,7 +90,8 @@ async function main() {
   const dist = path.join(root, "dist", profile);
   const defaultTimeoutMs = profile === "browser-full-gpl" ? 300000 : 180000;
   const timeoutMs = Number(process.env.FFMPEG_WASM_SMOKE_TIMEOUT_MS || defaultTimeoutMs);
-  const required = ["smoke-test.html", "browser-ffmpeg.js", "ffmpeg-core.js", "ffmpeg-core.wasm", "manifest.json", "smoke-input.mp4"];
+  await fsp.copyFile(path.join(root, "runtime", "wasm-zoo.mjs"), path.join(dist, "wasm-zoo.mjs"));
+  const required = ["wasm-zoo.mjs", "smoke-test.html", "browser-ffmpeg.js", "ffmpeg-core.js", "ffmpeg-core.wasm", "manifest.json", "smoke-input.mp4"];
   for (const name of required) {
     if (!fs.existsSync(path.join(dist, name))) throw new Error(`Missing smoke input: ${name}`);
   }
@@ -101,6 +102,7 @@ async function main() {
   const mime = new Map([
     [".html", "text/html; charset=utf-8"],
     [".js", "text/javascript; charset=utf-8"],
+    [".mjs", "text/javascript; charset=utf-8"],
     [".wasm", "application/wasm"],
     [".json", "application/json; charset=utf-8"],
     [".mp4", "video/mp4"]

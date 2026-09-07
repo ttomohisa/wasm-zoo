@@ -2,11 +2,14 @@
 
 ## Unreleased
 
-- add review-only automatic promotion PRs for successful `auto` upstream candidates: bump the builder patch version, update exact reviewed pins/package/release metadata, regenerate the catalog, validate locally in the workflow, open a bot PR, and explicitly dispatch `Verify catalog` plus the package build workflow while keeping merge, release tags and publication manual; preserve the libvips adapter gate and Ghostscript source-digest gate;
+## v0.11.0
 
-- promote libvips 8.18.6 to builder 0.5.2 with the wasm-vips 0.0.18 adapter commit that explicitly targets 8.18.6, Emscripten 6.0.8, and matching immutable libvips/Emscripten compatibility-patch heads; keep the browser-core/browser-full feature policy unchanged pending the normal dual-profile Chromium smoke-test gate;
-
-- promote ImageMagick 7.1.2-31 to builder 0.4.3 after the isolated candidate build and real Chromium smoke test passed, keeping the browser-full feature set and Emscripten 6.0.6 toolchain unchanged while moving the reviewed source pin to commit `fb965f1b54a65ddb633f8c2eac4452c782c66d7f`;
+- add Consumer API v1 ESM wrappers for all published browser packages, providing a shared `load()` / `exec()` integration model for CLI-style packages while exposing libvips through `runtime.api`;
+- preserve the existing `WasmZoo*` browser APIs for backward compatibility while adding `wasm-zoo.mjs` to Pages staging and future release archives;
+- route package Chromium smoke tests through Consumer API v1 and add static Consumer API contract validation for all published browser packages;
+- add review-only automatic promotion PRs for successful `auto` upstream candidates while keeping merge, release tags and publication manual;
+- promote libvips 8.18.6 to builder 0.5.2 with its reviewed wasm-vips/Emscripten compatibility pins;
+- promote ImageMagick 7.1.2-31 to builder 0.4.3 after its isolated candidate build and Chromium smoke test passed;
 
 ## v0.9.0
 

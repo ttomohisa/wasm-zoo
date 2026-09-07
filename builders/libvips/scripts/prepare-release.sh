@@ -32,6 +32,7 @@ Ref: $EMSCRIPTEN_REF
 Commit: $EMSCRIPTEN_COMMIT
 The browser adapter and linked dependency inventory are recorded in versions.json and BUILDINFO.txt.
 EOT
+  cp "$ROOT/runtime/wasm-zoo.mjs" "$stage/wasm-zoo.mjs"
   find "$stage" -exec touch -t 198001010000 {} +
   asset="libvips-${profile}-${version}-zoo-${BUILDER_VERSION}.zip"
   (cd "$stage" && zip -X -9 -q -r "$release/$asset" .)

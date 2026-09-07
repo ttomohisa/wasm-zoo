@@ -21,6 +21,7 @@ Ref: $EMSCRIPTEN_REF
 Commit: $EMSCRIPTEN_COMMIT
 zlib 1.3.2, libpng 1.6.58, and libjpeg 9f are provided by Emscripten ports tied to this exact toolchain pin.
 EOT
+cp "$ROOT/runtime/wasm-zoo.mjs" "$stage/wasm-zoo.mjs"
 find "$stage" -exec touch -t 198001010000 {} +
 asset="imagemagick-browser-full-${IMAGEMAGICK_REF}-zoo-${BUILDER_VERSION}.zip"; (cd "$stage" && zip -X -9 -q -r "$release/$asset" .)
 cp "$dist/BUILDINFO.txt" "$release/BUILDINFO-browser-full.txt"

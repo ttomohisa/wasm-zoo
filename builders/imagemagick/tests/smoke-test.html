@@ -1,6 +1,6 @@
 <!doctype html><meta charset="utf-8"><title>WASM Zoo ImageMagick smoke</title>
-<script src="./browser-imagemagick.js"></script>
 <script type="module">
+import { load } from "./wasm-zoo.mjs";
 let phase = 'boot';
 let detail = '';
 const logs = [];
@@ -57,7 +57,7 @@ try {
   const fixtureResponse = await fetch('./smoke-input.png');
   if (!fixtureResponse.ok) throw new Error(`fixture HTTP ${fixtureResponse.status}`);
   const fixture = await fixtureResponse.arrayBuffer();
-  const runner = WasmZooImageMagick.loadHosted({ baseUrl: './' });
+  const runner = await load({ baseUrl: './' });
 
   status('version', 'magick -version');
   const versionBefore = logs.length;

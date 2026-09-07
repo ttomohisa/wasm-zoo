@@ -7,14 +7,16 @@ PROFILE=browser-full
 DIST="$ROOT/dist/$PROFILE"
 RELEASE="$ROOT/release"
 rm -rf "$RELEASE" && mkdir -p "$RELEASE"
-for file in browser-ghostscript.js gs-core.js gs-core.wasm manifest.json features.json provenance.json sbom.cdx.json ghostscript-config.txt BUILDINFO.txt LICENSE-Ghostscript.txt; do
+cp "$ROOT/runtime/wasm-zoo.mjs" "$DIST/wasm-zoo.mjs"
+touch -t 198001010000 "$DIST/wasm-zoo.mjs"
+for file in browser-ghostscript.js wasm-zoo.mjs gs-core.js gs-core.wasm manifest.json features.json provenance.json sbom.cdx.json ghostscript-config.txt BUILDINFO.txt LICENSE-Ghostscript.txt; do
   [[ -s "$DIST/$file" ]] || { echo "Missing release input: $file" >&2; exit 1; }
 done
 [[ -s "$DIST/THIRD-PARTY-LICENSES/INDEX.txt" ]] || { echo "Missing third-party license inventory" >&2; exit 1; }
 binary="ghostscript-${PROFILE}-${GHOSTSCRIPT_VERSION}-zoo-${BUILDER_VERSION}.zip"
 (
   cd "$DIST"
-  zip -9 -q -r "$RELEASE/$binary" browser-ghostscript.js gs-core.js gs-core.wasm manifest.json features.json provenance.json sbom.cdx.json ghostscript-config.txt BUILDINFO.txt LICENSE-Ghostscript.txt THIRD-PARTY-LICENSES
+  zip -9 -q -r "$RELEASE/$binary" browser-ghostscript.js wasm-zoo.mjs gs-core.js gs-core.wasm manifest.json features.json provenance.json sbom.cdx.json ghostscript-config.txt BUILDINFO.txt LICENSE-Ghostscript.txt THIRD-PARTY-LICENSES
 )
 cp "$DIST/provenance.json" "$RELEASE/provenance-browser-full.json"
 cp "$DIST/sbom.cdx.json" "$RELEASE/sbom-browser-full.cdx.json"

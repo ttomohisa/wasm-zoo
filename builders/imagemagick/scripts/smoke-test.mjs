@@ -83,7 +83,8 @@ async function main() {
   await fsp.copyFile(path.join(root, "tests", "smoke-test.html"), path.join(dist, "smoke-test.html"));
   await fsp.copyFile(path.join(root, "runtime", "browser-imagemagick.js"), path.join(dist, "browser-imagemagick.js"));
 
-  const required = [
+  await fsp.copyFile(path.join(root, "runtime", "wasm-zoo.mjs"), path.join(dist, "wasm-zoo.mjs"));
+  const required = ["wasm-zoo.mjs",
     "smoke-test.html",
     "browser-imagemagick.js",
     "manifest.json",
@@ -102,6 +103,7 @@ async function main() {
   const mime = new Map([
     [".html", "text/html; charset=utf-8"],
     [".js", "text/javascript; charset=utf-8"],
+    [".mjs", "text/javascript; charset=utf-8"],
     [".wasm", "application/wasm"],
     [".json", "application/json; charset=utf-8"],
     [".png", "image/png"],

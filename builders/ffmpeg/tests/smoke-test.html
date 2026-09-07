@@ -3,8 +3,8 @@
 <head><meta charset="utf-8"><title>WASM Zoo FFmpeg smoke test</title></head>
 <body>
 <pre id="log">starting</pre>
-<script src="./browser-ffmpeg.js"></script>
 <script type="module">
+import { load } from "./wasm-zoo.mjs";
 const log = document.querySelector("#log");
 const lines = [];
 const setStatus = (phase, detail = "") => {
@@ -26,10 +26,7 @@ try {
   setStatus("metadata", "loading manifest");
   const manifest = await (await fetch("./manifest.json", {cache:"no-store"})).json();
   setStatus("core", "loading ffmpeg-core.wasm");
-  const runner = await WasmZooFFmpeg.loadHosted({
-    coreJsUrl: "./ffmpeg-core.js",
-    wasmUrl: "./ffmpeg-core.wasm"
-  });
+  const runner = await load({ baseUrl: "./", profile: manifest.profile });
   const input = await (await fetch("./smoke-input.mp4", {cache:"no-store"})).arrayBuffer();
   const args = manifest.profile === "browser-full-gpl"
     // A smoke test should prove libx264 really runs, not benchmark a full transcode.
