@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- fix the jq npm canary after the production Vite smoke exposed a historical-wrapper mismatch: publish the corrected distribution as `@wasm-zoo/jq@0.9.1`, keep jq 1.8.2 / builder 0.9.0 / `jq-v0.9.0` immutable, overlay the current reviewed `browser-jq.js`, and decouple npm distribution patch versions from builder versions;
+
 - harden the v0.12 npm canary after the initial `@wasm-zoo/jq@0.9.0` bootstrap: remove direct publish/token paths, require Trusted Publisher OIDC for `npm stage publish`, and keep maintainer 2FA approval as the final registry gate;
 - add a live-registry Vite/Chromium smoke test that installs the published `@wasm-zoo/jq` package into a clean app, builds production assets, verifies emitted Wasm and executes a real jq transformation in Chromium;
 - add the v0.12 npm-distribution canary for `@wasm-zoo/jq`: generate a bundler-aware ESM entry from the immutable reviewed jq Release asset, bundle the core Wasm/runtime/metadata/licenses, validate `npm pack`, and add a manual pack/publish/stage workflow designed to move to npm Trusted Publishing after first-package bootstrap;

@@ -1,10 +1,10 @@
 # npm distribution
 
-WASM Zoo v0.12 adds npm as an optional distribution channel on top of the reviewed GitHub Release artifacts. The first canary is the public package `@wasm-zoo/jq@0.9.0`.
+WASM Zoo v0.12 adds npm as an optional distribution channel on top of the reviewed GitHub Release artifacts. The first canary started at `@wasm-zoo/jq@0.9.0`; the first npm-only packaging fix is `@wasm-zoo/jq@0.9.1`.
 
 ## Contract
 
-The npm package is not a second independent build. `scripts/prepare-npm-package.mjs` starts from the immutable binary ZIP declared in `packages/jq/package.json`, then adds the current Consumer API v1 module and a bundler-aware `index.mjs` entry.
+The npm package is not a second independent native/Wasm build. `scripts/prepare-npm-package.mjs` starts from the immutable binary ZIP declared in `packages/jq/package.json`, keeps its core JavaScript/Wasm, manifests and supply-chain metadata, then overlays the current reviewed `browser-jq.js`, Consumer API v1 module and bundler-aware `index.mjs` entry. The wrapper overlay matches the GitHub Pages distribution model and lets packaging fixes evolve without rewriting historical Release assets.
 
 `@wasm-zoo/jq` therefore bundles:
 
@@ -16,7 +16,7 @@ The npm package is not a second independent build. `scripts/prepare-npm-package.
 - the release `provenance.json`, CycloneDX SBOM and BUILDINFO;
 - WASM Zoo and upstream license notices.
 
-The npm version matches the package **Zoo builder version**, not the repository-wide WASM Zoo version. The jq canary is `@wasm-zoo/jq@0.9.0`, backed by `jq-v0.9.0` and `jq-browser-full-1.8.2-zoo-0.9.0.zip`.
+The npm package now has an **independent distribution version**. `@wasm-zoo/jq@0.9.1` is still backed by jq 1.8.2, Zoo builder 0.9.0, `jq-v0.9.0`, and `jq-browser-full-1.8.2-zoo-0.9.0.zip`. This separation allows npm-only wrapper/packaging fixes without pretending that the native/Wasm build or immutable GitHub Release changed.
 
 ## Consumer usage
 
@@ -80,7 +80,11 @@ Existing GitHub Release ZIPs are never modified.
 
 ## Promotion interaction
 
-The npm version follows the jq Zoo builder version. When a future reviewed jq promotion bumps the builder version, the promotion PR updates the npm metadata as part of the reviewed change. After the corresponding immutable jq Release exists, run `Package / stage npm canary` in `pack` mode, inspect the artifact, then run it in `stage` mode. The staged package still requires an explicit maintainer approval before it becomes public.
+The npm version is independent from the jq Zoo builder version. A wrapper/package-only correction bumps only `npm.version`; the immutable Release and `zoo.builderVersion` remain unchanged. When a future reviewed jq promotion bumps the builder version, the promotion PR also patch-bumps the current npm distribution version independently. After the corresponding immutable jq Release exists, run `Package / stage npm canary` in `pack` mode, inspect the artifact, then run it in `stage` mode. The staged package still requires an explicit maintainer approval before it becomes public.
+
+## npm 0.9.0 packaging correction
+
+The initial `@wasm-zoo/jq@0.9.0` package correctly caused Vite to emit hashed `jq-core` JavaScript/Wasm assets, but it copied the historical `browser-jq.js` from the immutable Release. That older wrapper did not honor the explicit emitted asset URLs passed by Consumer API v1, so production execution attempted the non-hashed `/assets/jq-core.js`. `0.9.1` fixes only the npm distribution layer by overlaying the current reviewed wrapper; the jq 1.8.2 Wasm binary and its source Release remain unchanged.
 
 ## Canary exit criteria
 
@@ -88,7 +92,7 @@ Before enabling the other five packages, jq should pass all of these:
 
 1. package generation starts from the immutable jq Release;
 2. generated tarballs install with the expected Wasm/runtime/metadata/license files;
-3. `@wasm-zoo/jq@0.9.0` is publicly installable from npm;
+3. the current `@wasm-zoo/jq` npm distribution is publicly installable from npm;
 4. Trusted Publisher is configured stage-only and long-lived publish tokens are removed;
 5. a production Vite build installs the public npm package, emits its Wasm asset and runs real jq in Chromium;
 6. npm provenance remains enabled;

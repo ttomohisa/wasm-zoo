@@ -30,10 +30,17 @@ if (versionCmp === 0) {
 const oldVersion = pkg.upstream.version;
 const oldRef = pkg.upstream.ref;
 const oldBuilder = pkg.zoo?.builderVersion;
-if (!/^\d+\.\d+\.\d+$/.test(oldBuilder || "")) throw new Error(`Unsupported builder version: ${oldBuilder || "<missing>"}`);
-const builderParts = oldBuilder.split(".").map(Number);
-builderParts[2] += 1;
-const newBuilder = builderParts.join(".");
+
+function bumpPatchVersion(value, label) {
+  if (!/^\d+\.\d+\.\d+$/.test(value || "")) throw new Error(`Unsupported ${label}: ${value || "<missing>"}`);
+  const parts = value.split(".").map(Number);
+  parts[2] += 1;
+  return parts.join(".");
+}
+
+const newBuilder = bumpPatchVersion(oldBuilder, "builder version");
+const oldNpmVersion = pkg.npm?.version || null;
+const newNpmVersion = pkg.npm ? bumpPatchVersion(oldNpmVersion, "npm distribution version") : null;
 
 function envReplace(text, key, value, file) {
   const pattern = new RegExp(`^${key}=.*$`, "m");
@@ -100,7 +107,7 @@ pkg.upstream.version = values.version;
 pkg.upstream.ref = values.ref;
 pkg.upstream.released = released;
 pkg.zoo.builderVersion = newBuilder;
-if (pkg.npm) pkg.npm.version = newBuilder;
+if (pkg.npm) pkg.npm.version = newNpmVersion;
 for (const profile of pkg.profiles || []) {
   profile.releaseAsset = `${values.slug}-${profile.id}-${values.version}-zoo-${newBuilder}.zip`;
 }
@@ -195,6 +202,7 @@ if (process.env.GITHUB_OUTPUT) {
     `new_version=${values.version}`,
     `old_builder=${oldBuilder}`,
     `builder_version=${newBuilder}`,
+    ...(newNpmVersion ? [`npm_version=${newNpmVersion}`] : []),
     `release_tag=${pkg.release.tag}`,
     `released=${released}`,
     ...(submoduleCommit ? [`submodule_commit=${submoduleCommit}`] : [])
@@ -207,4 +215,5 @@ if (refreshedEnv.BUILDER_VERSION !== newBuilder || refreshedEnv[config.refKey] !
 }
 
 console.log(`[OK] prepared promotion ${values.slug} ${oldVersion} -> ${values.version}; builder ${oldBuilder} -> ${newBuilder}`);
+if (newNpmVersion) console.log(`[OK] npm distribution version ${oldNpmVersion} -> ${newNpmVersion}`);
 console.log(`[OK] reviewed ref ${oldRef} -> ${values.ref}; commit ${values.commit}`);
