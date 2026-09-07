@@ -38,13 +38,25 @@ try {
     need(entry.includes("coreJsUrl: options.coreJsUrl || assets.coreJsUrl") && entry.includes("wasmUrl: options.wasmUrl || assets.wasmUrl"), "npm entry must forward emitted asset URLs to Consumer API v1");
     const packDir = path.join(temp, "pack");
     await fs.mkdir(packDir);
-    const pack = spawnSync("npm", ["pack", output, "--dry-run", "--json", "--ignore-scripts", "--pack-destination", packDir], { encoding: "utf8", shell: process.platform === "win32" });
-    need(pack.status === 0, `npm pack --dry-run failed: ${pack.stderr || pack.stdout}`);
+    const pack = spawnSync("npm", ["pack", output, "--ignore-scripts", "--pack-destination", packDir], { encoding: "utf8", shell: process.platform === "win32" });
+    need(pack.status === 0, `npm pack failed: ${pack.stderr || pack.stdout}`);
     if (pack.status === 0) {
-      const report = JSON.parse(pack.stdout || "[]")[0];
-      const names = new Set((report?.files || []).map((file) => file.path));
-      for (const rel of ["index.mjs", "wasm-zoo.mjs", "browser-jq.js", "jq-core.js", "jq-core.wasm", "manifest.json", "features.json", "provenance.json", "sbom.cdx.json", "LICENSE", "README.md"]) {
-        need(names.has(rel), `npm tarball must include ${rel}`);
+      const tarballs = (await fs.readdir(packDir)).filter((name) => name.endsWith(".tgz"));
+      need(tarballs.length === 1, `npm pack must create exactly one tarball, got ${tarballs.length}`);
+      if (tarballs.length === 1) {
+        const installDir = path.join(temp, "install-check");
+        await fs.mkdir(installDir);
+        await fs.writeFile(path.join(installDir, "package.json"), '{"private":true}\n');
+        const tarball = path.join(packDir, tarballs[0]);
+        const install = spawnSync("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--package-lock=false", tarball], { cwd: installDir, encoding: "utf8", shell: process.platform === "win32" });
+        need(install.status === 0, `npm install tarball verification failed: ${install.stderr || install.stdout}`);
+        if (install.status === 0) {
+          const installed = path.join(installDir, "node_modules", "@wasm-zoo", "jq");
+          for (const rel of ["index.mjs", "wasm-zoo.mjs", "browser-jq.js", "jq-core.js", "jq-core.wasm", "manifest.json", "features.json", "provenance.json", "sbom.cdx.json", "LICENSE", "README.md"]) {
+            const stat = await fs.stat(path.join(installed, rel)).catch(() => null);
+            need(stat?.isFile(), `installed npm package must include ${rel}`);
+          }
+        }
       }
     }
   }
