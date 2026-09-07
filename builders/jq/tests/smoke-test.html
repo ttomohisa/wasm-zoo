@@ -2,13 +2,13 @@
 <meta charset="utf-8">
 <title>WASM Zoo jq smoke test</title>
 <pre id="log">boot</pre>
-<script src="./browser-jq.js"></script>
-<script>
+<script type="module">
+import { load } from "./wasm-zoo.mjs";
 const logEl=document.querySelector('#log'); const lines=[];
 const onLog=({stream,message})=>{lines.push(`${stream}: ${message}`);logEl.textContent=lines.slice(-100).join('\n');};
 const fail=(error)=>{console.error(error);location.hash=`#SMOKE_TEST_FAIL_${encodeURIComponent(error?.message||String(error))}`;};
 (async()=>{try{
-  const jq=WasmZooJq.loadHosted({baseUrl:'./'});
+  const jq=await load({baseUrl:'./'});
   const version=await jq.exec(['--version'],{timeoutMs:30000,onLog});
   if(!version.stdout.includes('jq-1.8.2')) throw new Error(`jq --version mismatch: ${version.stdout}`);
   const input=await (await fetch('./smoke-input.json')).arrayBuffer();

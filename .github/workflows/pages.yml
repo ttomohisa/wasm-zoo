@@ -9,11 +9,17 @@ on:
       - "site/**"
       - "scripts/**"
       - "builders/ffmpeg/runtime/browser-ffmpeg.js"
+      - "builders/ffmpeg/runtime/wasm-zoo.mjs"
       - "builders/libarchive/runtime/browser-libarchive.js"
+      - "builders/libarchive/runtime/wasm-zoo.mjs"
       - "builders/imagemagick/runtime/browser-imagemagick.js"
+      - "builders/imagemagick/runtime/wasm-zoo.mjs"
       - "builders/libvips/runtime/browser-libvips.js"
+      - "builders/libvips/runtime/wasm-zoo.mjs"
       - "builders/ghostscript/runtime/browser-ghostscript.js"
+      - "builders/ghostscript/runtime/wasm-zoo.mjs"
       - "builders/jq/runtime/browser-jq.js"
+      - "builders/jq/runtime/wasm-zoo.mjs"
       - "VERSION"
       - ".github/workflows/pages.yml"
 
@@ -70,6 +76,7 @@ jobs:
             mkdir -p "$dest"
             unzip -q -j "$work/$asset" ffmpeg-core.js ffmpeg-core.wasm manifest.json features.json -d "$dest"
             cp builders/ffmpeg/runtime/browser-ffmpeg.js "$dest/browser-ffmpeg.js"
+          cp builders/ffmpeg/runtime/wasm-zoo.mjs "$dest/wasm-zoo.mjs"
           done
           echo "[OK] staged FFmpeg ${version} ${tag}"
 
@@ -99,6 +106,7 @@ jobs:
             bsdunzip-core.js bsdunzip-core.wasm \
             manifest.json features.json -d "$dest"
           cp builders/libarchive/runtime/browser-libarchive.js "$dest/browser-libarchive.js"
+          cp builders/libarchive/runtime/wasm-zoo.mjs "$dest/wasm-zoo.mjs"
           echo "[OK] staged libarchive ${version} ${tag}"
 
 
@@ -123,6 +131,7 @@ jobs:
           mkdir -p "$dest"
           unzip -q -j "$work/$asset" magick-core.js magick-core.wasm manifest.json features.json -d "$dest"
           cp builders/imagemagick/runtime/browser-imagemagick.js "$dest/browser-imagemagick.js"
+          cp builders/imagemagick/runtime/wasm-zoo.mjs "$dest/wasm-zoo.mjs"
           echo "[OK] staged ImageMagick ${version} ${tag}"
 
       - name: Stage published libvips release for Playground
@@ -147,6 +156,7 @@ jobs:
             mkdir -p "$dest"
             unzip -q -j "$work/$asset" vips.js vips.wasm vips.d.ts manifest.json features.json versions.json -d "$dest"
             cp builders/libvips/runtime/browser-libvips.js "$dest/browser-libvips.js"
+          cp builders/libvips/runtime/wasm-zoo.mjs "$dest/wasm-zoo.mjs"
             echo "[OK] staged libvips ${version} ${profile} ${tag}"
           done
 
@@ -171,6 +181,7 @@ jobs:
           mkdir -p "$dest"
           unzip -q -j "$work/$asset" gs-core.js gs-core.wasm manifest.json features.json -d "$dest"
           cp builders/ghostscript/runtime/browser-ghostscript.js "$dest/browser-ghostscript.js"
+          cp builders/ghostscript/runtime/wasm-zoo.mjs "$dest/wasm-zoo.mjs"
           echo "[OK] staged Ghostscript ${version} ${tag}"
 
       - name: Stage published jq release for Playground
@@ -194,6 +205,7 @@ jobs:
           mkdir -p "$dest"
           unzip -q -j "$work/$asset" jq-core.js jq-core.wasm manifest.json features.json -d "$dest"
           cp builders/jq/runtime/browser-jq.js "$dest/browser-jq.js"
+          cp builders/jq/runtime/wasm-zoo.mjs "$dest/wasm-zoo.mjs"
           echo "[OK] staged jq ${version} ${tag}"
 
       - name: Upload Pages artifact

@@ -2,8 +2,8 @@
 <meta charset="utf-8">
 <title>WASM Zoo Ghostscript smoke test</title>
 <pre id="log">boot</pre>
-<script src="./browser-ghostscript.js"></script>
-<script>
+<script type="module">
+import { load } from "./wasm-zoo.mjs";
 const log = document.querySelector('#log');
 const lines = [];
 const onLog = ({stream, message}) => { lines.push(`${stream}: ${message}`); log.textContent = lines.slice(-80).join('\n'); };
@@ -11,7 +11,7 @@ const fail = (error) => { console.error(error); location.hash = `#SMOKE_TEST_FAI
 const signature = (bytes, expected) => expected.every((value, index) => bytes[index] === value);
 (async () => {
   try {
-    const runner = WasmZooGhostscript.loadHosted({ baseUrl: './' });
+    const runner = await load({ baseUrl: './' });
     const pdfResponse = await fetch('./smoke-input.pdf');
     if (!pdfResponse.ok) throw new Error(`fixture HTTP ${pdfResponse.status}`);
     const pdf = await pdfResponse.arrayBuffer();

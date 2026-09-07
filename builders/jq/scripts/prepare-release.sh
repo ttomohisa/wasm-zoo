@@ -25,6 +25,7 @@ binary="jq-${PROFILE}-${JQ_REF#jq-}-zoo-${BUILDER_VERSION}.zip"
 stage="$work/binary"; mkdir -p "$stage/LICENSES"
 for file in browser-jq.js jq-core.js jq-core.wasm jq-core.js.gz jq-core.wasm.gz manifest.json features.json provenance.json sbom.cdx.json jq-config.txt BUILDINFO.txt; do cp "$DIST/$file" "$stage/"; done
 cp "$DIST/LICENSE-jq.txt" "$stage/LICENSES/jq-COPYING.txt"; cp "$DIST/LICENSE-oniguruma.txt" "$stage/LICENSES/oniguruma-COPYING.txt"
+cp "$ROOT/runtime/wasm-zoo.mjs" "$stage/wasm-zoo.mjs"
 find "$stage" -exec touch -t 198001010000 {} +
 (cd "$stage" && zip -X -9 -q -r "$RELEASE/$binary" .)
 cp "$DIST/provenance.json" "$RELEASE/provenance-browser-full.json"

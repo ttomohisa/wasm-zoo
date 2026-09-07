@@ -14,11 +14,12 @@ function commandPath(name) { const r=spawnSync(process.platform==='win32'?'where
 function resolveBrowser() { const c=[process.env.LIBARCHIVE_WASM_BROWSER,process.env.CHROME_PATH]; if(process.platform==='win32'){for(const base of [process.env.PROGRAMFILES,process.env['PROGRAMFILES(X86)'],process.env.LOCALAPPDATA]){if(!base)continue;c.push(path.join(base,'Google','Chrome','Application','chrome.exe'),path.join(base,'Microsoft','Edge','Application','msedge.exe'));}} for(const n of ['google-chrome','chrome','chromium','chromium-browser','msedge']) c.push(commandPath(n)); return c.find((x)=>x&&fs.existsSync(x)); }
 async function main() {
   const profile=process.argv[2]||'browser-full'; const dist=path.join(root,'dist',profile); const timeoutMs=Number(process.env.LIBARCHIVE_WASM_SMOKE_TIMEOUT_MS||120000);
-  const required=['smoke-test.html','browser-libarchive.js','manifest.json','smoke-input.zip'];
+  await fsp.copyFile(path.join(root, "runtime", "wasm-zoo.mjs"), path.join(dist, "wasm-zoo.mjs"));
+  const required=['wasm-zoo.mjs','smoke-test.html','browser-libarchive.js','manifest.json','smoke-input.zip'];
   for(const tool of ['bsdtar','bsdcpio','bsdcat','bsdunzip']) required.push(`${tool}-core.js`,`${tool}-core.wasm`);
   for(const name of required) if(!fs.existsSync(path.join(dist,name))) throw new Error(`Missing smoke input: ${name}`);
   const browser=resolveBrowser(); if(!browser) throw new Error('Chromium browser not found. Set LIBARCHIVE_WASM_BROWSER to Chrome/Edge executable.');
-  const mime=new Map([['.html','text/html; charset=utf-8'],['.js','text/javascript; charset=utf-8'],['.wasm','application/wasm'],['.json','application/json; charset=utf-8'],['.zip','application/zip']]);
+  const mime=new Map([['.html','text/html; charset=utf-8'],['.js','text/javascript; charset=utf-8'],['.mjs','text/javascript; charset=utf-8'],['.wasm','application/wasm'],['.json','application/json; charset=utf-8'],['.zip','application/zip']]);
   const baseDir=path.resolve(dist); const server=http.createServer(async(req,res)=>{try{const url=new URL(req.url,'http://localhost');const rel=url.pathname==='/'?'smoke-test.html':decodeURIComponent(url.pathname.slice(1));const full=path.resolve(baseDir,rel);if(!(full===baseDir||full.startsWith(baseDir+path.sep))){res.writeHead(403);res.end();return;}const data=await fsp.readFile(full);res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type',mime.get(path.extname(full))||'application/octet-stream');res.writeHead(200);res.end(data);}catch{res.writeHead(404);res.end('not found');}});
   await new Promise((r)=>server.listen(0,'127.0.0.1',r)); const port=server.address().port;
   const temp=await fsp.mkdtemp(path.join(os.tmpdir(),'wasm-zoo-libarchive-')); const browserProfile=path.join(temp,'browser'); await fsp.mkdir(browserProfile,{recursive:true});

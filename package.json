@@ -6,9 +6,10 @@
   "type": "module",
   "scripts": {
     "catalog": "node scripts/generate-catalog.mjs",
-    "check": "node scripts/validate.mjs",
+    "check": "node scripts/validate.mjs && node scripts/check-consumer-api.mjs",
+    "consumer:check": "node scripts/check-consumer-api.mjs",
     "check:upstream": "node scripts/check-upstream.mjs",
-    "build:site": "node scripts/generate-catalog.mjs && node scripts/validate.mjs",
+    "build:site": "node scripts/generate-catalog.mjs && npm run check",
     "stage:playground": "node scripts/stage-local-playground.mjs",
     "check:upstream:write": "node scripts/check-upstream.mjs --write-site",
     "candidate:prepare": "node scripts/prepare-candidate.mjs",

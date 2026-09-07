@@ -90,6 +90,7 @@ make_zip() {
   local stage="$work/binary-$profile"
   mkdir -p "$stage/LICENSES"
   for file in ffmpeg-core.js ffmpeg-core.wasm ffmpeg-core.js.gz ffmpeg-core.wasm.gz manifest.json features.json provenance.json sbom.cdx.json ffmpeg-config.mak browser-ffmpeg.js; do cp "$ROOT/dist/$profile/$file" "$stage/"; done
+  cp "$ROOT/runtime/wasm-zoo.mjs" "$stage/wasm-zoo.mjs"
   cp "$info" "$stage/BUILDINFO.txt"
   cp "$ffsrc/LICENSE.md" "$stage/LICENSES/FFmpeg-LICENSE.md"
   if [[ "$PROFILE_BINARY_LICENSE" == GPL-* ]]; then cp "$ffsrc/COPYING.GPLv2" "$stage/LICENSES/FFmpeg-COPYING.GPLv2"; else cp "$ffsrc/COPYING.LGPLv2.1" "$stage/LICENSES/FFmpeg-COPYING.LGPLv2.1"; fi
