@@ -18,6 +18,7 @@
     "metadata:check": "node scripts/check-metadata-contract.mjs",
     "promotion:prepare": "node scripts/prepare-promotion.mjs",
     "npm:prepare": "node scripts/prepare-npm-package.mjs",
-    "npm:check": "node scripts/check-npm-distribution.mjs"
+    "npm:check": "node scripts/check-npm-distribution.mjs",
+    "npm:smoke:jq": "node scripts/smoke-npm-jq.mjs"
   }
 }

@@ -29,7 +29,7 @@ try {
     need(pkg.name === "@wasm-zoo/jq", "jq npm package name must be @wasm-zoo/jq");
     need(pkg.version === zoo.zoo.builderVersion, "jq npm version must match the Zoo builder version");
     need(pkg.publishConfig?.access === "public", "scoped npm package must publish with public access");
-    need(pkg.publishConfig?.provenance === true, "npm package must request provenance when token publishing is used");
+    need(pkg.publishConfig?.provenance === true, "npm package must request provenance for Trusted Publisher staging/publishing");
     need(pkg.wasmZoo?.releaseTag === zoo.release.tag && pkg.wasmZoo?.releaseAsset === zoo.profiles[0].releaseAsset, "npm metadata must identify the immutable source release asset");
     need(pkg.exports?.["."] === "./index.mjs" && pkg.exports?.["./self-hosted"] === "./wasm-zoo.mjs", "npm exports must expose bundler and self-hosted entries");
     const entry = await fs.readFile(path.join(output, "index.mjs"), "utf8");
@@ -62,12 +62,21 @@ try {
   }
 
   const workflow = await fs.readFile(path.join(root, ".github", "workflows", "publish-npm.yml"), "utf8");
-  need(workflow.includes("id-token: write"), "npm publish workflow must request OIDC id-token permission");
-  need(workflow.includes("npm publish --access public"), "npm workflow must support first/public direct publish");
-  need(workflow.includes("npm stage publish"), "npm workflow must support staged publishing after bootstrap");
+  need(workflow.includes("id-token: write"), "npm stage workflow must request OIDC id-token permission");
+  need(workflow.includes("options: [pack, stage]"), "npm workflow must expose only pack and stage modes after bootstrap");
+  need(workflow.includes("npm stage publish"), "npm workflow must stage new versions for maintainer approval");
+  need(!workflow.includes("npm publish --access public"), "npm workflow must not allow direct publish after Trusted Publisher bootstrap");
+  need(!workflow.includes("secrets.NPM_TOKEN") && !workflow.includes("NODE_AUTH_TOKEN"), "npm workflow must not depend on a long-lived npm token");
   need(workflow.includes("gh release download"), "npm workflow must package the immutable GitHub Release asset");
+
+  const smoke = await fs.readFile(path.join(root, "scripts", "smoke-npm-jq.mjs"), "utf8");
+  need(smoke.includes("@wasm-zoo/jq") && smoke.includes("vite") && smoke.includes("playwright"), "published npm smoke must install jq and exercise Vite/Playwright");
+  need(smoke.includes("vite\", \"build") && smoke.includes("chromium.launch") && smoke.includes("jq.exec"), "published npm smoke must test a production Vite build in Chromium with a real jq invocation");
+  const smokeWorkflow = await fs.readFile(path.join(root, ".github", "workflows", "npm-jq-smoke.yml"), "utf8");
+  need(smokeWorkflow.includes("scripts/smoke-npm-jq.mjs") && smokeWorkflow.includes("workflow_dispatch") && smokeWorkflow.includes("schedule:"), "published npm smoke workflow must be manually runnable and periodically scheduled");
+
   const doc = await fs.readFile(path.join(root, "docs", "NPM_DISTRIBUTION.md"), "utf8");
-  need(doc.includes("@wasm-zoo/jq") && doc.toLowerCase().includes("first publish") && doc.includes("Trusted Publisher"), "npm distribution docs must cover canary/bootstrap/trusted publishing");
+  need(doc.includes("@wasm-zoo/jq") && doc.includes("bootstrap is complete") && doc.includes("stage-only") && doc.includes("Vite"), "npm distribution docs must describe published canary, stage-only Trusted Publisher operation, and Vite smoke testing");
 } catch (error) {
   errors.push(error?.stack || String(error));
 } finally {

@@ -1,4 +1,4 @@
-name: Package / publish npm canary
+name: Package / stage npm canary
 
 on:
   workflow_dispatch:
@@ -9,11 +9,11 @@ on:
         type: choice
         options: [jq]
       mode:
-        description: Pack only, publish directly, or stage a new version of an existing package for review
+        description: Pack only, or stage a new version for maintainer review and 2FA approval
         required: true
         default: pack
         type: choice
-        options: [pack, publish, stage]
+        options: [pack, stage]
 
 permissions:
   contents: read
@@ -73,17 +73,9 @@ jobs:
             npm-work/artifacts/*.tgz
             npm-work/npm-pack.json
           retention-days: 14
-      - name: Publish public package
-        if: inputs.mode == 'publish'
-        working-directory: npm-work/package
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
-      - name: Stage new version of existing package for review
+      - name: Stage new version for maintainer review
         if: inputs.mode == 'stage'
         working-directory: npm-work/package
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm stage publish
       - name: Summary
         shell: bash
@@ -94,5 +86,11 @@ jobs:
             echo '- Package: `${{ steps.meta.outputs.npm_name }}@${{ steps.meta.outputs.npm_version }}`'
             echo '- Source release: `${{ steps.meta.outputs.tag }}` / `${{ steps.meta.outputs.asset }}`'
             echo '- Mode: `${{ inputs.mode }}`'
+            if [[ '${{ inputs.mode }}' == 'stage' ]]; then
+              echo '- Authentication: npm Trusted Publisher (OIDC), no repository npm token'
+              echo '- Publication state: staged only; maintainer 2FA approval is still required'
+            else
+              echo '- Registry write: none'
+            fi
             echo '- Existing GitHub Release assets: unchanged'
           } >> "$GITHUB_STEP_SUMMARY"

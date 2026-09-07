@@ -1,6 +1,6 @@
 # npm distribution
 
-WASM Zoo v0.12 adds npm as an optional distribution channel on top of the reviewed GitHub Release artifacts. The first canary is `@wasm-zoo/jq`.
+WASM Zoo v0.12 adds npm as an optional distribution channel on top of the reviewed GitHub Release artifacts. The first canary is the public package `@wasm-zoo/jq@0.9.0`.
 
 ## Contract
 
@@ -16,7 +16,7 @@ The npm package is not a second independent build. `scripts/prepare-npm-package.
 - the release `provenance.json`, CycloneDX SBOM and BUILDINFO;
 - WASM Zoo and upstream license notices.
 
-The npm version matches the package **Zoo builder version**, not the repository-wide WASM Zoo version. The initial jq canary is therefore `@wasm-zoo/jq@0.9.0`, backed by `jq-v0.9.0` and `jq-browser-full-1.8.2-zoo-0.9.0.zip`.
+The npm version matches the package **Zoo builder version**, not the repository-wide WASM Zoo version. The jq canary is `@wasm-zoo/jq@0.9.0`, backed by `jq-v0.9.0` and `jq-browser-full-1.8.2-zoo-0.9.0.zip`.
 
 ## Consumer usage
 
@@ -45,53 +45,53 @@ The default npm entry statically references `jq-core.js` and `jq-core.wasm` with
 
 For manual/self-hosted deployments, import `@wasm-zoo/jq/self-hosted` and use the normal Consumer API `baseUrl` contract instead.
 
-## Local/package-only validation
+## Package and live-registry validation
 
-The repository does not need jq to be rebuilt to validate the npm package contract:
+The repository can validate tarball construction without rebuilding jq:
 
 ```text
 npm run npm:check
 ```
 
-To prepare a package from an extracted reviewed release ZIP:
+The contract check creates a real `.tgz`, installs that tarball into a temporary project, and verifies the runtime, Wasm, metadata and license files under `node_modules/@wasm-zoo/jq`.
+
+The published package has a separate live-registry smoke test:
 
 ```text
-node scripts/prepare-npm-package.mjs --slug jq --input <release-directory> --output npm-work/package
-npm pack ./npm-work/package
+npm run npm:smoke:jq
 ```
 
-## Publishing workflow
+`scripts/smoke-npm-jq.mjs` creates a clean application, installs the exact `@wasm-zoo/jq` version declared by repository metadata from the public npm registry, installs pinned Vite and Playwright versions, performs a production `vite build`, verifies that a Wasm asset was emitted, serves the production output, opens it in Chromium, and executes a real jq JSON transformation. `.github/workflows/npm-jq-smoke.yml` exposes that test manually and also runs it weekly.
 
-`.github/workflows/publish-npm.yml` is manual and has three modes:
+## Publishing workflow after bootstrap
 
-- `pack` — download the immutable GitHub Release asset, generate the npm package, run the contract checks and upload the `.tgz` as a GitHub Actions artifact; no registry write occurs;
-- `publish` — perform the same checks and then run `npm publish --access public`;
-- `stage` — run `npm stage publish` for a new version when the npm package itself **already exists**, so a maintainer can approve that version separately.
+The first-package bootstrap is complete: `@wasm-zoo/jq@0.9.0` has been published, npm Trusted Publisher is configured for `ttomohisa/wasm-zoo` / `publish-npm.yml`, and the temporary long-lived npm publish token has been removed.
+
+`.github/workflows/publish-npm.yml` is now intentionally **stage-only** for registry writes. It has two modes:
+
+- `pack` — download the immutable GitHub Release asset, generate the npm package, run contract checks and upload the `.tgz` as a GitHub Actions artifact; no registry write occurs;
+- `stage` — authenticate through the npm Trusted Publisher OIDC relationship and run `npm stage publish`; the package is not public until a maintainer reviews it and approves it with 2FA on npmjs.com or with `npm stage approve`.
+
+There is no direct `npm publish` path and no `NPM_TOKEN`/`NODE_AUTH_TOKEN` dependency in the workflow. The workflow retains `id-token: write` because npm Trusted Publishing requires an OIDC token from the GitHub-hosted runner.
+
+For maximum security, the npm package publishing-access setting should require 2FA and disallow traditional tokens, while the Trusted Publisher permission should allow `npm stage publish` but not direct `npm publish`.
 
 Existing GitHub Release ZIPs are never modified.
 
-## First publish / scope bootstrap
+## Promotion interaction
 
-Staged publishing cannot create a brand-new npm package. Before the first `@wasm-zoo/jq` publish, the `@wasm-zoo` npm scope must be controlled by the maintainer and the workflow needs publish credentials for the bootstrap publish. Use a short-lived/granular `NPM_TOKEN` repository secret for that first direct publish, then remove it after trusted publishing is configured.
-
-After the package exists, configure its npm **Trusted Publisher** for:
-
-- GitHub owner: `ttomohisa`
-- repository: `wasm-zoo`
-- workflow filename: `publish-npm.yml`
-
-Allow the workflow action you intend to use (`npm publish`, `npm stage publish`, or both). The workflow already requests `id-token: write`, uses a GitHub-hosted runner and Node 24. When npm Trusted Publishing is active, npm can authenticate with OIDC instead of a long-lived token; public packages published that way receive npm provenance automatically.
+The npm version follows the jq Zoo builder version. When a future reviewed jq promotion bumps the builder version, the promotion PR updates the npm metadata as part of the reviewed change. After the corresponding immutable jq Release exists, run `Package / stage npm canary` in `pack` mode, inspect the artifact, then run it in `stage` mode. The staged package still requires an explicit maintainer approval before it becomes public.
 
 ## Canary exit criteria
 
-Do not enable the other five packages until jq has passed all of these:
+Before enabling the other five packages, jq should pass all of these:
 
-1. `pack` workflow succeeds from the immutable jq Release;
-2. the generated tarball contains the expected WASM/runtime/metadata/license files;
-3. `npm install @wasm-zoo/jq` works in a small Vite app;
-4. the production Vite build runs jq in a browser, not only the dev server;
-5. a webpack 5 fixture resolves the same assets;
-6. npm provenance/trusted publishing is configured after bootstrap;
+1. package generation starts from the immutable jq Release;
+2. generated tarballs install with the expected Wasm/runtime/metadata/license files;
+3. `@wasm-zoo/jq@0.9.0` is publicly installable from npm;
+4. Trusted Publisher is configured stage-only and long-lived publish tokens are removed;
+5. a production Vite build installs the public npm package, emits its Wasm asset and runs real jq in Chromium;
+6. npm provenance remains enabled;
 7. package size and install ergonomics are acceptable.
 
-After those gates pass, `scripts/prepare-npm-package.mjs` can be extended package-by-package without changing the Consumer API v1 contract.
+A webpack 5 compatibility fixture remains a useful follow-up before calling bundler compatibility broad rather than Vite-verified; it is not required to preserve the Consumer API v1 contract.
