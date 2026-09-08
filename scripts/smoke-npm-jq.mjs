@@ -1,9 +1,8 @@
 import fs from "node:fs/promises";
 import http from "node:http";
-import net from "node:net";
 import os from "node:os";
 import path from "node:path";
-import { spawn, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { root, readJson } from "./lib.mjs";
 
@@ -26,23 +25,9 @@ function run(args, options = {}) {
   return result;
 }
 
-async function getFreePort() {
-  return new Promise((resolve, reject) => {
-    const server = net.createServer();
-    server.unref();
-    server.on("error", reject);
-    server.listen(0, "127.0.0.1", () => {
-      const address = server.address();
-      const port = typeof address === "object" && address ? address.port : null;
-      server.close((error) => error ? reject(error) : resolve(port));
-    });
-  });
-}
-
-async function waitForHttp(url, child) {
+async function waitForHttp(url) {
   const deadline = Date.now() + 30000;
   while (Date.now() < deadline) {
-    if (child.exitCode != null) throw new Error(`Vite preview exited early with code ${child.exitCode}`);
     try {
       const response = await fetch(url, { cache: "no-store" });
       if (response.ok) return;
@@ -62,12 +47,83 @@ async function listFiles(dir, base = dir) {
   return out;
 }
 
+function contentType(file) {
+  switch (path.extname(file).toLowerCase()) {
+    case ".html": return "text/html; charset=utf-8";
+    case ".js":
+    case ".mjs": return "text/javascript; charset=utf-8";
+    case ".css": return "text/css; charset=utf-8";
+    case ".json": return "application/json; charset=utf-8";
+    case ".wasm": return "application/wasm";
+    case ".svg": return "image/svg+xml";
+    default: return "application/octet-stream";
+  }
+}
+
+async function startStaticServer(rootDir) {
+  const resolvedRoot = path.resolve(rootDir);
+  const rootPrefix = `${resolvedRoot}${path.sep}`;
+  const server = http.createServer(async (request, response) => {
+    try {
+      const requestUrl = new URL(request.url || "/", "http://127.0.0.1");
+      let pathname = decodeURIComponent(requestUrl.pathname);
+      if (pathname === "/") pathname = "/index.html";
+      const target = path.resolve(resolvedRoot, `.${pathname}`);
+      if (target !== resolvedRoot && !target.startsWith(rootPrefix)) {
+        response.writeHead(403, { "content-type": "text/plain; charset=utf-8" });
+        response.end("Forbidden\n");
+        return;
+      }
+      const stat = await fs.stat(target).catch(() => null);
+      if (!stat?.isFile()) {
+        response.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
+        response.end("Not found\n");
+        return;
+      }
+      const body = await fs.readFile(target);
+      response.writeHead(200, {
+        "content-type": contentType(target),
+        "cache-control": "no-store"
+      });
+      response.end(body);
+    } catch (error) {
+      response.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
+      response.end(`${error?.message || error}\n`);
+    }
+  });
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  const address = server.address();
+  if (!address || typeof address !== "object") throw new Error("Static smoke server did not expose a TCP address.");
+  return { server, url: `http://127.0.0.1:${address.port}/` };
+}
+
+async function closeStaticServer(server) {
+  if (!server) return;
+  await new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve();
+    };
+    const timer = setTimeout(() => {
+      server.closeAllConnections?.();
+      finish();
+    }, 2000);
+    server.close(finish);
+  });
+}
+
 const zoo = await readJson(path.join(root, "packages", "jq", "package.json"));
 const version = zoo.npm?.version;
 if (!version) throw new Error("packages/jq/package.json is missing npm.version");
 const packageSpec = process.env.WASM_ZOO_NPM_JQ_SPEC || `@wasm-zoo/jq@${version}`;
 const temp = await fs.mkdtemp(path.join(os.tmpdir(), "wasm-zoo-npm-jq-vite-"));
-let preview = null;
+let staticServer = null;
 let browser = null;
 
 try {
@@ -91,7 +147,8 @@ try {
 
   console.log("[npm-smoke] building production Vite bundle");
   run(["exec", "--", "vite", "build"], { cwd: temp });
-  const built = await listFiles(path.join(temp, "dist"));
+  const dist = path.join(temp, "dist");
+  const built = await listFiles(dist);
   if (!built.some((name) => name.endsWith(".wasm"))) throw new Error(`Vite build did not emit a Wasm asset: ${built.join(", ")}`);
 
   console.log("[npm-smoke] installing Playwright Chromium");
@@ -100,17 +157,10 @@ try {
   installArgs.push("chromium");
   run(installArgs, { cwd: temp });
 
-  const port = await getFreePort();
-  preview = spawn(npmCommand, ["exec", "--", "vite", "preview", "--host", "127.0.0.1", "--port", String(port), "--strictPort"], {
-    cwd: temp,
-    stdio: ["ignore", "pipe", "pipe"],
-    shell: false
-  });
-  let previewOutput = "";
-  preview.stdout.on("data", (chunk) => { previewOutput += chunk; });
-  preview.stderr.on("data", (chunk) => { previewOutput += chunk; });
-  const url = `http://127.0.0.1:${port}/`;
-  await waitForHttp(url, preview);
+  console.log("[npm-smoke] serving production dist with in-process Node HTTP server");
+  const served = await startStaticServer(dist);
+  staticServer = served.server;
+  await waitForHttp(served.url);
 
   const requireFromFixture = createRequire(path.join(temp, "package.json"));
   const { chromium } = requireFromFixture("playwright");
@@ -119,19 +169,16 @@ try {
   const browserLogs = [];
   page.on("console", (message) => browserLogs.push(`[console:${message.type()}] ${message.text()}`));
   page.on("pageerror", (error) => browserLogs.push(`[pageerror] ${error.stack || error}`));
-  await page.goto(url, { waitUntil: "load", timeout: 30000 });
+  await page.goto(served.url, { waitUntil: "load", timeout: 30000 });
   await page.waitForFunction(() => window.__WASM_ZOO_NPM_JQ_SMOKE__?.ok === true || window.__WASM_ZOO_NPM_JQ_SMOKE__?.ok === false, null, { timeout: 60000 });
   const result = await page.evaluate(() => window.__WASM_ZOO_NPM_JQ_SMOKE__);
   if (!result?.ok) {
-    throw new Error(`Published npm jq failed in Vite production build: ${result?.message || "unknown error"}\n${result?.stack || ""}\n${browserLogs.join("\n")}\n${previewOutput}`);
+    throw new Error(`Published npm jq failed in Vite production build: ${result?.message || "unknown error"}\n${result?.stack || ""}\n${browserLogs.join("\n")}`);
   }
   console.log(`[OK] ${packageSpec} installed from npm, built with Vite ${VITE_VERSION}, and executed jq in Chromium; stdout=${result.stdout}`);
 } finally {
   if (browser) await browser.close().catch(() => {});
-  if (preview && preview.exitCode == null) {
-    preview.kill("SIGTERM");
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    if (preview.exitCode == null) preview.kill("SIGKILL");
-  }
+  await closeStaticServer(staticServer);
   await fs.rm(temp, { recursive: true, force: true });
+  console.log("[npm-smoke] cleanup complete");
 }

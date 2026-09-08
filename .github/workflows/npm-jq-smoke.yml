@@ -2,6 +2,14 @@ name: Smoke published npm jq with Vite
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/smoke-npm-jq.mjs'
+      - 'scripts/check-npm-distribution.mjs'
+      - '.github/workflows/npm-jq-smoke.yml'
+      - 'packages/jq/package.json'
+      - 'package.json'
+      - 'VERSION'
   schedule:
     - cron: '17 3 * * 1'
 

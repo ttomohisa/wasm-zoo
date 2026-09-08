@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v0.12.0
+
+- make the live-registry Vite/Chromium smoke terminate deterministically by serving the production `dist/` from an in-process Node HTTP server instead of leaving a `vite preview` child process behind, and run that smoke on relevant pull requests before merge;
+
 - fix the jq npm canary after the production Vite smoke exposed a historical-wrapper mismatch: publish the corrected distribution as `@wasm-zoo/jq@0.9.1`, keep jq 1.8.2 / builder 0.9.0 / `jq-v0.9.0` immutable, overlay the current reviewed `browser-jq.js`, and decouple npm distribution patch versions from builder versions;
 
 - harden the v0.12 npm canary after the initial `@wasm-zoo/jq@0.9.0` bootstrap: remove direct publish/token paths, require Trusted Publisher OIDC for `npm stage publish`, and keep maintainer 2FA approval as the final registry gate;

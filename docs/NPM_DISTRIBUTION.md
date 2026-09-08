@@ -1,6 +1,6 @@
 # npm distribution
 
-WASM Zoo v0.12 adds npm as an optional distribution channel on top of the reviewed GitHub Release artifacts. The first canary started at `@wasm-zoo/jq@0.9.0`; the first npm-only packaging fix is `@wasm-zoo/jq@0.9.1`.
+WASM Zoo v0.12.0 adds npm as an optional distribution channel on top of the reviewed GitHub Release artifacts. The first canary started at `@wasm-zoo/jq@0.9.0`; the first npm-only packaging fix is `@wasm-zoo/jq@0.9.1`.
 
 ## Contract
 
@@ -61,7 +61,7 @@ The published package has a separate live-registry smoke test:
 npm run npm:smoke:jq
 ```
 
-`scripts/smoke-npm-jq.mjs` creates a clean application, installs the exact `@wasm-zoo/jq` version declared by repository metadata from the public npm registry, installs pinned Vite and Playwright versions, performs a production `vite build`, verifies that a Wasm asset was emitted, serves the production output, opens it in Chromium, and executes a real jq JSON transformation. `.github/workflows/npm-jq-smoke.yml` exposes that test manually and also runs it weekly.
+`scripts/smoke-npm-jq.mjs` creates a clean application, installs the exact `@wasm-zoo/jq` version declared by repository metadata from the public npm registry, installs pinned Vite and Playwright versions, performs a production `vite build`, verifies that a Wasm asset was emitted, serves `dist/` with an in-process Node HTTP server, opens it in Chromium, executes a real jq JSON transformation, closes Chromium/server resources and emits an explicit cleanup-complete marker. No long-lived `vite preview` child process is used. `.github/workflows/npm-jq-smoke.yml` runs this gate for relevant pull requests, remains manually runnable, and also runs weekly.
 
 ## Publishing workflow after bootstrap
 

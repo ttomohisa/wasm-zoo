@@ -78,7 +78,8 @@ try {
   const smoke = await fs.readFile(path.join(root, "scripts", "smoke-npm-jq.mjs"), "utf8");
   need(smoke.includes("@wasm-zoo/jq") && smoke.includes("vite") && smoke.includes("playwright"), "published npm smoke must install jq and exercise Vite/Playwright");
   need(smoke.includes("vite\", \"build") && smoke.includes("chromium.launch") && smoke.includes("jq.exec"), "published npm smoke must test a production Vite build in Chromium with a real jq invocation");
-  const smokeWorkflow = await fs.readFile(path.join(root, ".github", "workflows", "npm-jq-smoke.yml"), "utf8");
+  need(smoke.includes("http.createServer") && smoke.includes("cleanup complete"), "published npm smoke must serve dist in-process and explicitly complete cleanup");
+  need(!smoke.includes('"vite", "preview"') && !smoke.includes("preview.kill("), "published npm smoke must not leave a Vite preview child-process cleanup path");  const smokeWorkflow = await fs.readFile(path.join(root, ".github", "workflows", "npm-jq-smoke.yml"), "utf8");
   need(smokeWorkflow.includes("scripts/smoke-npm-jq.mjs") && smokeWorkflow.includes("workflow_dispatch") && smokeWorkflow.includes("schedule:"), "published npm smoke workflow must be manually runnable and periodically scheduled");
 
   const promotion = await fs.readFile(path.join(root, "scripts", "prepare-promotion.mjs"), "utf8");
