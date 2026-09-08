@@ -33,7 +33,17 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 | Ghostscript | 10.07.1 | 0.7.1 | `browser-full` | yes |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes |
 
-The project version is **WASM Zoo v0.11.0**. Individual package builders and release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+The project version is **WASM Zoo v0.12.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+
+### npm distribution canary
+
+jq is also available from the public npm registry as `@wasm-zoo/jq`. The current npm distribution is `@wasm-zoo/jq@0.9.1`, backed by jq 1.8.2 / Zoo builder 0.9.0 / the immutable `jq-v0.9.0` Release. npm-only wrapper fixes can advance the npm distribution version without rebuilding or rewriting that Wasm release.
+
+```text
+npm install @wasm-zoo/jq
+```
+
+Registry writes use npm Trusted Publisher OIDC with staged publishing and maintainer approval; the live-registry gate installs the public package into a clean Vite production build and executes real jq in Chromium. See [`docs/NPM_DISTRIBUTION.md`](docs/NPM_DISTRIBUTION.md).
 
 ## Release health and supply-chain metadata
 
