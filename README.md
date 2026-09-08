@@ -28,24 +28,25 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 | --- | --- | --- | --- | --- | --- |
 | FFmpeg | 9.0.1 | 0.2.7 | `browser-full`, `browser-full-gpl` | yes | planned |
 | libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes | `@wasm-zoo/libarchive@0.3.1` |
-| ImageMagick | 7.1.2-31 | 0.4.3 | `browser-full` | yes | `@wasm-zoo/imagemagick` rollout |
+| ImageMagick | 7.1.2-31 | 0.4.3 | `browser-full` | yes | `@wasm-zoo/imagemagick@0.4.3` |
 | libvips | 8.18.6 | 0.5.2 | `browser-core`, `browser-full` | yes | planned |
-| Ghostscript | 10.07.1 | 0.7.1 | `browser-full` | yes | planned |
+| Ghostscript | 10.07.1 | 0.7.1 | `browser-full` | yes | `@wasm-zoo/ghostscript` rollout |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 
 The project version is **WASM Zoo v0.12.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
 ### npm distribution rollout
 
-`@wasm-zoo/jq@0.9.1` and `@wasm-zoo/libarchive@0.3.1` have completed their public Registry + Vite/Chromium gates. `@wasm-zoo/imagemagick@0.4.3` is the third rollout target, derived from the immutable `imagemagick-v0.4.3` Release with only the reviewed npm/bundler wrappers overlaid.
+`@wasm-zoo/jq@0.9.1`, `@wasm-zoo/libarchive@0.3.1` and `@wasm-zoo/imagemagick@0.4.3` have completed their public Registry + Vite/Chromium gates. `@wasm-zoo/ghostscript@0.7.1` is the fourth rollout target, derived from the immutable `ghostscript-v0.7.1` Release while preserving the reviewed Ghostscript and third-party license notices.
 
 ```text
 npm install @wasm-zoo/jq
 npm install @wasm-zoo/libarchive
-# @wasm-zoo/imagemagick becomes installable after its one-time registry bootstrap.
+npm install @wasm-zoo/imagemagick
+# @wasm-zoo/ghostscript becomes installable after its one-time registry bootstrap.
 ```
 
-The common npm path covers package generation, real `npm pack`/install validation, Vite asset emission and Chromium smoke testing. Published packages use Trusted Publisher OIDC + staged publishing; a brand-new npm package name requires one guarded bootstrap before Trusted Publisher can be configured. See [`docs/NPM_DISTRIBUTION.md`](docs/NPM_DISTRIBUTION.md).
+The common npm path covers package generation, real `npm pack`/install validation, Vite asset emission and Chromium smoke testing. Published packages use Trusted Publisher OIDC + staged publishing; a brand-new npm package name requires one guarded bootstrap before Trusted Publisher can be configured. Ghostscript also validates recursive preservation of `THIRD-PARTY-LICENSES/`. See [`docs/NPM_DISTRIBUTION.md`](docs/NPM_DISTRIBUTION.md).
 
 ## Release health and supply-chain metadata
 

@@ -188,5 +188,58 @@
       },
       "note": "The first Zoo profile stays single-threaded for simpler deployment."
     }
-  ]
+  ],
+  "npm": {
+    "status": "canary",
+    "package": "@wasm-zoo/ghostscript",
+    "version": "0.7.1",
+    "profile": "browser-full",
+    "entry": "index.mjs",
+    "bundledAssets": true,
+    "publishWorkflow": "publish-npm.yml",
+    "runtime": {
+      "classicScript": "browser-ghostscript.js",
+      "assetMode": "single",
+      "assets": [
+        {
+          "id": "gs",
+          "coreJs": "gs-core.js",
+          "wasm": "gs-core.wasm"
+        }
+      ]
+    },
+    "packageFiles": {
+      "required": [
+        "browser-ghostscript.js",
+        "gs-core.js",
+        "gs-core.wasm",
+        "manifest.json",
+        "features.json",
+        "provenance.json",
+        "sbom.cdx.json",
+        "BUILDINFO.txt",
+        "LICENSE-Ghostscript.txt",
+        "THIRD-PARTY-LICENSES/INDEX.txt"
+      ],
+      "optional": [
+        "ghostscript-config.txt"
+      ],
+      "requiredDirs": [
+        "THIRD-PARTY-LICENSES"
+      ],
+      "optionalDirs": []
+    },
+    "docs": {
+      "description": "Unofficial WASM Zoo distribution of the Ghostscript gs CLI for browsers.",
+      "runtimeNote": "No SharedArrayBuffer or cross-origin isolation is required. Each gs command runs in an isolated Web Worker with MEMFS. The bundled Ghostscript WebAssembly binary is AGPL-3.0-or-later; review the bundled LICENSE-Ghostscript.txt and THIRD-PARTY-LICENSES/ notices before redistribution.",
+      "example": "import { load } from \"@wasm-zoo/ghostscript\";\n\nconst gs = await load();\ntry {\n  const result = await gs.exec([\n    \"-dSAFER\", \"-dBATCH\", \"-dNOPAUSE\",\n    \"-sDEVICE=png16m\", \"-r150\",\n    \"-sOutputFile=/out/page.png\", \"/input.pdf\"\n  ], {\n    files: [{ name: \"/input.pdf\", data: pdfBytes }],\n    dirs: [\"/out\"],\n    outputs: [\"/out/page.png\"]\n  });\n  console.log(result.files[0]);\n} finally {\n  gs.dispose();\n}"
+    },
+    "keywords": [
+      "ghostscript",
+      "pdf",
+      "postscript",
+      "document",
+      "conversion"
+    ]
+  }
 }

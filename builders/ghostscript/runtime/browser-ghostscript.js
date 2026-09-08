@@ -117,16 +117,17 @@
     return worker;
   };
   class GhostscriptRunner {
-    constructor({ baseUrl }) {
+    constructor({ baseUrl, coreJsUrl, wasmUrl }) {
       this.baseUrl = new URL(baseUrl, document.baseURI);
+      this.coreJsUrl = new URL(coreJsUrl || "gs-core.js", this.baseUrl).href;
+      this.wasmUrl = new URL(wasmUrl || "gs-core.wasm", this.baseUrl).href;
       this.wasm = null;
       this.disposed = false;
     }
     async load() {
       assertSupported();
       if (this.wasm) return;
-      const url = new URL(`gs-core.wasm`, this.baseUrl);
-      const response = await fetch(url);
+      const response = await fetch(this.wasmUrl);
       if (!response.ok) throw new Error(`Failed to load Ghostscript WASM: ${response.status} ${response.statusText}`);
       this.wasm = await response.arrayBuffer();
     }
@@ -196,7 +197,7 @@
           rejectOnce(event.error instanceof Error ? event.error : new Error(detail || "Ghostscript worker failed."));
         };
         worker.postMessage({
-          coreJsUrl: new URL(`gs-core.js`, this.baseUrl).href,
+          coreJsUrl: this.coreJsUrl,
           wasmBytes,
           args: [...args],
           files,
@@ -209,7 +210,7 @@
     dispose() { this.disposed = true; this.wasm = null; }
   }
   window.WasmZooGhostscript = Object.freeze({
-    loadHosted: ({ baseUrl }) => new GhostscriptRunner({ baseUrl }),
+    loadHosted: ({ baseUrl, coreJsUrl, wasmUrl }) => new GhostscriptRunner({ baseUrl, coreJsUrl, wasmUrl }),
     isSupported: () => typeof Worker !== "undefined" && typeof WebAssembly !== "undefined"
   });
 })();
