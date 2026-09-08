@@ -89,26 +89,32 @@ function generateEntry() {
       'import { API_VERSION, packageInfo, isSupported, load as loadSelfHosted } from "./wasm-zoo.mjs";',
       "",
       "export { API_VERSION, packageInfo, isSupported };",
+      `export const distributionProfile = ${JSON.stringify(profile)};`,
       "export const assets = Object.freeze({",
       `  coreJsUrl: new URL("./${asset.coreJs}", import.meta.url).href,`,
       `  wasmUrl: new URL("./${asset.wasm}", import.meta.url).href`,
       "});",
       "",
       "export async function load(options = {}) {",
+      "  if (options.profile && options.profile !== distributionProfile) {",
+      `    throw new RangeError(${JSON.stringify(npm.package)} + " bundles only " + distributionProfile + "; requested " + options.profile);`,
+      "  }",
       "  return loadSelfHosted({",
       "    ...options,",
+      "    profile: distributionProfile,",
       "    coreJsUrl: options.coreJsUrl || assets.coreJsUrl,",
       "    wasmUrl: options.wasmUrl || assets.wasmUrl",
       "  });",
       "}",
       "",
-      "export default Object.freeze({ API_VERSION, packageInfo, isSupported, assets, load });"
+      "export default Object.freeze({ API_VERSION, packageInfo, isSupported, distributionProfile, assets, load });"
     );
   } else {
     lines.push(
       'import { API_VERSION, TOOLS, packageInfo, isSupported, load as loadSelfHosted } from "./wasm-zoo.mjs";',
       "",
       "export { API_VERSION, TOOLS, packageInfo, isSupported };",
+      `export const distributionProfile = ${JSON.stringify(profile)};`,
       "export const assets = Object.freeze({"
     );
     assets.forEach((asset, index) => {
@@ -123,13 +129,17 @@ function generateEntry() {
       "});",
       "",
       "export async function load(options = {}) {",
+      "  if (options.profile && options.profile !== distributionProfile) {",
+      `    throw new RangeError(${JSON.stringify(npm.package)} + " bundles only " + distributionProfile + "; requested " + options.profile);`,
+      "  }",
       "  return loadSelfHosted({",
       "    ...options,",
+      "    profile: distributionProfile,",
       "    toolAssets: options.toolAssets || assets",
       "  });",
       "}",
       "",
-      "export default Object.freeze({ API_VERSION, TOOLS, packageInfo, isSupported, assets, load });"
+      "export default Object.freeze({ API_VERSION, TOOLS, packageInfo, isSupported, distributionProfile, assets, load });"
     );
   }
   return `${lines.join("\n")}\n`;
