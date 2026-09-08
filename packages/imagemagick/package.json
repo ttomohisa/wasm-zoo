@@ -200,7 +200,7 @@
     }
   ],
   "npm": {
-    "status": "canary",
+    "status": "published",
     "package": "@wasm-zoo/imagemagick",
     "version": "0.4.3",
     "profile": "browser-full",

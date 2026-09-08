@@ -81,6 +81,8 @@ for (const pkg of packages) {
       if (pkg.npm?.runtime?.assetMode === "single") assert(pkg.npm.runtime.assets.length === 1, `${at}: single npm runtime must declare exactly one asset pair`);
       assert(Array.isArray(pkg.npm?.packageFiles?.required) && pkg.npm.packageFiles.required.length > 0, `${at}: npm.packageFiles.required must be non-empty`);
       assert(Array.isArray(pkg.npm?.packageFiles?.optional), `${at}: npm.packageFiles.optional must be an array`);
+      if (pkg.npm?.packageFiles?.requiredDirs !== undefined) assert(Array.isArray(pkg.npm.packageFiles.requiredDirs) && pkg.npm.packageFiles.requiredDirs.every((dir) => typeof dir === "string" && dir.length > 0), `${at}: npm.packageFiles.requiredDirs must be a string array`);
+      if (pkg.npm?.packageFiles?.optionalDirs !== undefined) assert(Array.isArray(pkg.npm.packageFiles.optionalDirs) && pkg.npm.packageFiles.optionalDirs.every((dir) => typeof dir === "string" && dir.length > 0), `${at}: npm.packageFiles.optionalDirs must be a string array`);
     }
     if (pkg.release) {
       assert(typeof pkg.release.tag === "string" && pkg.release.tag.length > 0, `${at}: release.tag is required when release metadata is present`);

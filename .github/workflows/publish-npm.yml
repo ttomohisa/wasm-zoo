@@ -7,7 +7,7 @@ on:
         description: npm distribution package
         required: true
         type: choice
-        options: [jq, libarchive, imagemagick]
+        options: [jq, libarchive, imagemagick, ghostscript]
       mode:
         description: Pack only, bootstrap a brand-new package, or stage a new version
         required: true

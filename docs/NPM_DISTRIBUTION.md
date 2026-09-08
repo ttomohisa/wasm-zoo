@@ -1,6 +1,6 @@
 # npm distribution
 
-WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`. The v0.13 rollout generalizes that canary infrastructure so additional Zoo packages can be distributed from the same reviewed GitHub Release assets. The second package is `@wasm-zoo/libarchive`; the third rollout target is `@wasm-zoo/imagemagick`.
+WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`. The v0.13 rollout generalizes that canary infrastructure so additional Zoo packages can be distributed from the same reviewed GitHub Release assets. The second package is `@wasm-zoo/libarchive`; ImageMagick completed the third rollout, and the fourth rollout target is `@wasm-zoo/ghostscript`.
 
 ## Distribution contract
 
@@ -16,11 +16,12 @@ Historical GitHub Release assets are never rewritten. npm-only wrapper/package c
 
 | npm package | npm version | upstream | Zoo builder | source Release | state |
 | --- | ---: | ---: | ---: | --- | --- |
-| `@wasm-zoo/jq` | `0.9.1` | jq 1.8.2 | `0.9.0` | `jq-v0.9.0` | public canary |
+| `@wasm-zoo/jq` | `0.9.1` | jq 1.8.2 | `0.9.0` | `jq-v0.9.0` | published |
 | `@wasm-zoo/libarchive` | `0.3.1` | libarchive 3.8.9 | `0.3.1` | `libarchive-v0.3.1` | published |
-| `@wasm-zoo/imagemagick` | `0.4.3` | ImageMagick 7.1.2-31 | `0.4.3` | `imagemagick-v0.4.3` | rollout canary |
+| `@wasm-zoo/imagemagick` | `0.4.3` | ImageMagick 7.1.2-31 | `0.4.3` | `imagemagick-v0.4.3` | published |
+| `@wasm-zoo/ghostscript` | `0.7.1` | Ghostscript 10.07.1 | `0.7.1` | `ghostscript-v0.7.1` | rollout canary |
 
-jq and libarchive have completed their Registry + Vite/Chromium gates. ImageMagick now exercises the same generic single-core path before the remaining packages are added.
+jq, libarchive and ImageMagick have completed their Registry + Vite/Chromium gates. Ghostscript is the fourth rollout canary and adds the first npm contract that must preserve a reviewed third-party-license directory recursively.
 
 ## Consumer usage
 
@@ -92,12 +93,40 @@ try {
 
 The npm distribution keeps the reviewed browser-full PNG/JPEG-focused feature set and does not add delegates that are absent from the immutable ImageMagick Release.
 
+### Ghostscript
+
+```bash
+npm install @wasm-zoo/ghostscript
+```
+
+```js
+import { load } from "@wasm-zoo/ghostscript";
+
+const gs = await load();
+try {
+  const result = await gs.exec([
+    "-dSAFER", "-dBATCH", "-dNOPAUSE",
+    "-sDEVICE=pdfwrite", "-sOutputFile=/out/output.pdf", "/input.ps"
+  ], {
+    files: [{ name: "/input.ps", data: postScriptBytes }],
+    dirs: ["/out"],
+    outputs: ["/out/output.pdf"]
+  });
+  console.log(result.files[0]);
+} finally {
+  gs.dispose();
+}
+```
+
+Ghostscript's WebAssembly binary is AGPL-3.0-or-later. The npm package preserves `LICENSE-Ghostscript.txt` and the complete reviewed `THIRD-PARTY-LICENSES/` directory from the immutable Release; consumers should review those notices before redistribution.
+
 ## Bundler asset handling
 
 The npm entry uses static `new URL(..., import.meta.url)` expressions for every core JavaScript/Wasm pair so modern bundlers can emit hashed production assets.
 
-- jq and ImageMagick each forward one emitted `coreJsUrl` / `wasmUrl` pair into Consumer API v1.
+- jq, ImageMagick and Ghostscript each forward one emitted `coreJsUrl` / `wasmUrl` pair into Consumer API v1.
 - libarchive exports a per-tool asset map and forwards it as `toolAssets`, allowing each CLI Worker to use the actual emitted `*-core.js` and `*-core.wasm` URL instead of assuming unhashed filenames.
+- Ghostscript also exercises recursive immutable-Release directory copying so the complete `THIRD-PARTY-LICENSES/` tree is retained in the npm tarball.
 
 This is the same class of issue caught by the initial jq Vite production smoke, so the multi-tool libarchive wrapper is designed to avoid repeating that failure mode.
 
@@ -126,6 +155,7 @@ The generic live smoke is:
 npm run npm:smoke -- --slug jq
 npm run npm:smoke -- --slug libarchive
 npm run npm:smoke -- --slug imagemagick
+npm run npm:smoke -- --slug ghostscript
 ```
 
 or the convenience scripts:
@@ -134,13 +164,14 @@ or the convenience scripts:
 npm run npm:smoke:jq
 npm run npm:smoke:libarchive
 npm run npm:smoke:imagemagick
+npm run npm:smoke:ghostscript
 ```
 
 `scripts/smoke-npm-package.mjs` installs the exact public npm distribution into a clean app, uses pinned Vite and Playwright versions, performs a production build, checks the emitted Wasm asset count, serves `dist/` with an in-process Node HTTP server, executes the package in Chromium, closes browser/server resources, and emits an explicit cleanup marker.
 
-The jq fixture performs a real JSON transformation. The libarchive fixture creates a TAR in the browser, extracts it with `bsdtar`, and verifies the returned file bytes. The ImageMagick fixture creates a PPM image in the browser, resizes it with the real `magick` CLI, writes PNG, then validates its PNG signature and 2×2 IHDR dimensions.
+The jq fixture performs a real JSON transformation. The libarchive fixture creates a TAR in the browser, extracts it with `bsdtar`, and verifies the returned file bytes. The ImageMagick fixture creates a PPM image in the browser, resizes it with the real `magick` CLI, writes PNG, then validates its PNG signature and 2×2 IHDR dimensions. The Ghostscript fixture generates PostScript in-browser, converts it to PDF with the real `pdfwrite` device, and validates `%PDF-` / `%%EOF` framing.
 
-`.github/workflows/npm-package-smoke.yml` is manually selectable between jq, libarchive and ImageMagick. Pull-request and scheduled live-registry runs stay on the stable published jq package; a new rollout package is run manually immediately after its first registry bootstrap before it is promoted from `canary` to `published`.
+`.github/workflows/npm-package-smoke.yml` is manually selectable between jq, libarchive, ImageMagick and Ghostscript. Pull-request and scheduled live-registry runs stay on the stable published jq package; a new rollout package is run manually immediately after its first registry bootstrap before it is promoted from `canary` to `published`.
 
 ## Publishing workflow
 
@@ -182,8 +213,8 @@ The intended order is:
 
 1. jq — completed canary;
 2. libarchive — completed generic multi-tool CLI rollout;
-3. ImageMagick — current single-core CLI rollout;
-4. Ghostscript;
+3. ImageMagick — completed single-core image CLI rollout;
+4. Ghostscript — current single-core document CLI canary;
 5. libvips — library API case;
 6. FFmpeg — multi-profile / pthread / SharedArrayBuffer case.
 

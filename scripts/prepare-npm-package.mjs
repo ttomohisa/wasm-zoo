@@ -37,6 +37,8 @@ for (const asset of assets) {
 const packageFiles = npm.packageFiles || {};
 const required = Array.isArray(packageFiles.required) ? packageFiles.required : [];
 const optional = Array.isArray(packageFiles.optional) ? packageFiles.optional : [];
+const requiredDirs = Array.isArray(packageFiles.requiredDirs) ? packageFiles.requiredDirs : [];
+const optionalDirs = Array.isArray(packageFiles.optionalDirs) ? packageFiles.optionalDirs : [];
 if (!required.length) throw new Error(`${args.slug} npm.packageFiles.required is empty`);
 
 const input = path.resolve(args.input);
@@ -44,6 +46,10 @@ const output = path.resolve(args.output);
 for (const rel of required) {
   const stat = await fs.stat(path.join(input, rel)).catch(() => null);
   if (!stat?.isFile()) throw new Error(`Missing npm package input: ${rel}`);
+}
+for (const rel of requiredDirs) {
+  const stat = await fs.stat(path.join(input, rel)).catch(() => null);
+  if (!stat?.isDirectory()) throw new Error(`Missing npm package input directory: ${rel}`);
 }
 
 await fs.rm(output, { recursive: true, force: true });
@@ -55,6 +61,13 @@ for (const rel of [...required, ...optional]) {
   const dst = path.join(output, rel);
   await fs.mkdir(path.dirname(dst), { recursive: true });
   await fs.copyFile(src, dst);
+}
+for (const rel of [...requiredDirs, ...optionalDirs]) {
+  const src = path.join(input, rel);
+  const stat = await fs.stat(src).catch(() => null);
+  if (!stat?.isDirectory()) continue;
+  const dst = path.join(output, rel);
+  await fs.cp(src, dst, { recursive: true });
 }
 
 // Release binary/core assets remain immutable. Distribution wrappers are overlaid from
@@ -126,7 +139,7 @@ await fs.writeFile(path.join(output, npm.entry || "index.mjs"), generateEntry())
 const license = `WASM Zoo npm distribution notice\n\n` +
   `The WASM Zoo wrapper/integration code is licensed under the MIT License; see LICENSE.wasm-zoo.txt.\n\n` +
   `The bundled ${pkg.name} WebAssembly distribution contains upstream software under its own licenses.\n` +
-  `Upstream and linked-component notices are retained under LICENSES/.\n` +
+  `Upstream and linked-component notices from the reviewed Release are bundled alongside this file.\n` +
   `Build metadata, provenance and SBOM files from the reviewed immutable Release are included in this package.\n`;
 await fs.writeFile(path.join(output, "LICENSE"), license);
 
@@ -158,10 +171,16 @@ for (const rel of [...required, ...optional]) {
   const stat = await fs.stat(path.join(output, rel)).catch(() => null);
   if (stat?.isFile()) copied.push(rel);
 }
+const copiedDirs = [];
+for (const rel of [...requiredDirs, ...optionalDirs]) {
+  const stat = await fs.stat(path.join(output, rel)).catch(() => null);
+  if (stat?.isDirectory()) copiedDirs.push(rel);
+}
 const files = [...new Set([
   npm.entry || "index.mjs",
   "wasm-zoo.mjs",
   ...copied,
+  ...copiedDirs,
   "LICENSE",
   "LICENSE.wasm-zoo.txt",
   "README.md"

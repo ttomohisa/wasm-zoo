@@ -89,7 +89,11 @@ export async function load(options = {}) {
   if (!isSupported()) throw new Error("Ghostscript Consumer API is not supported in this browser context. Required: " + packageInfo.requires.join(", ") + ".");
   const baseUrl = resolveBaseUrl(options.baseUrl);
   const legacy = await ensureLegacy(baseUrl);
-  const runner = legacy.loadHosted({ baseUrl: baseUrl.href });
+  const runner = legacy.loadHosted({
+    baseUrl: baseUrl.href,
+    coreJsUrl: options.coreJsUrl ? new URL(options.coreJsUrl, baseUrl).href : undefined,
+    wasmUrl: options.wasmUrl ? new URL(options.wasmUrl, baseUrl).href : undefined
+  });
   if (typeof runner.load === "function") await runner.load();
   return createRuntime(runner, options.profile || packageInfo.defaultProfile);
 }
