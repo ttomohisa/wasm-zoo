@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-- generalize the npm distribution generator and contract checks from the jq-only canary into package metadata-driven infrastructure shared by multiple Zoo packages;
+- add `@wasm-zoo/imagemagick@0.4.3` as the third npm rollout canary, deriving its binary/core/metadata payload from immutable `imagemagick-v0.4.3` while overlaying the reviewed browser/Consumer API/bundler wrappers;
+- make the ImageMagick browser wrapper honor bundler-emitted `magick-core.js` / `magick-core.wasm` URLs and add a real Vite/Chromium resize-to-PNG smoke that validates the output signature and dimensions;
+- promote jq and libarchive npm metadata to `published` after their Registry + production-browser gates, while keeping ImageMagick `canary` until its bootstrap and live smoke pass;- generalize the npm distribution generator and contract checks from the jq-only canary into package metadata-driven infrastructure shared by multiple Zoo packages;
 - add `@wasm-zoo/libarchive@0.3.1` as the second npm rollout canary, bundling all four reviewed libarchive CLI cores and forwarding bundler-emitted per-tool JavaScript/Wasm URLs through Consumer API v1;
 - add a guarded `bootstrap` mode for brand-new npm package names, while retaining Trusted Publisher OIDC + staged publishing for every version after the first package creation;
 - replace the jq-specific live npm smoke harness with a reusable Vite/Chromium smoke runner and add a real in-browser `bsdtar` extraction fixture for libarchive;

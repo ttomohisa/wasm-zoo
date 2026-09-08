@@ -117,16 +117,17 @@
     return worker;
   };
   class ImageMagickRunner {
-    constructor({ baseUrl }) {
+    constructor({ baseUrl, coreJsUrl, wasmUrl }) {
       this.baseUrl = new URL(baseUrl, document.baseURI);
+      this.coreJsUrl = new URL(coreJsUrl || "magick-core.js", this.baseUrl).href;
+      this.wasmUrl = new URL(wasmUrl || "magick-core.wasm", this.baseUrl).href;
       this.wasm = null;
       this.disposed = false;
     }
     async load() {
       assertSupported();
       if (this.wasm) return;
-      const url = new URL(`magick-core.wasm`, this.baseUrl);
-      const response = await fetch(url);
+      const response = await fetch(this.wasmUrl);
       if (!response.ok) throw new Error(`Failed to load ImageMagick WASM: ${response.status} ${response.statusText}`);
       this.wasm = await response.arrayBuffer();
     }
@@ -196,7 +197,7 @@
           rejectOnce(event.error instanceof Error ? event.error : new Error(detail || "ImageMagick worker failed."));
         };
         worker.postMessage({
-          coreJsUrl: new URL(`magick-core.js`, this.baseUrl).href,
+          coreJsUrl: this.coreJsUrl,
           wasmBytes,
           args: [...args],
           files,
@@ -209,7 +210,7 @@
     dispose() { this.disposed = true; this.wasm = null; }
   }
   window.WasmZooImageMagick = Object.freeze({
-    loadHosted: ({ baseUrl }) => new ImageMagickRunner({ baseUrl }),
+    loadHosted: ({ baseUrl, coreJsUrl, wasmUrl }) => new ImageMagickRunner({ baseUrl, coreJsUrl, wasmUrl }),
     isSupported: () => typeof Worker !== "undefined" && typeof WebAssembly !== "undefined"
   });
 })();

@@ -6,7 +6,7 @@ import { root, readJson } from "./lib.mjs";
 
 const errors = [];
 const need = (condition, message) => { if (!condition) errors.push(message); };
-const npmSlugs = ["jq", "libarchive"];
+const npmSlugs = ["jq", "libarchive", "imagemagick"];
 
 function spawnDirect(command, args, options = {}) {
   return spawnSync(command, args, {
@@ -115,7 +115,8 @@ try {
   }
 
   const workflow = await fs.readFile(path.join(root, ".github", "workflows", "publish-npm.yml"), "utf8");
-  need(workflow.includes("options: [jq, libarchive]"), "npm distribution workflow must expose jq and libarchive");
+  need(workflow.includes("options: [jq, libarchive, imagemagick]"), "npm distribution workflow must expose jq, libarchive and imagemagick");
+  need(workflow.includes("['canary', 'published'].includes(pkg.npm.status)"), "npm distribution workflow must accept both canary and published npm packages");
   need(workflow.includes("options: [pack, bootstrap, stage]"), "npm distribution workflow must expose pack/bootstrap/stage during package rollout");
   need(workflow.includes("id-token: write"), "npm distribution workflow must request OIDC id-token permission");
   need(workflow.includes("npm stage publish"), "npm distribution workflow must support staged publishing for existing packages");
@@ -125,20 +126,26 @@ try {
   need(workflow.includes("gh release download"), "npm workflow must package immutable GitHub Release assets");
 
   const smoke = await fs.readFile(path.join(root, "scripts", "smoke-npm-package.mjs"), "utf8");
-  need(smoke.includes("jq:") && smoke.includes("libarchive:"), "generic npm smoke must have jq and libarchive fixtures");
+  need(smoke.includes("jq:") && smoke.includes("libarchive:") && smoke.includes("imagemagick:"), "generic npm smoke must have jq, libarchive and ImageMagick fixtures");
   need(smoke.includes("vite") && smoke.includes("playwright") && smoke.includes("chromium.launch"), "generic npm smoke must exercise Vite/Playwright/Chromium");
   need(smoke.includes("http.createServer") && smoke.includes("cleanup complete"), "generic npm smoke must serve dist in-process and explicitly complete cleanup");
   need(!smoke.includes('"vite", "preview"') && !smoke.includes("preview.kill("), "generic npm smoke must not use a Vite preview child process");
   need(smoke.includes("makeTar") && smoke.includes('tool: "bsdtar"'), "libarchive live smoke must perform a real bsdtar archive operation");
+  need(smoke.includes("output.png") && smoke.includes("PNG signature") && smoke.includes("readU32BE"), "ImageMagick live smoke must perform a real resize and validate emitted PNG bytes");
   const smokeWorkflow = await fs.readFile(path.join(root, ".github", "workflows", "npm-package-smoke.yml"), "utf8");
-  need(smokeWorkflow.includes("options: [jq, libarchive]") && smokeWorkflow.includes("scripts/smoke-npm-package.mjs"), "generic npm smoke workflow must expose jq/libarchive selection");
+  need(smokeWorkflow.includes("options: [jq, libarchive, imagemagick]") && smokeWorkflow.includes("scripts/smoke-npm-package.mjs"), "generic npm smoke workflow must expose jq/libarchive/ImageMagick selection");
 
   const promotion = await fs.readFile(path.join(root, "scripts", "prepare-promotion.mjs"), "utf8");
   need(!promotion.includes("pkg.npm.version = newBuilder"), "promotion must not couple npm package versions back to builder versions");
   need(promotion.includes("pkg.npm.version = newNpmVersion"), "promotion must independently patch-bump npm distribution versions");
 
   const doc = await fs.readFile(path.join(root, "docs", "NPM_DISTRIBUTION.md"), "utf8");
-  need(doc.includes("@wasm-zoo/jq") && doc.includes("@wasm-zoo/libarchive"), "npm distribution docs must cover jq and libarchive");
+  need(doc.includes("@wasm-zoo/jq") && doc.includes("@wasm-zoo/libarchive") && doc.includes("@wasm-zoo/imagemagick"), "npm distribution docs must cover jq, libarchive and ImageMagick");
+  const jqMeta = await readJson(path.join(root, "packages", "jq", "package.json"));
+  const libarchiveMeta = await readJson(path.join(root, "packages", "libarchive", "package.json"));
+  const imagemagickMeta = await readJson(path.join(root, "packages", "imagemagick", "package.json"));
+  need(jqMeta.npm?.status === "published" && libarchiveMeta.npm?.status === "published", "jq and libarchive must be marked published after registry + browser gates pass");
+  need(imagemagickMeta.npm?.status === "canary", "ImageMagick must remain canary until its bootstrap + live smoke complete");
   need(doc.includes("NPM_BOOTSTRAP_TOKEN") && doc.includes("brand-new"), "npm docs must explain temporary brand-new-package bootstrap credentials");
 } catch (error) {
   errors.push(error?.stack || String(error));

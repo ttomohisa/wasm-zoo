@@ -1,6 +1,6 @@
 # npm distribution
 
-WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`. The v0.13 rollout generalizes that canary infrastructure so additional Zoo packages can be distributed from the same reviewed GitHub Release assets. The second package is `@wasm-zoo/libarchive`.
+WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`. The v0.13 rollout generalizes that canary infrastructure so additional Zoo packages can be distributed from the same reviewed GitHub Release assets. The second package is `@wasm-zoo/libarchive`; the third rollout target is `@wasm-zoo/imagemagick`.
 
 ## Distribution contract
 
@@ -17,9 +17,10 @@ Historical GitHub Release assets are never rewritten. npm-only wrapper/package c
 | npm package | npm version | upstream | Zoo builder | source Release | state |
 | --- | ---: | ---: | ---: | --- | --- |
 | `@wasm-zoo/jq` | `0.9.1` | jq 1.8.2 | `0.9.0` | `jq-v0.9.0` | public canary |
-| `@wasm-zoo/libarchive` | `0.3.1` | libarchive 3.8.9 | `0.3.1` | `libarchive-v0.3.1` | rollout canary |
+| `@wasm-zoo/libarchive` | `0.3.1` | libarchive 3.8.9 | `0.3.1` | `libarchive-v0.3.1` | published |
+| `@wasm-zoo/imagemagick` | `0.4.3` | ImageMagick 7.1.2-31 | `0.4.3` | `imagemagick-v0.4.3` | rollout canary |
 
-The remaining packages are added only after the common packaging/staging/live-smoke path remains stable.
+jq and libarchive have completed their Registry + Vite/Chromium gates. ImageMagick now exercises the same generic single-core path before the remaining packages are added.
 
 ## Consumer usage
 
@@ -67,11 +68,35 @@ try {
 
 `libarchive` exposes the four published upstream CLI entry points through `load({ tool })`: `bsdtar`, `bsdcpio`, `bsdcat`, and `bsdunzip`.
 
+### ImageMagick
+
+```bash
+npm install @wasm-zoo/imagemagick
+```
+
+```js
+import { load } from "@wasm-zoo/imagemagick";
+
+const magick = await load();
+try {
+  const result = await magick.exec(["/input.png", "-resize", "640x640>", "/out/output.jpg"], {
+    files: [{ name: "/input.png", data: inputBytes }],
+    dirs: ["/out"],
+    outputs: ["/out/output.jpg"]
+  });
+  console.log(result.files[0]);
+} finally {
+  magick.dispose();
+}
+```
+
+The npm distribution keeps the reviewed browser-full PNG/JPEG-focused feature set and does not add delegates that are absent from the immutable ImageMagick Release.
+
 ## Bundler asset handling
 
 The npm entry uses static `new URL(..., import.meta.url)` expressions for every core JavaScript/Wasm pair so modern bundlers can emit hashed production assets.
 
-- jq forwards one emitted `coreJsUrl` / `wasmUrl` pair into Consumer API v1.
+- jq and ImageMagick each forward one emitted `coreJsUrl` / `wasmUrl` pair into Consumer API v1.
 - libarchive exports a per-tool asset map and forwards it as `toolAssets`, allowing each CLI Worker to use the actual emitted `*-core.js` and `*-core.wasm` URL instead of assuming unhashed filenames.
 
 This is the same class of issue caught by the initial jq Vite production smoke, so the multi-tool libarchive wrapper is designed to avoid repeating that failure mode.
@@ -100,6 +125,7 @@ The generic live smoke is:
 ```text
 npm run npm:smoke -- --slug jq
 npm run npm:smoke -- --slug libarchive
+npm run npm:smoke -- --slug imagemagick
 ```
 
 or the convenience scripts:
@@ -107,13 +133,14 @@ or the convenience scripts:
 ```text
 npm run npm:smoke:jq
 npm run npm:smoke:libarchive
+npm run npm:smoke:imagemagick
 ```
 
 `scripts/smoke-npm-package.mjs` installs the exact public npm distribution into a clean app, uses pinned Vite and Playwright versions, performs a production build, checks the emitted Wasm asset count, serves `dist/` with an in-process Node HTTP server, executes the package in Chromium, closes browser/server resources, and emits an explicit cleanup marker.
 
-The jq fixture performs a real JSON transformation. The libarchive fixture creates a TAR in the browser, extracts it with `bsdtar`, and verifies the returned file bytes.
+The jq fixture performs a real JSON transformation. The libarchive fixture creates a TAR in the browser, extracts it with `bsdtar`, and verifies the returned file bytes. The ImageMagick fixture creates a PPM image in the browser, resizes it with the real `magick` CLI, writes PNG, then validates its PNG signature and 2×2 IHDR dimensions.
 
-`.github/workflows/npm-package-smoke.yml` is manually selectable between jq and libarchive. Until libarchive completes its first registry bootstrap, pull-request and scheduled live-registry runs stay on the already-public jq package; after bootstrap, libarchive is run manually before its rollout is accepted.
+`.github/workflows/npm-package-smoke.yml` is manually selectable between jq, libarchive and ImageMagick. Pull-request and scheduled live-registry runs stay on the stable published jq package; a new rollout package is run manually immediately after its first registry bootstrap before it is promoted from `canary` to `published`.
 
 ## Publishing workflow
 
@@ -154,8 +181,8 @@ npm distribution versions are independent from Zoo builder versions. A package-o
 The intended order is:
 
 1. jq — completed canary;
-2. libarchive — generic multi-tool CLI canary;
-3. ImageMagick;
+2. libarchive — completed generic multi-tool CLI rollout;
+3. ImageMagick — current single-core CLI rollout;
 4. Ghostscript;
 5. libvips — library API case;
 6. FFmpeg — multi-profile / pthread / SharedArrayBuffer case.

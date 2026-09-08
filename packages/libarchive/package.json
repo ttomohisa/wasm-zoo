@@ -193,7 +193,7 @@
     }
   ],
   "npm": {
-    "status": "canary",
+    "status": "published",
     "package": "@wasm-zoo/libarchive",
     "version": "0.3.1",
     "profile": "browser-full",

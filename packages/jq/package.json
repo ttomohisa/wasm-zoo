@@ -174,7 +174,7 @@
     }
   ],
   "npm": {
-    "status": "canary",
+    "status": "published",
     "package": "@wasm-zoo/jq",
     "version": "0.9.1",
     "profile": "browser-full",
