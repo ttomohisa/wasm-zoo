@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- generalize the npm distribution generator and contract checks from the jq-only canary into package metadata-driven infrastructure shared by multiple Zoo packages;
+- add `@wasm-zoo/libarchive@0.3.1` as the second npm rollout canary, bundling all four reviewed libarchive CLI cores and forwarding bundler-emitted per-tool JavaScript/Wasm URLs through Consumer API v1;
+- add a guarded `bootstrap` mode for brand-new npm package names, while retaining Trusted Publisher OIDC + staged publishing for every version after the first package creation;
+- replace the jq-specific live npm smoke harness with a reusable Vite/Chromium smoke runner and add a real in-browser `bsdtar` extraction fixture for libarchive;
+
 ## v0.12.0
 
 - make the live-registry Vite/Chromium smoke terminate deterministically by serving the production `dist/` from an in-process Node HTTP server instead of leaving a `vite preview` child process behind, and run that smoke on relevant pull requests before merge;

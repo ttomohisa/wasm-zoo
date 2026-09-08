@@ -35,13 +35,21 @@ Each row contains `native`, a `profiles` object keyed by profile id, and an expl
 
 `npm` is optional and means the reviewed package also has an npm distribution contract. While a package is being proven, use `status: canary`; move it to `published` only after the registry package and browser/bundler gates are confirmed.
 
-Required npm fields are:
+Core fields:
 
 - `package` — scoped package name under `@wasm-zoo/`;
-- `version` — must match `zoo.builderVersion` so the npm artifact identifies the same Zoo distribution revision;
-- `profile` — one existing published profile whose immutable GitHub Release ZIP supplies the binary assets;
-- `entry` — currently `index.mjs` for the bundler-aware entry;
-- `bundledAssets` — must be `true`; npm packages must not silently fetch their core WASM from a third-party CDN;
+- `version` — independent npm distribution semver; it may patch-bump for wrapper/package fixes without changing the Zoo builder or immutable Release;
+- `profile` — one published profile whose immutable GitHub Release ZIP supplies the binary assets;
+- `entry` — bundler-aware ESM entry, currently `index.mjs`;
+- `bundledAssets` — must be `true`; core WASM/runtime assets ship inside the npm package;
 - `publishWorkflow` — currently `publish-npm.yml`.
 
-Automatic upstream promotion must bump `npm.version` together with the builder version. Existing GitHub Release assets remain immutable; npm packaging is a separate distribution step derived from the declared release asset.
+`npm.runtime` describes how the reviewed browser wrapper maps bundler-emitted assets back into Consumer API v1:
+
+- `classicScript` — current reviewed `browser-*.js` wrapper overlaid onto the immutable Release payload;
+- `assetMode` — `single` for one core pair or `tool-map` for packages such as libarchive with multiple CLI cores;
+- `assets` — ids plus `coreJs` / `wasm` filenames that the generated `index.mjs` references with static `new URL(..., import.meta.url)` expressions.
+
+`npm.packageFiles.required` and `.optional` declare which files are copied from the immutable Release into the npm package. The generator overlays only the current reviewed wrapper/Consumer API/bundler entry; the native/Wasm core, provenance, SBOM and other release metadata remain derived from the declared immutable Release asset.
+
+Automatic upstream promotion patch-bumps `npm.version` independently rather than assigning the builder version directly, so an npm semver is never reused when packaging and builder release histories diverge.

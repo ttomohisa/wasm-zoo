@@ -180,6 +180,42 @@
     "profile": "browser-full",
     "entry": "index.mjs",
     "bundledAssets": true,
-    "publishWorkflow": "publish-npm.yml"
+    "publishWorkflow": "publish-npm.yml",
+    "runtime": {
+      "classicScript": "browser-jq.js",
+      "assetMode": "single",
+      "assets": [
+        {
+          "id": "jq",
+          "coreJs": "jq-core.js",
+          "wasm": "jq-core.wasm"
+        }
+      ]
+    },
+    "packageFiles": {
+      "required": [
+        "browser-jq.js",
+        "jq-core.js",
+        "jq-core.wasm",
+        "manifest.json",
+        "features.json",
+        "provenance.json",
+        "sbom.cdx.json",
+        "BUILDINFO.txt",
+        "LICENSES/jq-COPYING.txt",
+        "LICENSES/oniguruma-COPYING.txt"
+      ],
+      "optional": [
+        "jq-config.txt"
+      ]
+    },
+    "docs": {
+      "description": "Unofficial WASM Zoo distribution of jq for browsers.",
+      "runtimeNote": "No SharedArrayBuffer or cross-origin isolation is required. Execution uses a Web Worker and MEMFS.",
+      "example": "import { load } from \"@wasm-zoo/jq\";\n\nconst jq = await load();\ntry {\n  const input = new TextEncoder().encode('{\"items\":[{\"active\":true,\"id\":1}]}');\n  const result = await jq.exec([\"-M\", \"-c\", \".items | map(select(.active))\", \"/input.json\"], {\n    files: [{ name: \"/input.json\", data: input }]\n  });\n  console.log(result.stdout);\n} finally {\n  jq.dispose();\n}"
+    },
+    "keywords": [
+      "jq"
+    ]
   }
 }

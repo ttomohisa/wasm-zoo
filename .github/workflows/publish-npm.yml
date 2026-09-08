@@ -1,19 +1,19 @@
-name: Package / stage npm canary
+name: Package / distribute npm
 
 on:
   workflow_dispatch:
     inputs:
       slug:
-        description: npm package canary
+        description: npm distribution package
         required: true
         type: choice
-        options: [jq]
+        options: [jq, libarchive]
       mode:
-        description: Pack only, or stage a new version for maintainer review and 2FA approval
+        description: Pack only, bootstrap a brand-new package, or stage a new version
         required: true
         default: pack
         type: choice
-        options: [pack, stage]
+        options: [pack, bootstrap, stage]
 
 permissions:
   contents: read
@@ -37,13 +37,16 @@ jobs:
         run: |
           set -euo pipefail
           slug='${{ inputs.slug }}'
-          node - <<'NODE' "$slug" >> "$GITHUB_OUTPUT"
+          mode='${{ inputs.mode }}'
+          node - <<'NODE' "$slug" "$mode" >> "$GITHUB_OUTPUT"
           const fs = require('fs');
           const slug = process.argv[2];
+          const mode = process.argv[3];
           const pkg = JSON.parse(fs.readFileSync(`packages/${slug}/package.json`, 'utf8'));
           const profile = pkg.npm?.profile;
           const meta = pkg.profiles.find((entry) => entry.id === profile);
-          if (!pkg.npm || pkg.npm.status !== 'canary' || !meta) throw new Error(`${slug} is not an npm canary`);
+          if (!pkg.npm || pkg.npm.status !== 'canary' || !meta) throw new Error(`${slug} is not an npm distribution canary`);
+          if (!['pack', 'bootstrap', 'stage'].includes(mode)) throw new Error(`Unsupported npm mode: ${mode}`);
           console.log(`tag=${pkg.release.tag}`);
           console.log(`asset=${meta.releaseAsset}`);
           console.log(`npm_name=${pkg.npm.package}`);
@@ -73,6 +76,37 @@ jobs:
             npm-work/artifacts/*.tgz
             npm-work/npm-pack.json
           retention-days: 14
+      - name: Guard brand-new package bootstrap
+        if: inputs.mode == 'bootstrap'
+        shell: bash
+        run: |
+          set -euo pipefail
+          name='${{ steps.meta.outputs.npm_name }}'
+          if npm view "$name" version >/dev/null 2>&1; then
+            echo "$name already exists on the npm registry; bootstrap is forbidden. Use stage for future versions." >&2
+            exit 1
+          fi
+      - name: Bootstrap brand-new public package
+        if: inputs.mode == 'bootstrap'
+        working-directory: npm-work/package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
+        run: npm publish --access public
+      - name: Guard staged version
+        if: inputs.mode == 'stage'
+        shell: bash
+        run: |
+          set -euo pipefail
+          name='${{ steps.meta.outputs.npm_name }}'
+          version='${{ steps.meta.outputs.npm_version }}'
+          npm view "$name" version >/dev/null 2>&1 || {
+            echo "$name does not exist yet; staged publishing cannot bootstrap a brand-new npm package." >&2
+            exit 1
+          }
+          if npm view "$name@$version" version >/dev/null 2>&1; then
+            echo "$name@$version is already public; refusing to stage an existing version." >&2
+            exit 1
+          fi
       - name: Stage new version for maintainer review
         if: inputs.mode == 'stage'
         working-directory: npm-work/package
@@ -86,8 +120,11 @@ jobs:
             echo '- Package: `${{ steps.meta.outputs.npm_name }}@${{ steps.meta.outputs.npm_version }}`'
             echo '- Source release: `${{ steps.meta.outputs.tag }}` / `${{ steps.meta.outputs.asset }}`'
             echo '- Mode: `${{ inputs.mode }}`'
-            if [[ '${{ inputs.mode }}' == 'stage' ]]; then
-              echo '- Authentication: npm Trusted Publisher (OIDC), no repository npm token'
+            if [[ '${{ inputs.mode }}' == 'bootstrap' ]]; then
+              echo '- Authentication: temporary scope-limited npm bootstrap token + GitHub OIDC provenance'
+              echo '- Bootstrap guard: direct publish is allowed only while the package name does not exist'
+            elif [[ '${{ inputs.mode }}' == 'stage' ]]; then
+              echo '- Authentication: npm Trusted Publisher (OIDC), no long-lived publish token'
               echo '- Publication state: staged only; maintainer 2FA approval is still required'
             else
               echo '- Registry write: none'

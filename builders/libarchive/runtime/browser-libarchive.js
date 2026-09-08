@@ -84,16 +84,22 @@
   };
 
   class LibarchiveRunner {
-    constructor({ baseUrl }) {
+    constructor({ baseUrl, toolAssets = {} }) {
       this.baseUrl = new URL(baseUrl, document.baseURI);
+      this.toolAssets = toolAssets || {};
       this.wasm = new Map();
       this.disposed = false;
+    }
+
+    resolveToolAsset(tool, key, fallback) {
+      const value = this.toolAssets?.[tool]?.[key];
+      return new URL(value || fallback, this.baseUrl).href;
     }
 
     async loadTool(tool) {
       if (!TOOLS.includes(tool)) throw new Error(`Unknown libarchive tool: ${tool}`);
       if (this.wasm.has(tool)) return;
-      const url = new URL(`${tool}-core.wasm`, this.baseUrl);
+      const url = this.resolveToolAsset(tool, "wasmUrl", `${tool}-core.wasm`);
       const response = await fetch(url);
       if (!response.ok) throw new Error(`Failed to load ${tool} WASM: ${response.status} ${response.statusText}`);
       this.wasm.set(tool, await response.arrayBuffer());
@@ -139,7 +145,7 @@
           reject(event.error instanceof Error ? event.error : new Error(detail || "libarchive worker failed."));
         };
         worker.postMessage({
-          coreJsUrl: new URL(`${tool}-core.js`, this.baseUrl).href,
+          coreJsUrl: this.resolveToolAsset(tool, "coreJsUrl", `${tool}-core.js`),
           wasmBytes,
           args: [...args],
           files,
@@ -158,6 +164,6 @@
 
   window.WasmZooLibarchive = Object.freeze({
     tools: TOOLS,
-    loadHosted: ({ baseUrl }) => new LibarchiveRunner({ baseUrl })
+    loadHosted: ({ baseUrl, toolAssets }) => new LibarchiveRunner({ baseUrl, toolAssets })
   });
 })();

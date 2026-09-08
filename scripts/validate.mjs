@@ -68,6 +68,19 @@ for (const pkg of packages) {
       assert(pkg.npm?.entry === "index.mjs", `${at}: npm.entry must be index.mjs`);
       assert(pkg.npm?.bundledAssets === true, `${at}: npm package must bundle its reviewed runtime assets`);
       assert(pkg.npm?.publishWorkflow === "publish-npm.yml", `${at}: npm.publishWorkflow must be publish-npm.yml`);
+      assert(typeof pkg.npm?.runtime?.classicScript === "string" && pkg.npm.runtime.classicScript.length > 0, `${at}: npm.runtime.classicScript is required`);
+      assert(["single", "tool-map"].includes(pkg.npm?.runtime?.assetMode), `${at}: npm.runtime.assetMode must be single or tool-map`);
+      assert(Array.isArray(pkg.npm?.runtime?.assets) && pkg.npm.runtime.assets.length > 0, `${at}: npm.runtime.assets must be a non-empty array`);
+      if (Array.isArray(pkg.npm?.runtime?.assets)) {
+        for (const asset of pkg.npm.runtime.assets) {
+          assert(typeof asset?.id === "string" && asset.id.length > 0, `${at}: every npm runtime asset needs id`);
+          assert(typeof asset?.coreJs === "string" && asset.coreJs.endsWith(".js"), `${at}: every npm runtime asset needs coreJs`);
+          assert(typeof asset?.wasm === "string" && asset.wasm.endsWith(".wasm"), `${at}: every npm runtime asset needs wasm`);
+        }
+      }
+      if (pkg.npm?.runtime?.assetMode === "single") assert(pkg.npm.runtime.assets.length === 1, `${at}: single npm runtime must declare exactly one asset pair`);
+      assert(Array.isArray(pkg.npm?.packageFiles?.required) && pkg.npm.packageFiles.required.length > 0, `${at}: npm.packageFiles.required must be non-empty`);
+      assert(Array.isArray(pkg.npm?.packageFiles?.optional), `${at}: npm.packageFiles.optional must be an array`);
     }
     if (pkg.release) {
       assert(typeof pkg.release.tag === "string" && pkg.release.tag.length > 0, `${at}: release.tag is required when release metadata is present`);

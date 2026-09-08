@@ -645,7 +645,79 @@
           },
           "note": "This browser profile remains single-threaded and does not require cross-origin isolation."
         }
-      ]
+      ],
+      "npm": {
+        "status": "canary",
+        "package": "@wasm-zoo/libarchive",
+        "version": "0.3.1",
+        "profile": "browser-full",
+        "entry": "index.mjs",
+        "bundledAssets": true,
+        "publishWorkflow": "publish-npm.yml",
+        "runtime": {
+          "classicScript": "browser-libarchive.js",
+          "assetMode": "tool-map",
+          "defaultTool": "bsdtar",
+          "assets": [
+            {
+              "id": "bsdtar",
+              "coreJs": "bsdtar-core.js",
+              "wasm": "bsdtar-core.wasm"
+            },
+            {
+              "id": "bsdcpio",
+              "coreJs": "bsdcpio-core.js",
+              "wasm": "bsdcpio-core.wasm"
+            },
+            {
+              "id": "bsdcat",
+              "coreJs": "bsdcat-core.js",
+              "wasm": "bsdcat-core.wasm"
+            },
+            {
+              "id": "bsdunzip",
+              "coreJs": "bsdunzip-core.js",
+              "wasm": "bsdunzip-core.wasm"
+            }
+          ]
+        },
+        "packageFiles": {
+          "required": [
+            "browser-libarchive.js",
+            "bsdtar-core.js",
+            "bsdtar-core.wasm",
+            "bsdcpio-core.js",
+            "bsdcpio-core.wasm",
+            "bsdcat-core.js",
+            "bsdcat-core.wasm",
+            "bsdunzip-core.js",
+            "bsdunzip-core.wasm",
+            "manifest.json",
+            "features.json",
+            "provenance.json",
+            "sbom.cdx.json",
+            "BUILDINFO.txt",
+            "LICENSES/libarchive-COPYING",
+            "LICENSES/zlib-LICENSE.txt",
+            "LICENSES/bzip2-LICENSE.txt",
+            "LICENSES/Emscripten-toolchain.txt"
+          ],
+          "optional": [
+            "libarchive-config.txt"
+          ]
+        },
+        "docs": {
+          "description": "Unofficial WASM Zoo distribution of libarchive command-line tools for browsers.",
+          "runtimeNote": "No SharedArrayBuffer or cross-origin isolation is required. The package includes bsdtar, bsdcpio, bsdcat and bsdunzip, each running in an isolated Web Worker with MEMFS.",
+          "example": "import { load } from \"@wasm-zoo/libarchive\";\n\nconst archive = await load({ tool: \"bsdtar\" });\ntry {\n  const result = await archive.exec([\"-tf\", \"/input.tar\"], {\n    files: [{ name: \"/input.tar\", data: tarBytes }]\n  });\n  console.log(result.stdout);\n} finally {\n  archive.dispose();\n}"
+        },
+        "keywords": [
+          "libarchive",
+          "archive",
+          "tar",
+          "zip"
+        ]
+      }
     },
     {
       "schemaVersion": 2,
@@ -829,7 +901,43 @@
         "profile": "browser-full",
         "entry": "index.mjs",
         "bundledAssets": true,
-        "publishWorkflow": "publish-npm.yml"
+        "publishWorkflow": "publish-npm.yml",
+        "runtime": {
+          "classicScript": "browser-jq.js",
+          "assetMode": "single",
+          "assets": [
+            {
+              "id": "jq",
+              "coreJs": "jq-core.js",
+              "wasm": "jq-core.wasm"
+            }
+          ]
+        },
+        "packageFiles": {
+          "required": [
+            "browser-jq.js",
+            "jq-core.js",
+            "jq-core.wasm",
+            "manifest.json",
+            "features.json",
+            "provenance.json",
+            "sbom.cdx.json",
+            "BUILDINFO.txt",
+            "LICENSES/jq-COPYING.txt",
+            "LICENSES/oniguruma-COPYING.txt"
+          ],
+          "optional": [
+            "jq-config.txt"
+          ]
+        },
+        "docs": {
+          "description": "Unofficial WASM Zoo distribution of jq for browsers.",
+          "runtimeNote": "No SharedArrayBuffer or cross-origin isolation is required. Execution uses a Web Worker and MEMFS.",
+          "example": "import { load } from \"@wasm-zoo/jq\";\n\nconst jq = await load();\ntry {\n  const input = new TextEncoder().encode('{\"items\":[{\"active\":true,\"id\":1}]}');\n  const result = await jq.exec([\"-M\", \"-c\", \".items | map(select(.active))\", \"/input.json\"], {\n    files: [{ name: \"/input.json\", data: input }]\n  });\n  console.log(result.stdout);\n} finally {\n  jq.dispose();\n}"
+        },
+        "keywords": [
+          "jq"
+        ]
       }
     },
     {
