@@ -8,7 +8,7 @@ on:
         required: true
         default: jq
         type: choice
-        options: [jq, libarchive]
+        options: [jq, libarchive, imagemagick]
   pull_request:
     paths:
       - 'scripts/smoke-npm-*.mjs'
@@ -17,7 +17,9 @@ on:
       - '.github/workflows/npm-package-smoke.yml'
       - 'packages/jq/package.json'
       - 'packages/libarchive/package.json'
+      - 'packages/imagemagick/package.json'
       - 'builders/libarchive/runtime/**'
+      - 'builders/imagemagick/runtime/**'
       - 'package.json'
   schedule:
     - cron: '17 3 * * 1'
@@ -43,8 +45,8 @@ jobs:
           if [[ '${{ github.event_name }}' == 'workflow_dispatch' ]]; then
             echo 'slug=${{ inputs.slug }}' >> "$GITHUB_OUTPUT"
           else
-            # Until libarchive completes its first registry bootstrap, PR/scheduled
-            # live-registry coverage remains on the already-published jq canary.
+            # PR/scheduled live-registry coverage stays on the stable published jq package.
+            # New rollout packages are exercised manually after their first registry bootstrap.
             echo 'slug=jq' >> "$GITHUB_OUTPUT"
           fi
       - name: Install and run published package through Vite + Chromium

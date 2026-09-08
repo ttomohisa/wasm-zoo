@@ -21,6 +21,7 @@
     "npm:check": "node scripts/check-npm-distribution.mjs",
     "npm:smoke:jq": "node scripts/smoke-npm-package.mjs --slug jq",
     "npm:smoke": "node scripts/smoke-npm-package.mjs",
-    "npm:smoke:libarchive": "node scripts/smoke-npm-package.mjs --slug libarchive"
+    "npm:smoke:libarchive": "node scripts/smoke-npm-package.mjs --slug libarchive",
+    "npm:smoke:imagemagick": "node scripts/smoke-npm-package.mjs --slug imagemagick"
   }
 }

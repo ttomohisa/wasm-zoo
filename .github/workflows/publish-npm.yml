@@ -7,7 +7,7 @@ on:
         description: npm distribution package
         required: true
         type: choice
-        options: [jq, libarchive]
+        options: [jq, libarchive, imagemagick]
       mode:
         description: Pack only, bootstrap a brand-new package, or stage a new version
         required: true
@@ -45,7 +45,7 @@ jobs:
           const pkg = JSON.parse(fs.readFileSync(`packages/${slug}/package.json`, 'utf8'));
           const profile = pkg.npm?.profile;
           const meta = pkg.profiles.find((entry) => entry.id === profile);
-          if (!pkg.npm || pkg.npm.status !== 'canary' || !meta) throw new Error(`${slug} is not an npm distribution canary`);
+          if (!pkg.npm || !['canary', 'published'].includes(pkg.npm.status) || !meta) throw new Error(`${slug} is not an npm-enabled distribution package`);
           if (!['pack', 'bootstrap', 'stage'].includes(mode)) throw new Error(`Unsupported npm mode: ${mode}`);
           console.log(`tag=${pkg.release.tag}`);
           console.log(`asset=${meta.releaseAsset}`);

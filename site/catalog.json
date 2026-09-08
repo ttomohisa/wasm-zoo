@@ -450,7 +450,56 @@
           },
           "note": "The browser runtime uses Emscripten MEMFS and cannot mirror desktop process semantics."
         }
-      ]
+      ],
+      "npm": {
+        "status": "canary",
+        "package": "@wasm-zoo/imagemagick",
+        "version": "0.4.3",
+        "profile": "browser-full",
+        "entry": "index.mjs",
+        "bundledAssets": true,
+        "publishWorkflow": "publish-npm.yml",
+        "runtime": {
+          "classicScript": "browser-imagemagick.js",
+          "assetMode": "single",
+          "assets": [
+            {
+              "id": "magick",
+              "coreJs": "magick-core.js",
+              "wasm": "magick-core.wasm"
+            }
+          ]
+        },
+        "packageFiles": {
+          "required": [
+            "browser-imagemagick.js",
+            "magick-core.js",
+            "magick-core.wasm",
+            "manifest.json",
+            "features.json",
+            "provenance.json",
+            "sbom.cdx.json",
+            "BUILDINFO.txt",
+            "LICENSES/imagemagick-LICENSE.txt",
+            "LICENSES/Emscripten-toolchain.txt"
+          ],
+          "optional": [
+            "imagemagick-config.txt"
+          ]
+        },
+        "docs": {
+          "description": "Unofficial WASM Zoo distribution of the ImageMagick magick CLI for browsers.",
+          "runtimeNote": "No SharedArrayBuffer or cross-origin isolation is required. The magick CLI runs in an isolated Web Worker with MEMFS and the reviewed PNG/JPEG-focused delegate set.",
+          "example": "import { load } from \"@wasm-zoo/imagemagick\";\n\nconst magick = await load();\ntry {\n  const result = await magick.exec([\"/input.png\", \"-resize\", \"640x640>\", \"/out/output.jpg\"], {\n    files: [{ name: \"/input.png\", data: inputBytes }],\n    dirs: [\"/out\"],\n    outputs: [\"/out/output.jpg\"]\n  });\n  console.log(result.files[0]);\n} finally {\n  magick.dispose();\n}"
+        },
+        "keywords": [
+          "imagemagick",
+          "image",
+          "png",
+          "jpeg",
+          "conversion"
+        ]
+      }
     },
     {
       "schemaVersion": 2,
@@ -647,7 +696,7 @@
         }
       ],
       "npm": {
-        "status": "canary",
+        "status": "published",
         "package": "@wasm-zoo/libarchive",
         "version": "0.3.1",
         "profile": "browser-full",
@@ -895,7 +944,7 @@
         }
       ],
       "npm": {
-        "status": "canary",
+        "status": "published",
         "package": "@wasm-zoo/jq",
         "version": "0.9.1",
         "profile": "browser-full",
