@@ -1,24 +1,29 @@
 # npm distribution
 
-WASM Zoo v0.12.0 adds npm as an optional distribution channel on top of the reviewed GitHub Release artifacts. The first canary started at `@wasm-zoo/jq@0.9.0`; the first npm-only packaging fix is `@wasm-zoo/jq@0.9.1`.
+WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`. The v0.13 rollout generalizes that canary infrastructure so additional Zoo packages can be distributed from the same reviewed GitHub Release assets. The second package is `@wasm-zoo/libarchive`.
 
-## Contract
+## Distribution contract
 
-The npm package is not a second independent native/Wasm build. `scripts/prepare-npm-package.mjs` starts from the immutable binary ZIP declared in `packages/jq/package.json`, keeps its core JavaScript/Wasm, manifests and supply-chain metadata, then overlays the current reviewed `browser-jq.js`, Consumer API v1 module and bundler-aware `index.mjs` entry. The wrapper overlay matches the GitHub Pages distribution model and lets packaging fixes evolve without rewriting historical Release assets.
+An npm package is not a second native/WebAssembly build. `scripts/prepare-npm-package.mjs` reads each package's `npm` metadata, starts from the immutable binary ZIP declared by the selected Zoo profile, preserves its core JavaScript/Wasm, manifests, provenance, SBOM, BUILDINFO and license notices, then overlays only the current reviewed distribution wrapper files:
 
-`@wasm-zoo/jq` therefore bundles:
+- the package browser wrapper (`browser-*.js`);
+- `wasm-zoo.mjs` Consumer API v1;
+- generated bundler-aware `index.mjs`.
 
-- `index.mjs` — npm/bundler entry;
-- `wasm-zoo.mjs` — self-hosted Consumer API v1 entry;
-- `browser-jq.js`;
-- `jq-core.js` and `jq-core.wasm`;
-- `manifest.json` and `features.json`;
-- the release `provenance.json`, CycloneDX SBOM and BUILDINFO;
-- WASM Zoo and upstream license notices.
+Historical GitHub Release assets are never rewritten. npm-only wrapper/package corrections use an independent npm distribution version while retaining the exact upstream version, Zoo builder version and immutable Release identity in package metadata.
 
-The npm package now has an **independent distribution version**. `@wasm-zoo/jq@0.9.1` is still backed by jq 1.8.2, Zoo builder 0.9.0, `jq-v0.9.0`, and `jq-browser-full-1.8.2-zoo-0.9.0.zip`. This separation allows npm-only wrapper/packaging fixes without pretending that the native/Wasm build or immutable GitHub Release changed.
+## Current rollout
+
+| npm package | npm version | upstream | Zoo builder | source Release | state |
+| --- | ---: | ---: | ---: | --- | --- |
+| `@wasm-zoo/jq` | `0.9.1` | jq 1.8.2 | `0.9.0` | `jq-v0.9.0` | public canary |
+| `@wasm-zoo/libarchive` | `0.3.1` | libarchive 3.8.9 | `0.3.1` | `libarchive-v0.3.1` | rollout canary |
+
+The remaining packages are added only after the common packaging/staging/live-smoke path remains stable.
 
 ## Consumer usage
+
+### jq
 
 ```bash
 npm install @wasm-zoo/jq
@@ -30,10 +35,7 @@ import { load } from "@wasm-zoo/jq";
 const jq = await load();
 try {
   const result = await jq.exec(["-M", "-c", ".", "/input.json"], {
-    files: [{
-      name: "/input.json",
-      data: new TextEncoder().encode('{"hello":"world"}')
-    }]
+    files: [{ name: "/input.json", data: new TextEncoder().encode('{"hello":"world"}') }]
   });
   console.log(result.stdout);
 } finally {
@@ -41,61 +43,121 @@ try {
 }
 ```
 
-The default npm entry statically references `jq-core.js` and `jq-core.wasm` with `new URL(..., import.meta.url)` and forwards the emitted URLs into Consumer API v1. This is intended for modern bundlers such as Vite and webpack 5.
+### libarchive
 
-For manual/self-hosted deployments, import `@wasm-zoo/jq/self-hosted` and use the normal Consumer API `baseUrl` contract instead.
+```bash
+npm install @wasm-zoo/libarchive
+```
 
-## Package and live-registry validation
+```js
+import { load } from "@wasm-zoo/libarchive";
 
-The repository can validate tarball construction without rebuilding jq:
+const archive = await load({ tool: "bsdtar" });
+try {
+  const result = await archive.exec(["-xf", "/input.tar", "-C", "/out"], {
+    files: [{ name: "/input.tar", data: tarBytes }],
+    dirs: ["/out"],
+    collectDirs: ["/out"]
+  });
+  console.log(result.files);
+} finally {
+  archive.dispose();
+}
+```
+
+`libarchive` exposes the four published upstream CLI entry points through `load({ tool })`: `bsdtar`, `bsdcpio`, `bsdcat`, and `bsdunzip`.
+
+## Bundler asset handling
+
+The npm entry uses static `new URL(..., import.meta.url)` expressions for every core JavaScript/Wasm pair so modern bundlers can emit hashed production assets.
+
+- jq forwards one emitted `coreJsUrl` / `wasmUrl` pair into Consumer API v1.
+- libarchive exports a per-tool asset map and forwards it as `toolAssets`, allowing each CLI Worker to use the actual emitted `*-core.js` and `*-core.wasm` URL instead of assuming unhashed filenames.
+
+This is the same class of issue caught by the initial jq Vite production smoke, so the multi-tool libarchive wrapper is designed to avoid repeating that failure mode.
+
+For manual/self-hosted deployments, import `<package>/self-hosted` and use the normal Consumer API v1 `baseUrl` contract.
+
+## Package validation
 
 ```text
 npm run npm:check
 ```
 
-The contract check creates a real `.tgz`, installs that tarball into a temporary project, and verifies the runtime, Wasm, metadata and license files under `node_modules/@wasm-zoo/jq`.
+The contract test synthesizes the immutable-Release input shape for every npm-enabled package, generates a real package, runs `npm pack`, installs the resulting `.tgz` into a clean temporary project, and verifies:
 
-The published package has a separate live-registry smoke test:
+- package name/version and immutable Release identity;
+- current reviewed wrapper overlay;
+- Consumer API v1 entrypoints;
+- statically referenced bundler assets;
+- runtime/Wasm/metadata/license files under `node_modules`;
+- publishing workflow safety guards.
+
+## Live registry validation
+
+The generic live smoke is:
+
+```text
+npm run npm:smoke -- --slug jq
+npm run npm:smoke -- --slug libarchive
+```
+
+or the convenience scripts:
 
 ```text
 npm run npm:smoke:jq
+npm run npm:smoke:libarchive
 ```
 
-`scripts/smoke-npm-jq.mjs` creates a clean application, installs the exact `@wasm-zoo/jq` version declared by repository metadata from the public npm registry, installs pinned Vite and Playwright versions, performs a production `vite build`, verifies that a Wasm asset was emitted, serves `dist/` with an in-process Node HTTP server, opens it in Chromium, executes a real jq JSON transformation, closes Chromium/server resources and emits an explicit cleanup-complete marker. No long-lived `vite preview` child process is used. `.github/workflows/npm-jq-smoke.yml` runs this gate for relevant pull requests, remains manually runnable, and also runs weekly.
+`scripts/smoke-npm-package.mjs` installs the exact public npm distribution into a clean app, uses pinned Vite and Playwright versions, performs a production build, checks the emitted Wasm asset count, serves `dist/` with an in-process Node HTTP server, executes the package in Chromium, closes browser/server resources, and emits an explicit cleanup marker.
 
-## Publishing workflow after bootstrap
+The jq fixture performs a real JSON transformation. The libarchive fixture creates a TAR in the browser, extracts it with `bsdtar`, and verifies the returned file bytes.
 
-The first-package bootstrap is complete: `@wasm-zoo/jq@0.9.0` has been published, npm Trusted Publisher is configured for `ttomohisa/wasm-zoo` / `publish-npm.yml`, and the temporary long-lived npm publish token has been removed.
+`.github/workflows/npm-package-smoke.yml` is manually selectable between jq and libarchive. Until libarchive completes its first registry bootstrap, pull-request and scheduled live-registry runs stay on the already-public jq package; after bootstrap, libarchive is run manually before its rollout is accepted.
 
-`.github/workflows/publish-npm.yml` is now intentionally **stage-only** for registry writes. It has two modes:
+## Publishing workflow
 
-- `pack` — download the immutable GitHub Release asset, generate the npm package, run contract checks and upload the `.tgz` as a GitHub Actions artifact; no registry write occurs;
-- `stage` — authenticate through the npm Trusted Publisher OIDC relationship and run `npm stage publish`; the package is not public until a maintainer reviews it and approves it with 2FA on npmjs.com or with `npm stage approve`.
+`.github/workflows/publish-npm.yml` has three manual modes during the multi-package rollout:
 
-There is no direct `npm publish` path and no `NPM_TOKEN`/`NODE_AUTH_TOKEN` dependency in the workflow. The workflow retains `id-token: write` because npm Trusted Publishing requires an OIDC token from the GitHub-hosted runner.
+- `pack` — generate, validate and upload the `.tgz`; no registry write;
+- `bootstrap` — direct-publish a **brand-new package name only** using the temporary `NPM_BOOTSTRAP_TOKEN` secret;
+- `stage` — use npm Trusted Publisher OIDC and `npm stage publish` for an existing package version, followed by maintainer review and 2FA approval.
 
-For maximum security, the npm package publishing-access setting should require 2FA and disallow traditional tokens, while the Trusted Publisher permission should allow `npm stage publish` but not direct `npm publish`.
+npm staged publishing cannot create a brand-new package. Therefore each new `@wasm-zoo/*` package requires one bootstrap direct publish before its package-level Trusted Publisher can be configured. The workflow guards bootstrap by checking that the package name does not already exist; once it exists, bootstrap fails and all future releases use staged publishing.
 
-Existing GitHub Release ZIPs are never modified.
+### Temporary rollout bootstrap token
+
+For the remaining brand-new package names, use one short-lived granular token scoped to `@wasm-zoo` with package read/write permission and bypass-2FA enabled only for this bootstrap window. Store it as the repository secret:
+
+```text
+NPM_BOOTSTRAP_TOKEN
+```
+
+The token is used only by the explicit `bootstrap` step. `pack` never reads it and `stage` uses OIDC instead.
+
+After a package's first publish:
+
+1. configure its npm Trusted Publisher for GitHub `ttomohisa/wasm-zoo`, workflow `publish-npm.yml`;
+2. allow staged publishing rather than direct publishing;
+3. set package publishing access to require 2FA and disallow traditional tokens;
+4. run the package's public Registry/Vite/Chromium smoke;
+5. continue future versions through `stage` only.
+
+After all six package names have been bootstrapped, revoke the rollout token, remove `NPM_BOOTSTRAP_TOKEN`, and remove the bootstrap mode from the workflow.
 
 ## Promotion interaction
 
-The npm version is independent from the jq Zoo builder version. A wrapper/package-only correction bumps only `npm.version`; the immutable Release and `zoo.builderVersion` remain unchanged. When a future reviewed jq promotion bumps the builder version, the promotion PR also patch-bumps the current npm distribution version independently. After the corresponding immutable jq Release exists, run `Package / stage npm canary` in `pack` mode, inspect the artifact, then run it in `stage` mode. The staged package still requires an explicit maintainer approval before it becomes public.
+npm distribution versions are independent from Zoo builder versions. A package-only wrapper correction can patch-bump npm without changing the native/Wasm build. A future reviewed upstream promotion still patch-bumps the npm distribution version independently so an npm version is never accidentally reused.
 
-## npm 0.9.0 packaging correction
+## Rollout order
 
-The initial `@wasm-zoo/jq@0.9.0` package correctly caused Vite to emit hashed `jq-core` JavaScript/Wasm assets, but it copied the historical `browser-jq.js` from the immutable Release. That older wrapper did not honor the explicit emitted asset URLs passed by Consumer API v1, so production execution attempted the non-hashed `/assets/jq-core.js`. `0.9.1` fixes only the npm distribution layer by overlaying the current reviewed wrapper; the jq 1.8.2 Wasm binary and its source Release remain unchanged.
+The intended order is:
 
-## Canary exit criteria
+1. jq — completed canary;
+2. libarchive — generic multi-tool CLI canary;
+3. ImageMagick;
+4. Ghostscript;
+5. libvips — library API case;
+6. FFmpeg — multi-profile / pthread / SharedArrayBuffer case.
 
-Before enabling the other five packages, jq should pass all of these:
-
-1. package generation starts from the immutable jq Release;
-2. generated tarballs install with the expected Wasm/runtime/metadata/license files;
-3. the current `@wasm-zoo/jq` npm distribution is publicly installable from npm;
-4. Trusted Publisher is configured stage-only and long-lived publish tokens are removed;
-5. a production Vite build installs the public npm package, emits its Wasm asset and runs real jq in Chromium;
-6. npm provenance remains enabled;
-7. package size and install ergonomics are acceptable.
-
-A webpack 5 compatibility fixture remains a useful follow-up before calling bundler compatibility broad rather than Vite-verified; it is not required to preserve the Consumer API v1 contract.
+Cross-browser expansion follows after all six have a stable npm install path.

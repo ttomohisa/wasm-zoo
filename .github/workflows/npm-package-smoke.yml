@@ -1,0 +1,53 @@
+name: Smoke published npm package with Vite
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: Published npm package to verify
+        required: true
+        default: jq
+        type: choice
+        options: [jq, libarchive]
+  pull_request:
+    paths:
+      - 'scripts/smoke-npm-*.mjs'
+      - 'scripts/check-npm-distribution.mjs'
+      - 'scripts/prepare-npm-package.mjs'
+      - '.github/workflows/npm-package-smoke.yml'
+      - 'packages/jq/package.json'
+      - 'packages/libarchive/package.json'
+      - 'builders/libarchive/runtime/**'
+      - 'package.json'
+  schedule:
+    - cron: '17 3 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Require current npm CLI
+        run: npm install --global npm@12.0.2
+      - name: Resolve published package smoke target
+        id: target
+        shell: bash
+        run: |
+          if [[ '${{ github.event_name }}' == 'workflow_dispatch' ]]; then
+            echo 'slug=${{ inputs.slug }}' >> "$GITHUB_OUTPUT"
+          else
+            # Until libarchive completes its first registry bootstrap, PR/scheduled
+            # live-registry coverage remains on the already-published jq canary.
+            echo 'slug=jq' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install and run published package through Vite + Chromium
+        env:
+          WASM_ZOO_PLAYWRIGHT_WITH_DEPS: '1'
+        run: node scripts/smoke-npm-package.mjs --slug '${{ steps.target.outputs.slug }}'

@@ -54,7 +54,7 @@ export async function load(options = {}) {
   const tool = options.tool || packageInfo.defaultTool;
   if (!TOOLS.includes(tool)) throw new RangeError(`Unknown libarchive tool: ${tool}. Expected one of: ${TOOLS.join(", ")}.`);
   const baseUrl = resolveBaseUrl(options.baseUrl); const legacy = await ensureLegacy(baseUrl);
-  const runner = legacy.loadHosted({ baseUrl: baseUrl.href }); await runner.loadTool(tool);
+  const runner = legacy.loadHosted({ baseUrl: baseUrl.href, toolAssets: options.toolAssets }); await runner.loadTool(tool);
   return createRuntime(runner, tool, options.profile || packageInfo.defaultProfile);
 }
 export default Object.freeze({ API_VERSION, TOOLS, packageInfo, isSupported, load });

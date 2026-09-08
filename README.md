@@ -24,26 +24,27 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 
 ## Available packages
 
-| Package | Upstream | Zoo builder | Browser profile | Playground |
-| --- | --- | --- | --- | --- |
-| FFmpeg | 9.0.1 | 0.2.7 | `browser-full`, `browser-full-gpl` | yes |
-| libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes |
-| ImageMagick | 7.1.2-31 | 0.4.3 | `browser-full` | yes |
-| libvips | 8.18.6 | 0.5.2 | `browser-core`, `browser-full` | yes |
-| Ghostscript | 10.07.1 | 0.7.1 | `browser-full` | yes |
-| jq | 1.8.2 | 0.9.0 | `browser-full` | yes |
+| Package | Upstream | Zoo builder | Browser profile | Playground | npm rollout |
+| --- | --- | --- | --- | --- | --- |
+| FFmpeg | 9.0.1 | 0.2.7 | `browser-full`, `browser-full-gpl` | yes | planned |
+| libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes | `@wasm-zoo/libarchive` rollout |
+| ImageMagick | 7.1.2-31 | 0.4.3 | `browser-full` | yes | planned |
+| libvips | 8.18.6 | 0.5.2 | `browser-core`, `browser-full` | yes | planned |
+| Ghostscript | 10.07.1 | 0.7.1 | `browser-full` | yes | planned |
+| jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 
 The project version is **WASM Zoo v0.12.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
-### npm distribution canary
+### npm distribution rollout
 
-jq is also available from the public npm registry as `@wasm-zoo/jq`. The current npm distribution is `@wasm-zoo/jq@0.9.1`, backed by jq 1.8.2 / Zoo builder 0.9.0 / the immutable `jq-v0.9.0` Release. npm-only wrapper fixes can advance the npm distribution version without rebuilding or rewriting that Wasm release.
+`@wasm-zoo/jq@0.9.1` is the public npm canary. `@wasm-zoo/libarchive@0.3.1` is the second rollout target and is generated from the immutable `libarchive-v0.3.1` Release while overlaying only the reviewed npm/bundler wrappers.
 
 ```text
 npm install @wasm-zoo/jq
+# @wasm-zoo/libarchive becomes installable after its one-time registry bootstrap.
 ```
 
-Registry writes use npm Trusted Publisher OIDC with staged publishing and maintainer approval; the live-registry gate installs the public package into a clean Vite production build and executes real jq in Chromium. See [`docs/NPM_DISTRIBUTION.md`](docs/NPM_DISTRIBUTION.md).
+The common npm path now covers package generation, real `npm pack`/install validation, Vite asset emission and Chromium smoke testing. Existing packages use Trusted Publisher OIDC + staged publishing; brand-new npm package names require one guarded bootstrap before Trusted Publisher can be configured. See [`docs/NPM_DISTRIBUTION.md`](docs/NPM_DISTRIBUTION.md).
 
 ## Release health and supply-chain metadata
 
