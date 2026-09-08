@@ -48,6 +48,13 @@ const fixtures = {
     main(packageName) {
       return `import { load, assets } from ${JSON.stringify(packageName)};\n\nconst status = document.querySelector("#status");\nwindow.__WASM_ZOO_NPM_SMOKE__ = { phase: "loading", assets };\nlet runtime = null;\ntry {\n  runtime = await load();\n  const ps = new TextEncoder().encode("%!PS-Adobe-3.0\\nnewpath\\n72 72 moveto\\n144 72 lineto\\n144 144 lineto\\n72 144 lineto\\nclosepath\\n0 setgray fill\\nshowpage\\n");\n  const result = await runtime.exec([\n    "-dSAFER", "-dBATCH", "-dNOPAUSE",\n    "-sDEVICE=pdfwrite", "-sOutputFile=/out/output.pdf", "/input.ps"\n  ], {\n    files: [{ name: "/input.ps", data: ps }],\n    dirs: ["/out"],\n    outputs: ["/out/output.pdf"],\n    timeoutMs: 45000\n  });\n  if (result.exitCode !== 0) throw new Error("Unexpected Ghostscript exit code: " + result.exitCode);\n  const output = result.files.find((file) => file.name === "/out/output.pdf");\n  if (!output) throw new Error("Ghostscript did not return /out/output.pdf");\n  const bytes = output.data;\n  const prefix = new TextDecoder("latin1").decode(bytes.subarray(0, Math.min(bytes.length, 8)));\n  if (!prefix.startsWith("%PDF-")) throw new Error("Output does not start with %PDF-");\n  const tail = new TextDecoder("latin1").decode(bytes.subarray(Math.max(0, bytes.length - 256)));\n  if (!tail.includes("%%EOF")) throw new Error("Output PDF does not contain %%EOF near the end");\n  if (bytes.length < 100) throw new Error("Output PDF is unexpectedly small: " + bytes.length);\n  window.__WASM_ZOO_NPM_SMOKE__ = { ok: true, detail: "PDF " + bytes.length + " bytes", assets };\n  status.textContent = "PASS";\n} catch (error) {\n  window.__WASM_ZOO_NPM_SMOKE__ = { ok: false, message: error?.message || String(error), stack: error?.stack || "", assets };\n  status.textContent = "FAIL: " + (error?.message || error);\n  throw error;\n} finally {\n  runtime?.dispose();\n}\n`;
     }
+  },
+  libvips: {
+    expectedWasmCount: 1,
+    resultKey: "__WASM_ZOO_NPM_SMOKE__",
+    main(packageName) {
+      return `import { load, assets } from ${JSON.stringify(packageName)};\n\nfunction decodeBase64(value) {\n  const binary = atob(value);\n  const out = new Uint8Array(binary.length);\n  for (let i = 0; i < binary.length; i += 1) out[i] = binary.charCodeAt(i);\n  return out;\n}\n\nconst status = document.querySelector("#status");\nwindow.__WASM_ZOO_NPM_SMOKE__ = { phase: "loading", assets, crossOriginIsolated };\nlet runtime = null;\nlet image = null;\nlet resized = null;\ntry {\n  if (!crossOriginIsolated || typeof SharedArrayBuffer === "undefined") throw new Error("libvips smoke requires cross-origin isolation");\n  runtime = await load();\n  const vips = runtime.api;\n  const input = decodeBase64("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP4z8DA8J+BkYHh////DAAe9gT9Ce00PgAAAABJRU5ErkJggg==");\n  image = vips.Image.newFromBuffer(input);\n  if (image.width !== 2 || image.height !== 2) throw new Error("Unexpected libvips input size: " + image.width + "x" + image.height);\n  resized = image.resize(0.5);\n  if (resized.width !== 1 || resized.height !== 1) throw new Error("Unexpected libvips resized size: " + resized.width + "x" + resized.height);\n  const jpeg = resized.writeToBuffer(".jpg[Q=80]");\n  if (!jpeg || jpeg.byteLength < 20 || jpeg[0] !== 0xff || jpeg[1] !== 0xd8) throw new Error("libvips JPEG encode failed");\n  const webp = resized.writeToBuffer(".webp[Q=80]");\n  if (!webp || webp.byteLength < 20) throw new Error("libvips WebP encode failed");\n  const magic = String.fromCharCode(...webp.slice(0, 12));\n  if (!magic.startsWith("RIFF") || magic.slice(8, 12) !== "WEBP") throw new Error("libvips WebP signature mismatch");\n  window.__WASM_ZOO_NPM_SMOKE__ = { ok: true, detail: "libvips " + vips.version() + " 2x2 -> 1x1 JPEG/WebP", assets, crossOriginIsolated };\n  status.textContent = "PASS";\n} catch (error) {\n  window.__WASM_ZOO_NPM_SMOKE__ = { ok: false, message: error?.message || String(error), stack: error?.stack || "", assets, crossOriginIsolated };\n  status.textContent = "FAIL: " + (error?.message || error);\n  throw error;\n} finally {\n  try { resized?.delete(); } catch {}\n  try { image?.delete(); } catch {}\n  runtime?.dispose();\n}\n`;
+    }
   }
 };
 const fixture = fixtures[slug];
@@ -124,7 +131,13 @@ async function startStaticServer(rootDir) {
         return;
       }
       const body = await fs.readFile(target);
-      response.writeHead(200, { "content-type": contentType(target), "cache-control": "no-store" });
+      response.writeHead(200, {
+        "content-type": contentType(target),
+        "cache-control": "no-store",
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-embedder-policy": "require-corp",
+        "cross-origin-resource-policy": "same-origin"
+      });
       response.end(body);
     } catch (error) {
       response.writeHead(500, { "content-type": "text/plain; charset=utf-8" });

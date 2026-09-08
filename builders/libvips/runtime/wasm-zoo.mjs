@@ -30,9 +30,10 @@ export async function load(options = {}) {
   const profile = options.profile || packageInfo.defaultProfile;
   if (!packageInfo.profiles.includes(profile)) throw new RangeError(`Unknown libvips profile: ${profile}.`);
   const baseUrl = resolveBaseUrl(options.baseUrl); const legacy = await ensureLegacy(baseUrl);
+  const jsAsset = options.coreJsUrl || options.jsUrl;
   let api = await legacy.loadHosted({
     baseUrl: baseUrl.href,
-    jsUrl: options.jsUrl ? new URL(options.jsUrl, baseUrl).href : undefined,
+    jsUrl: jsAsset ? new URL(jsAsset, baseUrl).href : undefined,
     wasmUrl: options.wasmUrl ? new URL(options.wasmUrl, baseUrl).href : undefined,
     print: options.print, printErr: options.printErr, blockUntrusted: options.blockUntrusted
   });

@@ -248,5 +248,57 @@
       },
       "note": "Browser builds use MEMFS and byte-buffer APIs rather than host filesystem semantics."
     }
-  ]
+  ],
+  "npm": {
+    "status": "canary",
+    "package": "@wasm-zoo/libvips",
+    "version": "0.5.2",
+    "profile": "browser-core",
+    "entry": "index.mjs",
+    "bundledAssets": true,
+    "publishWorkflow": "publish-npm.yml",
+    "runtime": {
+      "classicScript": "browser-libvips.js",
+      "assetMode": "single",
+      "assets": [
+        {
+          "id": "vips",
+          "coreJs": "vips.js",
+          "wasm": "vips.wasm"
+        }
+      ]
+    },
+    "packageFiles": {
+      "required": [
+        "browser-libvips.js",
+        "vips.js",
+        "vips.wasm",
+        "vips.d.ts",
+        "versions.json",
+        "manifest.json",
+        "features.json",
+        "provenance.json",
+        "sbom.cdx.json",
+        "BUILDINFO.txt",
+        "LICENSES/libvips-LICENSE.txt",
+        "LICENSES/wasm-vips-LICENSE.txt",
+        "LICENSES/THIRD-PARTY-NOTICES-wasm-vips.md",
+        "LICENSES/Emscripten-toolchain.txt"
+      ],
+      "optional": []
+    },
+    "docs": {
+      "description": "Unofficial WASM Zoo distribution of the libvips image-processing library for browsers.",
+      "runtimeNote": "This npm package intentionally bundles the browser-core profile only (JPEG/PNG/WebP). libvips uses pthreads and WebAssembly SIMD, so the hosting page must be cross-origin isolated and provide SharedArrayBuffer. Access the underlying wasm-vips/libvips API through runtime.api.",
+      "example": "import { load } from \"@wasm-zoo/libvips\";\n\nconst runtime = await load();\ntry {\n  const vips = runtime.api;\n  const input = vips.Image.newFromBuffer(inputBytes);\n  const resized = input.resize(0.5);\n  const jpeg = resized.writeToBuffer(\".jpg[Q=80]\");\n  resized.delete();\n  input.delete();\n  console.log(jpeg);\n} finally {\n  runtime.dispose();\n}"
+    },
+    "keywords": [
+      "libvips",
+      "image",
+      "jpeg",
+      "png",
+      "webp",
+      "image-processing"
+    ]
+  }
 }
