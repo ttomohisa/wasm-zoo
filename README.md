@@ -26,10 +26,10 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 
 | Package | Upstream | Zoo builder | Browser profile | Playground | npm rollout |
 | --- | --- | --- | --- | --- | --- |
-| FFmpeg | 9.0.1 | 0.2.7 | `browser-full`, `browser-full-gpl` | yes | planned |
+| FFmpeg | 9.0.1 | 0.2.7 | `browser-full`, `browser-full-gpl` | yes | `@wasm-zoo/ffmpeg` rollout |
 | libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes | `@wasm-zoo/libarchive@0.3.1` |
 | ImageMagick | 7.1.2-31 | 0.4.3 | `browser-full` | yes | `@wasm-zoo/imagemagick@0.4.3` |
-| libvips | 8.18.6 | 0.5.2 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips` rollout |
+| libvips | 8.18.6 | 0.5.2 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.2` |
 | Ghostscript | 10.07.1 | 0.7.1 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.1` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 
@@ -37,18 +37,18 @@ The project version is **WASM Zoo v0.12.0**. Individual package builders, npm di
 
 ### npm distribution rollout
 
-`@wasm-zoo/jq@0.9.1`, `@wasm-zoo/libarchive@0.3.1`, `@wasm-zoo/imagemagick@0.4.3` and `@wasm-zoo/ghostscript@0.7.1` have completed their public Registry + Vite/Chromium gates. `@wasm-zoo/libvips@0.5.2` is the fifth rollout target and the first npm-distributed library API package.
+`@wasm-zoo/jq@0.9.1`, `@wasm-zoo/libarchive@0.3.1`, `@wasm-zoo/imagemagick@0.4.3`, `@wasm-zoo/ghostscript@0.7.1` and `@wasm-zoo/libvips@0.5.2` have completed their public Registry + Vite/Chromium gates. `@wasm-zoo/ffmpeg@0.2.7` is the sixth and final v0.13 npm rollout target.
 
 ```text
 npm install @wasm-zoo/jq
 npm install @wasm-zoo/libarchive
 npm install @wasm-zoo/imagemagick
 npm install @wasm-zoo/ghostscript
-# @wasm-zoo/libvips becomes installable after its one-time registry bootstrap.
+npm install @wasm-zoo/libvips
+# @wasm-zoo/ffmpeg becomes installable after its one-time registry bootstrap.
 ```
 
-The libvips npm package intentionally pins the smaller `browser-core` profile (JPEG/PNG/WebP) and exposes the upstream-style API through `runtime.api`. Because the reviewed libvips build uses pthreads, consumers must serve it with cross-origin isolation / SharedArrayBuffer support. The Vite/Chromium live smoke supplies COOP/COEP and verifies real PNG decode, resize and JPEG/WebP encode. See [`docs/NPM_DISTRIBUTION.md`](docs/NPM_DISTRIBUTION.md).
-
+The FFmpeg npm package intentionally pins the LGPL `browser-full` profile; the separate `browser-full-gpl` / libx264 Release profile is not bundled into the same npm tarball. FFmpeg and libvips both use pthreads, so consumers must serve them with cross-origin isolation / SharedArrayBuffer support. The Vite/Chromium smoke supplies COOP/COEP; FFmpeg's fixture performs a real raw-PCM → WAV CLI conversion while libvips continues to exercise its library API. See [`docs/NPM_DISTRIBUTION.md`](docs/NPM_DISTRIBUTION.md).
 ## Release health and supply-chain metadata
 
 WASM Zoo v0.8.0 adds a distribution-level health layer instead of treating a successful compile as the whole release contract. The Pages home now checks each published package across:

@@ -248,6 +248,55 @@
         "repository": "https://github.com/ffmpegwasm/ffmpeg.wasm",
         "checkedAt": "2026-08-21",
         "note": "Reference comparison only. The latest published core line remains based on FFmpeg 5.1.4."
+      },
+      "npm": {
+        "status": "canary",
+        "package": "@wasm-zoo/ffmpeg",
+        "version": "0.2.7",
+        "profile": "browser-full",
+        "entry": "index.mjs",
+        "bundledAssets": true,
+        "publishWorkflow": "publish-npm.yml",
+        "runtime": {
+          "classicScript": "browser-ffmpeg.js",
+          "assetMode": "single",
+          "assets": [
+            {
+              "id": "ffmpeg",
+              "coreJs": "ffmpeg-core.js",
+              "wasm": "ffmpeg-core.wasm"
+            }
+          ]
+        },
+        "packageFiles": {
+          "required": [
+            "browser-ffmpeg.js",
+            "ffmpeg-core.js",
+            "ffmpeg-core.wasm",
+            "manifest.json",
+            "features.json",
+            "provenance.json",
+            "sbom.cdx.json",
+            "ffmpeg-config.mak",
+            "BUILDINFO.txt",
+            "LICENSES/FFmpeg-LICENSE.md",
+            "LICENSES/FFmpeg-COPYING.LGPLv2.1",
+            "LICENSES/Emscripten-toolchain.txt"
+          ],
+          "optional": []
+        },
+        "docs": {
+          "description": "Unofficial WASM Zoo distribution of the upstream FFmpeg ffmpeg CLI for browsers.",
+          "runtimeNote": "This npm package intentionally bundles only the LGPL browser-full profile. It uses pthreads and WebAssembly SIMD, so the hosting page must be cross-origin isolated and provide SharedArrayBuffer. The separate browser-full-gpl/libx264 Release profile is not bundled into this npm package.",
+          "example": "import { load } from \"@wasm-zoo/ffmpeg\";\n\nconst ffmpeg = await load();\ntry {\n  const result = await ffmpeg.exec([\n    \"-i\", \"/input.mp4\",\n    \"-c\", \"copy\",\n    \"/output.mp4\"\n  ], {\n    files: [{ name: \"/input.mp4\", data: inputBytes }],\n    outputs: [\"/output.mp4\"]\n  });\n  console.log(result.files[0]);\n} finally {\n  ffmpeg.dispose();\n}"
+        },
+        "keywords": [
+          "ffmpeg",
+          "media",
+          "video",
+          "audio",
+          "transcoding"
+        ]
       }
     },
     {
@@ -1241,7 +1290,7 @@
         }
       ],
       "npm": {
-        "status": "canary",
+        "status": "published",
         "package": "@wasm-zoo/libvips",
         "version": "0.5.2",
         "profile": "browser-core",

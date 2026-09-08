@@ -250,7 +250,7 @@
     }
   ],
   "npm": {
-    "status": "canary",
+    "status": "published",
     "package": "@wasm-zoo/libvips",
     "version": "0.5.2",
     "profile": "browser-core",
