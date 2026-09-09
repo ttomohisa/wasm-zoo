@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- fix automatic promotion PR scheduling so a successful selected upstream candidate still reaches the review-only promotion job when the other package-specific candidate jobs are skipped;
+
 - make Ghostscript upstream promotions automatic by resolving the official source Release asset, GitHub-published SHA-256 digest and matching GhostPDL source commit before candidate build, then carrying the same immutable pins into the review-only promotion PR;
 
 ## v0.13.0
