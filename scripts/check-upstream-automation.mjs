@@ -34,9 +34,20 @@ for (const marker of ['tracker.candidateSource', 'asset.digest', 'sourceCommit.s
   need(watcher.includes(marker), `upstream watcher must include ${marker}`);
 }
 const watcherWorkflow = await read('.github/workflows/check-upstream.yml');
-for (const marker of ['candidate.source.releaseTag', 'candidate.source.sourceUrl', 'candidate.source.sourceSha256', '-f source_sha256="$source_sha256"']) {
-  need(watcherWorkflow.includes(marker), `upstream watcher workflow must pass ${marker}`);
+for (const marker of [
+  'candidate.source.releaseTag',
+  'candidate.source.sourceUrl',
+  'candidate.source.sourceSha256',
+  '-f source_sha256="$source_sha256"',
+  'existing_issue="$issue"',
+  'gh issue edit "$issue"',
+  'candidate_activity="$(gh issue view',
+  'Candidate workflow dispatched by upstream watcher',
+  'Candidate workflow (dispatched by upstream watcher|finished)|Review-only promotion PR:'
+]) {
+  need(watcherWorkflow.includes(marker), `upstream watcher workflow must preserve/reuse existing issues safely: ${marker}`);
 }
+need(!watcherWorkflow.includes('echo "[skip] existing issue #${issue}: ${title}"\n              continue'), 'upstream watcher must not skip an existing issue before checking candidate activity');
 
 const candidate = await read('scripts/prepare-candidate.mjs');
 need(candidate.includes('config.extraEnv'), 'candidate preparer must support extraEnv pins');
