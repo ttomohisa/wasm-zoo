@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "catalog": "node scripts/generate-catalog.mjs",
-    "check": "node scripts/validate.mjs && node scripts/check-consumer-api.mjs && node scripts/check-npm-distribution.mjs",
+    "check": "node scripts/validate.mjs && node scripts/check-consumer-api.mjs && node scripts/check-npm-distribution.mjs && node scripts/check-upstream-automation.mjs",
     "consumer:check": "node scripts/check-consumer-api.mjs",
     "check:upstream": "node scripts/check-upstream.mjs",
     "build:site": "node scripts/generate-catalog.mjs && npm run check",
@@ -25,6 +25,7 @@
     "npm:smoke:imagemagick": "node scripts/smoke-npm-package.mjs --slug imagemagick",
     "npm:smoke:ghostscript": "node scripts/smoke-npm-package.mjs --slug ghostscript",
     "npm:smoke:libvips": "node scripts/smoke-npm-package.mjs --slug libvips",
-    "npm:smoke:ffmpeg": "node scripts/smoke-npm-package.mjs --slug ffmpeg"
+    "npm:smoke:ffmpeg": "node scripts/smoke-npm-package.mjs --slug ffmpeg",
+    "promotion:check": "node scripts/check-upstream-automation.mjs"
   }
 }

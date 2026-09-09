@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- make Ghostscript upstream promotions automatic by resolving the official source Release asset, GitHub-published SHA-256 digest and matching GhostPDL source commit before candidate build, then carrying the same immutable pins into the review-only promotion PR;
+
 ## v0.13.0
 
 - complete the six-package npm rollout with public Registry + package-specific Vite/Chromium smoke gates for jq, libarchive, ImageMagick, Ghostscript, libvips and FFmpeg;

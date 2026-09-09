@@ -97,7 +97,7 @@ WASM Zoo v0.6.0 makes freshness and target differences first-class catalog data 
 
 The watcher deliberately does **not** change `main`, merge pull requests, create release tags or publish releases. For FFmpeg, libarchive, ImageMagick and jq, a newly detected stable release is substituted only inside the isolated candidate workflow and must pass the existing real Chromium smoke test. When an `auto` candidate succeeds, WASM Zoo now prepares the reviewed pin/package/release metadata update on a bot branch, opens a **review-only promotion PR**, and explicitly dispatches `Verify catalog` plus the package build workflow on that branch. A human still reviews and merges the PR, then creates the release tag after the normal main-branch checks pass.
 
-libvips remains `adapter-gated`: a new libvips release first needs reviewed wasm-vips/compatibility patch pins before a candidate build would be meaningful, so no promotion PR is generated from the readiness-only result. Ghostscript remains `none` until the watcher can also capture and verify the official source-asset SHA-256. See `docs/AUTOMATED_PROMOTIONS.md` for the exact flow, permissions and fallback procedure.
+libvips remains `adapter-gated`: a new libvips release first needs reviewed wasm-vips/compatibility patch pins before a candidate build would be meaningful, so no promotion PR is generated from the readiness-only result. Ghostscript now uses `auto`: the watcher resolves the exact official source archive and its GitHub-published SHA-256 digest plus the matching GhostPDL source commit before dispatching a candidate build. See `docs/AUTOMATED_PROMOTIONS.md` for the exact flow, permissions and fallback procedure.
 
 Run the watcher manually:
 

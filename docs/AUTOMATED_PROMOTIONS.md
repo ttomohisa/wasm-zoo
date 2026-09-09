@@ -25,14 +25,15 @@ The current automatic promotion set is defined in `scripts/upstream-config.mjs`:
 - FFmpeg
 - libarchive
 - ImageMagick
+- Ghostscript
 - jq
 
-For jq, candidate/promotion preparation also resolves the exact Oniguruma submodule commit from the candidate jq commit.
+Ghostscript is source-archive-backed: the watcher requires the exact official `ghostscript-<version>.tar.xz` Release asset, consumes GitHub's published SHA-256 asset digest, resolves the matching `gs<version>` commit from `ArtifexSoftware/ghostpdl`, and passes all of those immutable values through candidate build and promotion preparation. For jq, candidate/promotion preparation also resolves the exact Oniguruma submodule commit from the candidate jq commit.
 
 ## Manual gates
 
 - `adapter-gated`: no promotion PR is created from the readiness result. libvips stays here because the wasm-vips adapter plus libvips/Emscripten compatibility patch pins must be reviewed as a unit.
-- `none`: upstream tracking may still create/update freshness information, but no automatic candidate substitution or promotion PR is attempted. Ghostscript stays here while the official source-asset digest remains part of the manual trust gate.
+- `none`: upstream tracking may still create/update freshness information, but no automatic candidate substitution or promotion PR is attempted. No currently published package uses this mode after Ghostscript moved to digest-pinned automatic candidates.
 
 ## Required repository setting
 

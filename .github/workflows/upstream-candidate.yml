@@ -7,7 +7,7 @@ on:
         description: Package slug
         required: true
         type: choice
-        options: [ffmpeg, libarchive, imagemagick, libvips, jq]
+        options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq]
       version:
         description: Upstream version
         required: true
@@ -26,6 +26,18 @@ on:
         type: string
       issue_number:
         description: Upstream watcher issue to comment on
+        required: false
+        type: string
+      release_tag:
+        description: Official release tag for source-archive-backed candidates
+        required: false
+        type: string
+      source_url:
+        description: Official source archive URL for source-archive-backed candidates
+        required: false
+        type: string
+      source_sha256:
+        description: Official source archive SHA-256 for source-archive-backed candidates
         required: false
         type: string
 
@@ -152,6 +164,46 @@ jobs:
           retention-days: 14
 
 
+  ghostscript:
+    if: inputs.slug == 'ghostscript'
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Check Ghostscript shell syntax
+        shell: bash
+        run: bash -n builders/ghostscript/build.sh builders/ghostscript/scripts/*.sh
+      - name: Prepare candidate pin and official source digest
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          node scripts/prepare-candidate.mjs
+          --slug ghostscript
+          --version "${{ inputs.version }}"
+          --ref "${{ inputs.ref }}"
+          --commit "${{ inputs.commit }}"
+          --release-tag "${{ inputs.release_tag }}"
+          --source-url "${{ inputs.source_url }}"
+          --source-sha256 "${{ inputs.source_sha256 }}"
+      - name: Build candidate and run browser smoke test
+        shell: bash
+        working-directory: builders/ghostscript
+        env:
+          GHOSTSCRIPT_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - uses: actions/upload-artifact@v7
+        with:
+          name: candidate-ghostscript-${{ inputs.version }}-browser-full
+          path: builders/ghostscript/dist/browser-full/
+          retention-days: 14
+
+
   libvips-readiness:
     if: inputs.slug == 'libvips'
     runs-on: ubuntu-latest
@@ -172,7 +224,7 @@ jobs:
 
   report:
     if: always()
-    needs: [ffmpeg, libarchive, imagemagick, libvips-readiness, jq]
+    needs: [ffmpeg, libarchive, imagemagick, ghostscript, libvips-readiness, jq]
     runs-on: ubuntu-latest
     outputs:
       result: ${{ steps.result.outputs.result }}
@@ -186,6 +238,7 @@ jobs:
             ffmpeg) result='${{ needs.ffmpeg.result }}' ;;
             libarchive) result='${{ needs.libarchive.result }}' ;;
             imagemagick) result='${{ needs.imagemagick.result }}' ;;
+            ghostscript) result='${{ needs.ghostscript.result }}' ;;
             jq) result='${{ needs.jq.result }}' ;;
             libvips) result='adapter-gated' ;;
             *) result='unknown' ;;
@@ -246,6 +299,9 @@ jobs:
           --ref "${{ inputs.ref }}"
           --commit "${{ inputs.commit }}"
           --released "${{ inputs.released }}"
+          --release-tag "${{ inputs.release_tag }}"
+          --source-url "${{ inputs.source_url }}"
+          --source-sha256 "${{ inputs.source_sha256 }}"
       - name: Regenerate and validate reviewed metadata
         shell: bash
         run: |
@@ -257,6 +313,7 @@ jobs:
             ffmpeg) node builders/ffmpeg/scripts/check-repository.mjs ;;
             libarchive) node builders/libarchive/scripts/check-repository.mjs ;;
             imagemagick) node builders/imagemagick/scripts/check-repository.mjs ;;
+            ghostscript) node builders/ghostscript/scripts/check-repository.mjs ;;
             jq) node builders/jq/scripts/check-repository.mjs ;;
             *) echo "automatic promotion is not supported for ${{ inputs.slug }}" >&2; exit 1 ;;
           esac

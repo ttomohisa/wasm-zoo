@@ -11,6 +11,11 @@ const fail = (error) => { console.error(error); location.hash = `#SMOKE_TEST_FAI
 const signature = (bytes, expected) => expected.every((value, index) => bytes[index] === value);
 (async () => {
   try {
+    const manifestResponse = await fetch('./manifest.json', { cache: 'no-store' });
+    if (!manifestResponse.ok) throw new Error(`manifest HTTP ${manifestResponse.status}`);
+    const manifest = await manifestResponse.json();
+    const expectedVersion = String(manifest.upstream?.version || '');
+    if (!expectedVersion) throw new Error('manifest upstream version is missing');
     const runner = await load({ baseUrl: './' });
     const pdfResponse = await fetch('./smoke-input.pdf');
     if (!pdfResponse.ok) throw new Error(`fixture HTTP ${pdfResponse.status}`);
@@ -18,7 +23,7 @@ const signature = (bytes, expected) => expected.every((value, index) => bytes[in
 
     const versionStart = lines.length;
     await runner.exec(['--version'], { timeoutMs: 60000, onLog });
-    if (!lines.slice(versionStart).some((line) => line.includes('10.07.1'))) throw new Error('gs --version did not report 10.07.1');
+    if (!lines.slice(versionStart).some((line) => line.includes(expectedVersion))) throw new Error('gs --version did not report ' + expectedVersion);
 
     const render = await runner.exec([
       '-dSAFER','-dBATCH','-dNOPAUSE','-sDEVICE=png16m','-r72',
@@ -42,7 +47,7 @@ const signature = (bytes, expected) => expected.every((value, index) => bytes[in
     const pdfMagic = [0x25,0x50,0x44,0x46,0x2d];
     if (!outPdf || !signature(outPdf.data, pdfMagic)) throw new Error('PostScript -> pdfwrite output is missing or invalid');
     runner.dispose();
-    location.hash = '#SMOKE_TEST_PASS_Ghostscript_10.07.1_PDF_to_PNG_and_PS_to_PDF';
+    location.hash = '#SMOKE_TEST_PASS_Ghostscript_' + expectedVersion.replaceAll('.', '_') + '_PDF_to_PNG_and_PS_to_PDF';
   } catch (error) { fail(error); }
 })();
 </script>
