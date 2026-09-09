@@ -233,7 +233,7 @@
     "note": "Reference comparison only. The latest published core line remains based on FFmpeg 5.1.4."
   },
   "npm": {
-    "status": "canary",
+    "status": "published",
     "package": "@wasm-zoo/ffmpeg",
     "version": "0.2.7",
     "profile": "browser-full",

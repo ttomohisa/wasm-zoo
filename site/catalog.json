@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "project": {
     "name": "WASM Zoo",
-    "version": "0.12.0",
+    "version": "0.13.0",
     "tagline": "Upstream software, compiled for WebAssembly.",
     "unofficial": true
   },
@@ -250,7 +250,7 @@
         "note": "Reference comparison only. The latest published core line remains based on FFmpeg 5.1.4."
       },
       "npm": {
-        "status": "canary",
+        "status": "published",
         "package": "@wasm-zoo/ffmpeg",
         "version": "0.2.7",
         "profile": "browser-full",

@@ -1,6 +1,6 @@
 # npm distribution
 
-WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`. The v0.13 rollout generalizes that canary infrastructure so additional Zoo packages can be distributed from the same reviewed GitHub Release assets. The second package is `@wasm-zoo/libarchive`; ImageMagick, Ghostscript and libvips completed the third through fifth rollouts, and the sixth/final rollout target is `@wasm-zoo/ffmpeg`.
+WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`. WASM Zoo v0.13.0 completes the rollout across all six Zoo packages while keeping npm artifacts derived from the same reviewed immutable GitHub Release assets.
 
 ## Distribution contract
 
@@ -12,7 +12,7 @@ An npm package is not a second native/WebAssembly build. `scripts/prepare-npm-pa
 
 Historical GitHub Release assets are never rewritten. npm-only wrapper/package corrections use an independent npm distribution version while retaining the exact upstream version, Zoo builder version and immutable Release identity in package metadata.
 
-## Current rollout
+## Published packages
 
 | npm package | npm version | upstream | Zoo builder | source Release | state |
 | --- | ---: | ---: | ---: | --- | --- |
@@ -21,9 +21,9 @@ Historical GitHub Release assets are never rewritten. npm-only wrapper/package c
 | `@wasm-zoo/imagemagick` | `0.4.3` | ImageMagick 7.1.2-31 | `0.4.3` | `imagemagick-v0.4.3` | published |
 | `@wasm-zoo/ghostscript` | `0.7.1` | Ghostscript 10.07.1 | `0.7.1` | `ghostscript-v0.7.1` | published |
 | `@wasm-zoo/libvips` | `0.5.2` | libvips 8.18.6 | `0.5.2` | `libvips-v0.5.2` / `browser-core` | published |
-| `@wasm-zoo/ffmpeg` | `0.2.7` | FFmpeg 9.0.1 | `0.2.7` | `ffmpeg-v0.2.7` / `browser-full` | rollout canary |
+| `@wasm-zoo/ffmpeg` | `0.2.7` | FFmpeg 9.0.1 | `0.2.7` | `ffmpeg-v0.2.7` / `browser-full` | published |
 
-jq, libarchive, ImageMagick, Ghostscript and libvips have completed their Registry + Vite/Chromium gates. FFmpeg is the sixth/final rollout canary and is intentionally pinned to the LGPL `browser-full` profile; the GPL/libx264 profile is not bundled into this package.
+All six npm packages have completed their public Registry + Vite/Chromium gates. FFmpeg is intentionally pinned to the LGPL `browser-full` profile; the GPL/libx264 profile is not bundled into this package.
 
 ## Consumer usage
 
@@ -229,51 +229,38 @@ npm run npm:smoke:ffmpeg
 
 The jq fixture performs a real JSON transformation. The libarchive fixture creates a TAR in the browser, extracts it with `bsdtar`, and verifies the returned file bytes. The ImageMagick fixture creates a PPM image in the browser, resizes it with the real `magick` CLI, writes PNG, then validates its PNG signature and 2×2 IHDR dimensions. The Ghostscript fixture generates PostScript in-browser, converts it to PDF with the real `pdfwrite` device, and validates `%PDF-` / `%%EOF` framing. The libvips fixture runs under COOP/COEP, decodes a real PNG through `runtime.api`, resizes 2×2 to 1×1, then validates JPEG and WebP output signatures. The FFmpeg fixture runs under COOP/COEP, feeds raw signed 16-bit PCM into the real `ffmpeg` CLI, writes a WAV through `pcm_s16le`, and validates RIFF/WAVE framing.
 
-`.github/workflows/npm-package-smoke.yml` is manually selectable between jq, libarchive, ImageMagick, Ghostscript, libvips and FFmpeg. Pull-request and scheduled live-registry runs stay on the stable published jq package; a new rollout package is run manually immediately after its first registry bootstrap before it is promoted from `canary` to `published`.
+`.github/workflows/npm-package-smoke.yml` is manually selectable between jq, libarchive, ImageMagick, Ghostscript, libvips and FFmpeg. Pull-request and scheduled live-registry runs stay on the stable published jq package, while any package can be selected manually for a package-specific Registry regression.
 
 ## Publishing workflow
 
-`.github/workflows/publish-npm.yml` has three manual modes during the multi-package rollout:
+After v0.13.0, `.github/workflows/publish-npm.yml` has two manual modes:
 
-- `pack` — generate, validate and upload the `.tgz`; no registry write;
-- `bootstrap` — direct-publish a **brand-new package name only** using the temporary `NPM_BOOTSTRAP_TOKEN` secret;
+- `pack` — generate, validate and upload the `.tgz`; no Registry write;
 - `stage` — use npm Trusted Publisher OIDC and `npm stage publish` for an existing package version, followed by maintainer review and 2FA approval.
 
-npm staged publishing cannot create a brand-new package. Therefore each new `@wasm-zoo/*` package requires one bootstrap direct publish before its package-level Trusted Publisher can be configured. The workflow guards bootstrap by checking that the package name does not already exist; once it exists, bootstrap fails and all future releases use staged publishing.
+All six `@wasm-zoo/*` package names already exist on npm and have package-level Trusted Publishers configured. The temporary rollout bootstrap mode, direct `npm publish` path and rollout-only repository secret dependency have been removed. Future updates therefore use no long-lived npm publish credential in GitHub Actions.
 
-### Temporary rollout bootstrap token
+The reviewed flow is:
 
-For the remaining brand-new package names, use one short-lived granular token scoped to `@wasm-zoo` with package read/write permission and bypass-2FA enabled only for this bootstrap window. Store it as the repository secret:
-
-```text
-NPM_BOOTSTRAP_TOKEN
-```
-
-The token is used only by the explicit `bootstrap` step. `pack` never reads it and `stage` uses OIDC instead.
-
-After a package's first publish:
-
-1. configure its npm Trusted Publisher for GitHub `ttomohisa/wasm-zoo`, workflow `publish-npm.yml`;
-2. allow staged publishing rather than direct publishing;
-3. set package publishing access to require 2FA and disallow traditional tokens;
-4. run the package's public Registry/Vite/Chromium smoke;
-5. continue future versions through `stage` only.
-
-After all six package names have been bootstrapped, revoke the rollout token, remove `NPM_BOOTSTRAP_TOKEN`, and remove the bootstrap mode from the workflow.
+1. prepare the npm package from the immutable Zoo Release asset;
+2. run `pack` and inspect the generated artifact when desired;
+3. run `stage`, authenticated by GitHub Actions OIDC;
+4. review and approve the staged version with maintainer 2FA;
+5. run the public Registry/Vite/Chromium smoke for the published version.
 
 ## Promotion interaction
 
 npm distribution versions are independent from Zoo builder versions. A package-only wrapper correction can patch-bump npm without changing the native/Wasm build. A future reviewed upstream promotion still patch-bumps the npm distribution version independently so an npm version is never accidentally reused.
 
-## Rollout order
+## Rollout completion
 
-The intended order is:
+The v0.13.0 npm rollout completed in this order:
 
-1. jq — completed canary;
-2. libarchive — completed generic multi-tool CLI rollout;
-3. ImageMagick — completed single-core image CLI rollout;
-4. Ghostscript — completed single-core document CLI rollout;
-5. libvips — completed library API / pthread / cross-origin-isolation rollout;
-6. FFmpeg — current and final multi-profile / pthread / SharedArrayBuffer canary.
+1. jq — published;
+2. libarchive — published;
+3. ImageMagick — published;
+4. Ghostscript — published;
+5. libvips — published;
+6. FFmpeg — published.
 
-Cross-browser expansion follows after all six have a stable npm install path.
+Cross-browser compatibility work follows in v0.14.0 now that all six packages have a stable npm install path.

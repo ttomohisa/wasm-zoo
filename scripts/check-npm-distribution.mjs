@@ -131,13 +131,13 @@ try {
 
   const workflow = await fs.readFile(path.join(root, ".github", "workflows", "publish-npm.yml"), "utf8");
   need(workflow.includes("options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg]"), "npm distribution workflow must expose jq, libarchive, imagemagick, ghostscript, libvips and ffmpeg");
-  need(workflow.includes("['canary', 'published'].includes(pkg.npm.status)"), "npm distribution workflow must accept both canary and published npm packages");
-  need(workflow.includes("options: [pack, bootstrap, stage]"), "npm distribution workflow must expose pack/bootstrap/stage during package rollout");
+  need(workflow.includes("pkg.npm.status !== 'published'"), "npm distribution workflow must require published npm packages after v0.13 rollout");
+  need(workflow.includes("options: [pack, stage]"), "npm distribution workflow must expose only pack/stage after the v0.13 rollout");
   need(workflow.includes("id-token: write"), "npm distribution workflow must request OIDC id-token permission");
   need(workflow.includes("npm stage publish"), "npm distribution workflow must support staged publishing for existing packages");
-  need(workflow.includes("NPM_BOOTSTRAP_TOKEN") && workflow.includes("npm publish --access public"), "npm workflow must support explicit token-backed bootstrap for brand-new package names");
-  need(workflow.includes("already exists on the npm registry; bootstrap is forbidden"), "npm bootstrap path must refuse package names that already exist");
-  need(workflow.includes("staged publishing cannot bootstrap a brand-new npm package"), "npm stage path must refuse brand-new package names");
+  const retiredBootstrapSecret = ["NPM", "BOOTSTRAP", "TOKEN"].join("_");
+  const retiredDirectPublish = ["npm", "publish", "--access", "public"].join(" ");
+  need(!workflow.includes(retiredBootstrapSecret) && !workflow.includes(retiredDirectPublish) && !workflow.includes("bootstrap"), "npm workflow must not retain temporary bootstrap/token/direct-publish paths after v0.13");
   need(workflow.includes("gh release download"), "npm workflow must package immutable GitHub Release assets");
 
   const smoke = await fs.readFile(path.join(root, "scripts", "smoke-npm-package.mjs"), "utf8");
@@ -166,8 +166,7 @@ try {
   const ghostscriptMeta = await readJson(path.join(root, "packages", "ghostscript", "package.json"));
   const libvipsMeta = await readJson(path.join(root, "packages", "libvips", "package.json"));
   const ffmpegMeta = await readJson(path.join(root, "packages", "ffmpeg", "package.json"));
-  need(jqMeta.npm?.status === "published" && libarchiveMeta.npm?.status === "published" && imagemagickMeta.npm?.status === "published" && ghostscriptMeta.npm?.status === "published" && libvipsMeta.npm?.status === "published", "the first five npm packages must be marked published after registry + browser gates pass");
-  need(ffmpegMeta.npm?.status === "canary", "FFmpeg must remain canary until its bootstrap + live smoke complete");
+  need(jqMeta.npm?.status === "published" && libarchiveMeta.npm?.status === "published" && imagemagickMeta.npm?.status === "published" && ghostscriptMeta.npm?.status === "published" && libvipsMeta.npm?.status === "published" && ffmpegMeta.npm?.status === "published", "all six npm packages must be marked published after Registry + Vite/Chromium gates pass");
   need(libvipsMeta.npm?.profile === "browser-core", "libvips npm distribution must pin browser-core");
   need(ffmpegMeta.npm?.profile === "browser-full", "FFmpeg npm distribution must pin the LGPL browser-full profile");
   need(ffmpegMeta.npm?.packageFiles?.required?.includes("LICENSES/FFmpeg-COPYING.LGPLv2.1"), "FFmpeg npm package must retain the LGPL license copy");
@@ -175,7 +174,7 @@ try {
   const libvipsConsumer = await fs.readFile(path.join(root, "builders", "libvips", "runtime", "wasm-zoo.mjs"), "utf8");
   need(libvipsConsumer.includes("options.coreJsUrl || options.jsUrl"), "libvips Consumer API must map bundler coreJsUrl to its jsUrl loader option");
   need(ghostscriptMeta.npm?.packageFiles?.requiredDirs?.includes("THIRD-PARTY-LICENSES"), "Ghostscript npm distribution must recursively preserve THIRD-PARTY-LICENSES");
-  need(doc.includes("NPM_BOOTSTRAP_TOKEN") && doc.includes("brand-new"), "npm docs must explain temporary brand-new-package bootstrap credentials");
+  need(!doc.includes(retiredBootstrapSecret) && doc.includes("Trusted Publisher") && doc.includes("stage"), "npm docs must describe the post-rollout Trusted Publisher/staged-publishing model without bootstrap credentials");
 } catch (error) {
   errors.push(error?.stack || String(error));
 } finally {
