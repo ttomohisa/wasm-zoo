@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-08T08:11:59.945Z",
-  "hasUpdates": false,
+  "generatedAt": "2026-09-09T08:15:27.921Z",
+  "hasUpdates": true,
   "packages": [
     {
       "slug": "ffmpeg",
@@ -142,18 +142,18 @@
       "pinned": "10.07.1",
       "pinnedRef": "gs10.07.1",
       "pinnedReleased": "2026-05-19",
-      "latest": "10.07.1",
-      "latestRef": "gs10071",
-      "latestCommit": "f655225dde85a4281289fafed18feb5794d1a1fb",
-      "latestReleased": "2026-05-19T12:34:00Z",
-      "updateAvailable": false,
-      "lagDays": 0,
+      "latest": "10.08.0",
+      "latestRef": "gs10080",
+      "latestCommit": "b084b535a1f5e10d23d34f23a0ea057bb67d8f9d",
+      "latestReleased": "2026-09-08T12:29:24Z",
+      "updateAvailable": true,
+      "lagDays": 112,
       "gap": {
-        "kind": "current",
-        "label": "Current",
-        "versionsBehind": 0
+        "kind": "behind",
+        "label": "1 minor behind",
+        "versionsBehind": 1
       },
-      "url": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/tag/gs10071",
+      "url": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/tag/gs10080",
       "candidate": {
         "mode": "none",
         "profiles": [

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-08T08:12:08.000Z",
+  "generatedAt": "2026-09-09T08:15:37.732Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -246,18 +246,18 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/ghostscript-playground/"
       },
       "freshness": {
-        "state": "ok",
-        "label": "Current"
+        "state": "warn",
+        "label": "1 minor behind"
       },
       "overall": {
-        "state": "ok",
-        "label": "Healthy"
+        "state": "warn",
+        "label": "Upstream review"
       }
     }
   ],
   "summary": {
-    "healthy": 6,
-    "warning": 0,
+    "healthy": 5,
+    "warning": 1,
     "error": 0,
     "supplyChainPublished": 6,
     "total": 6
