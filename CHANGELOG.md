@@ -2,13 +2,19 @@
 
 ## Unreleased
 
+- add `@wasm-zoo/ffmpeg@0.2.7` as the sixth and final npm rollout canary, deriving the LGPL `browser-full` core/metadata/license payload from immutable `ffmpeg-v0.2.7` while keeping the GPL/libx264 `browser-full-gpl` profile outside the npm tarball;
+- add a cross-origin-isolated Vite/Chromium FFmpeg npm smoke that feeds real signed 16-bit PCM through the upstream `ffmpeg` CLI, writes WAV with `pcm_s16le`, and validates RIFF/WAVE framing;
+- record libvips as `published` after `@wasm-zoo/libvips@0.5.2` completed its Registry + Vite/Chromium pthread/library-API smoke;
+
 - add `@wasm-zoo/libvips@0.5.2` as the fifth npm rollout canary, deriving the browser-core `vips.js` / `vips.wasm` library payload from immutable `libvips-v0.5.2` while preserving the reviewed LGPL/wasm-vips/third-party notices;
 - add npm profile pinning so a one-profile tarball cannot be requested as a different Zoo profile, and map libvips bundler-emitted `vips.js` through Consumer API `coreJsUrl` to the native `jsUrl` loader option;
 - make the generic Vite/Chromium npm smoke server cross-origin isolated with COOP/COEP/CORP and add a real libvips PNG decode → resize → JPEG/WebP library-API smoke;
-- record Ghostscript as `published` after `@wasm-zoo/ghostscript@0.7.1` completed its Registry + Vite/Chromium smoke;- add `@wasm-zoo/ghostscript@0.7.1` as the fourth npm rollout canary, deriving its core/metadata payload from immutable `ghostscript-v0.7.1` and preserving `LICENSE-Ghostscript.txt` plus the complete reviewed `THIRD-PARTY-LICENSES/` tree;
+- record Ghostscript as `published` after `@wasm-zoo/ghostscript@0.7.1` completed its Registry + Vite/Chromium smoke;
+- add `@wasm-zoo/ghostscript@0.7.1` as the fourth npm rollout canary, deriving its core/metadata payload from immutable `ghostscript-v0.7.1` and preserving `LICENSE-Ghostscript.txt` plus the complete reviewed `THIRD-PARTY-LICENSES/` tree;
 - make the Ghostscript browser wrapper honor bundler-emitted `gs-core.js` / `gs-core.wasm` URLs and add a real Vite/Chromium PostScript-to-PDF smoke that validates `%PDF-` / `%%EOF` framing;
 - extend the generic npm package generator and tarball-install contract to copy reviewed Release directories recursively, rather than dropping nested license inventories;
-- record ImageMagick as `published` after `@wasm-zoo/imagemagick@0.4.3` completed its Registry + Vite/Chromium smoke;- add `@wasm-zoo/imagemagick@0.4.3` as the third npm rollout canary, deriving its binary/core/metadata payload from immutable `imagemagick-v0.4.3` while overlaying the reviewed browser/Consumer API/bundler wrappers;
+- record ImageMagick as `published` after `@wasm-zoo/imagemagick@0.4.3` completed its Registry + Vite/Chromium smoke;
+- add `@wasm-zoo/imagemagick@0.4.3` as the third npm rollout canary, deriving its binary/core/metadata payload from immutable `imagemagick-v0.4.3` while overlaying the reviewed browser/Consumer API/bundler wrappers;
 - make the ImageMagick browser wrapper honor bundler-emitted `magick-core.js` / `magick-core.wasm` URLs and add a real Vite/Chromium resize-to-PNG smoke that validates the output signature and dimensions;
 - promote jq, libarchive and ImageMagick npm metadata to `published` after their Registry + production-browser gates;
 - generalize the npm distribution generator and contract checks from the jq-only canary into package metadata-driven infrastructure shared by multiple Zoo packages;

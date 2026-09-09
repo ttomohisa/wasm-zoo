@@ -8,7 +8,7 @@ on:
         required: true
         default: jq
         type: choice
-        options: [jq, libarchive, imagemagick, ghostscript, libvips]
+        options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg]
   pull_request:
     paths:
       - 'scripts/smoke-npm-*.mjs'
@@ -20,10 +20,12 @@ on:
       - 'packages/imagemagick/package.json'
       - 'packages/libvips/package.json'
       - 'packages/ghostscript/package.json'
+      - 'packages/ffmpeg/package.json'
       - 'builders/libarchive/runtime/**'
       - 'builders/imagemagick/runtime/**'
       - 'builders/libvips/runtime/**'
       - 'builders/ghostscript/runtime/**'
+      - 'builders/ffmpeg/runtime/**'
       - 'package.json'
   schedule:
     - cron: '17 3 * * 1'

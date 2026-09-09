@@ -1,6 +1,6 @@
 # npm distribution
 
-WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`. The v0.13 rollout generalizes that canary infrastructure so additional Zoo packages can be distributed from the same reviewed GitHub Release assets. The second package is `@wasm-zoo/libarchive`; ImageMagick completed the third rollout, and Ghostscript completed the fourth rollout, and the fifth rollout target is `@wasm-zoo/libvips`.
+WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`. The v0.13 rollout generalizes that canary infrastructure so additional Zoo packages can be distributed from the same reviewed GitHub Release assets. The second package is `@wasm-zoo/libarchive`; ImageMagick, Ghostscript and libvips completed the third through fifth rollouts, and the sixth/final rollout target is `@wasm-zoo/ffmpeg`.
 
 ## Distribution contract
 
@@ -20,9 +20,10 @@ Historical GitHub Release assets are never rewritten. npm-only wrapper/package c
 | `@wasm-zoo/libarchive` | `0.3.1` | libarchive 3.8.9 | `0.3.1` | `libarchive-v0.3.1` | published |
 | `@wasm-zoo/imagemagick` | `0.4.3` | ImageMagick 7.1.2-31 | `0.4.3` | `imagemagick-v0.4.3` | published |
 | `@wasm-zoo/ghostscript` | `0.7.1` | Ghostscript 10.07.1 | `0.7.1` | `ghostscript-v0.7.1` | published |
-| `@wasm-zoo/libvips` | `0.5.2` | libvips 8.18.6 | `0.5.2` | `libvips-v0.5.2` / `browser-core` | rollout canary |
+| `@wasm-zoo/libvips` | `0.5.2` | libvips 8.18.6 | `0.5.2` | `libvips-v0.5.2` / `browser-core` | published |
+| `@wasm-zoo/ffmpeg` | `0.2.7` | FFmpeg 9.0.1 | `0.2.7` | `ffmpeg-v0.2.7` / `browser-full` | rollout canary |
 
-jq, libarchive, ImageMagick and Ghostscript have completed their Registry + Vite/Chromium gates. libvips is the fifth rollout canary and is the first library-API package; its npm distribution is intentionally pinned to `browser-core`.
+jq, libarchive, ImageMagick, Ghostscript and libvips have completed their Registry + Vite/Chromium gates. FFmpeg is the sixth/final rollout canary and is intentionally pinned to the LGPL `browser-full` profile; the GPL/libx264 profile is not bundled into this package.
 
 ## Consumer usage
 
@@ -146,11 +147,38 @@ try {
 
 The npm tarball bundles only the reviewed `browser-core` profile (JPEG/PNG/WebP). `load({ profile: "browser-full" })` is rejected by the npm entry rather than silently using browser-core assets under a browser-full label. libvips uses pthreads, so hosting must provide `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` (or equivalent cross-origin isolation) so `SharedArrayBuffer` is available.
 
+### FFmpeg
+
+```bash
+npm install @wasm-zoo/ffmpeg
+```
+
+```js
+import { load } from "@wasm-zoo/ffmpeg";
+
+const ffmpeg = await load();
+try {
+  const result = await ffmpeg.exec([
+    "-i", "/input.mp4",
+    "-c", "copy",
+    "/output.mp4"
+  ], {
+    files: [{ name: "/input.mp4", data: inputBytes }],
+    outputs: ["/output.mp4"]
+  });
+  console.log(result.files[0]);
+} finally {
+  ffmpeg.dispose();
+}
+```
+
+`@wasm-zoo/ffmpeg` intentionally bundles only the LGPL `browser-full` profile. The repository's `browser-full-gpl` / libx264 build remains a separate immutable Release profile and is not silently mixed into the npm tarball. `load({ profile: "browser-full-gpl" })` is rejected. FFmpeg uses pthreads and therefore requires cross-origin isolation / `SharedArrayBuffer`, just like libvips.
+
 ## Bundler asset handling
 
 The npm entry uses static `new URL(..., import.meta.url)` expressions for every core JavaScript/Wasm pair so modern bundlers can emit hashed production assets.
 
-- jq, ImageMagick, Ghostscript and libvips each forward one emitted `coreJsUrl` / `wasmUrl` pair into Consumer API v1. libvips maps the emitted JavaScript asset to its native `jsUrl` loader option.
+- jq, ImageMagick, Ghostscript, libvips and FFmpeg each forward one emitted `coreJsUrl` / `wasmUrl` pair into Consumer API v1. libvips maps the emitted JavaScript asset to its native `jsUrl` loader option.
 - libarchive exports a per-tool asset map and forwards it as `toolAssets`, allowing each CLI Worker to use the actual emitted `*-core.js` and `*-core.wasm` URL instead of assuming unhashed filenames.
 - Ghostscript also exercises recursive immutable-Release directory copying so the complete `THIRD-PARTY-LICENSES/` tree is retained in the npm tarball.
 
@@ -183,6 +211,7 @@ npm run npm:smoke -- --slug libarchive
 npm run npm:smoke -- --slug imagemagick
 npm run npm:smoke -- --slug ghostscript
 npm run npm:smoke -- --slug libvips
+npm run npm:smoke -- --slug ffmpeg
 ```
 
 or the convenience scripts:
@@ -193,13 +222,14 @@ npm run npm:smoke:libarchive
 npm run npm:smoke:imagemagick
 npm run npm:smoke:ghostscript
 npm run npm:smoke:libvips
+npm run npm:smoke:ffmpeg
 ```
 
 `scripts/smoke-npm-package.mjs` installs the exact public npm distribution into a clean app, uses pinned Vite and Playwright versions, performs a production build, checks the emitted Wasm asset count, serves `dist/` with an in-process Node HTTP server, executes the package in Chromium, closes browser/server resources, and emits an explicit cleanup marker.
 
-The jq fixture performs a real JSON transformation. The libarchive fixture creates a TAR in the browser, extracts it with `bsdtar`, and verifies the returned file bytes. The ImageMagick fixture creates a PPM image in the browser, resizes it with the real `magick` CLI, writes PNG, then validates its PNG signature and 2×2 IHDR dimensions. The Ghostscript fixture generates PostScript in-browser, converts it to PDF with the real `pdfwrite` device, and validates `%PDF-` / `%%EOF` framing. The libvips fixture runs under COOP/COEP, decodes a real PNG through `runtime.api`, resizes 2×2 to 1×1, then validates JPEG and WebP output signatures.
+The jq fixture performs a real JSON transformation. The libarchive fixture creates a TAR in the browser, extracts it with `bsdtar`, and verifies the returned file bytes. The ImageMagick fixture creates a PPM image in the browser, resizes it with the real `magick` CLI, writes PNG, then validates its PNG signature and 2×2 IHDR dimensions. The Ghostscript fixture generates PostScript in-browser, converts it to PDF with the real `pdfwrite` device, and validates `%PDF-` / `%%EOF` framing. The libvips fixture runs under COOP/COEP, decodes a real PNG through `runtime.api`, resizes 2×2 to 1×1, then validates JPEG and WebP output signatures. The FFmpeg fixture runs under COOP/COEP, feeds raw signed 16-bit PCM into the real `ffmpeg` CLI, writes a WAV through `pcm_s16le`, and validates RIFF/WAVE framing.
 
-`.github/workflows/npm-package-smoke.yml` is manually selectable between jq, libarchive, ImageMagick, Ghostscript and libvips. Pull-request and scheduled live-registry runs stay on the stable published jq package; a new rollout package is run manually immediately after its first registry bootstrap before it is promoted from `canary` to `published`.
+`.github/workflows/npm-package-smoke.yml` is manually selectable between jq, libarchive, ImageMagick, Ghostscript, libvips and FFmpeg. Pull-request and scheduled live-registry runs stay on the stable published jq package; a new rollout package is run manually immediately after its first registry bootstrap before it is promoted from `canary` to `published`.
 
 ## Publishing workflow
 
@@ -243,7 +273,7 @@ The intended order is:
 2. libarchive — completed generic multi-tool CLI rollout;
 3. ImageMagick — completed single-core image CLI rollout;
 4. Ghostscript — completed single-core document CLI rollout;
-5. libvips — current library API / pthread / cross-origin-isolation canary;
-6. FFmpeg — multi-profile / pthread / SharedArrayBuffer case.
+5. libvips — completed library API / pthread / cross-origin-isolation rollout;
+6. FFmpeg — current and final multi-profile / pthread / SharedArrayBuffer canary.
 
 Cross-browser expansion follows after all six have a stable npm install path.

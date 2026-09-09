@@ -50,7 +50,7 @@ Core fields:
 - `assetMode` — `single` for one core pair or `tool-map` for packages such as libarchive with multiple CLI cores;
 - `assets` — ids plus `coreJs` / `wasm` filenames that the generated `index.mjs` references with static `new URL(..., import.meta.url)` expressions.
 
-The generated npm entry is pinned to the declared `npm.profile`. Passing a different `profile` at runtime is rejected so a one-profile npm tarball cannot be mislabeled as another Zoo profile. This is especially important for libvips, whose npm rollout bundles `browser-core` while the repository also publishes `browser-full`.
+The generated npm entry is pinned to the declared `npm.profile`. Passing a different `profile` at runtime is rejected so a one-profile npm tarball cannot be mislabeled as another Zoo profile. This is especially important for libvips, whose npm rollout bundles `browser-core` while the repository also publishes `browser-full`, and for FFmpeg, whose npm rollout bundles the LGPL `browser-full` profile while the repository also publishes the GPL/libx264 `browser-full-gpl` profile.
 
 `npm.packageFiles.required` and `.optional` declare individual files copied from the immutable Release. `requiredDirs` / `optionalDirs` may additionally preserve reviewed directory trees recursively; Ghostscript uses this for `THIRD-PARTY-LICENSES/`. The generator overlays only the current reviewed wrapper/Consumer API/bundler entry; the native/Wasm core, provenance, SBOM and other release metadata remain derived from the declared immutable Release asset.
 

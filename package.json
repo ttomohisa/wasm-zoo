@@ -24,6 +24,7 @@
     "npm:smoke:libarchive": "node scripts/smoke-npm-package.mjs --slug libarchive",
     "npm:smoke:imagemagick": "node scripts/smoke-npm-package.mjs --slug imagemagick",
     "npm:smoke:ghostscript": "node scripts/smoke-npm-package.mjs --slug ghostscript",
-    "npm:smoke:libvips": "node scripts/smoke-npm-package.mjs --slug libvips"
+    "npm:smoke:libvips": "node scripts/smoke-npm-package.mjs --slug libvips",
+    "npm:smoke:ffmpeg": "node scripts/smoke-npm-package.mjs --slug ffmpeg"
   }
 }
