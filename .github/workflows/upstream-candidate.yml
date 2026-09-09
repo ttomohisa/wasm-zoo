@@ -274,7 +274,7 @@ jobs:
           gh issue comment "${{ inputs.issue_number }}" --repo "$GITHUB_REPOSITORY" --body "$body"
 
   promotion-pr:
-    if: needs.report.outputs.result == 'success'
+    if: ${{ always() && needs.report.outputs.result == 'success' }}
     needs: [report]
     runs-on: ubuntu-latest
     permissions:

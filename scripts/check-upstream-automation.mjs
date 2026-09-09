@@ -64,6 +64,7 @@ for (const marker of [
   "ghostscript) result='${{ needs.ghostscript.result }}' ;;",
   'ghostscript) node builders/ghostscript/scripts/check-repository.mjs ;;'
 ]) need(workflow.includes(marker), `candidate workflow missing Ghostscript contract: ${marker}`);
+need(workflow.includes("  promotion-pr:") && workflow.includes("    if: ${{ always() && needs.report.outputs.result == 'success' }}") && workflow.includes("    needs: [report]"), "promotion PR job must use always() so skipped non-selected candidate jobs cannot suppress a successful promotion");
 
 const env = await read('builders/ghostscript/versions.env');
 const pins = Object.fromEntries(env.split(/\r?\n/).filter((line) => /^[A-Z0-9_]+=/.test(line)).map((line) => { const i = line.indexOf('='); return [line.slice(0, i), line.slice(i + 1)]; }));
