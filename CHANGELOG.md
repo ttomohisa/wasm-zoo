@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- promote Ghostscript 10.08.0 to builder 0.7.2 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `4d175558193ad50d6fbc329fe28dbb48af626126`;
+
 - fix automatic promotion PR scheduling so a successful selected upstream candidate still reaches the review-only promotion job when the other package-specific candidate jobs are skipped;
 
 - make Ghostscript upstream promotions automatic by resolving the official source Release asset, GitHub-published SHA-256 digest and matching GhostPDL source commit before candidate build, then carrying the same immutable pins into the review-only promotion PR;
