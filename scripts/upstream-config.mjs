@@ -20,6 +20,19 @@ export const automaticCandidateConfigs = {
     buildWorkflow: "build-imagemagick.yml",
     displayName: "ImageMagick"
   },
+  ghostscript: {
+    dir: "ghostscript",
+    refKey: "GHOSTSCRIPT_REF",
+    commitKey: "GHOSTSCRIPT_COMMIT",
+    buildWorkflow: "build-ghostscript.yml",
+    displayName: "Ghostscript",
+    extraEnv: {
+      version: "GHOSTSCRIPT_VERSION",
+      "release-tag": "GHOSTSCRIPT_RELEASE_TAG",
+      "source-url": "GHOSTSCRIPT_SOURCE_URL",
+      "source-sha256": "GHOSTSCRIPT_SOURCE_SHA256"
+    }
+  },
   jq: {
     dir: "jq",
     refKey: "JQ_REF",

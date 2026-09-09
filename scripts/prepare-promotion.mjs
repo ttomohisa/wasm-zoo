@@ -67,7 +67,8 @@ async function resolveReleasedDate() {
   }
   const repo = pkg.tracker.repository;
   if (pkg.tracker.type === "github-releases") {
-    const release = await githubJson(`https://api.github.com/repos/${repo}/releases/tags/${encodeURIComponent(values.ref)}`);
+    const releaseRef = values["release-tag"] || values.ref;
+    const release = await githubJson(`https://api.github.com/repos/${repo}/releases/tags/${encodeURIComponent(releaseRef)}`);
     const date = release.published_at || release.created_at;
     if (!date) throw new Error(`Could not resolve release date for ${repo} ${values.ref}`);
     return new Date(date).toISOString().slice(0, 10);
@@ -90,6 +91,15 @@ let versionsText = await fs.readFile(versionsFile, "utf8");
 versionsText = envReplace(versionsText, "BUILDER_VERSION", newBuilder, versionsFile);
 versionsText = envReplace(versionsText, config.refKey, values.ref, versionsFile);
 versionsText = envReplace(versionsText, config.commitKey, values.commit, versionsFile);
+
+if (config.extraEnv) {
+  for (const [argKey, envKey] of Object.entries(config.extraEnv)) {
+    const value = values[argKey];
+    if (!value) throw new Error(`Missing --${argKey} for ${values.slug} automatic promotion`);
+    if (argKey === "source-sha256" && !/^[0-9a-f]{64}$/i.test(value)) throw new Error("--source-sha256 must be a 64-character SHA-256 digest");
+    versionsText = envReplace(versionsText, envKey, value, versionsFile);
+  }
+}
 
 let submoduleCommit = null;
 if (config.submodule) {
@@ -212,6 +222,11 @@ if (process.env.GITHUB_OUTPUT) {
 const refreshedEnv = await readEnv(versionsFile);
 if (refreshedEnv.BUILDER_VERSION !== newBuilder || refreshedEnv[config.refKey] !== values.ref || refreshedEnv[config.commitKey] !== values.commit) {
   throw new Error("Promotion pin verification failed after writing versions.env");
+}
+if (config.extraEnv) {
+  for (const [argKey, envKey] of Object.entries(config.extraEnv)) {
+    if (refreshedEnv[envKey] !== values[argKey]) throw new Error(`Promotion extra pin verification failed for ${envKey}`);
+  }
 }
 
 console.log(`[OK] prepared promotion ${values.slug} ${oldVersion} -> ${values.version}; builder ${oldBuilder} -> ${newBuilder}`);

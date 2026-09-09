@@ -216,8 +216,12 @@ if (ghostscript) {
   assert(env.GHOSTSCRIPT_VERSION === ghostscript.upstream.version, `Ghostscript catalog version ${ghostscript.upstream.version} does not match GHOSTSCRIPT_VERSION=${env.GHOSTSCRIPT_VERSION}`);
   assert(env.GHOSTSCRIPT_REF === ghostscript.upstream.ref, `Ghostscript upstream ref ${ghostscript.upstream.ref} does not match GHOSTSCRIPT_REF=${env.GHOSTSCRIPT_REF}`);
   assert(env.BUILDER_VERSION === ghostscript.zoo.builderVersion, `Ghostscript builderVersion ${ghostscript.zoo.builderVersion} does not match versions.env ${env.BUILDER_VERSION}`);
-  assert(env.GHOSTSCRIPT_COMMIT === "053fa3f79d74e774b11fbf399495d4ec65bb33e7", "Ghostscript exact gs10.07.1 source commit pin is missing");
-  assert(env.GHOSTSCRIPT_SOURCE_SHA256 === "1cdb766de8db8f1e589c817f09c5855ea5f65dfc8540e465a69ac14c18416025", "Ghostscript exact official source SHA-256 pin is missing");
+  assert(/^[0-9a-f]{40}$/i.test(env.GHOSTSCRIPT_COMMIT || ""), "Ghostscript exact source commit pin is missing");
+  assert(/^[0-9a-f]{64}$/i.test(env.GHOSTSCRIPT_SOURCE_SHA256 || ""), "Ghostscript exact official source SHA-256 pin is missing");
+  const expectedGhostscriptReleaseTag = `gs${String(ghostscript.upstream.version).replaceAll(".", "")}`;
+  assert(env.GHOSTSCRIPT_RELEASE_TAG === expectedGhostscriptReleaseTag, `Ghostscript official release tag must be ${expectedGhostscriptReleaseTag}`);
+  const expectedGhostscriptSourceUrl = `https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/${expectedGhostscriptReleaseTag}/ghostscript-${ghostscript.upstream.version}.tar.xz`;
+  assert(env.GHOSTSCRIPT_SOURCE_URL === expectedGhostscriptSourceUrl, "Ghostscript official source URL must match the reviewed version/release tag");
   assert(env.EMSCRIPTEN_COMMIT === "4483d70a78098ed5d860dff2dc21f3025b2da2ee", "Ghostscript exact Emscripten 6.0.7 commit pin is missing");
   const ids = new Set(ghostscript.profiles.map((profile) => profile.id));
   assert(ids.has("browser-full"), "Ghostscript catalog must publish browser-full");
@@ -234,7 +238,12 @@ if (ghostscript) {
   assert(ghostscript.release?.checksumsAsset === "SHA256SUMS.txt", "Ghostscript release.checksumsAsset must be SHA256SUMS.txt");
   assert(ghostscript.integration?.example?.includes("WasmZooGhostscript.loadHosted"), "Ghostscript integration example must use the public runtime wrapper");
   assert(ghostscript.integration?.example?.includes("gs.dispose()"), "Ghostscript integration example must dispose the runner");
-  assert(ghostscript.tracker?.candidateMode === "none", "Ghostscript automatic candidate substitution must remain source-digest gated");
+  assert(ghostscript.tracker?.candidateMode === "auto", "Ghostscript must use digest-pinned automatic candidates");
+  assert(ghostscript.tracker?.candidateSource?.repository === "ArtifexSoftware/ghostpdl", "Ghostscript automatic candidates must resolve the GhostPDL source repository");
+  assert(ghostscript.tracker?.candidateSource?.refTemplate === "gs{version}", "Ghostscript automatic candidates must use gs{version} source refs");
+  assert(ghostscript.tracker?.candidateSource?.releaseTagTemplate === "gs{versionCompact}", "Ghostscript automatic candidates must bind the official release tag");
+  assert(ghostscript.tracker?.candidateSource?.assetNameTemplate === "ghostscript-{version}.tar.xz", "Ghostscript automatic candidates must bind the official tar.xz source asset");
+  assert(ghostscript.tracker?.candidateSource?.digestAlgorithm === "sha256", "Ghostscript automatic candidates must require the official SHA-256 asset digest");
 }
 
 const jq = packages.find((pkg) => pkg.slug === "jq");

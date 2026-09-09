@@ -1362,10 +1362,17 @@
         "type": "github-releases",
         "repository": "ArtifexSoftware/ghostpdl-downloads",
         "versionPattern": "(\\d+\\.\\d+\\.\\d+)",
-        "candidateMode": "none",
+        "candidateMode": "auto",
         "candidateProfiles": [
           "browser-full"
-        ]
+        ],
+        "candidateSource": {
+          "repository": "ArtifexSoftware/ghostpdl",
+          "refTemplate": "gs{version}",
+          "releaseTagTemplate": "gs{versionCompact}",
+          "assetNameTemplate": "ghostscript-{version}.tar.xz",
+          "digestAlgorithm": "sha256"
+        }
       },
       "zoo": {
         "builderVersion": "0.7.1",
@@ -1441,7 +1448,7 @@
         "v0.7.1 is the first metadata-enabled Ghostscript patch release for WASM Zoo v0.8.0: the WebAssembly feature set and upstream pin are unchanged while standalone SLSA provenance and CycloneDX SBOM assets are added to the release contract.",
         "Official Ghostscript 10.07.1 release source archive is pinned by SHA-256 in addition to the source branch commit.",
         "The real Chromium smoke test renders a PDF to PNG and converts PostScript to PDF with pdfwrite.",
-        "Automatic upstream candidate substitution is intentionally disabled for Ghostscript until the watcher also captures and verifies the new official source-asset digest.",
+        "Ghostscript upstream candidates are automatic only when the watcher resolves the matching official ghostscript-<version>.tar.xz Release asset, verifies its GitHub-published SHA-256 digest, and resolves the exact gs<version> source commit from ArtifexSoftware/ghostpdl before building.",
         "GhostPCL and GhostXPS remain outside this package even though they share the GhostPDL source tree."
       ],
       "release": {

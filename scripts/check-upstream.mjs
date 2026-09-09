@@ -17,6 +17,12 @@ async function githubJson(url) {
   return response.json();
 }
 
+function expandTemplate(template, version) {
+  return String(template || "")
+    .replaceAll("{version}", version)
+    .replaceAll("{versionCompact}", String(version).replaceAll(".", ""));
+}
+
 function parseVersion(text, pattern) {
   const value = String(text || "");
   if (pattern) {
@@ -48,7 +54,41 @@ async function latestFor(pkg) {
     const sourceText = tracker.versionSource === "name" ? release.name : `${release.tag_name || ""} ${release.name || ""}`;
     const version = parseVersion(sourceText, tracker.versionPattern);
     if (!version) throw new Error(`release version did not match ${tracker.versionPattern || "default parser"}`);
-    const ref = release.tag_name;
+    const releaseRef = release.tag_name;
+
+    if (tracker.candidateSource) {
+      const expectedReleaseTag = expandTemplate(tracker.candidateSource.releaseTagTemplate, version);
+      if (expectedReleaseTag && releaseRef !== expectedReleaseTag) throw new Error(`unexpected release tag ${releaseRef}; expected ${expectedReleaseTag}`);
+      const source = tracker.candidateSource;
+      const sourceRef = expandTemplate(source.refTemplate, version);
+      const assetName = expandTemplate(source.assetNameTemplate, version);
+      if (!source.repository || !sourceRef || !assetName) throw new Error("candidateSource configuration is incomplete");
+      const sourceCommit = await commitForRef(source.repository, sourceRef);
+      const asset = (release.assets || []).find((item) => item.name === assetName);
+      if (!asset) throw new Error(`official candidate source asset not found: ${assetName}`);
+      const algorithm = source.digestAlgorithm || "sha256";
+      const prefix = `${algorithm}:`;
+      const digest = String(asset.digest || "");
+      if (!digest.startsWith(prefix)) throw new Error(`official source asset ${assetName} is missing a ${algorithm} digest`);
+      const digestValue = digest.slice(prefix.length);
+      if (algorithm === "sha256" && !/^[0-9a-f]{64}$/i.test(digestValue)) throw new Error(`invalid SHA-256 digest for ${assetName}`);
+      if (!asset.browser_download_url) throw new Error(`official source asset ${assetName} has no download URL`);
+      return {
+        version,
+        ref: sourceRef,
+        commit: sourceCommit.sha,
+        released: release.published_at || release.created_at || sourceCommit.date,
+        url: release.html_url,
+        candidateSource: {
+          releaseTag: releaseRef,
+          assetName,
+          sourceUrl: asset.browser_download_url,
+          sourceSha256: algorithm === "sha256" ? digestValue.toLowerCase() : null
+        }
+      };
+    }
+
+    const ref = releaseRef;
     const commit = await commitForRef(repo, ref);
     return {
       version,
@@ -136,7 +176,8 @@ for (const pkg of packages) {
       url: latest.url,
       candidate: {
         mode: pkg.tracker.candidateMode || "none",
-        profiles: pkg.tracker.candidateProfiles || []
+        profiles: pkg.tracker.candidateProfiles || [],
+        ...(latest.candidateSource ? { source: latest.candidateSource } : {})
       }
     });
   } catch (error) {
