@@ -30,7 +30,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 | libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes | `@wasm-zoo/libarchive@0.3.1` |
 | ImageMagick | 7.1.2-31 | 0.4.3 | `browser-full` | yes | `@wasm-zoo/imagemagick@0.4.3` |
 | libvips | 8.18.6 | 0.5.2 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.2` |
-| Ghostscript | 10.07.1 | 0.7.1 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.1` |
+| Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.1` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 
 The project version is **WASM Zoo v0.13.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
@@ -410,7 +410,7 @@ console.log(result.stdout);
 jq.dispose();
 ```
 
-## Ghostscript 10.07.1
+## Ghostscript 10.08.0
 
 WASM Zoo v0.7.0 adds Ghostscript as the fifth available package. The build uses the official `ghostscript-10.07.1.tar.xz` release archive, verifies its pinned SHA-256 before extraction, and records the corresponding `gs10.07.1` source branch commit for provenance. The browser artifact exposes the upstream `gs` CLI rather than a reduced custom API.
 
@@ -433,15 +433,15 @@ On bash:
 Release tag:
 
 ```bash
-git tag -a ghostscript-v0.7.1 -m "WASM Zoo Ghostscript v0.7.1"
-git push origin ghostscript-v0.7.1
+git tag -a ghostscript-v0.7.2 -m "WASM Zoo Ghostscript v0.7.2"
+git push origin ghostscript-v0.7.2
 ```
 
 ### Ghostscript browser API
 
 ```js
 const gs = WasmZooGhostscript.loadHosted({
-  baseUrl: "/assets/ghostscript/10.07.1/browser-full/"
+  baseUrl: "/assets/ghostscript/10.08.0/browser-full/"
 });
 
 try {

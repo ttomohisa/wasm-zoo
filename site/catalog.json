@@ -1351,9 +1351,9 @@
       "status": "available",
       "order": 40,
       "upstream": {
-        "version": "10.07.1",
-        "ref": "gs10.07.1",
-        "released": "2026-05-19",
+        "version": "10.08.0",
+        "ref": "gs10.08.0",
+        "released": "2026-09-08",
         "homepage": "https://www.ghostscript.com/",
         "repository": "https://github.com/ArtifexSoftware/ghostpdl",
         "license": "AGPL-3.0-or-later / commercial options upstream"
@@ -1375,7 +1375,7 @@
         }
       },
       "zoo": {
-        "builderVersion": "0.7.1",
+        "builderVersion": "0.7.2",
         "toolchain": "Emscripten 6.0.7",
         "buildModel": "official-release-archive-upstream-cli",
         "reproducible": true,
@@ -1413,7 +1413,7 @@
           "output": "Generic Ghostscript gs CLI for local PostScript/PDF rendering and conversion",
           "binaryLicense": "AGPL-3.0-or-later",
           "size": "Loaded from the published release manifest",
-          "releaseAsset": "ghostscript-browser-full-10.07.1-zoo-0.7.1.zip",
+          "releaseAsset": "ghostscript-browser-full-10.08.0-zoo-0.7.2.zip",
           "playground": true,
           "playgroundPath": "./ghostscript-playground/"
         }
@@ -1435,16 +1435,17 @@
       "comparison": [
         {
           "name": "Upstream native",
-          "version": "10.07.1",
+          "version": "10.08.0",
           "note": "Full native Ghostscript can integrate with operating-system print/display services and optional platform libraries."
         },
         {
           "name": "WASM Zoo",
-          "version": "10.07.1",
+          "version": "10.08.0",
           "note": "Current Ghostscript gs CLI with browser-oriented file-output devices and native desktop integrations removed."
         }
       ],
       "notes": [
+        "v0.7.2 promotes Ghostscript 10.08.0 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
         "v0.7.1 is the first metadata-enabled Ghostscript patch release for WASM Zoo v0.8.0: the WebAssembly feature set and upstream pin are unchanged while standalone SLSA provenance and CycloneDX SBOM assets are added to the release contract.",
         "Official Ghostscript 10.07.1 release source archive is pinned by SHA-256 in addition to the source branch commit.",
         "The real Chromium smoke test renders a PDF to PNG and converts PostScript to PDF with pdfwrite.",
@@ -1452,10 +1453,10 @@
         "GhostPCL and GhostXPS remain outside this package even though they share the GhostPDL source tree."
       ],
       "release": {
-        "tag": "ghostscript-v0.7.1",
-        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.1",
-        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/ghostscript-v0.7.1/",
-        "sourceAsset": "ghostscript-sources-10.07.1-zoo-0.7.1.tar.gz",
+        "tag": "ghostscript-v0.7.2",
+        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.2",
+        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/ghostscript-v0.7.2/",
+        "sourceAsset": "ghostscript-sources-10.08.0-zoo-0.7.2.tar.gz",
         "checksumsAsset": "SHA256SUMS.txt"
       },
       "referenceWasm": {
@@ -1543,7 +1544,7 @@
       "npm": {
         "status": "published",
         "package": "@wasm-zoo/ghostscript",
-        "version": "0.7.1",
+        "version": "0.7.2",
         "profile": "browser-full",
         "entry": "index.mjs",
         "bundledAssets": true,
