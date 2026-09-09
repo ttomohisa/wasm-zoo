@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## v0.13.0
+
+- complete the six-package npm rollout with public Registry + package-specific Vite/Chromium smoke gates for jq, libarchive, ImageMagick, Ghostscript, libvips and FFmpeg;
+- record `@wasm-zoo/ffmpeg@0.2.7` as `published` after its pthread/COOP-COEP raw-PCM → WAV live smoke passed;
+- retire the temporary brand-new-package bootstrap/direct-publish path after all six package names were created, leaving `pack` plus Trusted Publisher OIDC / `npm stage publish` as the maintained publication workflow;
+- finalize the project version as WASM Zoo v0.13.0 while keeping every package's upstream pin, Zoo builder version and immutable GitHub Release unchanged;
 - add `@wasm-zoo/ffmpeg@0.2.7` as the sixth and final npm rollout canary, deriving the LGPL `browser-full` core/metadata/license payload from immutable `ffmpeg-v0.2.7` while keeping the GPL/libx264 `browser-full-gpl` profile outside the npm tarball;
 - add a cross-origin-isolated Vite/Chromium FFmpeg npm smoke that feeds real signed 16-bit PCM through the upstream `ffmpeg` CLI, writes WAV with `pcm_s16le`, and validates RIFF/WAVE framing;
 - record libvips as `published` after `@wasm-zoo/libvips@0.5.2` completed its Registry + Vite/Chromium pthread/library-API smoke;
