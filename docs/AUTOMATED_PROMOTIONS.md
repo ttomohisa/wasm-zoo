@@ -41,6 +41,8 @@ The promotion job uses the repository `GITHUB_TOKEN` with explicit `contents: wr
 
 ## Idempotency
 
+Existing upstream issues are reused rather than treated as a permanent skip condition. The watcher refreshes the issue body with the current candidate mode/source metadata, then dispatches a candidate only when the issue has no prior candidate-dispatch/result or promotion-PR activity. This allows an issue created before automation support was enabled to resume safely without creating duplicates.
+
 The bot branch is normally `automation/promote-<slug>-<version>`.
 
 - If an open PR already exists for that branch, the workflow reuses it and redispatches the validation workflows.

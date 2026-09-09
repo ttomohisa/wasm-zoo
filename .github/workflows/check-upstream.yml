@@ -77,10 +77,7 @@ jobs:
             released="$(jq -r '.latestReleased // ""' <<<"$item")"
             title="[upstream] ${name} ${latest} detected"
             issue="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "${title} in:title" --json number,title | jq -r --arg t "$title" '.[] | select(.title == $t) | .number' | head -n1)"
-            if [ -n "$issue" ]; then
-              echo "[skip] existing issue #${issue}: ${title}"
-              continue
-            fi
+            existing_issue="$issue"
             body_file="$(mktemp)"
             cat > "$body_file" <<EOF_BODY
           A newer upstream release was detected by the WASM Zoo watcher.
@@ -101,19 +98,34 @@ jobs:
 
           The watcher never changes the reviewed Zoo pin on main automatically. For `auto` candidates, a successful isolated candidate build opens a review-only promotion PR and dispatches the normal repository/build checks; merge, release tag and publication remain manual. `adapter-gated` / `none` candidates still require their existing manual gate.
           EOF_BODY
-            issue_url="$(gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body_file")"
+            if [ -n "$existing_issue" ]; then
+              issue="$existing_issue"
+              gh issue edit "$issue" --repo "$GITHUB_REPOSITORY" --body-file "$body_file" >/dev/null
+              echo "[issue] reusing #${issue} and refreshing metadata: ${title}"
+            else
+              issue_url="$(gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body_file")"
+              issue="${issue_url##*/}"
+              echo "[issue] created #${issue}: ${title}"
+            fi
             rm -f "$body_file"
-            issue="${issue_url##*/}"
-            echo "[issue] #${issue} ${title}"
+
+            candidate_activity="$(gh issue view "$issue" --repo "$GITHUB_REPOSITORY" --json comments | jq '[.comments[].body | select(test("Candidate workflow (dispatched by upstream watcher|finished)|Review-only promotion PR:"))] | length')"
+            if [ "$candidate_activity" -gt 0 ]; then
+              echo "[skip] issue #${issue} already has candidate/promotion activity"
+              continue
+            fi
+
             if [ "$mode" = "auto" ]; then
               gh workflow run upstream-candidate.yml --repo "$GITHUB_REPOSITORY" \
                 -f slug="$slug" -f version="$latest" -f ref="$ref" -f commit="$commit" -f released="$released" -f issue_number="$issue" \
                 -f release_tag="$release_tag" -f source_url="$source_url" -f source_sha256="$source_sha256"
-              echo "[candidate] dispatched ${slug} ${latest}"
+              gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" --body "Candidate workflow dispatched by upstream watcher for **${slug} ${latest}**. The candidate workflow will post its final result here." >/dev/null
+              echo "[candidate] dispatched ${slug} ${latest} on issue #${issue}"
             elif [ "$mode" = "adapter-gated" ]; then
               gh workflow run upstream-candidate.yml --repo "$GITHUB_REPOSITORY" \
                 -f slug="$slug" -f version="$latest" -f ref="$ref" -f commit="$commit" -f released="$released" -f issue_number="$issue"
-              echo "[candidate] dispatched adapter-readiness report for ${slug} ${latest}"
+              gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" --body "Candidate workflow dispatched by upstream watcher for **${slug} ${latest}** (adapter-readiness mode). The candidate workflow will post its final result here." >/dev/null
+              echo "[candidate] dispatched adapter-readiness report for ${slug} ${latest} on issue #${issue}"
             else
               echo "[candidate] automatic candidate disabled for ${slug}"
             fi
