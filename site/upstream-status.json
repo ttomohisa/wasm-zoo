@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-09T08:15:27.921Z",
+  "generatedAt": "2026-09-09T13:01:33.342Z",
   "hasUpdates": true,
   "packages": [
     {
@@ -143,8 +143,8 @@
       "pinnedRef": "gs10.07.1",
       "pinnedReleased": "2026-05-19",
       "latest": "10.08.0",
-      "latestRef": "gs10080",
-      "latestCommit": "b084b535a1f5e10d23d34f23a0ea057bb67d8f9d",
+      "latestRef": "gs10.08.0",
+      "latestCommit": "4d175558193ad50d6fbc329fe28dbb48af626126",
       "latestReleased": "2026-09-08T12:29:24Z",
       "updateAvailable": true,
       "lagDays": 112,
@@ -155,10 +155,16 @@
       },
       "url": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/tag/gs10080",
       "candidate": {
-        "mode": "none",
+        "mode": "auto",
         "profiles": [
           "browser-full"
-        ]
+        ],
+        "source": {
+          "releaseTag": "gs10080",
+          "assetName": "ghostscript-10.08.0.tar.xz",
+          "sourceUrl": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10080/ghostscript-10.08.0.tar.xz",
+          "sourceSha256": "c20492bc8ebb96c87fa2e52a0926e1cda8cde95d66145e018ac713fed5da38cf"
+        }
       }
     }
   ]
