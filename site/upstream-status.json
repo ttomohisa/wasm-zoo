@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-09T14:15:14.865Z",
-  "hasUpdates": true,
+  "generatedAt": "2026-09-10T08:14:52.256Z",
+  "hasUpdates": false,
   "packages": [
     {
       "slug": "ffmpeg",
@@ -139,19 +139,19 @@
       "slug": "ghostscript",
       "name": "Ghostscript",
       "status": "ok",
-      "pinned": "10.07.1",
-      "pinnedRef": "gs10.07.1",
-      "pinnedReleased": "2026-05-19",
+      "pinned": "10.08.0",
+      "pinnedRef": "gs10.08.0",
+      "pinnedReleased": "2026-09-08",
       "latest": "10.08.0",
       "latestRef": "gs10.08.0",
       "latestCommit": "4d175558193ad50d6fbc329fe28dbb48af626126",
       "latestReleased": "2026-09-08T12:29:24Z",
-      "updateAvailable": true,
-      "lagDays": 112,
+      "updateAvailable": false,
+      "lagDays": 0,
       "gap": {
-        "kind": "behind",
-        "label": "1 minor behind",
-        "versionsBehind": 1
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
       },
       "url": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/tag/gs10080",
       "candidate": {
