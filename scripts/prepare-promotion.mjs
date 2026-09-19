@@ -129,6 +129,19 @@ pkg.release.page = `https://github.com/ttomohisa/wasm-zoo/releases/tag/${pkg.rel
 pkg.release.downloadBase = `https://github.com/ttomohisa/wasm-zoo/releases/download/${pkg.release.tag}/`;
 pkg.release.sourceAsset = `${values.slug}-sources-${values.version}-zoo-${newBuilder}.tar.gz`;
 
+if (values.slug === "ghostscript") {
+  for (const profile of pkg.profiles || []) {
+    profile.externalLibraries = (profile.externalLibraries || []).map((text) =>
+      text.replaceAll(oldVersion, values.version)
+    );
+  }
+  pkg.notes = (pkg.notes || []).map((note) =>
+    note.startsWith(`Official Ghostscript ${oldVersion} release source archive is pinned by SHA-256`)
+      ? note.replace(oldVersion, values.version)
+      : note
+  );
+}
+
 if (values.slug === "jq") {
   pkg.notes = (pkg.notes || []).map((note) => {
     let next = note.replaceAll(oldVersion, values.version).replaceAll(pkg.upstream?.commit || "__never__", values.commit);

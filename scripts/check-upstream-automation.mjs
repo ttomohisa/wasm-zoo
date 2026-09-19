@@ -19,6 +19,9 @@ need(ghost.tracker?.candidateSource?.releaseTagTemplate === 'gs{versionCompact}'
 need(ghost.tracker?.candidateSource?.assetNameTemplate === 'ghostscript-{version}.tar.xz', 'Ghostscript candidate source archive must be ghostscript-{version}.tar.xz');
 need(ghost.tracker?.candidateSource?.digestAlgorithm === 'sha256', 'Ghostscript candidate source digest must be SHA-256');
 need(!(ghost.notes || []).some((note) => note.includes('Automatic upstream candidate substitution is intentionally disabled for Ghostscript')), 'Ghostscript notes must not claim automatic candidates are disabled');
+const ghostOfficialArchive = `Ghostscript bundled third-party source set from the official ${ghost.upstream.version} release archive`;
+need((ghost.profiles || []).some((profile) => (profile.externalLibraries || []).includes(ghostOfficialArchive)), 'Ghostscript external library metadata must follow the reviewed upstream version');
+need((ghost.notes || []).some((note) => note.startsWith(`Official Ghostscript ${ghost.upstream.version} release source archive is pinned by SHA-256`)), 'Ghostscript official source archive note must follow the reviewed upstream version');
 
 const libvips = await readJson(path.join(root, 'packages', 'libvips', 'package.json'));
 need(libvips.tracker?.candidateMode === 'adapter-gated', 'libvips must remain adapter-gated');
@@ -55,6 +58,7 @@ need(candidate.includes('--source-sha256') || candidate.includes('source-sha256'
 const promotion = await read('scripts/prepare-promotion.mjs');
 need(promotion.includes('config.extraEnv'), 'promotion preparer must support extraEnv pins');
 need(promotion.includes('Promotion extra pin verification failed'), 'promotion preparer must verify promoted extra pins');
+need(promotion.includes('values.slug === "ghostscript"') && promotion.includes('profile.externalLibraries') && promotion.includes('note.startsWith(`Official Ghostscript ${oldVersion} release source archive is pinned by SHA-256`)'), 'Ghostscript promotion must refresh current-version source-archive metadata');
 
 const workflow = await read('.github/workflows/upstream-candidate.yml');
 for (const marker of [
