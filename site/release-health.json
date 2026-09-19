@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-18T08:21:51.725Z",
+  "generatedAt": "2026-09-19T08:09:48.952Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -39,12 +39,12 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/ffmpeg-playground/"
       },
       "freshness": {
-        "state": "ok",
-        "label": "Current"
+        "state": "warn",
+        "label": "Update available"
       },
       "overall": {
-        "state": "ok",
-        "label": "Healthy"
+        "state": "warn",
+        "label": "Upstream review"
       }
     },
     {
@@ -255,8 +255,8 @@
     }
   ],
   "summary": {
-    "healthy": 5,
-    "warning": 0,
+    "healthy": 4,
+    "warning": 1,
     "error": 1,
     "supplyChainPublished": 5,
     "total": 6
