@@ -26,7 +26,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 
 | Package | Upstream | Zoo builder | Browser profile | Playground | npm rollout |
 | --- | --- | --- | --- | --- | --- |
-| FFmpeg | 9.0.1 | 0.2.7 | `browser-full`, `browser-full-gpl` | yes | `@wasm-zoo/ffmpeg@0.2.7` |
+| FFmpeg | 9.0.2 | 0.2.8 | `browser-full`, `browser-full-gpl` | yes | `@wasm-zoo/ffmpeg@0.2.7` |
 | libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes | `@wasm-zoo/libarchive@0.3.1` |
 | ImageMagick | 7.1.2-31 | 0.4.3 | `browser-full` | yes | `@wasm-zoo/imagemagick@0.4.3` |
 | libvips | 8.18.6 | 0.5.2 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.2` |
@@ -130,7 +130,7 @@ WASM Zoo aims to preserve the **upstream program/API shape** where practical. A 
 
 `full` means a broad, useful build for the declared WebAssembly target. It never means every feature available on every native operating system.
 
-## FFmpeg 9.0.1
+## FFmpeg 9.0.2
 
 FFmpeg remains the first Zoo package. It publishes the upstream `fftools/ffmpeg` CLI in two browser variants:
 
@@ -151,7 +151,7 @@ build-ffmpeg.bat browser-full-gpl
 Release tag:
 
 ```text
-ffmpeg-v0.2.7
+ffmpeg-v0.2.8
 ```
 
 ## libarchive 3.8.9
