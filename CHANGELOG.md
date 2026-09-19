@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- fix Ghostscript promotion metadata so official source-archive descriptions follow the promoted upstream version and future automatic promotions cannot leave stale version text;
+
 - promote FFmpeg 9.0.2 to builder 0.2.8 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `946fcce07b6dcd0331c8cc609192aeff5e1924f8`;
 
 - promote Ghostscript 10.08.0 to builder 0.7.2 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `4d175558193ad50d6fbc329fe28dbb48af626126`;
