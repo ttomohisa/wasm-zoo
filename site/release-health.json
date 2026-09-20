@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-19T08:09:48.952Z",
+  "generatedAt": "2026-09-20T08:42:07.600Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
     {
       "slug": "ffmpeg",
       "name": "FFmpeg",
-      "tag": "ffmpeg-v0.2.7",
+      "tag": "ffmpeg-v0.2.8",
       "release": {
         "state": "ok",
         "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.7",
-        "publishedAt": "2026-08-21T07:55:02Z",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.8",
+        "publishedAt": "2026-09-19T13:33:38Z",
         "assetCount": 10,
         "missingAssets": []
       },
@@ -30,8 +30,8 @@
       "buildGate": {
         "state": "ok",
         "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32459868805",
-        "runId": 32459868805
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/35445527987",
+        "runId": 35445527987
       },
       "playground": {
         "state": "ok",
@@ -39,12 +39,12 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/ffmpeg-playground/"
       },
       "freshness": {
-        "state": "warn",
-        "label": "Update available"
+        "state": "ok",
+        "label": "Current"
       },
       "overall": {
-        "state": "warn",
-        "label": "Upstream review"
+        "state": "ok",
+        "label": "Healthy"
       }
     },
     {
@@ -218,26 +218,27 @@
       "name": "Ghostscript",
       "tag": "ghostscript-v0.7.2",
       "release": {
-        "state": "error",
-        "label": "Release unavailable",
-        "error": "404 Not Found",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.2"
+        "state": "ok",
+        "label": "Assets present",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ghostscript-v0.7.2",
+        "publishedAt": "2026-09-19T14:21:41Z",
+        "assetCount": 5,
+        "missingAssets": []
       },
       "supplyChain": {
-        "state": "unknown",
-        "label": "Not inspectable",
+        "state": "ok",
+        "label": "Provenance + SBOM published",
         "expected": [
           "provenance-browser-full.json",
           "sbom-browser-full.cdx.json"
         ],
-        "missing": [
-          "provenance-browser-full.json",
-          "sbom-browser-full.cdx.json"
-        ]
+        "missing": []
       },
       "buildGate": {
-        "state": "unknown",
-        "label": "Not inspectable"
+        "state": "ok",
+        "label": "Passed",
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/35448222893",
+        "runId": 35448222893
       },
       "playground": {
         "state": "ok",
@@ -249,16 +250,16 @@
         "label": "Current"
       },
       "overall": {
-        "state": "error",
-        "label": "Action required"
+        "state": "ok",
+        "label": "Healthy"
       }
     }
   ],
   "summary": {
-    "healthy": 4,
-    "warning": 1,
-    "error": 1,
-    "supplyChainPublished": 5,
+    "healthy": 6,
+    "warning": 0,
+    "error": 0,
+    "supplyChainPublished": 6,
     "total": 6
   }
 }
