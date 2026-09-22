@@ -178,6 +178,9 @@ await replaceFile("README.md", (input) => {
   const tableOld = `| ${pkg.name} | ${oldVersion} | ${oldBuilder} |`;
   const tableNew = `| ${pkg.name} | ${values.version} | ${newBuilder} |`;
   text = requireReplace(text, tableOld, tableNew, "README package table");
+  if (pkg.npm && oldNpmVersion && newNpmVersion) {
+    text = requireReplace(text, "`" + pkg.npm.package + "@" + oldNpmVersion + "`", "`" + pkg.npm.package + "@" + newNpmVersion + "`", "README npm version");
+  }
   text = requireReplace(text, `## ${pkg.name} ${oldVersion}`, `## ${pkg.name} ${values.version}`, "README package heading");
   text = text.replaceAll(`/assets/${values.slug}/${oldVersion}/`, `/assets/${values.slug}/${values.version}/`);
   text = text.replaceAll(`${oldVersion}-zoo-${oldBuilder}`, `${values.version}-zoo-${newBuilder}`);
@@ -185,6 +188,13 @@ await replaceFile("README.md", (input) => {
   text = text.replaceAll(`git push origin ${values.slug}-v${oldBuilder}`, `git push origin ${values.slug}-v${newBuilder}`);
   // FFmpeg currently documents the tag as a standalone line rather than git commands.
   text = text.replace(new RegExp(`(^|\\n)${values.slug}-v${oldBuilder.replaceAll(".", "\\.")}($|\\n)`), `$1${values.slug}-v${newBuilder}$2`);
+  if (values.slug === "ghostscript") {
+    const start = text.indexOf("## Ghostscript " + values.version);
+    const end = start >= 0 ? text.indexOf("\n## ", start + 4) : -1;
+    if (start < 0) throw new Error("Could not locate current Ghostscript README section");
+    const stop = end >= 0 ? end : text.length;
+    text = text.slice(0, start) + text.slice(start, stop).replaceAll(oldVersion, values.version) + text.slice(stop);
+  }
   if (values.slug === "jq") {
     const start = text.indexOf(`## jq ${values.version}`);
     const end = start >= 0 ? text.indexOf("\n## ", start + 4) : -1;
@@ -194,6 +204,22 @@ await replaceFile("README.md", (input) => {
     }
   }
   return text;
+});
+
+await replaceFile("docs/NPM_DISTRIBUTION.md", (input) => {
+  if (!pkg.npm || !oldNpmVersion || !newNpmVersion) return input;
+  const lines = input.split("\n");
+  const prefix = "| `" + pkg.npm.package + "` |";
+  const index = lines.findIndex((line) => line.startsWith(prefix));
+  if (index < 0) throw new Error("Could not update npm distribution row for " + pkg.npm.package);
+
+  let row = lines[index];
+  row = requireReplace(row, "`" + oldNpmVersion + "`", "`" + newNpmVersion + "`", "npm distribution version");
+  row = requireReplace(row, pkg.name + " " + oldVersion, pkg.name + " " + values.version, "npm distribution upstream version");
+  row = requireReplace(row, "`" + oldBuilder + "`", "`" + newBuilder + "`", "npm distribution builder version");
+  row = requireReplace(row, "`" + values.slug + "-v" + oldBuilder + "`", "`" + pkg.release.tag + "`", "npm distribution release tag");
+  lines[index] = row;
+  return lines.join("\n");
 });
 
 await replaceFile("CHANGELOG.md", (text) => {

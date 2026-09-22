@@ -26,11 +26,11 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 
 | Package | Upstream | Zoo builder | Browser profile | Playground | npm rollout |
 | --- | --- | --- | --- | --- | --- |
-| FFmpeg | 9.0.2 | 0.2.8 | `browser-full`, `browser-full-gpl` | yes | `@wasm-zoo/ffmpeg@0.2.7` |
+| FFmpeg | 9.0.2 | 0.2.8 | `browser-full`, `browser-full-gpl` | yes | `@wasm-zoo/ffmpeg@0.2.8` |
 | libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes | `@wasm-zoo/libarchive@0.3.1` |
 | ImageMagick | 7.1.2-31 | 0.4.3 | `browser-full` | yes | `@wasm-zoo/imagemagick@0.4.3` |
 | libvips | 8.18.6 | 0.5.2 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.2` |
-| Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.1` |
+| Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 
 The project version is **WASM Zoo v0.13.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
@@ -95,7 +95,7 @@ WASM Zoo v0.6.0 makes freshness and target differences first-class catalog data 
 - **Feature Matrix** — Native vs every published browser profile using a shared state vocabulary: Included, Intentionally excluded, Browser N/A, Optional/platform-dependent and Unknown/not tested;
 - **Upstream Watcher** — daily stable-release discovery with a committed `site/upstream-status.json` snapshot, one issue per newly detected release and an isolated candidate workflow where automatic testing is safe.
 
-The watcher deliberately does **not** change `main`, merge pull requests, create release tags or publish releases. For FFmpeg, libarchive, ImageMagick and jq, a newly detected stable release is substituted only inside the isolated candidate workflow and must pass the existing real Chromium smoke test. When an `auto` candidate succeeds, WASM Zoo now prepares the reviewed pin/package/release metadata update on a bot branch, opens a **review-only promotion PR**, and explicitly dispatches `Verify catalog` plus the package build workflow on that branch. A human still reviews and merges the PR, then creates the release tag after the normal main-branch checks pass.
+The watcher deliberately does **not** change `main`, merge pull requests, create release tags or publish releases. For FFmpeg, libarchive, ImageMagick, Ghostscript and jq, a newly detected stable release is substituted only inside the isolated candidate workflow and must pass the existing real Chromium smoke test. When an `auto` candidate succeeds, WASM Zoo now prepares the reviewed pin/package/release metadata update on a bot branch, opens a **review-only promotion PR**, and explicitly dispatches `Verify catalog` plus the package build workflow on that branch. A human still reviews and merges the PR, then creates the release tag after the normal main-branch checks pass.
 
 libvips remains `adapter-gated`: a new libvips release first needs reviewed wasm-vips/compatibility patch pins before a candidate build would be meaningful, so no promotion PR is generated from the readiness-only result. Ghostscript now uses `auto`: the watcher resolves the exact official source archive and its GitHub-published SHA-256 digest plus the matching GhostPDL source commit before dispatching a candidate build. See `docs/AUTOMATED_PROMOTIONS.md` for the exact flow, permissions and fallback procedure.
 
@@ -412,7 +412,7 @@ jq.dispose();
 
 ## Ghostscript 10.08.0
 
-WASM Zoo v0.7.0 adds Ghostscript as the fifth available package. The build uses the official `ghostscript-10.07.1.tar.xz` release archive, verifies its pinned SHA-256 before extraction, and records the corresponding `gs10.07.1` source branch commit for provenance. The browser artifact exposes the upstream `gs` CLI rather than a reduced custom API.
+WASM Zoo v0.7.0 adds Ghostscript as the fifth available package. The build uses the official `ghostscript-10.08.0.tar.xz` release archive, verifies its pinned SHA-256 before extraction, and records the corresponding `gs10.08.0` source branch commit for provenance. The browser artifact exposes the upstream `gs` CLI rather than a reduced custom API.
 
 The first `browser-full` profile is deliberately single-threaded and uses an isolated Worker plus Emscripten MEMFS. It keeps PostScript/PDF interpretation, `pdfwrite`, and BMP/JPEG/PNG/PS/TIFF file-output driver groups while disabling desktop-only CUPS, D-Bus, GTK/X11, fontconfig, libpaper, libidn, pdftoraster and IJS integrations. GhostPCL and GhostXPS remain separate from this Ghostscript `gs` artifact.
 
@@ -460,7 +460,7 @@ try {
 }
 ```
 
-Ghostscript's published binary is AGPL-3.0-or-later. The release handoff includes the exact official source archive, the Ghostscript license notice, a conservative bundled third-party license/copyright inventory, the build recipe and SHA-256 checksums. Automatic candidate builds are source-digest gated and therefore remain disabled until the watcher can verify a new release asset digest before substitution.
+Ghostscript's published binary is AGPL-3.0-or-later. The release handoff includes the exact official source archive, the Ghostscript license notice, a conservative bundled third-party license/copyright inventory, the build recipe and SHA-256 checksums. Automatic candidate builds are source-digest gated: the watcher resolves the exact official release archive, verifies its GitHub-published SHA-256 digest, and resolves the matching GhostPDL source commit before candidate substitution.
 
 
 ## Repository layout

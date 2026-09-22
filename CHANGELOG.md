@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- sync README/npm distribution version tables with current package metadata and add a permanent documentation contract so future upstream promotions cannot leave current release versions stale;
+
 - fix Ghostscript promotion metadata so official source-archive descriptions follow the promoted upstream version and future automatic promotions cannot leave stale version text;
 
 - promote FFmpeg 9.0.2 to builder 0.2.8 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `946fcce07b6dcd0331c8cc609192aeff5e1924f8`;
