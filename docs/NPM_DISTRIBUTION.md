@@ -19,9 +19,9 @@ Historical GitHub Release assets are never rewritten. npm-only wrapper/package c
 | `@wasm-zoo/jq` | `0.9.1` | jq 1.8.2 | `0.9.0` | `jq-v0.9.0` | published |
 | `@wasm-zoo/libarchive` | `0.3.1` | libarchive 3.8.9 | `0.3.1` | `libarchive-v0.3.1` | published |
 | `@wasm-zoo/imagemagick` | `0.4.3` | ImageMagick 7.1.2-31 | `0.4.3` | `imagemagick-v0.4.3` | published |
-| `@wasm-zoo/ghostscript` | `0.7.1` | Ghostscript 10.07.1 | `0.7.1` | `ghostscript-v0.7.1` | published |
+| `@wasm-zoo/ghostscript` | `0.7.2` | Ghostscript 10.08.0 | `0.7.2` | `ghostscript-v0.7.2` | published |
 | `@wasm-zoo/libvips` | `0.5.2` | libvips 8.18.6 | `0.5.2` | `libvips-v0.5.2` / `browser-core` | published |
-| `@wasm-zoo/ffmpeg` | `0.2.7` | FFmpeg 9.0.1 | `0.2.7` | `ffmpeg-v0.2.7` / `browser-full` | published |
+| `@wasm-zoo/ffmpeg` | `0.2.8` | FFmpeg 9.0.2 | `0.2.8` | `ffmpeg-v0.2.8` / `browser-full` | published |
 
 All six npm packages have completed their public Registry + Vite/Chromium gates. FFmpeg is intentionally pinned to the LGPL `browser-full` profile; the GPL/libx264 profile is not bundled into this package.
 
