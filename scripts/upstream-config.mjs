@@ -33,6 +33,13 @@ export const automaticCandidateConfigs = {
       "source-sha256": "GHOSTSCRIPT_SOURCE_SHA256"
     }
   },
+  zstd: {
+    dir: "zstd",
+    refKey: "ZSTD_REF",
+    commitKey: "ZSTD_COMMIT",
+    buildWorkflow: "build-zstd.yml",
+    displayName: "Zstandard"
+  },
   jq: {
     dir: "jq",
     refKey: "JQ_REF",

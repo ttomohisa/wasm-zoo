@@ -16,6 +16,24 @@ const config = automaticCandidateConfig(values.slug);
 if (!config) throw new Error(`${values.slug} does not support automatic candidate builds`);
 const packageMeta = JSON.parse(await fs.readFile(path.join(root, "packages", values.slug, "package.json"), "utf8"));
 const candidateSource = packageMeta.tracker?.candidateSource || null;
+// Direct workflow dispatch is allowed; Zstandard must resolve the exact signed-by-GitHub
+// release tag and full source commit itself rather than trusting unverified caller inputs.
+if (values.slug === "zstd") {
+  if (packageMeta.tracker?.candidateMode !== "auto") throw new Error("Zstandard auto candidate was not reviewed");
+  if (!/^\\d+\\.\\d+\\.\\d+$/.test(values.version) || values.ref !== `v${values.version}` ||
+      !/^[0-9a-f]{40}$/i.test(values.commit)) throw new Error("Refusing malformed Zstandard release/ref/commit");
+  const headers = { Accept: "application/vnd.github+json", "User-Agent": "wasm-zoo-zstd-candidate",
+    ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}) };
+  const rel = await fetch(`https://api.github.com/repos/facebook/zstd/releases/tags/${encodeURIComponent(values.ref)}`, { headers });
+  if (!rel.ok) throw new Error(`Official stable Zstandard Release ${values.ref} was not found: ${rel.status}`);
+  const release = await rel.json();
+  if (release.draft || release.prerelease || release.tag_name !== values.ref) throw new Error("Not an official stable Zstandard release");
+  const ref = await fetch(`https://api.github.com/repos/facebook/zstd/commits/${encodeURIComponent(values.ref)}`, { headers });
+  if (!ref.ok) throw new Error(`Cannot resolve official Zstandard tag: ${ref.status}`);
+  const actual = await ref.json();
+  if (actual.sha !== values.commit) throw new Error(`Zstandard ref/commit mismatch: ${values.commit} != ${actual.sha}`);
+}
+
 function expandCandidateTemplate(template) {
   return String(template || "")
     .replaceAll("{version}", values.version)
