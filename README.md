@@ -24,6 +24,10 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 - Zstandard Playground: https://ttomohisa.github.io/wasm-zoo/zstd-playground/
 
 
+## Zstandard npm Phase 4 (review-only canary)
+
+The published Zstandard 1.5.7 `browser-full` upstream CLI is now prepared as `@wasm-zoo/zstd@0.3.0` **npm pre-publication canary**. The [review-only workflow](.github/workflows/npm-zstd-canary.yml) checks immutable release digests and tests the packed tarball in Vite across Chromium, Firefox and WebKit before a human initially publishes it. The existing six npm packages and public 18-operation Registry-backed matrix remain unchanged until the initial registry publish and separate post-publication review.
+
 ## Available packages
 
 | Package | Upstream | Zoo builder | Browser profile | Playground | npm rollout |
