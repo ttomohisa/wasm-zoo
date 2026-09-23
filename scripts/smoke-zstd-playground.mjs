@@ -31,7 +31,7 @@ const server=http.createServer(async(req,res)=>{
   if(req.method!=="GET"){res.writeHead(405);res.end();return;}
   const url=new URL(req.url,"http://localhost");
   const rel=decodeURIComponent(url.pathname.slice(1));
-  const full=path.resolve(site,rel||"index.html");
+  const full=path.resolve(site,rel.endsWith("/")?rel+"index.html":rel||"index.html");
   if(!full.startsWith(site+path.sep) || !fs.statSync(full).isFile()){res.writeHead(404);res.end();return;}
   const data=await fsp.readFile(full);
   res.writeHead(200,{"Cache-Control":"no-store","Content-Type":mime[path.extname(full)]||"application/octet-stream"});
