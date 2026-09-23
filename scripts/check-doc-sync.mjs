@@ -9,6 +9,14 @@ const read = async (rel) => (await fs.readFile(path.join(root, rel), "utf8")).re
 const packages = (await loadPackages()).filter((pkg) => pkg.status === "available");
 const readme = await read("README.md");
 const npmDoc = await read("docs/NPM_DISTRIBUTION.md");
+const changelog = await read("CHANGELOG.md");
+const projectVersion = (await read("VERSION")).trim();
+const projectManifest = JSON.parse(await read("package.json"));
+
+need(projectVersion === projectManifest.version, "Project VERSION must match root package.json");
+need(readme.includes(`The project version is **WASM Zoo v${projectVersion}**`), "README project version must match VERSION");
+need(changelog.includes(`## v${projectVersion}\n`), "CHANGELOG must contain the current reviewed project version");
+need(changelog.startsWith("# Changelog\n\n## Unreleased\n"), "CHANGELOG must retain a separate Unreleased section");
 
 function rowByPrefix(text, prefix) {
   return text.split("\n").find((line) => line.startsWith(prefix)) || "";

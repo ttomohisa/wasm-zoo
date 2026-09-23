@@ -2,17 +2,26 @@
 
 ## Unreleased
 
+_No changes yet._
+
+## v0.15.0
+
+- add Zstandard 1.5.7 as the seventh officially available Zoo package, retaining the exact reviewed official source and Emscripten pins, distinct bounded `browser-core` library and original upstream CLI `browser-full` profile;
+- publish the manually reviewed `zstd-v0.3.0` immutable GitHub Release after two-profile Chromium, native bidirectional interoperability and corresponding-source checks; include checksum-covered ZIPs, source bundle, in-toto/SLSA provenance and CycloneDX SBOM, and deploy the released dual-profile Playground;
+- initially distribute `@wasm-zoo/zstd@0.3.0` through a human-approved npm publish from the exact Phase 4A three-browser-verified tarball (`dist.shasum: 29add1aaf6ab0c3e9a3d538166a51a3f70cefa99`), bundling only the original `browser-full` CLI and retaining the separately downloadable `browser-core` library;
+- add a Registry-backed Vite/Chromium promotion gate and expand the production Vite/Playwright compatibility lab from 18 to 21 exact-version real-operation cells across all seven npm packages in Chromium, Firefox and WebKit;
+- publish only a complete, fresh, successful reviewed-`main` 21-cell browser snapshot, never recycled PR-only or older results; the observed initial `main` run passed all 21 cells and the subsequent Pages deployment published the verified dashboard;
+- preserve review-only candidate promotion, manual merge, project/package tags and Registry publication; Zstandard candidate automation remains disabled (`none`) and libvips remains adapter-gated;
+
+## v0.14.0
+
 - sync README/npm distribution version tables with current package metadata and add a permanent documentation contract so future upstream promotions cannot leave current release versions stale;
-
 - fix Ghostscript promotion metadata so official source-archive descriptions follow the promoted upstream version and future automatic promotions cannot leave stale version text;
-
 - promote FFmpeg 9.0.2 to builder 0.2.8 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `946fcce07b6dcd0331c8cc609192aeff5e1924f8`;
-
 - promote Ghostscript 10.08.0 to builder 0.7.2 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `4d175558193ad50d6fbc329fe28dbb48af626126`;
-
 - fix automatic promotion PR scheduling so a successful selected upstream candidate still reaches the review-only promotion job when the other package-specific candidate jobs are skipped;
-
 - make Ghostscript upstream promotions automatic by resolving the official source Release asset, GitHub-published SHA-256 digest and matching GhostPDL source commit before candidate build, then carrying the same immutable pins into the review-only promotion PR;
+- launch the observed cross-browser npm lab with real production-Vite package operations, measured threaded-runtime support policy and the publicly verifiable main-run-only compatibility dashboard for the original six npm distributions (18 package/browser cells);
 
 ## v0.13.0
 

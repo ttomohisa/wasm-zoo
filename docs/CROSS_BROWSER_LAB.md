@@ -1,4 +1,4 @@
-# Cross-browser Compatibility Lab (v0.14 baseline, Zstandard Phase 4B expansion)
+# Cross-browser Compatibility Lab (v0.14 baseline and v0.15 seven-package release)
 
 This lab tests **published npm packages**, not just WebAssembly instantiation. A clean temporary application installs the exact reviewed public npm version, creates a production Vite bundle, verifies its emitted Wasm assets, serves the bundle with an in-process HTTP server, and runs a real package operation in a Playwright browser.
 
@@ -64,7 +64,7 @@ node scripts/report-threaded-compatibility.mjs compat-results
 
 After human approval merges a reviewed Lab PR, the Lab also runs on relevant **main** pushes (as well as PRs, weekly schedules and manual dispatch). The Pages workflow regenerates the public dashboard after each completed main-branch Lab run. A PR-only CI pass is **not** silently promoted to a published live result.
 
-`scripts/publish-browser-compatibility.mjs` uses the read-only GitHub Actions token to select the **latest main-branch Lab run**, including failed or in-progress runs. It never falls back to an older green run after a newer run fails or starts. Only a completed, successful main run with 21 authentic individual JSON artifacts, matching the current reviewed npm package versions/profiles, complete real-operation results and correct threaded preflight may be displayed as verified. Results must be no older than 14 days. If any required artifact is missing, altered, stale or version-mismatched, the generated site file is **unavailable with all 21 cells marked not-tested**, not a partial or fabricated PASS table. The client also refuses to display verified results older than 14 days without a fresh deployment.
+`scripts/publish-browser-compatibility.mjs` uses the read-only GitHub Actions token to select the **latest main-branch Lab run**, including failed or in-progress runs. It never falls back to an older green run after a newer run fails or starts. The historical v0.14 rollout required 18 artifacts for the original six packages; the current v0.15 release instead requires a completed, successful main run with **21 authentic individual JSON artifacts**, matching the current reviewed npm package versions/profiles, complete real-operation results and correct threaded preflight may be displayed as verified. Results must be no older than 14 days. If any required artifact is missing, altered, stale or version-mismatched, the current v0.15 generated site file is **unavailable with all 21 cells marked not-tested**, not a partial or fabricated PASS table. The client also refuses to display verified results older than 14 days without a fresh deployment.
 
 The generated `site/browser-compatibility.json` is produced by Pages, not checked in as a permanent snapshot. Each verified file includes source run ID/URL/SHA and tested npm/browser versions with per-cell status. When GitHub APIs or artifacts are unavailable, the Pages build can still proceed with an explicit unavailable snapshot. Reviewers can use the Actions workflow summary and uploaded source artifacts to investigate.
 
@@ -76,9 +76,9 @@ npm run check
 npm run metadata:check
 ```
 
-The **v0.14.0 project version bump** belongs to the reviewed catalogue PR. The maintainer manually merges it and, after verifying main-branch Lab and Pages results, optionally creates the project `v0.14.0` tag/release. No candidate automation, CI job or Pages deployment auto-merges, tags, publishes or changes reviewed pins. Cross-browser results apply to each package's listed npm profile, not necessarily every release ZIP profile; FFmpeg's GPL variant and libvips's full profile are not included in the npm test matrix.
+The original v0.14.0 rollout is already released. The reviewed v0.15.0 project-version PR records the separately published Zstandard npm distribution and 21-cell extension. Only the human maintainer merges and may optionally create the `v0.15.0` project tag/release after verifying the updated main-branch Lab and Pages evidence. No candidate automation, CI job or Pages deployment auto-merges, tags, publishes or changes reviewed pins. Cross-browser results apply to each package's listed npm profile, not necessarily every release ZIP profile; FFmpeg's GPL variant and libvips's full profile are not included in the npm test matrix.
 
-## Phase 5: Zstandard published Registry / 21-cell expansion
+## Phase 5: v0.15.0 — Zstandard published Registry / 21-cell expansion
 
 The separately reviewed Phase 4B promotion adds the manually published `@wasm-zoo/zstd@0.3.0` original upstream `browser-full` CLI to the existing **single-threaded** matrix, alongside jq, libarchive, ImageMagick and Ghostscript. Its real Vite operations test standard `.zst` frame magic, compressibility, byte-identical decompression and invalid-frame rejection in Chromium, Firefox and WebKit. A live Registry `dist.shasum` comparison to the initial human-published artifact (`29add1aaf6ab0c3e9a3d538166a51a3f70cefa99`) runs **before** these operations. This does not imply coverage for the separately published Zstandard `browser-core` library.
 

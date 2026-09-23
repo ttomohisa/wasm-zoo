@@ -1,4 +1,7 @@
-# Zstandard v0.15 Phase 3: manual release checklist
+# Zstandard v0.15: completed release and historical Phase 3 checklist
+
+**Current published state:** `zstd-v0.3.0` was released manually with both browser profiles and checksum-verified source/provenance/SBOM; `@wasm-zoo/zstd@0.3.0` was separately manually published from the reviewed immutable Release-derived **browser-full CLI** tarball. The seven-package Registry-backed Lab later verified 21/21 browser operations on reviewed `main` and the Pages workflow deployed that evidence. The manual instructions below are retained as a **historical release procedure, not steps to repeat**. The separate project `v0.15.0` tag, if desired, is governed by [its own manual release checklist](V015_RELEASE.md); do not retag or republish Zstandard.
+
 
 Zstandard 1.5.7 was published as GitHub Release `zstd-v0.3.0` after the Phase 3 manual-tag workflow succeeded. Exact official source commit: f8745da6ff1ad1e7bab384bd1f9d742439278e99. Emscripten 6.0.7 commit: 4483d70a78098ed5d860dff2dc21f3025b2da2ee.
 

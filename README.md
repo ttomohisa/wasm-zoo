@@ -24,7 +24,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 - Zstandard Playground: https://ttomohisa.github.io/wasm-zoo/zstd-playground/
 
 
-## Zstandard npm Phase 4: manually published, Registry-backed
+## v0.15.0: seventh package, npm release and verified 21-cell Lab
 
 The official Zstandard 1.5.7 `browser-full` original upstream CLI is now on npm as [`@wasm-zoo/zstd@0.3.0`](https://www.npmjs.com/package/@wasm-zoo/zstd). Its initial publication was explicitly approved by the maintainer and uses the **same immutable-release-derived tarball** that passed the three-browser Phase 4A canary: Registry `dist.shasum` is `29add1aaf6ab0c3e9a3d538166a51a3f70cefa99`. The separate `browser-core` library is available from the GitHub Release, not this npm tarball.
 
@@ -43,7 +43,7 @@ The reviewed Phase 4B Lab adds the actual **npm Registry version** to Chromium, 
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 | Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
 
-The project version is **WASM Zoo v0.14.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+The project version is **WASM Zoo v0.15.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
 ### npm distribution
 
@@ -63,13 +63,13 @@ The FFmpeg npm package intentionally pins the LGPL `browser-full` profile; the s
 
 Future npm versions use Trusted Publisher OIDC with `npm stage publish`; the temporary rollout bootstrap/direct-publish path has been removed.
 
-### Cross-browser Compatibility Lab (v0.14 baseline, Zstandard extension)
+### Cross-browser Compatibility Lab (v0.15.0: 21 verified main-branch operations)
 
 The browser lab executes **the seven exact published npm distributions** in Chromium, Firefox and WebKit, using real package operations after a production Vite build—not an instantiate-only test. FFmpeg and libvips also verify COOP/COEP/CORP and measured threaded-runtime capabilities before execution. A genuinely missing browser capability is labeled `unsupported` only with explicit evidence; an unexpected error is `fail`.
 
-The [public browser compatibility dashboard](https://ttomohisa.github.io/wasm-zoo/#compatibility) reads the **latest completed main-branch GitHub Actions evidence**. It displays tested package versions, browser engines, test time and a link to the source run. If the current latest run is failing, pending, stale, mismatched or missing artifacts, the site reports **not tested** rather than copying a previous passing result. Weekly checks refresh the evidence. See [Cross-browser Lab documentation](docs/CROSS_BROWSER_LAB.md) for the status policy.
+The [public browser compatibility dashboard](https://ttomohisa.github.io/wasm-zoo/#compatibility) reads the **latest eligible main-branch GitHub Actions run**, including unsuccessful or still-running attempts, so it never falls back to an older passing result. It displays tested package versions, browser engines, test time and a link to the source run. If the current latest run is failing, pending, stale, mismatched or missing artifacts, the site reports **not tested** rather than copying a previous passing result. Weekly checks refresh the evidence. See [Cross-browser Lab documentation](docs/CROSS_BROWSER_LAB.md) for the status policy.
 
-Project v0.14.0 does **not** change builder versions, reviewed upstream pins, npm package versions or immutable package releases. The human maintainer controls the PR merge and optional project release tag; the lab never automatically tags, releases or publishes.
+Project v0.15.0 formalizes the already reviewed and published Zstandard 1.5.7 release and npm distribution alongside the verified seven-package Lab. This project version bump **does not** change any package's reviewed upstream/toolchain pin, builder version, npm version or immutable release. The human maintainer controls PR merges and the optional `v0.15.0` project release tag; CI never automatically tags, releases or publishes. See [v0.15.0 release checklist](docs/V015_RELEASE.md).
 
 ## Release health and supply-chain metadata
 
