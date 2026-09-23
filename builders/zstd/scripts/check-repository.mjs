@@ -9,7 +9,7 @@ const failures = [];
 const need = (ok, reason) => { if (!ok) failures.push(reason); };
 const env = read("versions.env");
 for (const token of [
-  "BUILDER_VERSION=0.1.0",
+  "BUILDER_VERSION=0.2.0",
   "EMSDK_VERSION=6.0.7",
   "EMSCRIPTEN_COMMIT=4483d70a78098ed5d860dff2dc21f3025b2da2ee",
   "ZSTD_REF=v1.5.7",
@@ -18,8 +18,13 @@ for (const token of [
 need(pkg.status === "experimental" && !pkg.npm && !pkg.release,
   "A CI-only Zstandard canary must never pretend to be a published package");
 need(pkg.tracker?.candidateMode === "none", "Automation must be disabled until the canary is proven");
-need(pkg.upstream?.version === "1.5.7" && pkg.profiles?.[0]?.id === "browser-core", "Wrong canary package/profile");
-for (const file of ["runtime/browser-zstd.js", "runtime/browser-zstd-worker.js", "runtime/wasm-zoo.mjs", "scripts/smoke-test.mjs"]) {
+need(pkg.upstream?.version === "1.5.7" && pkg.profiles?.length === 2 &&
+  pkg.profiles[0]?.id === "browser-core" && pkg.profiles[1]?.id === "browser-full",
+  "Must preserve experimental browser-core and separate upstream browser-full profile");
+need(pkg.profiles[1]?.arbitraryCli === true && pkg.profiles[1]?.workerFs === true &&
+  pkg.profiles[1]?.sharedArrayBuffer === false, "CLI profile must document original CLI, isolated MEMFS and no SAB");
+for (const file of ["runtime/browser-zstd.js", "runtime/browser-zstd-worker.js", "runtime/wasm-zoo.mjs",
+  "runtime/browser-zstd-cli.js", "runtime/browser-zstd-cli-worker.js", "runtime/wasm-zoo-cli.mjs", "scripts/smoke-test.mjs"]) {
   const result = spawnSync(process.execPath, ["--check", path.join(root, file)], { encoding: "utf8" });
   need(result.status === 0, file + " failed JS syntax check: " + (result.stderr || result.stdout));
 }
@@ -46,9 +51,33 @@ need(worker.includes("MAX_BYTES = 64 * 1024 * 1024") &&
   worker.includes("Zstandard output exceeds") &&
   worker.includes("_zoo_frame_size") && !worker.includes("SharedArrayBuffer"),
   "Bounded one-shot Worker contract changed");
+const cliBuild = read("scripts/build-cli.sh");
+for (const token of ["libzstd.a", "/src/zstd/programs", "zstdcli.c", "emcc", "-sFORCE_FILESYSTEM=1",
+  "-sUSE_PTHREADS=0", "createZstdCli", "zstd-cli.wasm", "ZSTD_LEGACY_SUPPORT=0", "zstd-cli.js.gz"]) {
+  need(cliBuild.includes(token), "Missing exact-upstream CLI build contract: " + token);
+}
+need(!cliBuild.includes("-sUSE_PTHREADS=1"), "Experimental upstream CLI must remain single-threaded");
+const docker = read("docker/Dockerfile");
+need(docker.includes('PROFILE" = "browser-core"') && docker.includes('PROFILE" = "browser-full"') &&
+  docker.includes("build-cli.sh"), "Docker profile dispatch must build both profiles from exact-source checkout");
+const cliTest = read("tests/smoke-test-cli.html");
+for (const token of ["--version", "1.5.7", "/packed.zst", "/restored.bin", "0x28, 0xb5, 0x2f, 0xfd",
+  "native-fixture.zst", "__native-output", "native-restored.bin", "SMOKE_TEST_PASS_zstd_1.5.7_upstream_cli"]) {
+  need(cliTest.includes(token), "CLI browser fixture missing a real test: " + token);
+}
+const harness = read("scripts/smoke-test.mjs");
+for (const token of ["browser-full", "ZSTD_NATIVE_INTEROP", "nativeOutput", "native.stdout.equals(originalFixture)"]) {
+  need(harness.includes(token), "Native/browser interop gate missing: " + token);
+}
+const cliWorker = read("runtime/browser-zstd-cli-worker.js");
+need(cliWorker.includes("importScripts(coreJsUrl)") && cliWorker.includes("core.callMain(args)") &&
+  cliWorker.includes("core.FS.writeFile") && cliWorker.includes("core.FS.readFile") &&
+  cliWorker.includes("Collected output exceeds 64 MiB") && !cliWorker.includes("SharedArrayBuffer"),
+  "Original CLI must run in fresh bounded MEMFS Worker without cross-origin isolation");
+
 if (failures.length) {
   failures.forEach((reason) => console.error("[NG] " + reason));
   process.exitCode = 1;
 } else {
-  console.log("[OK] exact-source experimental Zstandard builder and real browser smoke contracts");
+  console.log("[OK] exact-source Zstandard core + upstream CLI experimental builder contracts");
 }
