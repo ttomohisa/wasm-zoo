@@ -2,6 +2,10 @@ name: Deploy catalog to GitHub Pages
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ['Cross-browser compatibility lab']
+    types: [completed]
+    branches: [main]
   push:
     branches: [main]
     paths:
@@ -35,6 +39,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event != 'pull_request') }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -53,6 +58,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/check-release-health.mjs --write-site
+      - name: Publish observed main-branch browser compatibility snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/publish-browser-compatibility.mjs
 
       - name: Stage published FFmpeg release for Playground
         shell: bash
