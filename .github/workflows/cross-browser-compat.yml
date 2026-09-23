@@ -1,11 +1,15 @@
-name: Cross-browser compatibility lab (jq canary)
+name: Cross-browser compatibility lab (single-threaded)
 
 on:
   workflow_dispatch:
   pull_request:
     paths:
       - 'scripts/smoke-npm-package.mjs'
+      - 'scripts/check-npm-distribution.mjs'
       - 'packages/jq/package.json'
+      - 'packages/libarchive/package.json'
+      - 'packages/imagemagick/package.json'
+      - 'packages/ghostscript/package.json'
       - '.github/workflows/cross-browser-compat.yml'
       - 'docs/CROSS_BROWSER_LAB.md'
   schedule:
@@ -15,13 +19,15 @@ permissions:
   contents: read
 
 jobs:
-  jq-canary:
-    name: jq / ${{ matrix.browser }}
+  single-threaded:
+    name: ${{ matrix.slug }} / ${{ matrix.browser }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 40
     strategy:
       fail-fast: false
+      max-parallel: 4
       matrix:
+        slug: [jq, libarchive, imagemagick, ghostscript]
         browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@v7
@@ -31,21 +37,21 @@ jobs:
           package-manager-cache: false
       - name: Require current npm CLI
         run: npm install --global npm@12.0.2
-      - name: Check smoke runner syntax
+      - name: Check shared smoke runner syntax
         run: node --check scripts/smoke-npm-package.mjs
-      - name: Test published jq in Vite production build
+      - name: Test published package in Vite production build
         env:
           WASM_ZOO_PLAYWRIGHT_WITH_DEPS: '1'
         run: >
           node scripts/smoke-npm-package.mjs
-          --slug jq
+          --slug '${{ matrix.slug }}'
           --browser '${{ matrix.browser }}'
-          --result-json 'compat-results/jq-${{ matrix.browser }}.json'
-      - name: Upload browser compatibility result
+          --result-json 'compat-results/${{ matrix.slug }}-${{ matrix.browser }}.json'
+      - name: Upload per-browser compatibility result
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: jq-${{ matrix.browser }}-compatibility
-          path: compat-results/jq-${{ matrix.browser }}.json
+          name: ${{ matrix.slug }}-${{ matrix.browser }}-compatibility
+          path: compat-results/${{ matrix.slug }}-${{ matrix.browser }}.json
           if-no-files-found: warn
           retention-days: 30
