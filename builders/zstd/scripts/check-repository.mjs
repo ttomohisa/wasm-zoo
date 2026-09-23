@@ -15,8 +15,8 @@ for (const token of [
   "ZSTD_REF=v1.5.7",
   "ZSTD_COMMIT=f8745da6ff1ad1e7bab384bd1f9d742439278e99"
 ]) need(env.includes(token), "Missing required exact pin " + token);
-need(pkg.status === "available" && (!pkg.npm || (pkg.npm.status === "canary" && pkg.npm.package === "@wasm-zoo/zstd" && pkg.npm.profile === "browser-full")) && pkg.release?.tag === "zstd-v0.3.0",
-  "Published Zstandard must retain zstd-v0.3.0 release and allow only an unpublished review-only CLI npm canary");
+need(pkg.status === "available" && (!pkg.npm || (pkg.npm.status === "published" && pkg.npm.package === "@wasm-zoo/zstd" && pkg.npm.profile === "browser-full")) && pkg.release?.tag === "zstd-v0.3.0",
+  "Published Zstandard must retain the reviewed zstd-v0.3.0 release and the registered browser-full npm distribution");
 need(pkg.release?.sourceAsset === "zstd-sources-1.5.7-zoo-0.3.0.tar.gz" &&
   pkg.release?.checksumsAsset === "SHA256SUMS.txt",
   "Published Zstandard release metadata must retain exact source/checksum assets");

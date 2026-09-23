@@ -2,17 +2,15 @@
 
 WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`. WASM Zoo v0.13.0 completes the rollout across all six Zoo packages while keeping npm artifacts derived from the same reviewed immutable GitHub Release assets.
 
-## Zstandard Phase 4: canary before initial npm publication
+## Zstandard Phase 4B: published npm and verified Registry browser operations
 
-`@wasm-zoo/zstd@0.3.0` is a **pre-publication canary**, not yet available from the npm Registry. This canary distributes the already released `zstd-v0.3.0` **browser-full original upstream CLI** only. The separate `browser-core` library remains available from the immutable GitHub Release and Playground and is not silently substituted for CLI consumers.
+`@wasm-zoo/zstd@0.3.0` was manually published to the public npm Registry from the immutable `zstd-v0.3.0` GitHub Release-derived **browser-full original upstream CLI** tarball verified by Phase 4A. The npm Registry `dist.shasum` is `29add1aaf6ab0c3e9a3d538166a51a3f70cefa99`, matching the reviewed artifact. The GitHub Release keeps the distinct `browser-core` library; npm does **not** replace the CLI with browser-core.
 
-The review-only `npm-zstd-canary.yml` workflow downloads **all** assets of the immutable `zstd-v0.3.0` GitHub Release, verifies `SHA256SUMS.txt` for every asset, validates the extracted CLI JS/WASM against its manifest and SLSA provenance plus CycloneDX 1.6 SBOM, and overlays only the reviewed CLI wrapper, Worker and Consumer API. The generated ESM entry has bundler-visible URLs for the CLI JS, WASM and Worker. The CI workflow **packs but never publishes** and tests the resulting exact local `.tgz` through a production Vite build and real Chromium, Firefox and WebKit compression, decompression and invalid-frame operations.
+The first publication used the reviewed tarball in the maintainer's local environment. Do not claim an npm Registry-generated build-environment provenance attestation for this manually uploaded release. The package still includes the immutable Release's independently verified `provenance.json` (in-toto/SLSA Provenance v1), CycloneDX SBOM, official-source license and the reviewed runtime overlays; these files must not be confused with an npm Registry-generated provenance attestation.
 
-| `@wasm-zoo/zstd` | `0.3.0` | Zstandard 1.5.7 | `0.3.0` | `zstd-v0.3.0` / `browser-full` | canary |
+The existing `npm-zstd-canary.yml` remains a **read-only immutable Release packaging regression** workflow: it downloads/checks every Release checksum, repacks without publishing and runs the exact local tarball through real Vite Chromium/Firefox/WebKit tests. Independently, `npm-package-smoke.yml` gates the reviewed promotion PR against the **real npm Registry + Vite/Chromium**. The expanded `cross-browser-compat.yml` uses the real Registry version in all three engines and verifies `dist.shasum` before installation. After the human merges the PR, the public compatibility dashboard accepts **21 real main-run results** only, never PR-only or older six-package evidence.
 
-**Manual initial publication after the PR is merged and main CI passes:** retrieve the verified `reviewed-zstd-npm-0.3.0-<commit>` workflow artifact; inspect its `npm pack` file list. Confirm you control the `@wasm-zoo` npm scope and follow the npm account's 2FA/Trusted Publisher setup. First-time package creation may require a maintainer-run, 2FA-approved `npm publish --access public` of this exact reviewed tarball (npm provenance depends on the supported publishing environment). Do **not** assume `npm stage publish` can create a previously nonexistent package; the existing `publish-npm.yml` deliberately supports only already published packages. No GitHub workflow in this PR writes to the npm Registry.
-
-After actual `npm view @wasm-zoo/zstd@0.3.0` verification and a **real Registry Vite/Chromium** smoke run, prepare a separate reviewed PR to change `npm.status` to `published`, extend the live single-threaded three-browser lab from 18 to 21 cases and update the public compatibility snapshot only from a successful reviewed `main` run. No libvips candidate automation change is made.
+Future npm-only versions follow the existing separate manual review and Trusted Publisher staged-publishing workflow. No candidate automation, tag, npm publication or merge is triggered by this PR. Zstandard `candidateMode` remains `none` and libvips remains `adapter-gated`.
 
 ## Distribution contract
 
@@ -34,8 +32,9 @@ Historical GitHub Release assets are never rewritten. npm-only wrapper/package c
 | `@wasm-zoo/ghostscript` | `0.7.2` | Ghostscript 10.08.0 | `0.7.2` | `ghostscript-v0.7.2` | published |
 | `@wasm-zoo/libvips` | `0.5.2` | libvips 8.18.6 | `0.5.2` | `libvips-v0.5.2` / `browser-core` | published |
 | `@wasm-zoo/ffmpeg` | `0.2.8` | FFmpeg 9.0.2 | `0.2.8` | `ffmpeg-v0.2.8` / `browser-full` | published |
+| `@wasm-zoo/zstd` | `0.3.0` | Zstandard 1.5.7 | `0.3.0` | `zstd-v0.3.0` / `browser-full` | published |
 
-All six npm packages have completed their public Registry + Vite/Chromium gates. FFmpeg is intentionally pinned to the LGPL `browser-full` profile; the GPL/libx264 profile is not bundled into this package.
+The original six packages completed their public Registry + Vite/Chromium gates; Zstandard is the seventh public distribution and its independent Registry browser gate is part of this reviewed phase. FFmpeg is intentionally pinned to the LGPL `browser-full` profile; the GPL/libx264 profile is not bundled into this package.
 
 ## Consumer usage
 

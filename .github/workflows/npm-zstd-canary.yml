@@ -1,5 +1,5 @@
-# Review-only Zstandard npm bootstrap: no registry writes or automatic tags.
-name: Verify Zstandard npm prepublish canary
+# Immutable Zstandard Release-derived npm tarball regression gate: no registry writes or automatic tags.
+name: Verify immutable Zstandard npm tarball (no publish)
 
 on:
   workflow_dispatch:
@@ -30,7 +30,7 @@ permissions:
 
 jobs:
   pack:
-    name: Verify immutable release, prepare and pack canary (no publish)
+    name: Repack immutable Zstandard release under reviewed npm overlay (no publish)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -47,7 +47,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          test "$(node -p "require('./packages/zstd/package.json').npm.status")" = canary
+          test "$(node -p "require('./packages/zstd/package.json').npm.status")" = published
           test "$(node -p "require('./packages/zstd/package.json').release.tag")" = zstd-v0.3.0
           mkdir -p npm-zstd/download npm-zstd/input npm-zstd/artifacts
           gh release download zstd-v0.3.0 --repo "$GITHUB_REPOSITORY" --dir npm-zstd/download

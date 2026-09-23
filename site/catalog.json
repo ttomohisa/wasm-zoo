@@ -1144,10 +1144,10 @@
         "Published GitHub Release zstd-v0.3.0 contains both browser profiles, exact corresponding official source/build recipe, SHA-256 checksums, standalone in-toto/SLSA provenance and CycloneDX 1.6 SBOMs.",
         "browser-core and browser-full both passed real Chromium operation tests; browser-full also passed bidirectional native zstd frame interoperability before publication.",
         "The public Playground stages only checksum-verified published release assets. Files are processed locally in browser Workers.",
-        "No npm package is published yet. npm rollout and the published-registry three-browser compatibility matrix remain a separate reviewed phase.",
+        "The original upstream browser-full CLI is now distributed as @wasm-zoo/zstd@0.3.0. The published Registry version is independently tested in Chromium, Firefox and WebKit using real Vite-built operations.",
         "Automatic upstream candidate promotion is intentionally not enabled yet: candidateMode remains none until the Zstandard adapter/promotion path is separately reviewed.",
         "Both profiles are single-threaded and require no SharedArrayBuffer. browser-full omits native filesystem access, pthreads, external gzip/xz/lz4 codecs and legacy-frame decoding.",
-        "@wasm-zoo/zstd@0.3.0 is currently npm pre-publication canary only: a review-only PR tests a packed, immutable-release-derived browser-full tarball in three browsers before an explicitly human-approved initial npm publish."
+        "@wasm-zoo/zstd@0.3.0 was manually published from the exact reviewed Phase 4A npm tarball; Registry dist.shasum 29add1aaf6ab0c3e9a3d538166a51a3f70cefa99. The npm package bundles only browser-full CLI; browser-core stays a separate immutable GitHub Release download. No npm Registry-generated provenance was attached to the first maintainer-side publish; reviewed CI in-toto/SLSA provenance.json remains bundled."
       ],
       "referenceWasm": {
         "name": "zstd-codec",
@@ -1255,7 +1255,7 @@
         "checksumsAsset": "SHA256SUMS.txt"
       },
       "npm": {
-        "status": "canary",
+        "status": "published",
         "package": "@wasm-zoo/zstd",
         "version": "0.3.0",
         "profile": "browser-full",

@@ -8,7 +8,7 @@ on:
         required: true
         default: jq
         type: choice
-        options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg]
+        options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd]
   pull_request:
     paths:
       - 'scripts/smoke-npm-*.mjs'
@@ -21,11 +21,13 @@ on:
       - 'packages/libvips/package.json'
       - 'packages/ghostscript/package.json'
       - 'packages/ffmpeg/package.json'
+      - 'packages/zstd/package.json'
       - 'builders/libarchive/runtime/**'
       - 'builders/imagemagick/runtime/**'
       - 'builders/libvips/runtime/**'
       - 'builders/ghostscript/runtime/**'
       - 'builders/ffmpeg/runtime/**'
+      - 'builders/zstd/runtime/**'
       - 'package.json'
   schedule:
     - cron: '17 3 * * 1'
@@ -50,9 +52,11 @@ jobs:
         run: |
           if [[ '${{ github.event_name }}' == 'workflow_dispatch' ]]; then
             echo 'slug=${{ inputs.slug }}' >> "$GITHUB_OUTPUT"
+          elif [[ '${{ github.event_name }}' == 'pull_request' ]]; then
+            # Gate the first Registry-backed Zstandard promotion on real Vite/Chromium.
+            echo 'slug=zstd' >> "$GITHUB_OUTPUT"
           else
-            # PR/scheduled live-registry coverage stays on the stable published jq package.
-            # New rollout packages are exercised manually after their first registry bootstrap.
+            # Keep the original jq baseline on the independent weekly smoke.
             echo 'slug=jq' >> "$GITHUB_OUTPUT"
           fi
       - name: Install and run published package through Vite + Chromium

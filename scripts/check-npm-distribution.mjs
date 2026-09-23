@@ -143,7 +143,7 @@ try {
   }
 
   const workflow = await fs.readFile(path.join(root, ".github", "workflows", "publish-npm.yml"), "utf8");
-  need(workflow.includes("options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg]"), "npm distribution workflow must expose jq, libarchive, imagemagick, ghostscript, libvips and ffmpeg");
+  need(workflow.includes("options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd]"), "npm distribution workflow must expose all seven published npm packages");
   need(workflow.includes("pkg.npm.status !== 'published'"), "npm distribution workflow must require published npm packages after v0.13 rollout");
   need(workflow.includes("options: [pack, stage]"), "npm distribution workflow must expose only pack/stage after the v0.13 rollout");
   need(workflow.includes("id-token: write"), "npm distribution workflow must request OIDC id-token permission");
@@ -174,13 +174,13 @@ try {
   );
   const compatWorkflow = await fs.readFile(path.join(root, ".github", "workflows", "cross-browser-compat.yml"), "utf8");
   need(
-    compatWorkflow.includes("slug: [jq, libarchive, imagemagick, ghostscript]") &&
+    compatWorkflow.includes("slug: [jq, libarchive, imagemagick, ghostscript, zstd]") &&
     compatWorkflow.includes("browser: [chromium, firefox, webkit]") &&
     compatWorkflow.includes("scripts/smoke-npm-package.mjs") &&
     compatWorkflow.includes("matrix.slug") &&
     compatWorkflow.includes("matrix.browser") &&
     compatWorkflow.includes("upload-artifact@v4"),
-    "cross-browser workflow must matrix real published smoke over four single-threaded packages and three browsers"
+    "cross-browser workflow must test all five published single-threaded packages in three browsers"
   );
   need(
     compatWorkflow.includes("slug: [ffmpeg, libvips]") &&
@@ -200,7 +200,7 @@ try {
   need(smoke.includes("ffmpeg:") && smoke.includes("input.pcm") && smoke.includes("/output.wav") && smoke.includes("RIFF") && smoke.includes("WAVE"), "FFmpeg live smoke must convert raw PCM to WAV and validate RIFF/WAVE framing");
   need(smoke.includes("cross-origin-opener-policy") && smoke.includes("cross-origin-embedder-policy"), "generic npm smoke server must provide COOP/COEP for pthread packages");
   const smokeWorkflow = await fs.readFile(path.join(root, ".github", "workflows", "npm-package-smoke.yml"), "utf8");
-  need(smokeWorkflow.includes("options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg]") && smokeWorkflow.includes("scripts/smoke-npm-package.mjs"), "generic npm smoke workflow must expose jq/libarchive/ImageMagick/Ghostscript/libvips/FFmpeg selection");
+  need(smokeWorkflow.includes("options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd]") && smokeWorkflow.includes("scripts/smoke-npm-package.mjs") && smokeWorkflow.includes("echo 'slug=zstd'"), "generic npm smoke workflow must offer all seven published packages including Registry-backed Zstandard");
 
   const promotion = await fs.readFile(path.join(root, "scripts", "prepare-promotion.mjs"), "utf8");
   need(!promotion.includes("pkg.npm.version = newBuilder"), "promotion must not couple npm package versions back to builder versions");
@@ -220,10 +220,12 @@ try {
   need(ffmpegMeta.npm?.packageFiles?.required?.includes("LICENSES/FFmpeg-COPYING.LGPLv2.1"), "FFmpeg npm package must retain the LGPL license copy");
   need(!(ffmpegMeta.npm?.packageFiles?.required || []).some((rel) => rel.endsWith("/x264-COPYING") || rel.endsWith("/FFmpeg-COPYING.GPLv2")), "FFmpeg npm browser-full package must not accidentally include GPL/x264-only release files");
   const zstdMeta=await readJson(path.join(root,"packages/zstd/package.json"));
-  need(zstdMeta.status==="available" && zstdMeta.npm?.status==="canary" &&
+  need(zstdMeta.status==="available" && zstdMeta.npm?.status==="published" &&
     zstdMeta.npm?.package==="@wasm-zoo/zstd" && zstdMeta.npm?.version==="0.3.0" &&
     zstdMeta.npm?.profile==="browser-full" && zstdMeta.tracker?.candidateMode==="none",
-    "Zstandard npm canary must be sourced from the reviewed public release without claiming npm publication or automating pin promotion");
+    "Published Zstandard npm must retain the reviewed release pin without enabling candidate automation");
+  need(smoke.includes("29add1aaf6ab0c3e9a3d538166a51a3f70cefa99") && smoke.includes("dist.shasum"),
+    "The live Registry-backed Zstandard smoke must verify the exact reviewed tarball SHA-1");
   need(zstdMeta.npm.runtime.consumerScript==="wasm-zoo-cli.mjs" &&
     zstdMeta.npm.runtime.workerScript==="browser-zstd-cli-worker.js",
     "Zstandard npm must use the published CLI, not the separately published browser-core library API");
@@ -233,7 +235,7 @@ try {
     zstdCanary.includes("matrix:") && zstdCanary.includes("browser: [chromium, firefox, webkit]") &&
     zstdCanary.includes("WASM_ZOO_NPM_PACKAGE_SPEC") &&
     !zstdCanary.includes("npm publish") && !zstdCanary.includes("npm stage publish"),
-    "New Zstandard canary must verify immutable Release, pack only and run actual Vite tests in all three browsers");
+    "The Zstandard immutable Release tarball regression gate must pack only and run all three browser tests");
   const libvipsConsumer = await fs.readFile(path.join(root, "builders", "libvips", "runtime", "wasm-zoo.mjs"), "utf8");
   need(libvipsConsumer.includes("options.coreJsUrl || options.jsUrl"), "libvips Consumer API must map bundler coreJsUrl to its jsUrl loader option");
   need(ghostscriptMeta.npm?.packageFiles?.requiredDirs?.includes("THIRD-PARTY-LICENSES"), "Ghostscript npm distribution must recursively preserve THIRD-PARTY-LICENSES");
