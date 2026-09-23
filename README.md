@@ -24,7 +24,9 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 
 ## New experimental v0.15 candidate: Zstandard
 
-[Zstandard v1.5.7 browser-core canary](builders/zstd/README.md) is being built from the exact official upstream source using Emscripten 6.0.7. The second experimental phase also adds the original upstream zstd CLI as a separate `browser-full` profile, with MEMFS files and bidirectional native/browser frame tests. **Neither profile is released, and there is no npm package or Playground yet.** The original `browser-core` continues to use libzstd's compression/decompression C API; `browser-full` adds actual upstream CLI processing in a browser Worker. A public release, streaming JS API and distribution require separate reviewed phases.
+The [official Zstandard 1.5.7](builders/zstd/README.md) has two independently browser-tested experimental builds: browser-core with the original library C API and browser-full with the original upstream CLI on MEMFS. Phase 3 includes verified [corresponding-source release packaging and a published-release-only Playground](docs/ZSTD_RELEASE.md).
+
+**No GitHub release or npm publication is implied by merging this PR.** The catalog stays experimental until the human-tagged release succeeds and a later reviewed metadata PR promotes it.
 
 ## Available packages
 
