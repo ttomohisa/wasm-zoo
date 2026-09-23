@@ -75,24 +75,27 @@ function resolveBrowser() {
 }
 
 async function main() {
-  const profile = process.argv[2] || "browser-full";
+  const profile = process.argv[2] || "browser-core";
   const dist = path.join(root, "dist", profile);
-  const timeoutMs = Number(process.env.JQ_WASM_SMOKE_TIMEOUT_MS || 240000);
+  const timeoutMs = Number(process.env.ZSTD_WASM_SMOKE_TIMEOUT_MS || 240000);
   // Keep browser integration diagnostics current without rebuilding the Wasm core.
   // This lets runtime/smoke-test fixes be exercised against an already-exported dist.
-  await fsp.copyFile(path.join(root, "tests", "smoke-test.html"), path.join(dist, "smoke-test.html"));
+  const cli = profile === "browser-full";
+  if (!["browser-core", "browser-full"].includes(profile)) throw new Error("Unsupported Zstandard smoke-test profile: " + profile);
+  await fsp.copyFile(path.join(root, "tests", cli ? "smoke-test-cli.html" : "smoke-test.html"), path.join(dist, "smoke-test.html"));
   await fsp.copyFile(path.join(root, "runtime", "browser-zstd.js"), path.join(dist, "browser-zstd.js"));
   await fsp.copyFile(path.join(root, "runtime", "browser-zstd-worker.js"), path.join(dist, "browser-zstd-worker.js"));
 
-  await fsp.copyFile(path.join(root, "runtime", "wasm-zoo.mjs"), path.join(dist, "wasm-zoo.mjs"));
-  const required = ["wasm-zoo.mjs",
-    "smoke-test.html",
-    "browser-zstd.js",
-    "manifest.json",
-    "browser-zstd-worker.js",
-    "zstd-core.js",
-    "zstd-core.wasm"
-  ];
+  if (cli) {
+    await fsp.copyFile(path.join(root, "runtime", "browser-zstd-cli.js"), path.join(dist, "browser-zstd-cli.js"));
+    await fsp.copyFile(path.join(root, "runtime", "browser-zstd-cli-worker.js"), path.join(dist, "browser-zstd-cli-worker.js"));
+    await fsp.copyFile(path.join(root, "runtime", "wasm-zoo-cli.mjs"), path.join(dist, "wasm-zoo-cli.mjs"));
+  } else {
+    await fsp.copyFile(path.join(root, "runtime", "wasm-zoo.mjs"), path.join(dist, "wasm-zoo.mjs"));
+  }
+  const required = cli
+    ? ["wasm-zoo-cli.mjs", "smoke-test.html", "browser-zstd-cli.js", "browser-zstd-cli-worker.js", "manifest.json", "zstd-cli.js", "zstd-cli.wasm"]
+    : ["wasm-zoo.mjs", "smoke-test.html", "browser-zstd.js", "browser-zstd-worker.js", "manifest.json", "zstd-core.js", "zstd-core.wasm"];
 
   for (const name of required) {
     if (!fs.existsSync(path.join(dist, name))) throw new Error(`Missing smoke input: ${name}`);
@@ -112,10 +115,36 @@ async function main() {
     [".jpeg", "image/jpeg"]
   ]);
 
+  let nativeOutput = null;
+  const nativeAvailable = cli && Boolean(commandPath("zstd"));
+  const originalFixture = Buffer.from("WASM Zoo Zstandard native/browser CLI frame interop. ".repeat(240));
+  if (cli) {
+    await fsp.writeFile(path.join(dist, "native-input.bin"), originalFixture);
+    if (nativeAvailable) {
+      const cmd = spawnSync("zstd", ["-q", "-5", "-f", "-o", path.join(dist, "native-fixture.zst"), path.join(dist, "native-input.bin")], { encoding: "utf8" });
+      if (cmd.status !== 0) throw new Error("Native zstd fixture generation failed: " + cmd.stderr);
+    } else if (process.env.ZSTD_NATIVE_INTEROP === "required") {
+      throw new Error("CI requires an installed native zstd executable for bidirectional compatibility");
+    }
+  }
   const baseDir = path.resolve(dist);
   const server = http.createServer(async (req, res) => {
     try {
       const url = new URL(req.url, "http://localhost");
+      if (req.method === "POST" && url.pathname === "/__native-output" && cli && nativeAvailable) {
+        const parts = [];
+        let bytes = 0;
+        for await (const part of req) {
+          bytes += part.length;
+          if (bytes > 64 * 1024 * 1024) { res.writeHead(413); res.end(); return; }
+          parts.push(part);
+        }
+        nativeOutput = Buffer.concat(parts);
+        res.writeHead(204, { "Cache-Control": "no-store" });
+        res.end();
+        return;
+      }
+      if (req.method !== "GET") { res.writeHead(405); res.end(); return; }
       const rel = url.pathname === "/" ? "smoke-test.html" : decodeURIComponent(url.pathname.slice(1));
       const full = path.resolve(baseDir, rel);
       if (!(full === baseDir || full.startsWith(baseDir + path.sep))) {
@@ -185,6 +214,16 @@ async function main() {
             last = decodeURIComponent(url.hash.slice("#SMOKE_TEST_RUNNING_".length));
           }
           if (url.hash.startsWith("#SMOKE_TEST_PASS_")) {
+            if (cli && nativeAvailable) {
+              if (!nativeOutput?.length) throw new Error("Browser CLI did not submit a real compressed frame");
+              const native = spawnSync("zstd", ["-q", "-d", "-c"], {
+                input: nativeOutput, maxBuffer: 65 * 1024 * 1024
+              });
+              if (native.status !== 0 || !native.stdout.equals(originalFixture)) {
+                throw new Error("Native zstd could not correctly decode the actual browser-produced CLI frame: " + String(native.stderr));
+              }
+              console.log("[OK] native-zstd <-> browser-upstream-zstd bidirectional byte-accurate frame interop");
+            }
             console.log(`[OK] Browser smoke test: ${decodeURIComponent(url.hash.slice(1))}`);
             return;
           }
