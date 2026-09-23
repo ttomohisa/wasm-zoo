@@ -60,6 +60,24 @@ node --test scripts/test-threaded-browser-capabilities.mjs
 node scripts/report-threaded-compatibility.mjs compat-results
 ```
 
+## Phase 4: observed public compatibility matrix (project v0.14.0)
+
+After human approval merges a reviewed Lab PR, the Lab also runs on relevant **main** pushes (as well as PRs, weekly schedules and manual dispatch). The Pages workflow regenerates the public dashboard after each completed main-branch Lab run. A PR-only CI pass is **not** silently promoted to a published live result.
+
+`scripts/publish-browser-compatibility.mjs` uses the read-only GitHub Actions token to select the **latest main-branch Lab run**, including failed or in-progress runs. It never falls back to an older green run after a newer run fails or starts. Only a completed, successful main run with 18 authentic individual JSON artifacts, matching the current reviewed npm package versions/profiles, complete real-operation results and correct threaded preflight may be displayed as verified. Results must be no older than 14 days. If any required artifact is missing, altered, stale or version-mismatched, the generated site file is **unavailable with all 18 cells marked not-tested**, not a partial or fabricated PASS table. The client also refuses to display verified results older than 14 days without a fresh deployment.
+
+The generated `site/browser-compatibility.json` is produced by Pages, not checked in as a permanent snapshot. Each verified file includes source run ID/URL/SHA and tested npm/browser versions with per-cell status. When GitHub APIs or artifacts are unavailable, the Pages build can still proceed with an explicit unavailable snapshot. Reviewers can use the Actions workflow summary and uploaded source artifacts to investigate.
+
+Validate snapshot classification rules with:
+
+```sh
+node --test scripts/test-browser-compatibility-snapshot.mjs
+npm run check
+npm run metadata:check
+```
+
+The **v0.14.0 project version bump** belongs to the reviewed catalogue PR. The maintainer manually merges it and, after verifying main-branch Lab and Pages results, optionally creates the project `v0.14.0` tag/release. No candidate automation, CI job or Pages deployment auto-merges, tags, publishes or changes reviewed pins. Cross-browser results apply to each package's listed npm profile, not necessarily every release ZIP profile; FFmpeg's GPL variant and libvips's full profile are not included in the npm test matrix.
+
 ## Per-browser JSON contract (schemaVersion 1)
 
 One result file is produced for each browser invocation. Example **shape**, not a claim of a successful live test:
