@@ -30,6 +30,7 @@
     "docs:check": "node scripts/check-doc-sync.mjs",
     "compat:threaded:test": "node --test scripts/test-threaded-browser-capabilities.mjs",
     "compat:publish:site": "node scripts/publish-browser-compatibility.mjs",
-    "zstd:release:check": "node scripts/check-zstd-release-prep.mjs"
+    "zstd:release:check": "node scripts/check-zstd-release-prep.mjs",
+    "zstd:playground:smoke": "node scripts/smoke-zstd-playground.mjs"
   }
 }

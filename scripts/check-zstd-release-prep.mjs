@@ -18,7 +18,7 @@ need(pkg.zoo.builderVersion===expected && pkg.profiles.length===2,
   "Both reviewed experimental Zstandard profiles must be preserved");
 for(const entry of ["site/zstd-playground/app.js","scripts/verify-staged-zstd.mjs",
  "builders/zstd/scripts/verify-build-inputs.mjs","builders/zstd/scripts/verify-release-assets.mjs",
- "builders/zstd/scripts/check-repository.mjs"]) {
+ "builders/zstd/scripts/check-repository.mjs","scripts/smoke-zstd-playground.mjs"]) {
  const out=spawnSync(process.execPath,["--check",path.join(root,entry)],{encoding:"utf8"});
  need(out.status===0,"JavaScript syntax check failed for "+entry+": "+out.stderr);
 }

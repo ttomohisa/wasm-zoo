@@ -163,6 +163,48 @@ async function init(){
     logNode.textContent="Release manifests verified for both browser profiles.\n";
     await renderManifest();
     updateState();
+    // Explicit localhost-only smoke: run real Playground UI across both profiles,
+    // cross-decode frames and require byte-identical results. Never runs publicly.
+    if(localhost && state.state==="local-preview" &&
+       new URL(location.href).searchParams.get("ci-smoke")==="1"){
+      const processChecked=async()=>{
+        await processInput();
+        if(download.hidden || !outputUrl)throw new Error("Playground operation failed: "+message.textContent);
+        return new Uint8Array(await (await fetch(outputUrl)).arrayBuffer());
+      };
+      try{
+        demoButton.click();
+        if(!input)throw new Error("Sample input was not selected");
+        const original=new Uint8Array(await input.blob.arrayBuffer());
+        const coreFrame=await processChecked();
+        profileInput.value="browser-full";
+        profileInput.dispatchEvent(new Event("change"));
+        modeInput.value="decompress";
+        modeInput.dispatchEvent(new Event("change"));
+        selectFile(new Blob([coreFrame]),"core.zst");
+        const fullDecoded=await processChecked();
+        if(fullDecoded.length!==original.length ||
+           fullDecoded.some((byte,i)=>byte!==original[i]))
+          throw new Error("Full CLI could not decode the Playground core profile frame");
+        modeInput.value="compress";
+        modeInput.dispatchEvent(new Event("change"));
+        selectFile(new Blob([original]),"sample.txt");
+        const cliFrame=await processChecked();
+        profileInput.value="browser-core";
+        profileInput.dispatchEvent(new Event("change"));
+        modeInput.value="decompress";
+        modeInput.dispatchEvent(new Event("change"));
+        selectFile(new Blob([cliFrame]),"cli.zst");
+        const coreDecoded=await processChecked();
+        if(coreDecoded.length!==original.length ||
+           coreDecoded.some((byte,i)=>byte!==original[i]))
+          throw new Error("Core profile could not decode the Playground upstream CLI frame");
+        location.hash="#SMOKE_TEST_PASS_zstd_playground_bidirectional_profiles";
+      }catch(smokeError){
+        log("Playground UI smoke failed: "+smokeError.stack);
+        location.hash="#SMOKE_TEST_FAIL_"+encodeURIComponent(smokeError.message);
+      }
+    }
   }catch(error){
     setStatus("error","Release check unavailable");
     message.textContent=error.message;logNode.textContent=error.stack||String(error);

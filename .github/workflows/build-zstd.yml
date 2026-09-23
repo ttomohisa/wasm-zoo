@@ -111,6 +111,40 @@ jobs:
         run: |
           chmod +x ./scripts/prepare-release.sh
           ./scripts/prepare-release.sh
+      - name: Set up Chrome for real Playground UI check
+        uses: browser-actions/setup-chrome@v2.2.0
+        id: chrome
+      - name: Rehearse staged binary hashes and actual Playground UI locally
+        shell: bash
+        env:
+          ZSTD_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          set -euo pipefail
+          source builders/zstd/versions.env
+          version="${ZSTD_REF#v}"
+          for profile in browser-core browser-full; do
+            dest="site/assets/zstd/${version}/${profile}"
+            mkdir -p "$dest"
+            asset="builders/zstd/release/zstd-${profile}-${version}-zoo-${BUILDER_VERSION}.zip"
+            if [[ "$profile" = browser-core ]]; then
+              unzip -q -j "$asset" zstd-core.js zstd-core.wasm manifest.json features.json \
+                browser-zstd.js browser-zstd-worker.js wasm-zoo.mjs -d "$dest"
+            else
+              unzip -q -j "$asset" zstd-cli.js zstd-cli.wasm manifest.json features.json \
+                browser-zstd-cli.js browser-zstd-cli-worker.js wasm-zoo-cli.mjs -d "$dest"
+            fi
+          done
+          node scripts/verify-staged-zstd.mjs
+          node -e '
+            const fs=require("node:fs");
+            const env=Object.fromEntries(fs.readFileSync("builders/zstd/versions.env","utf8")
+              .split(/\r?\n/).filter(s=>/^[A-Z_]+=/.test(s)).map(s=>{const i=s.indexOf("=");return[s.slice(0,i),s.slice(i+1)];}));
+            fs.writeFileSync("site/zstd-playground/release-status.json",JSON.stringify({
+              schemaVersion:1,state:"local-preview",tag:"zstd-v"+env.BUILDER_VERSION,
+              upstreamCommit:env.ZSTD_COMMIT
+            },null,2)+"\n");
+          '
+          node scripts/smoke-zstd-playground.mjs
       - name: Upload candidate release bundle for manual review only
         uses: actions/upload-artifact@v7
         with:
