@@ -13,9 +13,9 @@ const need=(ok,why)=>{if(!ok)fail.push(why);};
 const expected=env.match(/^BUILDER_VERSION=(.+)$/m)?.[1];
 need(expected==="0.3.0", "Unexpected Zstandard release preparation builder pin");
 need(pkg.status==="available" && pkg.release?.tag==="zstd-v0.3.0" &&
-  (!pkg.npm || (pkg.npm.status==="canary" && pkg.npm.package==="@wasm-zoo/zstd" && pkg.npm.profile==="browser-full")) &&
+  (!pkg.npm || (pkg.npm.status==="published" && pkg.npm.package==="@wasm-zoo/zstd" && pkg.npm.profile==="browser-full")) &&
   pkg.tracker.candidateMode==="none",
-  "Keep exact reviewed release; npm may be canary only and upstream candidate promotion remains separately gated");
+  "Keep exact reviewed release and published CLI npm distribution; upstream candidate promotion remains separately gated");
 need(pkg.release?.sourceAsset==="zstd-sources-1.5.7-zoo-0.3.0.tar.gz" &&
   pkg.release?.checksumsAsset==="SHA256SUMS.txt" &&
   pkg.profiles.every(p=>p.playground===true && p.playgroundPath==="./zstd-playground/" && p.releaseAsset),
