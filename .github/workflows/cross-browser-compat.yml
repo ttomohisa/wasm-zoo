@@ -1,15 +1,20 @@
-name: Cross-browser compatibility lab (single-threaded)
+name: Cross-browser compatibility lab
 
 on:
   workflow_dispatch:
   pull_request:
     paths:
       - 'scripts/smoke-npm-package.mjs'
+      - 'scripts/threaded-browser-capabilities.mjs'
+      - 'scripts/test-threaded-browser-capabilities.mjs'
+      - 'scripts/report-threaded-compatibility.mjs'
       - 'scripts/check-npm-distribution.mjs'
       - 'packages/jq/package.json'
       - 'packages/libarchive/package.json'
       - 'packages/imagemagick/package.json'
       - 'packages/ghostscript/package.json'
+      - 'packages/ffmpeg/package.json'
+      - 'packages/libvips/package.json'
       - '.github/workflows/cross-browser-compat.yml'
       - 'docs/CROSS_BROWSER_LAB.md'
   schedule:
@@ -53,5 +58,72 @@ jobs:
         with:
           name: ${{ matrix.slug }}-${{ matrix.browser }}-compatibility
           path: compat-results/${{ matrix.slug }}-${{ matrix.browser }}.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  threaded:
+    name: ${{ matrix.slug }} / ${{ matrix.browser }} (threaded)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        slug: [ffmpeg, libvips]
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Require current npm CLI
+        run: npm install --global npm@12.0.2
+      - name: Check shared smoke runner and preflight tests
+        run: |
+          node --check scripts/smoke-npm-package.mjs
+          node --test scripts/test-threaded-browser-capabilities.mjs
+      - name: Test published threaded package with runtime preflight
+        env:
+          WASM_ZOO_PLAYWRIGHT_WITH_DEPS: '1'
+        run: >
+          node scripts/smoke-npm-package.mjs
+          --slug '${{ matrix.slug }}'
+          --browser '${{ matrix.browser }}'
+          --on-unsupported '${{ matrix.browser == 'chromium' && 'error' || 'record' }}'
+          --result-json 'compat-results/${{ matrix.slug }}-${{ matrix.browser }}.json'
+      - name: Upload per-browser threaded compatibility result
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: threaded-${{ matrix.slug }}-${{ matrix.browser }}-compatibility
+          path: compat-results/${{ matrix.slug }}-${{ matrix.browser }}.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  threaded-report:
+    name: Enforce observed threaded compatibility classifications
+    runs-on: ubuntu-24.04
+    needs: [threaded]
+    if: ${{ always() }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: threaded-*-compatibility
+          path: compat-results
+          merge-multiple: true
+      - name: Verify every threaded result and summarize observed support
+        run: node scripts/report-threaded-compatibility.mjs compat-results
+      - name: Upload aggregate compatibility record
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: threaded-compatibility-aggregate
+          path: compat-results/threaded-aggregate.json
           if-no-files-found: warn
           retention-days: 30
