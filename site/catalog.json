@@ -1041,6 +1041,221 @@
     },
     {
       "schemaVersion": 2,
+      "slug": "zstd",
+      "name": "Zstandard",
+      "summary": "Official-source Zstandard 1.5.7 WebAssembly with a bounded browser-core library profile and the original upstream zstd CLI browser-full profile, both published with verified corresponding source and supply-chain metadata.",
+      "category": "archives",
+      "status": "available",
+      "order": 28,
+      "upstream": {
+        "version": "1.5.7",
+        "ref": "v1.5.7",
+        "released": "2025-02-19",
+        "homepage": "https://www.zstd.net/",
+        "repository": "https://github.com/facebook/zstd",
+        "license": "BSD-3-Clause (the upstream BSD option)"
+      },
+      "tracker": {
+        "type": "github-releases",
+        "repository": "facebook/zstd",
+        "versionPattern": "v?(\\d+\\.\\d+\\.\\d+)",
+        "candidateMode": "none",
+        "candidateProfiles": []
+      },
+      "zoo": {
+        "builderVersion": "0.3.0",
+        "toolchain": "Emscripten 6.0.7",
+        "buildModel": "libzstd-browser-core-and-upstream-cli-both-release-gated",
+        "reproducible": true,
+        "sourceBundle": true,
+        "checksums": true,
+        "browserSmokeTest": true,
+        "featureInventory": true,
+        "provenance": "in-toto Statement + SLSA Provenance v1",
+        "sbom": "CycloneDX 1.6 JSON",
+        "supplyChainMetadata": true
+      },
+      "profiles": [
+        {
+          "id": "browser-core",
+          "label": "Browser Core",
+          "target": "browser",
+          "threads": false,
+          "simd": false,
+          "sharedArrayBuffer": false,
+          "worker": true,
+          "workerFs": false,
+          "arbitraryCli": false,
+          "network": false,
+          "features": [
+            "exact upstream libzstd 1.5.7 compression and decompression",
+            "single-frame in-memory C API",
+            "bounded output (64 MiB maximum)",
+            "dedicated worker without SharedArrayBuffer"
+          ],
+          "externalLibraries": [],
+          "output": "Zstandard 1.5.7 one-shot compression/decompression library for browser-local data",
+          "binaryLicense": "BSD-3-Clause",
+          "size": "Loaded from the published release manifest",
+          "playground": true,
+          "playgroundPath": "./zstd-playground/",
+          "releaseAsset": "zstd-browser-core-1.5.7-zoo-0.3.0.zip"
+        },
+        {
+          "id": "browser-full",
+          "label": "Browser Full",
+          "target": "browser",
+          "threads": false,
+          "simd": false,
+          "sharedArrayBuffer": false,
+          "worker": true,
+          "workerFs": true,
+          "arbitraryCli": true,
+          "network": false,
+          "features": [
+            "original upstream zstd command-line source, not a JavaScript reimplementation",
+            "normal .zst compression and decompression using staged MEMFS paths",
+            "fresh isolated Worker for each CLI invocation",
+            "native zstd interoperability tested in both directions on CI",
+            "dictionary CLI is compiled but its browser behavior remains an unverified capability"
+          ],
+          "externalLibraries": [],
+          "output": "Original upstream zstd CLI for staged browser MEMFS files",
+          "binaryLicense": "BSD-3-Clause",
+          "size": "Loaded from the published release manifest",
+          "playground": true,
+          "playgroundPath": "./zstd-playground/",
+          "releaseAsset": "zstd-browser-full-1.5.7-zoo-0.3.0.zip"
+        }
+      ],
+      "comparison": [
+        {
+          "name": "Upstream native",
+          "version": "1.5.7",
+          "note": "Reference libzstd C library and full CLI, native filesystem and optional multithreading."
+        },
+        {
+          "name": "WASM Zoo",
+          "version": "1.5.7",
+          "note": "Published browser-core plus original upstream zstd CLI browser-full. The CLI uses browser MEMFS rather than a native OS filesystem and intentionally omits pthreads, legacy-frame decoding and external format codecs."
+        }
+      ],
+      "notes": [
+        "Published GitHub Release zstd-v0.3.0 contains both browser profiles, exact corresponding official source/build recipe, SHA-256 checksums, standalone in-toto/SLSA provenance and CycloneDX 1.6 SBOMs.",
+        "browser-core and browser-full both passed real Chromium operation tests; browser-full also passed bidirectional native zstd frame interoperability before publication.",
+        "The public Playground stages only checksum-verified published release assets. Files are processed locally in browser Workers.",
+        "No npm package is published yet. npm rollout and the published-registry three-browser compatibility matrix remain a separate reviewed phase.",
+        "Automatic upstream candidate promotion is intentionally not enabled yet: candidateMode remains none until the Zstandard adapter/promotion path is separately reviewed.",
+        "Both profiles are single-threaded and require no SharedArrayBuffer. browser-full omits native filesystem access, pthreads, external gzip/xz/lz4 codecs and legacy-frame decoding."
+      ],
+      "referenceWasm": {
+        "name": "zstd-codec",
+        "packageVersion": "0.1.5",
+        "upstreamVersion": "1.3.6",
+        "repository": "https://github.com/yoshihitoh/zstd-codec",
+        "checkedAt": "2026-09-23",
+        "note": "The third-party source repository's cpp/zstd submodule points to commit 4fa456d7f12f8b27bd3b2f5dfd4f46898cb31c24 (v1.3.6). This is source-pin evidence, not a binary audit of npm."
+      },
+      "capabilityMatrix": [
+        {
+          "feature": "Standard Zstandard 1.5.x frame encoding/decoding",
+          "native": "included",
+          "profiles": {
+            "browser-core": "included",
+            "browser-full": "included"
+          },
+          "note": "Both profiles use the official 1.5.7 C sources. Browser-full also requires real CLI compress/decompress and bidirectional native frame compatibility in CI."
+        },
+        {
+          "feature": "Stream processing of unknown-length frames",
+          "native": "included",
+          "profiles": {
+            "browser-core": "excluded",
+            "browser-full": "optional"
+          },
+          "note": "The native upstream CLI has file-I/O streaming, including staged MEMFS files. The JS adapter still buffers inputs/outputs and this phase does not assert a streaming JS API or unknown-size test."
+        },
+        {
+          "feature": "Dictionary training and dictionary compression",
+          "native": "included",
+          "profiles": {
+            "browser-core": "excluded",
+            "browser-full": "optional"
+          },
+          "note": "The full upstream CLI and libzstd dictionary code are linked, but browser dictionary behavior is not yet tested as a release gate."
+        },
+        {
+          "feature": "Original upstream zstd CLI using MEMFS",
+          "native": "included",
+          "profiles": {
+            "browser-core": "excluded",
+            "browser-full": "included"
+          },
+          "note": "Builds original upstream programs/*.c including zstdcli.c; arguments and file paths apply to staged Emscripten MEMFS rather than a native host filesystem."
+        },
+        {
+          "feature": "Threads and SharedArrayBuffer",
+          "native": "optional",
+          "profiles": {
+            "browser-core": "excluded",
+            "browser-full": "excluded"
+          },
+          "note": "Both profiles are single-threaded in fresh outer Workers. No COOP/COEP required."
+        },
+        {
+          "feature": "Network access",
+          "native": "platform",
+          "profiles": {
+            "browser-core": "na",
+            "browser-full": "na"
+          },
+          "note": "No Zoo network access. Each runtime fetches self-hosted local JavaScript/WASM assets."
+        },
+        {
+          "feature": "Native host filesystem and shell pipelines",
+          "native": "platform",
+          "profiles": {
+            "browser-core": "na",
+            "browser-full": "na"
+          },
+          "note": "Neither browser profile can access OS files directly; CLI inputs/outputs are staged in MEMFS, and stdout/stderr are captured."
+        },
+        {
+          "feature": "External gzip/xz/lz4 codec formats and legacy-frame decoding",
+          "native": "optional",
+          "profiles": {
+            "browser-core": "excluded",
+            "browser-full": "excluded"
+          },
+          "note": "The browser-full CLI is compiled without optional native codec libraries, pthreads or legacy-frame code."
+        }
+      ],
+      "integration": {
+        "summary": "Use the published browser-full package to run normal upstream zstd CLI arguments against explicitly staged browser MEMFS files, or use browser-core for bounded in-memory one-shot compression/decompression.",
+        "files": [
+          "browser-zstd-cli.js",
+          "browser-zstd-cli-worker.js",
+          "wasm-zoo-cli.mjs",
+          "zstd-cli.js",
+          "zstd-cli.wasm"
+        ],
+        "example": "import { load } from \"/vendor/zstd/wasm-zoo-cli.mjs\";\nconst cli = await load({baseUrl:\"/vendor/zstd/\"});\ntry {\n  const compressed = await cli.exec([\"-q\",\"-f\",\"-5\",\"-o\",\"/out.zst\",\"/in.txt\"], {\n    files: [{name:\"/in.txt\",data:new TextEncoder().encode(\"hello\")}], outputs:[\"/out.zst\"]\n  });\n  console.log(compressed.files[0].data);\n} finally { cli.dispose(); }",
+        "notes": [
+          "Use the immutable zstd-v0.3.0 GitHub Release assets; the public Playground stages the same verified ZIP contents.",
+          "Inputs and outputs use safe browser-local paths. Maximum staged input and collected output remain bounded to 64 MiB by the wrappers.",
+          "No native OS filesystem, pthreads or network access is exposed by either browser profile."
+        ]
+      },
+      "release": {
+        "tag": "zstd-v0.3.0",
+        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/zstd-v0.3.0",
+        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/zstd-v0.3.0/",
+        "sourceAsset": "zstd-sources-1.5.7-zoo-0.3.0.tar.gz",
+        "checksumsAsset": "SHA256SUMS.txt"
+      }
+    },
+    {
+      "schemaVersion": 2,
       "slug": "libvips",
       "name": "libvips",
       "summary": "Upstream libvips image-processing library compiled for browser WebAssembly with a pinned Emscripten adapter.",
@@ -1594,221 +1809,6 @@
           "document",
           "conversion"
         ]
-      }
-    },
-    {
-      "schemaVersion": 2,
-      "slug": "zstd",
-      "name": "Zstandard",
-      "summary": "Official-source Zstandard 1.5.7 WebAssembly with a bounded browser-core library profile and the original upstream zstd CLI browser-full profile, both published with verified corresponding source and supply-chain metadata.",
-      "category": "archives",
-      "status": "available",
-      "order": 28,
-      "upstream": {
-        "version": "1.5.7",
-        "ref": "v1.5.7",
-        "released": "2025-02-19",
-        "homepage": "https://www.zstd.net/",
-        "repository": "https://github.com/facebook/zstd",
-        "license": "BSD-3-Clause (the upstream BSD option)"
-      },
-      "tracker": {
-        "type": "github-releases",
-        "repository": "facebook/zstd",
-        "versionPattern": "v?(\\d+\\.\\d+\\.\\d+)",
-        "candidateMode": "none",
-        "candidateProfiles": []
-      },
-      "zoo": {
-        "builderVersion": "0.3.0",
-        "toolchain": "Emscripten 6.0.7",
-        "buildModel": "libzstd-browser-core-and-upstream-cli-both-release-gated",
-        "reproducible": true,
-        "sourceBundle": true,
-        "checksums": true,
-        "browserSmokeTest": true,
-        "featureInventory": true,
-        "provenance": "in-toto Statement + SLSA Provenance v1",
-        "sbom": "CycloneDX 1.6 JSON",
-        "supplyChainMetadata": true
-      },
-      "profiles": [
-        {
-          "id": "browser-core",
-          "label": "Browser Core",
-          "target": "browser",
-          "threads": false,
-          "simd": false,
-          "sharedArrayBuffer": false,
-          "worker": true,
-          "workerFs": false,
-          "arbitraryCli": false,
-          "network": false,
-          "features": [
-            "exact upstream libzstd 1.5.7 compression and decompression",
-            "single-frame in-memory C API",
-            "bounded output (64 MiB maximum)",
-            "dedicated worker without SharedArrayBuffer"
-          ],
-          "externalLibraries": [],
-          "output": "Zstandard 1.5.7 one-shot compression/decompression library for browser-local data",
-          "binaryLicense": "BSD-3-Clause",
-          "size": "Loaded from the published release manifest",
-          "playground": true,
-          "playgroundPath": "./zstd-playground/",
-          "releaseAsset": "zstd-browser-core-1.5.7-zoo-0.3.0.zip"
-        },
-        {
-          "id": "browser-full",
-          "label": "Browser Full",
-          "target": "browser",
-          "threads": false,
-          "simd": false,
-          "sharedArrayBuffer": false,
-          "worker": true,
-          "workerFs": true,
-          "arbitraryCli": true,
-          "network": false,
-          "features": [
-            "original upstream zstd command-line source, not a JavaScript reimplementation",
-            "normal .zst compression and decompression using staged MEMFS paths",
-            "fresh isolated Worker for each CLI invocation",
-            "native zstd interoperability tested in both directions on CI",
-            "dictionary CLI is compiled but its browser behavior remains an unverified capability"
-          ],
-          "externalLibraries": [],
-          "output": "Original upstream zstd CLI for staged browser MEMFS files",
-          "binaryLicense": "BSD-3-Clause",
-          "size": "Loaded from the published release manifest",
-          "playground": true,
-          "playgroundPath": "./zstd-playground/",
-          "releaseAsset": "zstd-browser-full-1.5.7-zoo-0.3.0.zip"
-        }
-      ],
-      "comparison": [
-        {
-          "name": "Upstream native",
-          "version": "1.5.7",
-          "note": "Reference libzstd C library and full CLI, native filesystem and optional multithreading."
-        },
-        {
-          "name": "WASM Zoo",
-          "version": "1.5.7",
-          "note": "Published browser-core plus original upstream zstd CLI browser-full. The CLI uses browser MEMFS rather than a native OS filesystem and intentionally omits pthreads, legacy-frame decoding and external format codecs."
-        }
-      ],
-      "notes": [
-        "Published GitHub Release zstd-v0.3.0 contains both browser profiles, exact corresponding official source/build recipe, SHA-256 checksums, standalone in-toto/SLSA provenance and CycloneDX 1.6 SBOMs.",
-        "browser-core and browser-full both passed real Chromium operation tests; browser-full also passed bidirectional native zstd frame interoperability before publication.",
-        "The public Playground stages only checksum-verified published release assets. Files are processed locally in browser Workers.",
-        "No npm package is published yet. npm rollout and the published-registry three-browser compatibility matrix remain a separate reviewed phase.",
-        "Automatic upstream candidate promotion is intentionally not enabled yet: candidateMode remains none until the Zstandard adapter/promotion path is separately reviewed.",
-        "Both profiles are single-threaded and require no SharedArrayBuffer. browser-full omits native filesystem access, pthreads, external gzip/xz/lz4 codecs and legacy-frame decoding."
-      ],
-      "referenceWasm": {
-        "name": "zstd-codec",
-        "packageVersion": "0.1.5",
-        "upstreamVersion": "1.3.6",
-        "repository": "https://github.com/yoshihitoh/zstd-codec",
-        "checkedAt": "2026-09-23",
-        "note": "The third-party source repository's cpp/zstd submodule points to commit 4fa456d7f12f8b27bd3b2f5dfd4f46898cb31c24 (v1.3.6). This is source-pin evidence, not a binary audit of npm."
-      },
-      "capabilityMatrix": [
-        {
-          "feature": "Standard Zstandard 1.5.x frame encoding/decoding",
-          "native": "included",
-          "profiles": {
-            "browser-core": "included",
-            "browser-full": "included"
-          },
-          "note": "Both profiles use the official 1.5.7 C sources. Browser-full also requires real CLI compress/decompress and bidirectional native frame compatibility in CI."
-        },
-        {
-          "feature": "Stream processing of unknown-length frames",
-          "native": "included",
-          "profiles": {
-            "browser-core": "excluded",
-            "browser-full": "optional"
-          },
-          "note": "The native upstream CLI has file-I/O streaming, including staged MEMFS files. The JS adapter still buffers inputs/outputs and this phase does not assert a streaming JS API or unknown-size test."
-        },
-        {
-          "feature": "Dictionary training and dictionary compression",
-          "native": "included",
-          "profiles": {
-            "browser-core": "excluded",
-            "browser-full": "optional"
-          },
-          "note": "The full upstream CLI and libzstd dictionary code are linked, but browser dictionary behavior is not yet tested as a release gate."
-        },
-        {
-          "feature": "Original upstream zstd CLI using MEMFS",
-          "native": "included",
-          "profiles": {
-            "browser-core": "excluded",
-            "browser-full": "included"
-          },
-          "note": "Builds original upstream programs/*.c including zstdcli.c; arguments and file paths apply to staged Emscripten MEMFS rather than a native host filesystem."
-        },
-        {
-          "feature": "Threads and SharedArrayBuffer",
-          "native": "optional",
-          "profiles": {
-            "browser-core": "excluded",
-            "browser-full": "excluded"
-          },
-          "note": "Both profiles are single-threaded in fresh outer Workers. No COOP/COEP required."
-        },
-        {
-          "feature": "Network access",
-          "native": "platform",
-          "profiles": {
-            "browser-core": "na",
-            "browser-full": "na"
-          },
-          "note": "No Zoo network access. Each runtime fetches self-hosted local JavaScript/WASM assets."
-        },
-        {
-          "feature": "Native host filesystem and shell pipelines",
-          "native": "platform",
-          "profiles": {
-            "browser-core": "na",
-            "browser-full": "na"
-          },
-          "note": "Neither browser profile can access OS files directly; CLI inputs/outputs are staged in MEMFS, and stdout/stderr are captured."
-        },
-        {
-          "feature": "External gzip/xz/lz4 codec formats and legacy-frame decoding",
-          "native": "optional",
-          "profiles": {
-            "browser-core": "excluded",
-            "browser-full": "excluded"
-          },
-          "note": "The browser-full CLI is compiled without optional native codec libraries, pthreads or legacy-frame code."
-        }
-      ],
-      "integration": {
-        "summary": "Use the published browser-full package to run normal upstream zstd CLI arguments against explicitly staged browser MEMFS files, or use browser-core for bounded in-memory one-shot compression/decompression.",
-        "files": [
-          "browser-zstd-cli.js",
-          "browser-zstd-cli-worker.js",
-          "wasm-zoo-cli.mjs",
-          "zstd-cli.js",
-          "zstd-cli.wasm"
-        ],
-        "example": "import { load } from \"/vendor/zstd/wasm-zoo-cli.mjs\";\nconst cli = await load({baseUrl:\"/vendor/zstd/\"});\ntry {\n  const compressed = await cli.exec([\"-q\",\"-f\",\"-5\",\"-o\",\"/out.zst\",\"/in.txt\"], {\n    files: [{name:\"/in.txt\",data:new TextEncoder().encode(\"hello\")}], outputs:[\"/out.zst\"]\n  });\n  console.log(compressed.files[0].data);\n} finally { cli.dispose(); }",
-        "notes": [
-          "Use the immutable zstd-v0.3.0 GitHub Release assets; the public Playground stages the same verified ZIP contents.",
-          "Inputs and outputs use safe browser-local paths. Maximum staged input and collected output remain bounded to 64 MiB by the wrappers.",
-          "No native OS filesystem, pthreads or network access is exposed by either browser profile."
-        ]
-      },
-      "release": {
-        "tag": "zstd-v0.3.0",
-        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/zstd-v0.3.0",
-        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/zstd-v0.3.0/",
-        "sourceAsset": "zstd-sources-1.5.7-zoo-0.3.0.tar.gz",
-        "checksumsAsset": "SHA256SUMS.txt"
       }
     }
   ]
