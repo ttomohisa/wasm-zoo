@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>WASM Zoo experimental native zstd CLI browser smoke</title>
+<pre id="log">Running original Zstandard 1.5.7 CLI smoke…</pre>
+<script type="module">
+import { load } from "./wasm-zoo-cli.mjs";
+const out = document.querySelector("#log");
+const abort = (error) => {
+  out.textContent = error?.stack || String(error);
+  location.hash = "#SMOKE_TEST_FAIL_" + encodeURIComponent(error?.message || String(error));
+};
+(async () => {
+  let runner;
+  try {
+    runner = await load({ baseUrl: "./" });
+    const version = await runner.exec(["--version"], { timeoutMs: 45000 });
+    const versionOutput = version.stdout + version.stderr;
+    if (!versionOutput.includes("v1.5.7") && !versionOutput.includes("1.5.7")) {
+      throw new Error("Actual upstream CLI version mismatch: " + versionOutput.slice(0, 300));
+    }
+    const input = new Uint8Array(await (await fetch("./native-input.bin")).arrayBuffer());
+    if (!input.length) throw new Error("Missing deterministic interop fixture");
+    const compressed = await runner.exec(["-q", "-f", "-5", "-o", "/packed.zst", "/input.bin"], {
+      files: [{ name: "/input.bin", data: input }],
+      outputs: ["/packed.zst"], timeoutMs: 60000
+    });
+    if (compressed.exitCode !== 0 || compressed.files.length !== 1) throw new Error("Upstream CLI did not produce a Zstandard frame");
+    const packed = compressed.files[0].data;
+    if (packed.length >= input.length) throw new Error("Upstream CLI did not compress repeating fixture");
+    if (![0x28, 0xb5, 0x2f, 0xfd].every((value, index) => packed[index] === value)) {
+      throw new Error("Upstream CLI produced a non-Zstandard frame");
+    }
+    const decompressed = await runner.exec(["-q", "-f", "-d", "-o", "/restored.bin", "/packed.zst"], {
+      files: [{ name: "/packed.zst", data: packed }],
+      outputs: ["/restored.bin"], timeoutMs: 60000
+    });
+    const restored = decompressed.files[0]?.data;
+    if (!restored || restored.length !== input.length || restored.some((value, index) => value !== input[index])) {
+      throw new Error("Upstream CLI decompression does not match original bytes");
+    }
+    let rejected = false;
+    try {
+      await runner.exec(["-q", "-d", "-f", "-o", "/broken.bin", "/broken.zst"], {
+        files: [{ name: "/broken.zst", data: new Uint8Array([0,1,2,3]) }],
+        outputs: ["/broken.bin"], timeoutMs: 30000
+      });
+    } catch (_) { rejected = true; }
+    if (!rejected) throw new Error("Corrupt Zstandard input did not fail the CLI");
+
+    let nativeStatus = "native-tool-unavailable";
+    const fixtureResponse = await fetch("./native-fixture.zst", { cache: "no-store" });
+    if (fixtureResponse.ok) {
+      const nativeFrame = new Uint8Array(await fixtureResponse.arrayBuffer());
+      const decoded = await runner.exec(["-q", "-d", "-f", "-o", "/native-restored.bin", "/native-fixture.zst"], {
+        files: [{ name: "/native-fixture.zst", data: nativeFrame }],
+        outputs: ["/native-restored.bin"], timeoutMs: 60000
+      });
+      const decodedNative = decoded.files[0]?.data;
+      if (!decodedNative || decodedNative.length !== input.length ||
+          decodedNative.some((byte, index) => byte !== input[index])) {
+        throw new Error("Browser CLI could not decode a frame produced by native zstd");
+      }
+      const post = await fetch("./__native-output", {
+        method: "POST", headers: { "Content-Type": "application/zstd" }, body: packed
+      });
+      if (!post.ok) throw new Error("Failed to submit browser CLI frame for native verification");
+      nativeStatus = "bidirectional-native-interop";
+    }
+    out.textContent = "PASS original zstd CLI 1.5.7 / MEMFS roundtrip / invalid-frame rejection / " + nativeStatus;
+    location.hash = "#SMOKE_TEST_PASS_zstd_1.5.7_upstream_cli_" + nativeStatus;
+  } catch (error) { abort(error); }
+  finally { runner?.dispose(); }
+})();
+</script></html>

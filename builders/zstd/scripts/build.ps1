@@ -8,7 +8,7 @@ Get-Content (Join-Path $Root 'versions.env') | ForEach-Object {
     $i=$line.IndexOf('='); $vars[$line.Substring(0,$i)]=$line.Substring($i+1)
   }
 }
-if($Profile -ne 'browser-core'){throw "Only browser-core canary is supported"}
+if($Profile -notin @('browser-core','browser-full')){throw "Only browser-core and browser-full are supported"}
 $out=Join-Path $Root "dist/$Profile"
 if(Test-Path $out){Remove-Item $out -Recurse -Force}
 New-Item -ItemType Directory -Path $out -Force | Out-Null
@@ -28,4 +28,4 @@ if($LASTEXITCODE -ne 0){throw "Zstandard browser smoke failed"}
 $RepoRoot=Split-Path -Parent (Split-Path -Parent $Root)
 & node (Join-Path $RepoRoot 'scripts/generate-build-metadata.mjs') --slug zstd --profile $Profile --dist $out
 if($LASTEXITCODE -ne 0){throw "Supply-chain metadata generation failed"}
-Write-Host '[OK] experimental Zstandard browser-core canary passed' -ForegroundColor Green
+Write-Host "[OK] experimental Zstandard $Profile browser smoke and supply-chain metadata passed" -ForegroundColor Green
