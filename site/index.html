@@ -7,7 +7,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23171714'/%3E%3Cpath d='M13 18h8l5 23 6-18h7l6 18 5-23h8L49 47h-8l-6-17-6 17h-8z' fill='%23fff'/%3E%3C/svg%3E"><link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-<header class="topbar"><a class="brand" href="./" aria-label="WASM Zoo home"><span class="brand-mark">W</span><span>WASM Zoo</span></a><nav class="topnav" aria-label="Primary navigation"><a href="#health">Health</a><a href="#freshness">Freshness</a><a href="#features">Features</a><a href="#playgrounds">Playgrounds</a><a class="github-link" href="https://github.com/ttomohisa/wasm-zoo" rel="noreferrer">GitHub</a></nav></header>
+<header class="topbar"><a class="brand" href="./" aria-label="WASM Zoo home"><span class="brand-mark">W</span><span>WASM Zoo</span></a><nav class="topnav" aria-label="Primary navigation"><a href="#health">Health</a><a href="#compatibility">Compatibility</a><a href="#freshness">Freshness</a><a href="#features">Features</a><a href="#playgrounds">Playgrounds</a><a class="github-link" href="https://github.com/ttomohisa/wasm-zoo" rel="noreferrer">GitHub</a></nav></header>
 <main>
   <section class="hero"><div class="hero-copy"><span class="eyebrow">Unofficial WebAssembly distro</span><h1>Upstream software,<br>compiled for WebAssembly.</h1><p>Current, reproducible WASM builds of native projects — preserving upstream CLIs where practical, with exact toolchains, capability gaps, smoke tests and source handoff.</p><div class="hero-actions"><a class="primary-button" href="#health">Check release health</a><a class="secondary-button" href="#catalog">Browse builds</a><a class="secondary-button" href="https://github.com/ttomohisa/wasm-zoo" rel="noreferrer">Build recipes</a></div></div>
     <div class="terminal-card" aria-label="Example WASM Zoo package status"><div class="terminal-top"><span></span><span></span><span></span></div><pre><code><span class="muted">catalog</span>   v<span id="hero-zoo-version">—</span>
@@ -20,6 +20,25 @@
   <section class="stats" aria-label="Catalog statistics"><div><strong id="stat-packages">—</strong><span>tracked projects</span></div><div><strong id="stat-available">—</strong><span>available today</span></div><div><strong id="stat-profiles">—</strong><span>published variants</span></div><div><strong id="stat-current">—</strong><span>current upstream pins</span></div></section>
 
   <section id="health" class="release-health-section"><div class="section-heading split-heading"><div><span class="eyebrow">Release Health Dashboard</span><h2>A release is healthy only when the whole distribution path works.</h2></div><p id="release-health-summary">Loading release, workflow, Playground and supply-chain checks…</p></div><div class="dashboard-card"><div class="table-scroll"><table class="health-table"><thead><tr><th>Project</th><th>Build gate</th><th>Release assets</th><th>Playground</th><th>Freshness</th><th>Provenance + SBOM</th><th>Overall</th></tr></thead><tbody id="release-health-body"><tr><td colspan="7">Loading release health…</td></tr></tbody></table></div><div class="dashboard-foot"><span><b class="watch-dot"></b><span id="release-health-generated">Live check pending</span></span><a href="https://github.com/ttomohisa/wasm-zoo/actions/workflows/check-upstream.yml" rel="noreferrer">Distribution health workflow ↗</a></div></div></section>
+
+  <section id="compatibility" class="browser-compat-section">
+    <div class="section-heading split-heading">
+      <div><span class="eyebrow">Cross-browser Compatibility Lab</span><h2>Real npm operations, tested in three browser engines.</h2></div>
+      <p>Tested versions and browser engines are recorded separately from build capabilities. Results come from completed main-branch CI, not from a static claim.</p>
+    </div>
+    <div class="dashboard-card">
+      <div class="table-scroll"><table class="browser-compat-table">
+        <thead><tr><th>Published npm package</th><th>Chromium</th><th>Firefox</th><th>WebKit</th></tr></thead>
+        <tbody id="browser-compat-body"><tr><td colspan="4">Checking main-branch browser evidence…</td></tr></tbody>
+      </table></div>
+      <div class="dashboard-foot compat-foot">
+        <span id="browser-compat-summary">Pending verified compatibility results.</span>
+        <a id="browser-compat-source" href="https://github.com/ttomohisa/wasm-zoo/actions/workflows/cross-browser-compat.yml" rel="noreferrer">Lab workflow ↗</a>
+      </div>
+    </div>
+    <div class="browser-compat-legend"><span class="compat-pill pass">✓ PASS</span> Verified package operation <span class="compat-pill unsupported">! UNSUPPORTED</span> Measured missing browser capability <span class="compat-pill untested">— NOT TESTED</span> No current matching result</div>
+    <p class="compat-note">Results apply to the exact npm package version and profile shown, under the CI test environment. Threaded FFmpeg and libvips require cross-origin isolation (COOP/COEP) and SharedArrayBuffer in production.</p>
+  </section>
 
   <section id="freshness" class="freshness-section"><div class="section-heading split-heading"><div><span class="eyebrow">Version Gap Dashboard</span><h2>See exactly how far each WASM build trails upstream.</h2></div><p id="freshness-summary">Loading the latest watcher snapshot…</p></div><div class="dashboard-card"><div class="table-scroll"><table class="gap-table"><thead><tr><th>Project</th><th>Upstream</th><th>WASM Zoo</th><th>Reference WASM</th><th>Gap</th><th>Verified</th></tr></thead><tbody id="version-gap-body"><tr><td colspan="6">Loading upstream status…</td></tr></tbody></table></div><div class="dashboard-foot"><span><b class="watch-dot"></b> Updated automatically by the upstream watcher</span><a href="https://github.com/ttomohisa/wasm-zoo/actions/workflows/check-upstream.yml" rel="noreferrer">Watcher workflow ↗</a></div></div></section>
 

@@ -33,7 +33,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 
-The project version is **WASM Zoo v0.13.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+The project version is **WASM Zoo v0.14.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
 ### npm distribution
 
@@ -51,6 +51,15 @@ npm install @wasm-zoo/ffmpeg
 The FFmpeg npm package intentionally pins the LGPL `browser-full` profile; the separate `browser-full-gpl` / libx264 Release profile is not bundled into the same npm tarball. FFmpeg and libvips both use pthreads, so consumers must serve them with cross-origin isolation / SharedArrayBuffer support. The Vite/Chromium smoke supplies COOP/COEP; FFmpeg's fixture performs a real raw-PCM → WAV CLI conversion while libvips continues to exercise its library API. See [`docs/NPM_DISTRIBUTION.md`](docs/NPM_DISTRIBUTION.md).
 
 Future npm versions use Trusted Publisher OIDC with `npm stage publish`; the temporary rollout bootstrap/direct-publish path has been removed.
+
+### v0.14 Cross-browser Compatibility Lab
+
+The browser lab executes **the six exact published npm distributions** in Chromium, Firefox and WebKit, using real package operations after a production Vite build—not an instantiate-only test. FFmpeg and libvips also verify COOP/COEP/CORP and measured threaded-runtime capabilities before execution. A genuinely missing browser capability is labeled `unsupported` only with explicit evidence; an unexpected error is `fail`.
+
+The [public browser compatibility dashboard](https://ttomohisa.github.io/wasm-zoo/#compatibility) reads the **latest completed main-branch GitHub Actions evidence**. It displays tested package versions, browser engines, test time and a link to the source run. If the current latest run is failing, pending, stale, mismatched or missing artifacts, the site reports **not tested** rather than copying a previous passing result. Weekly checks refresh the evidence. See [Cross-browser Lab documentation](docs/CROSS_BROWSER_LAB.md) for the status policy.
+
+Project v0.14.0 does **not** change builder versions, reviewed upstream pins, npm package versions or immutable package releases. The human maintainer controls the PR merge and optional project release tag; the lab never automatically tags, releases or publishes.
+
 ## Release health and supply-chain metadata
 
 WASM Zoo v0.8.0 adds a distribution-level health layer instead of treating a successful compile as the whole release contract. The Pages home now checks each published package across:

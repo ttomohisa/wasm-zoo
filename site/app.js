@@ -9,6 +9,7 @@ const matrixHost = document.querySelector('#feature-matrix');
 let catalog;
 let upstreamStatus = { generatedAt: null, packages: [] };
 let releaseHealth = { generatedAt: null, packages: [], summary: {} };
+let browserCompatibility = null;
 let filter = 'all';
 let matrixSlug = null;
 
@@ -49,6 +50,53 @@ function renderReleaseHealth() {
   if (summary) summary.textContent = releaseHealth.generatedAt ? `${healthy}/${total} releases healthy · ${supply}/${total} currently expose standalone provenance + SBOM assets.` : 'Live release checks run on Pages deploy and the daily watcher.';
   const generated = document.querySelector('#release-health-generated');
   if (generated) generated.textContent = releaseHealth.generatedAt ? `Checked ${new Date(releaseHealth.generatedAt).toISOString().replace('T',' ').slice(0,16)} UTC` : 'Pending live check';
+}
+
+const compatBrowsers = ['chromium', 'firefox', 'webkit'];
+const compatMeta = {
+  pass: { symbol: '✓', label: 'PASS' },
+  unsupported: { symbol: '!', label: 'UNSUPPORTED' },
+  'not-tested': { symbol: '—', label: 'NOT TESTED' }
+};
+
+function renderBrowserCompatibility() {
+  const body = document.querySelector('#browser-compat-body');
+  const summary = document.querySelector('#browser-compat-summary');
+  const sourceLink = document.querySelector('#browser-compat-source');
+  if (!body || !catalog) return;
+  const source = browserCompatibility?.source;
+  const sourceIsMain = source?.headBranch === 'main';
+  const verified = browserCompatibility?.schemaVersion === 1 &&
+    browserCompatibility.state === 'verified' && sourceIsMain &&
+    Number.isFinite(Date.parse(source?.completedAt)) &&
+    Date.now() - Date.parse(source.completedAt) < 14 * 24 * 60 * 60 * 1000 &&
+    Array.isArray(browserCompatibility.results) && browserCompatibility.results.length === 18;
+  const records = verified ? browserCompatibility.results : [];
+  const packages = catalog.packages.filter((pkg) => pkg.status === 'available' && pkg.npm?.status === 'published');
+
+  const cell = (pkg, browser) => {
+    const match = records.find((item) => item.package === pkg.slug && item.browser === browser &&
+      item.npmPackage === pkg.npm.package && item.npmVersion === pkg.npm.version &&
+      item.profile === pkg.npm.profile);
+    const status = match?.status === 'pass' || match?.status === 'unsupported' ? match.status : 'not-tested';
+    const meta = compatMeta[status];
+    const info = match ? [match.browserVersion ? 'Engine ' + match.browserVersion : null,
+      match.testedAt ? 'Tested ' + match.testedAt : null, match.reason || match.detail].filter(Boolean).join(' · ') : 'No current verified matching run';
+    return `<span class="compat-pill ${status}" title="${esc(info)}" aria-label="${esc(meta.label + ': ' + info)}"><b>${meta.symbol}</b> ${meta.label}</span>`;
+  };
+  body.innerHTML = packages.map((pkg) => `<tr><td><strong>${esc(pkg.name)}</strong><small>${esc(pkg.npm.package)}@${esc(pkg.npm.version)} · ${esc(pkg.npm.profile)}</small></td>${compatBrowsers.map((browser) => `<td>${cell(pkg, browser)}</td>`).join('')}</tr>`).join('');
+  const passes = records.filter((item) => packages.some((pkg) =>
+    pkg.slug === item.package && pkg.npm.version === item.npmVersion) && item.status === 'pass').length;
+  const unsupported = records.filter((item) => item.status === 'unsupported').length;
+  if (summary) {
+    summary.textContent = verified
+      ? `${passes}/18 verified operations${unsupported ? ` · ${unsupported} measured unsupported` : ''} · main CI ${source.completedAt.slice(0, 16).replace('T', ' ')} UTC`
+      : `No current verified main-branch results · ${browserCompatibility?.reason || 'awaiting a matching CI run'}`;
+  }
+  if (sourceLink && sourceIsMain && /^https:\/\/github\.com\/ttomohisa\/wasm-zoo\/actions\/runs\/\d+$/.test(source.url || '')) {
+    sourceLink.href = source.url;
+    sourceLink.textContent = verified ? 'Verified CI run ↗' : 'Latest main CI run ↗';
+  }
 }
 
 const matrixStates = {
@@ -270,11 +318,12 @@ dialog.addEventListener('click', (event) => { if (event.target === dialog) dialo
 document.querySelectorAll('.filter').forEach((button) => button.addEventListener('click', () => { document.querySelectorAll('.filter').forEach((item) => item.classList.remove('active')); button.classList.add('active'); filter = button.dataset.filter; render(); }));
 
 try {
-  const [catalogResponse, statusResponse, healthResponse] = await Promise.all([fetch('./catalog.json', { cache: 'no-store' }), fetch('./upstream-status.json', { cache: 'no-store' }).catch(() => null), fetch('./release-health.json', { cache: 'no-store' }).catch(() => null)]);
+  const [catalogResponse, statusResponse, healthResponse, compatResponse] = await Promise.all([fetch('./catalog.json', { cache: 'no-store' }), fetch('./upstream-status.json', { cache: 'no-store' }).catch(() => null), fetch('./release-health.json', { cache: 'no-store' }).catch(() => null), fetch('./browser-compatibility.json', { cache: 'no-store' }).catch(() => null)]);
   if (!catalogResponse.ok) throw new Error(`Catalog HTTP ${catalogResponse.status}`);
   catalog = await catalogResponse.json();
   if (statusResponse?.ok) upstreamStatus = await statusResponse.json();
   if (healthResponse?.ok) releaseHealth = await healthResponse.json();
+  if (compatResponse?.ok) browserCompatibility = await compatResponse.json();
   document.querySelector('#stat-packages').textContent = catalog.stats.packages;
   document.querySelector('#stat-available').textContent = catalog.stats.available;
   document.querySelector('#stat-profiles').textContent = catalog.stats.profiles;
@@ -291,6 +340,7 @@ try {
     if (releaseLink && item.release?.page) { releaseLink.href = item.release.page; releaseLink.textContent = item.release.tag; }
   }
   renderReleaseHealth();
+  renderBrowserCompatibility();
   renderVersionGap();
   renderFeatureMatrix();
   await enrichReleaseManifests();
