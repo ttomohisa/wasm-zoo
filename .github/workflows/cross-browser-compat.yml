@@ -2,8 +2,25 @@ name: Cross-browser compatibility lab
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/**'
+      - 'scripts/**'
+      - 'VERSION'
+      - 'package.json'
+      - '.github/workflows/cross-browser-compat.yml'
+      - '.github/workflows/pages.yml'
   pull_request:
     paths:
+      - 'VERSION'
+      - 'package.json'
+      - 'README.md'
+      - 'site/**'
+      - '.github/workflows/pages.yml'
+      - 'scripts/browser-compatibility-snapshot.mjs'
+      - 'scripts/publish-browser-compatibility.mjs'
+      - 'scripts/test-browser-compatibility-snapshot.mjs'
       - 'scripts/smoke-npm-package.mjs'
       - 'scripts/threaded-browser-capabilities.mjs'
       - 'scripts/test-threaded-browser-capabilities.mjs'
