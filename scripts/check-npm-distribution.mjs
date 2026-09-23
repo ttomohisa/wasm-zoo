@@ -6,7 +6,7 @@ import { root, readJson } from "./lib.mjs";
 
 const errors = [];
 const need = (condition, message) => { if (!condition) errors.push(message); };
-const npmSlugs = ["jq", "libarchive", "imagemagick", "ghostscript", "libvips", "ffmpeg"];
+const npmSlugs = ["jq", "libarchive", "imagemagick", "ghostscript", "libvips", "ffmpeg", "zstd"];
 
 function spawnDirect(command, args, options = {}) {
   return spawnSync(command, args, {
@@ -79,6 +79,19 @@ try {
     need(pkg.exports?.["."] === `./${npm.entry}` && pkg.exports?.["./self-hosted"] === "./wasm-zoo.mjs", `${slug} npm exports must expose bundler and self-hosted entries`);
 
     const entry = await fs.readFile(path.join(output, npm.entry), "utf8");
+    if (npm.runtime.consumerScript) {
+      const consumer = await fs.readFile(path.join(output,"wasm-zoo.mjs"),"utf8");
+      const reviewed = await fs.readFile(path.join(root,"builders",slug,"runtime",npm.runtime.consumerScript),"utf8");
+      need(consumer===reviewed,`${slug} npm must install the reviewed CLI-specific Consumer API under its stable export`);
+    }
+    if (npm.runtime.workerScript) {
+      const worker = await fs.readFile(path.join(output,npm.runtime.workerScript),"utf8");
+      const reviewed = await fs.readFile(path.join(root,"builders",slug,"runtime",npm.runtime.workerScript),"utf8");
+      need(worker===reviewed,`${slug} npm must overlay the reviewed dedicated Worker script`);
+      need(entry.includes(`workerUrl: new URL("./${npm.runtime.workerScript}", import.meta.url)`) &&
+        entry.includes("workerUrl: options.workerUrl || assets.workerUrl"),
+        `${slug} Vite npm entry must emit/forward the classic Worker URL`);
+    }
     const classic = npm.runtime.classicScript;
     const npmWrapper = await fs.readFile(path.join(output, classic), "utf8");
     const reviewedWrapper = await fs.readFile(path.join(root, "builders", slug, "runtime", classic), "utf8");
@@ -141,7 +154,7 @@ try {
   need(workflow.includes("gh release download"), "npm workflow must package immutable GitHub Release assets");
 
   const smoke = await fs.readFile(path.join(root, "scripts", "smoke-npm-package.mjs"), "utf8");
-  need(smoke.includes("jq:") && smoke.includes("libarchive:") && smoke.includes("imagemagick:") && smoke.includes("ghostscript:") && smoke.includes("libvips:") && smoke.includes("ffmpeg:"), "generic npm smoke must have jq, libarchive, ImageMagick, Ghostscript, libvips and FFmpeg fixtures");
+  need(smoke.includes("jq:") && smoke.includes("libarchive:") && smoke.includes("imagemagick:") && smoke.includes("ghostscript:") && smoke.includes("libvips:") && smoke.includes("ffmpeg:") && smoke.includes("zstd:"), "generic npm smoke must have jq, libarchive, ImageMagick, Ghostscript, libvips and FFmpeg fixtures");
   need(
     smoke.includes("vite") &&
     smoke.includes("playwright") &&
@@ -151,7 +164,7 @@ try {
     "generic npm smoke must exercise Vite/Playwright and default to Chromium"
   );
   need(
-    smoke.includes('new Set(["jq", "libarchive", "imagemagick", "ghostscript", "ffmpeg", "libvips"])') &&
+    smoke.includes('new Set(["jq", "libarchive", "imagemagick", "ghostscript", "ffmpeg", "libvips", "zstd"])') &&
     smoke.includes('assessThreadedRuntime') &&
     smoke.includes('if (requiresIsolation)') &&
     smoke.includes('selectedBrowser === "chromium" && onUnsupported === "record"') &&
@@ -206,6 +219,21 @@ try {
   need(ffmpegMeta.npm?.profile === "browser-full", "FFmpeg npm distribution must pin the LGPL browser-full profile");
   need(ffmpegMeta.npm?.packageFiles?.required?.includes("LICENSES/FFmpeg-COPYING.LGPLv2.1"), "FFmpeg npm package must retain the LGPL license copy");
   need(!(ffmpegMeta.npm?.packageFiles?.required || []).some((rel) => rel.endsWith("/x264-COPYING") || rel.endsWith("/FFmpeg-COPYING.GPLv2")), "FFmpeg npm browser-full package must not accidentally include GPL/x264-only release files");
+  const zstdMeta=await readJson(path.join(root,"packages/zstd/package.json"));
+  need(zstdMeta.status==="available" && zstdMeta.npm?.status==="canary" &&
+    zstdMeta.npm?.package==="@wasm-zoo/zstd" && zstdMeta.npm?.version==="0.3.0" &&
+    zstdMeta.npm?.profile==="browser-full" && zstdMeta.tracker?.candidateMode==="none",
+    "Zstandard npm canary must be sourced from the reviewed public release without claiming npm publication or automating pin promotion");
+  need(zstdMeta.npm.runtime.consumerScript==="wasm-zoo-cli.mjs" &&
+    zstdMeta.npm.runtime.workerScript==="browser-zstd-cli-worker.js",
+    "Zstandard npm must use the published CLI, not the separately published browser-core library API");
+  const zstdCanary=await fs.readFile(path.join(root,".github/workflows/npm-zstd-canary.yml"),"utf8");
+  need(zstdCanary.includes("sha256sum -c SHA256SUMS.txt") &&
+    zstdCanary.includes("scripts/verify-npm-zstd-release.mjs") &&
+    zstdCanary.includes("matrix:") && zstdCanary.includes("browser: [chromium, firefox, webkit]") &&
+    zstdCanary.includes("WASM_ZOO_NPM_PACKAGE_SPEC") &&
+    !zstdCanary.includes("npm publish") && !zstdCanary.includes("npm stage publish"),
+    "New Zstandard canary must verify immutable Release, pack only and run actual Vite tests in all three browsers");
   const libvipsConsumer = await fs.readFile(path.join(root, "builders", "libvips", "runtime", "wasm-zoo.mjs"), "utf8");
   need(libvipsConsumer.includes("options.coreJsUrl || options.jsUrl"), "libvips Consumer API must map bundler coreJsUrl to its jsUrl loader option");
   need(ghostscriptMeta.npm?.packageFiles?.requiredDirs?.includes("THIRD-PARTY-LICENSES"), "Ghostscript npm distribution must recursively preserve THIRD-PARTY-LICENSES");

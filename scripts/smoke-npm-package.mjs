@@ -26,7 +26,7 @@ if (!["chromium", "firefox", "webkit"].includes(selectedBrowser)) {
 }
 // The same real-operation fixtures run across all three browsers. Threaded
 // profiles get a capability preflight before any result is classified.
-const crossBrowserSlugs = new Set(["jq", "libarchive", "imagemagick", "ghostscript", "ffmpeg", "libvips"]);
+const crossBrowserSlugs = new Set(["jq", "libarchive", "imagemagick", "ghostscript", "ffmpeg", "libvips", "zstd"]);
 if (!crossBrowserSlugs.has(slug)) throw new Error(`Unknown cross-browser npm smoke target: ${slug}`);
 const onUnsupported = args["on-unsupported"] || "error";
 if (!["error", "record"].includes(onUnsupported)) throw new Error(`Invalid --on-unsupported: ${onUnsupported}`);
@@ -36,6 +36,70 @@ if (selectedBrowser === "chromium" && onUnsupported === "record") {
 const resultPath = args["result-json"] ? path.resolve(args["result-json"]) : null;
 
 const fixtures = {
+  zstd: {
+    expectedWasmCount: 1,
+    resultKey: "__WASM_ZOO_NPM_SMOKE__",
+    browserTimeoutMs: 90000,
+    main(packageName) {
+      return `import { load, assets } from ${JSON.stringify(packageName)};
+
+const status = document.querySelector("#status");
+window.__WASM_ZOO_NPM_SMOKE__ = { phase: "loading", assets };
+let zstd = null;
+try {
+  zstd = await load();
+  if (zstd.profile !== "browser-full" || zstd.kind !== "cli" ||
+      !assets.coreJsUrl || !assets.wasmUrl || !assets.workerUrl) {
+    throw new Error("Zstandard npm did not expose its reviewed CLI profile and all three emitted assets");
+  }
+  const original = new TextEncoder().encode("Official Zstandard 1.5.7 WASM Zoo immutable-release npm integration. ".repeat(250));
+  const compressed = await zstd.exec(["-q", "-f", "-5", "-o", "/compressed.zst", "/input.bin"], {
+    files: [{ name: "/input.bin", data: original }],
+    outputs: ["/compressed.zst"],
+    timeoutMs: 60000
+  });
+  if (compressed.exitCode !== 0 || compressed.files.length !== 1)
+    throw new Error("Original upstream CLI did not generate a Zstandard frame");
+  const frame = compressed.files[0].data;
+  if (frame.length >= original.length ||
+      ![0x28, 0xb5, 0x2f, 0xfd].every((b, i) => frame[i] === b))
+    throw new Error("Zstandard compressed data was not a real, smaller .zst frame");
+  const decompressed = await zstd.exec(["-q", "-f", "-d", "-o", "/restored.bin", "/compressed.zst"], {
+    files: [{ name: "/compressed.zst", data: frame }],
+    outputs: ["/restored.bin"],
+    timeoutMs: 60000
+  });
+  const restored = decompressed.files[0]?.data;
+  if (!restored || restored.length !== original.length ||
+      restored.some((byte, i) => byte !== original[i]))
+    throw new Error("Zstandard Vite/npm upstream CLI roundtrip did not reproduce every byte");
+  let rejected = false;
+  try {
+    await zstd.exec(["-q", "-f", "-d", "-o", "/broken.bin", "/invalid.zst"], {
+      files: [{ name: "/invalid.zst", data: new Uint8Array([0, 1, 2, 3]) }],
+      outputs: ["/broken.bin"],
+      timeoutMs: 30000
+    });
+  } catch (_) { rejected = true; }
+  if (!rejected) throw new Error("Malformed frame was not rejected by upstream zstd");
+  window.__WASM_ZOO_NPM_SMOKE__ = {
+    ok: true,
+    detail: "original upstream zstd CLI compress/decompress/invalid-frame " + original.length + " -> " + frame.length + " bytes",
+    assets
+  };
+  status.textContent = "PASS";
+} catch (error) {
+  window.__WASM_ZOO_NPM_SMOKE__ = {
+    ok: false, message: error?.message || String(error), stack: error?.stack || "", assets
+  };
+  status.textContent = "FAIL: " + (error?.message || error);
+  throw error;
+} finally {
+  zstd?.dispose();
+}
+`;
+    }
+  },
   jq: {
     expectedWasmCount: 1,
     resultKey: "__WASM_ZOO_NPM_SMOKE__",
@@ -326,7 +390,7 @@ try {
     compatibility.status = "pass";
     compatibility.phase = "complete";
     compatibility.detail = result.detail;
-    console.log(`[OK] ${packageSpec} installed from npm, built with Vite ${VITE_VERSION}, and executed ${slug} in ${selectedBrowser}; detail=${JSON.stringify(result.detail)}`);
+    console.log(`[OK] ${packageSpec} installed from npm package spec, built with Vite ${VITE_VERSION}, and executed ${slug} in ${selectedBrowser}; detail=${JSON.stringify(result.detail)}`);
   }
 } catch (error) {
   if (compatibility.status !== "unsupported") {

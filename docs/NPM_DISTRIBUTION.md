@@ -2,6 +2,18 @@
 
 WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`. WASM Zoo v0.13.0 completes the rollout across all six Zoo packages while keeping npm artifacts derived from the same reviewed immutable GitHub Release assets.
 
+## Zstandard Phase 4: canary before initial npm publication
+
+`@wasm-zoo/zstd@0.3.0` is a **pre-publication canary**, not yet available from the npm Registry. This canary distributes the already released `zstd-v0.3.0` **browser-full original upstream CLI** only. The separate `browser-core` library remains available from the immutable GitHub Release and Playground and is not silently substituted for CLI consumers.
+
+The review-only `npm-zstd-canary.yml` workflow downloads **all** assets of the immutable `zstd-v0.3.0` GitHub Release, verifies `SHA256SUMS.txt` for every asset, validates the extracted CLI JS/WASM against its manifest and SLSA provenance plus CycloneDX 1.6 SBOM, and overlays only the reviewed CLI wrapper, Worker and Consumer API. The generated ESM entry has bundler-visible URLs for the CLI JS, WASM and Worker. The CI workflow **packs but never publishes** and tests the resulting exact local `.tgz` through a production Vite build and real Chromium, Firefox and WebKit compression, decompression and invalid-frame operations.
+
+| `@wasm-zoo/zstd` | `0.3.0` | Zstandard 1.5.7 | `0.3.0` | `zstd-v0.3.0` / `browser-full` | canary |
+
+**Manual initial publication after the PR is merged and main CI passes:** retrieve the verified `reviewed-zstd-npm-0.3.0-<commit>` workflow artifact; inspect its `npm pack` file list. Confirm you control the `@wasm-zoo` npm scope and follow the npm account's 2FA/Trusted Publisher setup. First-time package creation may require a maintainer-run, 2FA-approved `npm publish --access public` of this exact reviewed tarball (npm provenance depends on the supported publishing environment). Do **not** assume `npm stage publish` can create a previously nonexistent package; the existing `publish-npm.yml` deliberately supports only already published packages. No GitHub workflow in this PR writes to the npm Registry.
+
+After actual `npm view @wasm-zoo/zstd@0.3.0` verification and a **real Registry Vite/Chromium** smoke run, prepare a separate reviewed PR to change `npm.status` to `published`, extend the live single-threaded three-browser lab from 18 to 21 cases and update the public compatibility snapshot only from a successful reviewed `main` run. No libvips candidate automation change is made.
+
 ## Distribution contract
 
 An npm package is not a second native/WebAssembly build. `scripts/prepare-npm-package.mjs` reads each package's `npm` metadata, starts from the immutable binary ZIP declared by the selected Zoo profile, preserves its core JavaScript/Wasm, manifests, provenance, SBOM, BUILDINFO and license notices, then overlays only the current reviewed distribution wrapper files:

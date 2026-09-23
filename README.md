@@ -24,6 +24,10 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 - Zstandard Playground: https://ttomohisa.github.io/wasm-zoo/zstd-playground/
 
 
+## Zstandard npm Phase 4 (review-only canary)
+
+The published Zstandard 1.5.7 `browser-full` upstream CLI is now prepared as `@wasm-zoo/zstd@0.3.0` **npm pre-publication canary**. The [review-only workflow](.github/workflows/npm-zstd-canary.yml) checks immutable release digests and tests the packed tarball in Vite across Chromium, Firefox and WebKit before a human initially publishes it. The existing six npm packages and public 18-operation Registry-backed matrix remain unchanged until the initial registry publish and separate post-publication review.
+
 ## Available packages
 
 | Package | Upstream | Zoo builder | Browser profile | Playground | npm rollout |
@@ -34,7 +38,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 | libvips | 8.18.6 | 0.5.2 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.2` |
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
-| Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | not yet published |
+| Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` (canary; not public) |
 
 The project version is **WASM Zoo v0.14.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 

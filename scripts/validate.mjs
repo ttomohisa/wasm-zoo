@@ -69,6 +69,8 @@ for (const pkg of packages) {
       assert(pkg.npm?.bundledAssets === true, `${at}: npm package must bundle its reviewed runtime assets`);
       assert(pkg.npm?.publishWorkflow === "publish-npm.yml", `${at}: npm.publishWorkflow must be publish-npm.yml`);
       assert(typeof pkg.npm?.runtime?.classicScript === "string" && pkg.npm.runtime.classicScript.length > 0, `${at}: npm.runtime.classicScript is required`);
+      if (pkg.npm?.runtime?.consumerScript !== undefined) assert(typeof pkg.npm.runtime.consumerScript === "string" && pkg.npm.runtime.consumerScript.endsWith(".mjs"), `${at}: npm.runtime.consumerScript must be a reviewed ESM module`);
+      if (pkg.npm?.runtime?.workerScript !== undefined) assert(typeof pkg.npm.runtime.workerScript === "string" && pkg.npm.runtime.workerScript.endsWith(".js") && pkg.npm.packageFiles.required.includes(pkg.npm.runtime.workerScript), `${at}: npm workerScript must be a required shipped runtime file`);
       assert(["single", "tool-map"].includes(pkg.npm?.runtime?.assetMode), `${at}: npm.runtime.assetMode must be single or tool-map`);
       assert(Array.isArray(pkg.npm?.runtime?.assets) && pkg.npm.runtime.assets.length > 0, `${at}: npm.runtime.assets must be a non-empty array`);
       if (Array.isArray(pkg.npm?.runtime?.assets)) {

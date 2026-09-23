@@ -1146,7 +1146,8 @@
         "The public Playground stages only checksum-verified published release assets. Files are processed locally in browser Workers.",
         "No npm package is published yet. npm rollout and the published-registry three-browser compatibility matrix remain a separate reviewed phase.",
         "Automatic upstream candidate promotion is intentionally not enabled yet: candidateMode remains none until the Zstandard adapter/promotion path is separately reviewed.",
-        "Both profiles are single-threaded and require no SharedArrayBuffer. browser-full omits native filesystem access, pthreads, external gzip/xz/lz4 codecs and legacy-frame decoding."
+        "Both profiles are single-threaded and require no SharedArrayBuffer. browser-full omits native filesystem access, pthreads, external gzip/xz/lz4 codecs and legacy-frame decoding.",
+        "@wasm-zoo/zstd@0.3.0 is currently npm pre-publication canary only: a review-only PR tests a packed, immutable-release-derived browser-full tarball in three browsers before an explicitly human-approved initial npm publish."
       ],
       "referenceWasm": {
         "name": "zstd-codec",
@@ -1252,6 +1253,55 @@
         "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/zstd-v0.3.0/",
         "sourceAsset": "zstd-sources-1.5.7-zoo-0.3.0.tar.gz",
         "checksumsAsset": "SHA256SUMS.txt"
+      },
+      "npm": {
+        "status": "canary",
+        "package": "@wasm-zoo/zstd",
+        "version": "0.3.0",
+        "profile": "browser-full",
+        "entry": "index.mjs",
+        "bundledAssets": true,
+        "publishWorkflow": "publish-npm.yml",
+        "runtime": {
+          "classicScript": "browser-zstd-cli.js",
+          "consumerScript": "wasm-zoo-cli.mjs",
+          "workerScript": "browser-zstd-cli-worker.js",
+          "assetMode": "single",
+          "assets": [
+            {
+              "id": "zstd",
+              "coreJs": "zstd-cli.js",
+              "wasm": "zstd-cli.wasm"
+            }
+          ]
+        },
+        "packageFiles": {
+          "required": [
+            "browser-zstd-cli.js",
+            "browser-zstd-cli-worker.js",
+            "zstd-cli.js",
+            "zstd-cli.wasm",
+            "manifest.json",
+            "features.json",
+            "provenance.json",
+            "sbom.cdx.json",
+            "BUILDINFO.txt",
+            "LICENSE-zstd.txt"
+          ],
+          "optional": []
+        },
+        "docs": {
+          "description": "Unofficial WASM Zoo distribution of the original upstream Zstandard 1.5.7 zstd CLI for browsers.",
+          "runtimeNote": "Single-threaded original upstream CLI in an isolated Web Worker with MEMFS. Up to 64 MiB staged input and collected output. No SharedArrayBuffer required. Only browser-full is bundled in npm; browser-core is separately downloadable from the immutable GitHub Release. No native filesystem, pthreads, external codecs or legacy-frame decoding.",
+          "example": "import { load } from \"@wasm-zoo/zstd\";\n\nconst zstd = await load();\ntry {\n  const original = new TextEncoder().encode(\"WASM Zoo \".repeat(100));\n  const packed = await zstd.exec([\"-q\", \"-f\", \"-5\", \"-o\", \"/result.zst\", \"/input.txt\"], {\n    files: [{ name: \"/input.txt\", data: original }],\n    outputs: [\"/result.zst\"]\n  });\n  console.log(packed.files[0].data);\n} finally {\n  zstd.dispose();\n}"
+        },
+        "keywords": [
+          "zstandard",
+          "zstd",
+          "compression",
+          "decompression",
+          "upstream-cli"
+        ]
       }
     },
     {

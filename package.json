@@ -31,6 +31,8 @@
     "compat:threaded:test": "node --test scripts/test-threaded-browser-capabilities.mjs",
     "compat:publish:site": "node scripts/publish-browser-compatibility.mjs",
     "zstd:release:check": "node scripts/check-zstd-release-prep.mjs",
-    "zstd:playground:smoke": "node scripts/smoke-zstd-playground.mjs"
+    "zstd:playground:smoke": "node scripts/smoke-zstd-playground.mjs",
+    "npm:smoke:zstd": "node scripts/smoke-npm-package.mjs --slug zstd",
+    "npm:zstd:verify-release": "node scripts/verify-npm-zstd-release.mjs"
   }
 }
