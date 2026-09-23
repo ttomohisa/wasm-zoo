@@ -150,6 +150,22 @@ try {
     smoke.includes("browserType.launch("),
     "generic npm smoke must exercise Vite/Playwright and default to Chromium"
   );
+  need(
+    smoke.includes('new Set(["jq", "libarchive", "imagemagick", "ghostscript"])') &&
+    smoke.includes("!crossBrowserSlugs.has(slug)") &&
+    smoke.includes('selectedBrowser !== "chromium"'),
+    "cross-browser smoke must enable only reviewed single-threaded packages and leave other packages Chromium-only"
+  );
+  const compatWorkflow = await fs.readFile(path.join(root, ".github", "workflows", "cross-browser-compat.yml"), "utf8");
+  need(
+    compatWorkflow.includes("slug: [jq, libarchive, imagemagick, ghostscript]") &&
+    compatWorkflow.includes("browser: [chromium, firefox, webkit]") &&
+    compatWorkflow.includes("scripts/smoke-npm-package.mjs") &&
+    compatWorkflow.includes("matrix.slug") &&
+    compatWorkflow.includes("matrix.browser") &&
+    compatWorkflow.includes("upload-artifact@v4"),
+    "cross-browser workflow must matrix real published smoke over four single-threaded packages and three browsers"
+  );
   need(smoke.includes("http.createServer") && smoke.includes("cleanup complete"), "generic npm smoke must serve dist in-process and explicitly complete cleanup");
   need(!smoke.includes('"vite", "preview"') && !smoke.includes("preview.kill("), "generic npm smoke must not use a Vite preview child process");
   need(smoke.includes("makeTar") && smoke.includes('tool: "bsdtar"'), "libarchive live smoke must perform a real bsdtar archive operation");
