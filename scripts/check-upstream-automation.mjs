@@ -72,6 +72,8 @@ need(promotion.includes('Promotion extra pin verification failed'), 'promotion p
 need(promotion.includes('README npm version'), 'promotion preparer must update README npm distribution versions');
 need(promotion.includes('config.keepNpmPinned') && promotion.includes('site/zstd-playground/release-status.json'),
   'Zstandard promotion must keep npm source/version pinned and reset Playground to unpublished for the new reviewed package tag');
+need(promotion.includes('note.includes("@wasm-zoo/zstd") ? note : rewrite(note)'),
+  'Zstandard promotion must not rewrite historical published npm source notes to the new package upstream version');
 need(promotion.includes('docs/NPM_DISTRIBUTION.md') && promotion.includes('npm distribution release tag'), 'promotion preparer must update npm distribution documentation');
 need(promotion.includes('values.slug === "ghostscript"') && promotion.includes('profile.externalLibraries') && promotion.includes('note.startsWith(`Official Ghostscript ${oldVersion} release source archive is pinned by SHA-256`)'), 'Ghostscript promotion must refresh current-version source-archive metadata');
 
@@ -102,6 +104,13 @@ need(fetchScript.includes('sha256sum -c'), 'Ghostscript source fetch must verify
 need(fetchScript.includes('GS_VERSION_MAJOR=${gs_major}') && fetchScript.includes('GS_VERSION_MINOR=${gs_minor}') && fetchScript.includes('GS_VERSION_PATCH=${gs_patch}'), 'Ghostscript source fetch must verify version.mak dynamically');
 const smoke = await read('builders/ghostscript/tests/smoke-test.html');
 need(smoke.includes('manifest.json') && smoke.includes('expectedVersion'), 'Ghostscript smoke must derive the expected version from manifest.json');
+
+const zstdReleaseWorkflow = await read('.github/workflows/release-zstd.yml');
+need(zstdReleaseWorkflow.includes('source builders/zstd/versions.env') &&
+  zstdReleaseWorkflow.includes('Zstandard ${version}') &&
+  zstdReleaseWorkflow.includes('${ZSTD_COMMIT}') &&
+  !zstdReleaseWorkflow.includes('Zstandard 1.5.7 · browser-core'),
+  'Zstandard release title/notes must derive from reviewed versions.env rather than historical hard-coded pins');
 
 const docs = await read('docs/AUTOMATED_PROMOTIONS.md');
 need(docs.includes('- Ghostscript') && docs.includes('GitHub\'s published SHA-256 asset digest'), 'automation docs must describe Ghostscript digest-pinned auto promotion');

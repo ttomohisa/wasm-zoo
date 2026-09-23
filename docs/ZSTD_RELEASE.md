@@ -1,56 +1,67 @@
-# Zstandard v0.15: completed release and historical Phase 3 checklist
+# Zstandard reviewed package release procedure
 
-**Current published state:** `zstd-v0.3.0` was released manually with both browser profiles and checksum-verified source/provenance/SBOM; `@wasm-zoo/zstd@0.3.0` was separately manually published from the reviewed immutable Release-derived **browser-full CLI** tarball. The seven-package Registry-backed Lab later verified 21/21 browser operations on reviewed `main` and the Pages workflow deployed that evidence. The manual instructions below are retained as a **historical release procedure, not steps to repeat**. The separate project `v0.15.0` tag, if desired, is governed by [its own manual release checklist](V015_RELEASE.md); do not retag or republish Zstandard.
+This procedure applies **after** a review-only Zstandard promotion PR has been manually merged. It never authorizes automation to merge, tag, release or publish npm.
 
+The authoritative package pin is `builders/zstd/versions.env`. The build/release workflows derive the release title, upstream version, exact commit and builder version from those reviewed values rather than from hard-coded historical numbers.
 
-Zstandard 1.5.7 was published as GitHub Release `zstd-v0.3.0` after the Phase 3 manual-tag workflow succeeded. Exact official source commit: f8745da6ff1ad1e7bab384bd1f9d742439278e99. Emscripten 6.0.7 commit: 4483d70a78098ed5d860dff2dc21f3025b2da2ee.
+## Before tagging
 
-## Review-only CI
+On PowerShell 7:
 
-The Build experimental Zstandard browser WASM workflow builds browser-core and browser-full. Both run real Chromium tests. The CLI additionally requires native zstd to decode the browser-produced .zst frame and the browser CLI to decode a native-produced frame. Only after both jobs pass does a dependent packaging job download the builds, verify actual JS/WASM hashes against their manifests and SLSA provenance, fetch exact corresponding official source and ZIP each profile. It produces a temporary experimental-zstd-release-bundle CI artifact containing:
-- zstd-browser-core-1.5.7-zoo-0.3.0.zip
-- zstd-browser-full-1.5.7-zoo-0.3.0.zip
-- zstd-sources-1.5.7-zoo-0.3.0.tar.gz (official source plus exact Zoo builder, runtime and scripts)
-- Separate provenance-browser-core.json / provenance-browser-full.json
-- Separate sbom-browser-core.cdx.json / sbom-browser-full.cdx.json
-- BUILDINFO for both profiles
-- SHA256SUMS.txt
+```powershell
+cd C:\Users\broth\Desktop\workspace\wasm-zoo
+git fetch origin main --tags
+git switch main
+git pull --ff-only origin main
+git status --short
 
-The archive verifier checks filenames, ZIP contents and checksums. Neither this CI workflow nor this PR creates tags, merges, releases or publishes to npm. The reviewed BSD upstream license option applies; no native filesystem, pthreads, optional external gzip/xz/lz4 codecs, legacy-frame decoding or streaming JavaScript API is claimed.
+Get-Content builders/zstd/versions.env
+node builders/zstd/scripts/check-repository.mjs
+npm run catalog
+npm run check
+npm run metadata:check
 
-## Windows PowerShell 7: local review after you merge
+gh run list --workflow verify.yml --branch main --limit 3
+gh run list --workflow build-zstd.yml --branch main --limit 3
+```
 
-    cd C:\Users\broth\Desktop\workspace\wasm-zoo
-    git fetch origin main --tags
-    git switch main
-    git pull --ff-only origin main
-    git log -1 --oneline
-    node builders/zstd/scripts/check-repository.mjs
-    npm run check
-    gh run list --workflow build-zstd.yml --branch main --limit 3
+The latest reviewed-main `build-zstd.yml` must have both `browser-core` and `browser-full` real Chromium operations green. The full profile must also have the mandatory browser/native two-way Zstandard frame interoperability gate green. Its dependent package job must verify the corresponding-source release bundle.
 
-To rerun both profiles with Docker Desktop and Chrome locally:
+## Manual package tag
 
-    .\builders\zstd\build.bat browser-core
-    .\builders\zstd\build.bat browser-full
-    node builders/zstd/scripts/verify-build-inputs.mjs
+Resolve the reviewed builder/upstream values from `versions.env`:
 
-Native frame testing is mandatory on CI (ZSTD_NATIVE_INTEROP=required). To prepare release archives locally, use bash on Linux with git, tar, zip, unzip, gzip and sha256sum, or inspect the verified PR bundle.
+```powershell
+$zstd = @{}
+Get-Content builders/zstd/versions.env | ForEach-Object {
+    if ($_ -match '^([A-Z0-9_]+)=(.*)$') {
+        $zstd[$matches[1]] = $matches[2]
+    }
+}
 
-## Human-gated tagging and release
+$builder = $zstd.BUILDER_VERSION
+$upstream = $zstd.ZSTD_REF -replace '^v',''
+$tag = "zstd-v$builder"
 
-ONLY after reviewing and merging the Phase 3 PR AND checking successful main CI plus the review-only release-bundle artifact, the human may push the reviewed annotated tag:
+git ls-remote --tags origin "refs/tags/$tag"
+```
 
-    git switch main
-    git pull --ff-only origin main
-    git tag -a zstd-v0.3.0 -m "WASM Zoo Zstandard 1.5.7 browser release"
-    git push origin zstd-v0.3.0
-    gh run list --workflow release-zstd.yml --limit 3
+If the tag is absent, and only after reviewing the merged main commit and successful main CI:
 
-The tag-triggered release-zstd.yml independently rechecks the exact tag and main ancestry, rebuilds both profiles, re-runs Chromium and bidirectional native interoperability gates, validates the corresponding source archive plus checksums, and creates the GitHub Release only after these checks pass. It then dispatches Pages.
+```powershell
+git tag -a $tag -m "WASM Zoo Zstandard $upstream browser release"
+git push origin $tag
+gh run list --workflow release-zstd.yml --limit 3
+```
 
-Pages downloads ONLY an actually published GitHub Release; it verifies SHA256SUMS across every published release file and checks binary JS/WASM hashes and exact pinned version in both manifests. The public Playground remains disabled if release assets have not been published. A separate metadata promotion PR can then mark Zstandard available and expose its catalog link; npm rollout remains an independent future phase. libvips remains adapter-gated.
+The tag-triggered release workflow independently checks that the tag is the reviewed builder tag on main ancestry, rebuilds both profiles, reruns Chromium and native interoperability, creates checksum-covered binary/source/provenance/SBOM assets, and only then creates the GitHub Release. Pages is refreshed afterward and serves only checksum-verified published assets.
 
-## Promotion after release
+## npm remains a separate review
 
-The release workflow completed successfully on the reviewed main commit and published both profile ZIPs, exact corresponding source, SHA-256 checksums, provenance and SBOM assets. This follow-up promotion changes only catalog/public metadata from `experimental` to `available`, enables the published-release Playground links, and records immutable release asset names. It does not publish npm or enable automatic upstream candidate promotion.
+A package promotion does **not** advance the public npm package automatically. `packages/zstd/package.json -> npm.source` continues to identify the immutable release underlying the currently published npm version. After the new GitHub Release exists, any npm version/source update is a separate reviewed change and publication remains human-controlled.
+
+Never republish an existing npm version, rewrite an existing package GitHub Release, or infer that a successful candidate authorizes publication.
+
+## Historical v0.15 bootstrap
+
+The first published package release was `zstd-v0.3.0`, and the first npm distribution was `@wasm-zoo/zstd@0.3.0`. Those historical identities remain immutable. Current reviewed pins may move only through the flow documented above.

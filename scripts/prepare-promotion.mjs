@@ -141,7 +141,7 @@ if (values.slug === "zstd") {
   pkg.summary = rewrite(pkg.summary);
   pkg.profiles = rewrite(pkg.profiles);
   pkg.comparison = rewrite(pkg.comparison);
-  pkg.notes = rewrite(pkg.notes);
+  pkg.notes = (pkg.notes || []).map((note) => note.includes("@wasm-zoo/zstd") ? note : rewrite(note));
   pkg.capabilityMatrix = rewrite(pkg.capabilityMatrix);
   pkg.integration = rewrite(pkg.integration);
 }

@@ -19,7 +19,7 @@ need(pkg.upstream?.ref === envMap.ZSTD_REF && pkg.upstream?.version === envMap.Z
   "Reviewed package upstream version/ref must match exact versions.env");
 need(pkg.zoo?.builderVersion === envMap.BUILDER_VERSION, "Reviewed builder version must match versions.env");
 need(pkg.status === "available" && (!pkg.npm || (pkg.npm.status === "published" && pkg.npm.package === "@wasm-zoo/zstd" && pkg.npm.profile === "browser-full")) && pkg.release?.tag === `zstd-v${envMap.BUILDER_VERSION}`,
-  "Published Zstandard must retain the reviewed zstd-v0.3.0 release and the registered browser-full npm distribution");
+  "Published Zstandard package metadata must match the reviewed builder tag while the npm distribution retains its independently pinned source");
 need(pkg.release?.sourceAsset === `zstd-sources-${pkg.upstream.version}-zoo-${envMap.BUILDER_VERSION}.tar.gz` &&
   pkg.release?.checksumsAsset === "SHA256SUMS.txt",
   "Published Zstandard release metadata must retain exact source/checksum assets");
