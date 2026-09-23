@@ -20,6 +20,15 @@ const profile = args.profile || npm.profile;
 if (profile !== npm.profile) throw new Error(`${args.slug} npm distribution currently supports only ${npm.profile}`);
 const profileMeta = pkg.profiles?.find((entry) => entry.id === profile);
 if (!profileMeta) throw new Error(`${args.slug} package metadata does not declare ${profile}`);
+const source = args.slug === "zstd" ? npm.publishedSource : null;
+if (args.slug === "zstd" && (!source || source.releaseTag !== "zstd-v0.3.0" ||
+    source.registryShasum !== "29add1aaf6ab0c3e9a3d538166a51a3f70cefa99")) {
+  throw new Error("Zstandard public npm version may only use its independently reviewed immutable release");
+}
+const sourceVersion = source?.upstreamVersion || pkg.upstream.version;
+const sourceBuilder = source?.builderVersion || pkg.zoo.builderVersion;
+const sourceTag = source?.releaseTag || pkg.release.tag;
+const sourceAsset = source?.releaseAsset || profileMeta.releaseAsset;
 
 const runtime = npm.runtime;
 const classicScript = runtime.classicScript;
@@ -173,7 +182,7 @@ const example = docs.example || `import { load } from "${npm.package}";\nconst r
 const emitted = assets.flatMap((asset) => [asset.coreJs, asset.wasm]).map((file) => `\`${file}\``).join(", ");
 const readme = `# ${npm.package}\n\n` +
   `${docs.description || `Unofficial WASM Zoo distribution of ${pkg.name} for browsers.`} ` +
-  `This package is backed by ${pkg.name} ${pkg.upstream.version}, Zoo builder ${pkg.zoo.builderVersion}, and the reviewed ${profile} Release asset.\n\n` +
+  `This package is backed by ${pkg.name} ${sourceVersion}, Zoo builder ${sourceBuilder}, and the reviewed ${profile} Release asset.\n\n` +
   `## Install\n\n\`\`\`bash\nnpm install ${npm.package}\n\`\`\`\n\n` +
   `## Use\n\n\`\`\`js\n${example}\n\`\`\`\n\n` +
   `The default entry imports the reviewed browser wrapper and uses static \`new URL(..., import.meta.url)\` references so modern bundlers can emit ${emitted}. ` +
@@ -215,7 +224,7 @@ const sideEffects = [...new Set([`./${classicScript}`, ...assets.map((asset) => 
 const npmPackage = {
   name: npm.package,
   version: npm.version,
-  description: `${pkg.name} ${pkg.upstream.version} compiled for browser WebAssembly by WASM Zoo, with Consumer API v1 and bundled runtime assets.`,
+  description: `${pkg.name} ${sourceVersion} compiled for browser WebAssembly by WASM Zoo, with Consumer API v1 and bundled runtime assets.`,
   type: "module",
   exports: exportsMap,
   files,
@@ -229,16 +238,16 @@ const npmPackage = {
   wasmZoo: {
     consumerApiVersion: 1,
     slug: args.slug,
-    upstreamVersion: pkg.upstream.version,
-    builderVersion: pkg.zoo.builderVersion,
+    upstreamVersion: sourceVersion,
+    builderVersion: sourceBuilder,
     npmVersion: npm.version,
     distributionOverlay: [classicScript, "wasm-zoo.mjs", npm.entry || "index.mjs"],
     runtimeAssetMode: runtime.assetMode,
     profile,
-    releaseTag: pkg.release.tag,
-    releaseAsset: profileMeta.releaseAsset,
+    releaseTag: sourceTag,
+    releaseAsset: sourceAsset,
     bundledAssets: true
   }
 };
 await fs.writeFile(path.join(output, "package.json"), `${JSON.stringify(npmPackage, null, 2)}\n`);
-console.log(`[OK] prepared ${npm.package}@${npmPackage.version} from ${pkg.release.tag}/${profileMeta.releaseAsset}`);
+console.log(`[OK] prepared ${npm.package}@${npmPackage.version} from ${sourceTag}/${sourceAsset}`);

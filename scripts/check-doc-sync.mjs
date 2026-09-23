@@ -41,9 +41,12 @@ for (const pkg of packages) {
     need(Boolean(npmRow), "npm distribution row missing for " + pkg.npm.package);
     if (npmRow) {
       need(npmRow.includes("| `" + pkg.npm.version + "` |"), "npm distribution version is stale for " + pkg.npm.package);
-      need(npmRow.includes("| " + pkg.name + " " + pkg.upstream.version + " |"), "npm distribution upstream version is stale for " + pkg.npm.package);
-      need(npmRow.includes("| `" + pkg.zoo.builderVersion + "` |"), "npm distribution builder version is stale for " + pkg.npm.package);
-      need(npmRow.includes("`" + pkg.release.tag + "`"), "npm distribution release tag is stale for " + pkg.npm.package);
+      const npmUpstream = pkg.slug === "zstd" ? pkg.npm.publishedSource?.upstreamVersion : pkg.upstream.version;
+      need(npmRow.includes("| " + pkg.name + " " + npmUpstream + " |"), "npm distribution upstream version is stale for " + pkg.npm.package);
+      const npmBuilder = pkg.slug === "zstd" ? pkg.npm.publishedSource?.builderVersion : pkg.zoo.builderVersion;
+      const npmSourceTag = pkg.slug === "zstd" ? pkg.npm.publishedSource?.releaseTag : pkg.release.tag;
+      need(npmRow.includes("| `" + npmBuilder + "` |"), "npm distribution builder version is stale for " + pkg.npm.package);
+      need(npmRow.includes("`" + npmSourceTag + "`"), "npm distribution release tag is stale for " + pkg.npm.package);
       need(npmRow.includes("| " + pkg.npm.status + " |"), "npm distribution status is stale for " + pkg.npm.package);
     }
   }

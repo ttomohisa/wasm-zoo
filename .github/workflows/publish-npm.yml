@@ -46,6 +46,12 @@ jobs:
           const profile = pkg.npm?.profile;
           const meta = pkg.profiles.find((entry) => entry.id === profile);
           if (!pkg.npm || pkg.npm.status !== 'published' || !meta) throw new Error(`${slug} is not an npm-enabled distribution package`);
+          // A new upstream Zstandard release must not repack a still-published
+          // old npm version from unreleased binaries. A separate reviewed npm PR
+          // explicitly moves the pinned npm provenance after manual GitHub release.
+          if (slug === 'zstd' && pkg.npm.publishedSource?.releaseTag !== pkg.release.tag) {
+            throw new Error('Zstandard npm remains pinned to a previous immutable release; use a separate reviewed npm rollout PR');
+          }
           if (!['pack', 'stage'].includes(mode)) throw new Error(`Unsupported npm mode: ${mode}`);
           console.log(`tag=${pkg.release.tag}`);
           console.log(`asset=${meta.releaseAsset}`);

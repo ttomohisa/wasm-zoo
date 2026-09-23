@@ -67,15 +67,20 @@ try {
     if (prep.status !== 0) continue;
 
     const pkg = await readJson(path.join(output, "package.json"));
+    const publishedSource = slug === "zstd" ? npm.publishedSource : null;
+    const sourceVersion = publishedSource?.upstreamVersion || zoo.upstream.version;
+    const sourceBuilder = publishedSource?.builderVersion || zoo.zoo.builderVersion;
+    const sourceTag = publishedSource?.releaseTag || zoo.release.tag;
+    const sourceAsset = publishedSource?.releaseAsset || zoo.profiles.find((item) => item.id === npm.profile)?.releaseAsset;
     need(pkg.name === npm.package, `${slug} npm package name must match metadata`);
     need(pkg.version === npm.version, `${slug} npm package version must match metadata`);
-    need(pkg.wasmZoo?.builderVersion === zoo.zoo.builderVersion, `${slug} npm metadata must retain the source Zoo builder version`);
+    need(pkg.wasmZoo?.builderVersion === sourceBuilder, `${slug} npm metadata must retain the source Zoo builder version`);
     need(pkg.wasmZoo?.npmVersion === npm.version, `${slug} npm metadata must record the npm distribution version`);
     need(pkg.publishConfig?.access === "public", `${slug} scoped npm package must publish with public access`);
     need(pkg.publishConfig?.provenance === true, `${slug} npm package must request provenance`);
-    need(pkg.wasmZoo?.releaseTag === zoo.release.tag, `${slug} npm metadata must identify the immutable source release tag`);
+    need(pkg.wasmZoo?.releaseTag === sourceTag, `${slug} npm metadata must identify the immutable source release tag`);
     const profile = zoo.profiles.find((entry) => entry.id === npm.profile);
-    need(pkg.wasmZoo?.releaseAsset === profile?.releaseAsset, `${slug} npm metadata must identify the immutable source release asset`);
+    need(pkg.wasmZoo?.releaseAsset === sourceAsset, `${slug} npm metadata must identify the immutable source release asset`);
     need(pkg.exports?.["."] === `./${npm.entry}` && pkg.exports?.["./self-hosted"] === "./wasm-zoo.mjs", `${slug} npm exports must expose bundler and self-hosted entries`);
 
     const entry = await fs.readFile(path.join(output, npm.entry), "utf8");
@@ -220,9 +225,14 @@ try {
   need(ffmpegMeta.npm?.packageFiles?.required?.includes("LICENSES/FFmpeg-COPYING.LGPLv2.1"), "FFmpeg npm package must retain the LGPL license copy");
   need(!(ffmpegMeta.npm?.packageFiles?.required || []).some((rel) => rel.endsWith("/x264-COPYING") || rel.endsWith("/FFmpeg-COPYING.GPLv2")), "FFmpeg npm browser-full package must not accidentally include GPL/x264-only release files");
   const zstdMeta=await readJson(path.join(root,"packages/zstd/package.json"));
+  need(zstdMeta.npm?.publishedSource?.upstreamVersion==="1.5.7" &&
+    zstdMeta.npm?.publishedSource?.releaseTag==="zstd-v0.3.0" &&
+    zstdMeta.npm?.publishedSource?.registryShasum==="29add1aaf6ab0c3e9a3d538166a51a3f70cefa99",
+    "Zstandard published npm provenance must remain pinned to its actual manually reviewed v0.3.0 source");
   need(zstdMeta.status==="available" && zstdMeta.npm?.status==="published" &&
     zstdMeta.npm?.package==="@wasm-zoo/zstd" && zstdMeta.npm?.version==="0.3.0" &&
-    zstdMeta.npm?.profile==="browser-full" && zstdMeta.tracker?.candidateMode==="none",
+    zstdMeta.npm?.profile==="browser-full" && zstdMeta.tracker?.candidateMode==="auto" &&
+    JSON.stringify(zstdMeta.tracker?.candidateProfiles)===JSON.stringify(["browser-core","browser-full"]),
     "Published Zstandard npm must retain the reviewed release pin without enabling candidate automation");
   need(smoke.includes("29add1aaf6ab0c3e9a3d538166a51a3f70cefa99") && smoke.includes("dist.shasum"),
     "The live Registry-backed Zstandard smoke must verify the exact reviewed tarball SHA-1");

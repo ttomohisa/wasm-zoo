@@ -6,22 +6,25 @@ import { root, readJson } from "./lib.mjs";
 const index=process.argv.indexOf("--input");
 if(index<0||!process.argv[index+1])throw new Error("Usage: node scripts/verify-npm-zstd-release.mjs --input <extracted-release>");
 const input=path.resolve(process.argv[index+1]),pkg=await readJson(path.join(root,"packages/zstd/package.json"));
-if(pkg.status!=="available"||pkg.release?.tag!=="zstd-v0.3.0"||
+const published = pkg.npm?.publishedSource;
+if(pkg.status!=="available"||published?.releaseTag!=="zstd-v0.3.0"||
+   published?.upstreamVersion!=="1.5.7"||published?.builderVersion!=="0.3.0"||
+   published?.registryShasum!=="29add1aaf6ab0c3e9a3d538166a51a3f70cefa99"||
    pkg.npm?.profile!=="browser-full"||pkg.npm?.status!=="published"||
-   pkg.npm?.version!=="0.3.0")throw new Error("Refusing Zstandard npm input outside the exact reviewed published release identity");
+   pkg.npm?.version!=="0.3.0")throw new Error("Refusing Zstandard npm input outside the independently reviewed published v0.3.0 source");
 const manifest=await readJson(path.join(input,"manifest.json"));
 const features=await readJson(path.join(input,"features.json"));
 const provenance=await readJson(path.join(input,"provenance.json"));
 const sbom=await readJson(path.join(input,"sbom.cdx.json"));
 if(manifest.package!=="zstd"||manifest.profile!=="browser-full"||
- manifest.upstream?.ref!=="v1.5.7"||manifest.upstream?.version!=="1.5.7"||
- manifest.upstream?.commit!=="f8745da6ff1ad1e7bab384bd1f9d742439278e99"||
- manifest.build?.builderVersion!=="0.3.0"||
+ manifest.upstream?.ref!==published.upstreamRef||manifest.upstream?.version!==published.upstreamVersion||
+ manifest.upstream?.commit!==published.upstreamCommit||
+ manifest.build?.builderVersion!==published.builderVersion||
  features.profile!=="browser-full"||
  provenance._type!=="https://in-toto.io/Statement/v1"||
  provenance.predicateType!=="https://slsa.dev/provenance/v1"||
  sbom.bomFormat!=="CycloneDX"||sbom.specVersion!=="1.6"||
- sbom.metadata?.component?.version!=="1.5.7"
+ sbom.metadata?.component?.version!==published.upstreamVersion
 )throw new Error("Zstandard release does not match the exact reviewed source/build/supply-chain contract");
 const subject=new Map((provenance.subject||[]).map(item=>[item.name,item.digest?.sha256]));
 for(const n of ["zstd-cli.js","zstd-cli.wasm"]){

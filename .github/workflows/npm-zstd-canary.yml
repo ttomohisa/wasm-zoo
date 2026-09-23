@@ -48,7 +48,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$(node -p "require('./packages/zstd/package.json').npm.status")" = published
-          test "$(node -p "require('./packages/zstd/package.json').release.tag")" = zstd-v0.3.0
+          test "$(node -p "require('./packages/zstd/package.json').npm.publishedSource.releaseTag")" = zstd-v0.3.0
           mkdir -p npm-zstd/download npm-zstd/input npm-zstd/artifacts
           gh release download zstd-v0.3.0 --repo "$GITHUB_REPOSITORY" --dir npm-zstd/download
           (cd npm-zstd/download && sha256sum -c SHA256SUMS.txt)
