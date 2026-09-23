@@ -14,9 +14,29 @@ node scripts/smoke-npm-package.mjs --slug jq --browser firefox --result-json com
 node scripts/smoke-npm-package.mjs --slug jq --browser webkit --result-json compat-results/jq-webkit.json
 ```
 
-To request Playwright system dependencies on a supported Linux runner, set `WASM_ZOO_PLAYWRIGHT_WITH_DEPS=1`. `--browser` defaults to `chromium`, preserving the existing published npm smoke command for **all six packages**. Other packages remain Chromium-only until their individual cross-browser rollouts are reviewed.
+## Phase 2: published single-threaded packages
 
-The separate `.github/workflows/cross-browser-compat.yml` runs these three browser jobs independently on relevant PRs, weekly, and via manual dispatch. Each job uploads its own JSON result artifact even if the package operation fails, provided the runner was able to write it. The existing `npm-package-smoke.yml` stays in place.
+The matrix also runs these existing production smoke fixtures without copying or weakening their assertions:
+
+| Package | Exact public npm version | Real operation |
+| --- | --- | --- |
+| libarchive | `@wasm-zoo/libarchive@0.3.1` | `bsdtar` extracts a TAR archive and validates file contents |
+| ImageMagick | `@wasm-zoo/imagemagick@0.4.3` | Resize PPM to 2×2 PNG; validate PNG signature and dimensions |
+| Ghostscript | `@wasm-zoo/ghostscript@0.7.2` | Convert PostScript to PDF; validate PDF framing and output size |
+
+Together with jq, this is a four-package × three-browser matrix (12 independent browser-operation results). These are *test targets*, not predeclared success claims: consult actual CI run results and uploaded JSON artifacts to establish compatibility.
+
+Example for one of the new targets:
+
+```sh
+node scripts/smoke-npm-package.mjs --slug libarchive --browser firefox --result-json compat-results/libarchive-firefox.json
+node scripts/smoke-npm-package.mjs --slug imagemagick --browser webkit --result-json compat-results/imagemagick-webkit.json
+node scripts/smoke-npm-package.mjs --slug ghostscript --browser chromium --result-json compat-results/ghostscript-chromium.json
+```
+
+To request Playwright system dependencies on a supported Linux runner, set `WASM_ZOO_PLAYWRIGHT_WITH_DEPS=1`. `--browser` defaults to `chromium`, preserving the existing published npm smoke command for **all six packages**. Threaded FFmpeg and libvips remain Chromium-only until their separate cross-browser rollouts are reviewed.
+
+The separate `.github/workflows/cross-browser-compat.yml` runs 12 package/browser jobs independently on relevant PRs, weekly, and via manual dispatch (at most four simultaneously). Each job uploads its own JSON result artifact even if the package operation fails, provided the runner was able to write it. The existing `npm-package-smoke.yml` stays in place.
 
 ## Per-browser JSON contract (schemaVersion 1)
 
@@ -51,8 +71,8 @@ A passing run includes `browserVersion`, the operation's `detail`, `phase: "comp
 
 ## Rollout boundaries
 
-1. Expand the existing shared fixture to libarchive, ImageMagick, and Ghostscript only after the jq browser matrix is stable.
-2. Later, separately test threaded FFmpeg and libvips profiles with explicit SharedArrayBuffer, COOP/COEP, and cross-origin isolation checks. Distinguish environment `unsupported` from package `fail` using evidenced capability checks.
+1. Keep all single-threaded package/browser results grounded in real CI runs. A failed browser test is not automatically `unsupported`.
+2. Separately test threaded FFmpeg and libvips profiles with explicit SharedArrayBuffer, COOP/COEP, and cross-origin isolation checks. Distinguish environment `unsupported` from package `fail` using evidenced capability checks.
 3. Publish an aggregated machine-readable catalog compatibility matrix / Pages presentation only after the per-browser result contract has been proven. Do not edit reviewed upstream pins or package builder/npm versions for lab-only changes.
 
 The reviewed-pin model is unchanged: automation may prepare review-only promotion PRs but must never merge, tag, release, or publish on its own. libvips remains adapter-gated (5/6 automatic, not 6/6).
