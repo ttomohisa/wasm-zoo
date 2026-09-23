@@ -69,13 +69,15 @@ try {
     const pkg = await readJson(path.join(output, "package.json"));
     need(pkg.name === npm.package, `${slug} npm package name must match metadata`);
     need(pkg.version === npm.version, `${slug} npm package version must match metadata`);
-    need(pkg.wasmZoo?.builderVersion === zoo.zoo.builderVersion, `${slug} npm metadata must retain the source Zoo builder version`);
+    const npmSource = npm.source || {};
+    need(pkg.wasmZoo?.upstreamVersion === (npmSource.upstreamVersion || zoo.upstream.version), `${slug} npm metadata must retain the source upstream version`);
+    need(pkg.wasmZoo?.builderVersion === (npmSource.builderVersion || zoo.zoo.builderVersion), `${slug} npm metadata must retain the source Zoo builder version`);
     need(pkg.wasmZoo?.npmVersion === npm.version, `${slug} npm metadata must record the npm distribution version`);
     need(pkg.publishConfig?.access === "public", `${slug} scoped npm package must publish with public access`);
     need(pkg.publishConfig?.provenance === true, `${slug} npm package must request provenance`);
-    need(pkg.wasmZoo?.releaseTag === zoo.release.tag, `${slug} npm metadata must identify the immutable source release tag`);
+    need(pkg.wasmZoo?.releaseTag === (npmSource.releaseTag || zoo.release.tag), `${slug} npm metadata must identify the immutable source release tag`);
     const profile = zoo.profiles.find((entry) => entry.id === npm.profile);
-    need(pkg.wasmZoo?.releaseAsset === profile?.releaseAsset, `${slug} npm metadata must identify the immutable source release asset`);
+    need(pkg.wasmZoo?.releaseAsset === (npmSource.releaseAsset || profile?.releaseAsset), `${slug} npm metadata must identify the immutable source release asset`);
     need(pkg.exports?.["."] === `./${npm.entry}` && pkg.exports?.["./self-hosted"] === "./wasm-zoo.mjs", `${slug} npm exports must expose bundler and self-hosted entries`);
 
     const entry = await fs.readFile(path.join(output, npm.entry), "utf8");
@@ -152,6 +154,8 @@ try {
   const retiredDirectPublish = ["npm", "publish", "--access", "public"].join(" ");
   need(!workflow.includes(retiredBootstrapSecret) && !workflow.includes(retiredDirectPublish) && !workflow.includes("bootstrap"), "npm workflow must not retain temporary bootstrap/token/direct-publish paths after v0.13");
   need(workflow.includes("gh release download"), "npm workflow must package immutable GitHub Release assets");
+  need(workflow.includes("pkg.npm.source?.releaseTag") && workflow.includes("pkg.npm.source?.releaseAsset"),
+    "npm workflow must honor an independently pinned immutable npm source release");
 
   const smoke = await fs.readFile(path.join(root, "scripts", "smoke-npm-package.mjs"), "utf8");
   need(smoke.includes("jq:") && smoke.includes("libarchive:") && smoke.includes("imagemagick:") && smoke.includes("ghostscript:") && smoke.includes("libvips:") && smoke.includes("ffmpeg:") && smoke.includes("zstd:"), "generic npm smoke must have jq, libarchive, ImageMagick, Ghostscript, libvips and FFmpeg fixtures");
