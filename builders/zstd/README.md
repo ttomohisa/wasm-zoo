@@ -1,4 +1,4 @@
-# Experimental Zstandard builder — v0.15 Phase 2
+# Zstandard v0.15 — release-preparation phase (review-only)
 
 This is a **review-only canary**, not an existing published seventh package.
 
@@ -20,3 +20,9 @@ Set `ZSTD_WASM_BROWSER` to your Chrome/Chromium executable if not auto-detected.
 The experimental CLI CI job also requires an installed native `zstd` executable for bidirectional frame tests. Local builds can omit it; the browser will still run CLI roundtrip and invalid-input tests. Detailed test gates: [Zstandard CLI Lab](../../docs/ZSTD_CLI_LAB.md).
 
 After both profiles pass, a **separate** review-only PR can add corresponding-source bundles, a Playground and formal release tooling. A later npm/cross-browser rollout remains independent. Humans retain control of merges, tags, releases and npm publication.
+
+## Phase 3: release-ready assets and Playground
+
+The proposed manually created release tag is **zstd-v0.3.0**. It does not exist merely because this PR merges. The PR CI builds both profiles, assembles and verifies two ZIP files, fetches exact official source, bundles the Zoo build recipes, and verifies SHA-256, SLSA provenance and CycloneDX SBOM. The CI bundle is review-only, not public.
+
+The site/zstd-playground/ page is publicly disabled until Pages downloads and checksums an actual reviewed GitHub Release. Local previews are explicitly restricted to localhost. See docs/ZSTD_RELEASE.md for commands.

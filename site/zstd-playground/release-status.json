@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "state": "not-published",
+  "tag": "zstd-v0.3.0",
+  "upstreamCommit": "f8745da6ff1ad1e7bab384bd1f9d742439278e99",
+  "note": "No binary is served publicly until a verified GitHub Release is staged by Pages."
+}

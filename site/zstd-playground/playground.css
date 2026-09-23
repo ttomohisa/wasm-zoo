@@ -1,0 +1,7 @@
+.zstd-log{margin:0;min-height:130px;max-height:400px;overflow:auto;white-space:pre-wrap;word-break:break-word;padding:18px;border-radius:14px;background:#171714;color:#f5f5ef;font:12px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace}
+.secondary-action{border:1px solid var(--line);background:#fbfbf8;border-radius:10px;cursor:pointer;padding:10px 12px;font:700 12px/1.4 inherit;color:var(--ink);max-width:100%}
+.selection{margin:14px 0;font-size:12px;word-break:break-word;color:var(--muted)}
+.message{min-height:2.5em;color:var(--muted);font-size:13px}
+.download-area [hidden]{display:none}
+.download-area .primary-button{display:inline-block;text-decoration:none;margin-top:8px}
+@media(max-width:760px){.download-area .primary-button{max-width:100%;overflow-wrap:anywhere}}

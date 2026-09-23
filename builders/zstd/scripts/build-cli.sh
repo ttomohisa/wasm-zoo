@@ -69,7 +69,7 @@ cat > /out/manifest.json <<EOF
     "network": false, "filesystem": "MEMFS", "initialMemory": 67108864,
     "maximumMemory": 536870912, "memoryGrowth": true, "stackSize": 1048576
   },
-  "build": {"binaryLicense": "BSD-3-Clause", "externalLibraries": [], "tools": ["upstream zstd CLI"]},
+  "build": {"builderVersion": "$BUILDER_VERSION", "binaryLicense": "BSD-3-Clause", "externalLibraries": [], "tools": ["upstream zstd CLI"]},
   "files": {
     "zstd-cli.js": {"bytes": $(stat -c %s /out/zstd-cli.js), "sha256": "$(sha256sum /out/zstd-cli.js | cut -d' ' -f1)"},
     "zstd-cli.wasm": {"bytes": $(stat -c %s /out/zstd-cli.wasm), "sha256": "$(sha256sum /out/zstd-cli.wasm | cut -d' ' -f1)"},

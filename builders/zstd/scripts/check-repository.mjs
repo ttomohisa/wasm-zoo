@@ -9,14 +9,14 @@ const failures = [];
 const need = (ok, reason) => { if (!ok) failures.push(reason); };
 const env = read("versions.env");
 for (const token of [
-  "BUILDER_VERSION=0.2.0",
+  "BUILDER_VERSION=0.3.0",
   "EMSDK_VERSION=6.0.7",
   "EMSCRIPTEN_COMMIT=4483d70a78098ed5d860dff2dc21f3025b2da2ee",
   "ZSTD_REF=v1.5.7",
   "ZSTD_COMMIT=f8745da6ff1ad1e7bab384bd1f9d742439278e99"
 ]) need(env.includes(token), "Missing required exact pin " + token);
 need(pkg.status === "experimental" && !pkg.npm && !pkg.release,
-  "A CI-only Zstandard canary must never pretend to be a published package");
+  "Release preparation must not falsely mark Zstandard published before manual tagging");
 need(pkg.tracker?.candidateMode === "none", "Automation must be disabled until the canary is proven");
 need(pkg.upstream?.version === "1.5.7" && pkg.profiles?.length === 2 &&
   pkg.profiles[0]?.id === "browser-core" && pkg.profiles[1]?.id === "browser-full",
@@ -74,6 +74,18 @@ need(cliWorker.includes("importScripts(coreJsUrl)") && cliWorker.includes("core.
   cliWorker.includes("core.FS.writeFile") && cliWorker.includes("core.FS.readFile") &&
   cliWorker.includes("Collected output exceeds 64 MiB") && !cliWorker.includes("SharedArrayBuffer"),
   "Original CLI must run in fresh bounded MEMFS Worker without cross-origin isolation");
+
+for(const script of ["scripts/verify-build-inputs.mjs","scripts/verify-release-assets.mjs"]) {
+ const syntax=spawnSync(process.execPath,["--check",path.join(root,script)],{encoding:"utf8"});
+ need(syntax.status===0,"Release verification syntax invalid: "+script);
+}
+const prep=read("scripts/prepare-release.sh");
+for(const token of ["zstd-v", "verify-build-inputs.mjs", "verify-release-assets.mjs", "sha256sum -c",
+  "git -C \"$work/zstd-src\" rev-parse HEAD", "source-bundle", "LICENSE-zstd.txt", "browser-core browser-full"]) {
+ need(prep.includes(token)||token==="browser-core browser-full"&&prep.includes("for profile in browser-core browser-full"),
+  "Missing exact-source release preparation gate: "+token);
+}
+need(!prep.includes("gh release create")&&!prep.includes("git tag "), "Packaging alone must never publish or tag");
 
 if (failures.length) {
   failures.forEach((reason) => console.error("[NG] " + reason));

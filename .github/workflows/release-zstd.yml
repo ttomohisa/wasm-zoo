@@ -1,0 +1,130 @@
+# A human must create and push the reviewed zstd-vX.Y.Z tag. No PR may
+# auto-merge, tag, release or publish; the tag-triggered workflow validates again.
+name: Release Zstandard WASM
+
+on:
+  push:
+    tags:
+      - "zstd-v*.*.*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Rebuild exact Zstandard ${{ matrix.profile }} for release
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [browser-core, browser-full]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Verify this tag points to a reviewed main commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          source builders/zstd/versions.env
+          test "$GITHUB_REF_TYPE" = tag
+          test "$GITHUB_REF_NAME" = "zstd-v${BUILDER_VERSION}"
+          git fetch origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || {
+            echo "Refusing release from an unmerged candidate commit" >&2
+            exit 1
+          }
+      - uses: docker/setup-buildx-action@v4
+      - uses: browser-actions/setup-chrome@v2.2.0
+        id: chrome
+      - name: Install native zstd for mandatory bidirectional CLI interoperability
+        if: matrix.profile == 'browser-full'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zstd
+          zstd --version
+      - name: Verify reviewed builder contract
+        run: |
+          bash -n builders/zstd/build.sh builders/zstd/scripts/*.sh
+          node builders/zstd/scripts/check-repository.mjs
+      - name: Compile, run Chromium operation, native interop and generate provenance/SBOM
+        shell: bash
+        working-directory: builders/zstd
+        env:
+          ZSTD_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+          ZSTD_NATIVE_INTEROP: ${{ matrix.profile == 'browser-full' && 'required' || '' }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh '${{ matrix.profile }}'
+      - name: Upload verified release build profile
+        uses: actions/upload-artifact@v7
+        with:
+          name: zstd-release-build-${{ matrix.profile }}-${{ github.sha }}
+          path: |
+            builders/zstd/dist/${{ matrix.profile }}/*.js
+            builders/zstd/dist/${{ matrix.profile }}/*.mjs
+            builders/zstd/dist/${{ matrix.profile }}/*.wasm
+            builders/zstd/dist/${{ matrix.profile }}/*.gz
+            builders/zstd/dist/${{ matrix.profile }}/manifest.json
+            builders/zstd/dist/${{ matrix.profile }}/features.json
+            builders/zstd/dist/${{ matrix.profile }}/provenance.json
+            builders/zstd/dist/${{ matrix.profile }}/sbom.cdx.json
+            builders/zstd/dist/${{ matrix.profile }}/BUILDINFO.txt
+            builders/zstd/dist/${{ matrix.profile }}/LICENSE-zstd.txt
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    name: Verify release archives, publish GitHub Release and refresh Pages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Repeat reviewed tag and main-ancestry gate before publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          source builders/zstd/versions.env
+          test "$GITHUB_REF_TYPE" = tag
+          test "$GITHUB_REF_NAME" = "zstd-v${BUILDER_VERSION}"
+          git fetch origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+      - name: Install ZIP tools
+        run: sudo apt-get update && sudo apt-get install -y zip unzip
+      - uses: actions/download-artifact@v7
+        with:
+          name: zstd-release-build-browser-core-${{ github.sha }}
+          path: builders/zstd/dist/browser-core
+      - uses: actions/download-artifact@v7
+        with:
+          name: zstd-release-build-browser-full-${{ github.sha }}
+          path: builders/zstd/dist/browser-full
+      - name: Recheck exact binary and provenance digests, prepare release assets
+        shell: bash
+        working-directory: builders/zstd
+        run: |
+          chmod +x ./scripts/prepare-release.sh
+          ./scripts/prepare-release.sh "$GITHUB_REF_NAME"
+      - name: Create verified GitHub Release only for manually pushed reviewed tag
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "$GITHUB_REF_NAME" builders/zstd/release/* \
+            --verify-tag \
+            --title "WASM Zoo · Zstandard 1.5.7 · browser-core and upstream browser-full" \
+            --notes "Unofficial official-source Zstandard 1.5.7 for browser WebAssembly. Both profiles are built from exact upstream commit f8745da6ff1ad1e7bab384bd1f9d742439278e99 using reviewed Emscripten 6.0.7. browser-core wraps bounded libzstd C APIs; browser-full compiles the original upstream zstd CLI on isolated MEMFS. Real Chromium operations and bidirectional native frame interoperability are release gates. Both binary ZIPs, exact corresponding source/build recipe, standalone in-toto/SLSA provenance, CycloneDX 1.6 SBOM and SHA-256 checksums are included. The browser profiles omit native OS filesystem, pthreads, external codecs, and legacy-frame support."
+      - name: Refresh published-only Pages after GitHub Release exists
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main

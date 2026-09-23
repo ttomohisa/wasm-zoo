@@ -40,7 +40,7 @@ cat > /out/manifest.json <<EOF
   "upstream": {"name": "Zstandard", "version": "${ZSTD_REF#v}", "ref": "$ZSTD_REF", "commit": "$ZSTD_COMMIT"},
   "toolchain": {"name": "Emscripten", "version": "$EMSDK_VERSION", "commit": "$EMSCRIPTEN_COMMIT"},
   "runtime": {"threads": false, "threadBackend": "none", "simd": false, "sharedArrayBuffer": false, "crossOriginIsolation": false, "worker": true, "network": false, "filesystem": "none", "initialMemory": 33554432, "maximumMemory": 536870912, "memoryGrowth": true},
-  "build": {"binaryLicense": "BSD-3-Clause", "externalLibraries": [], "tools": ["libzstd C API"]},
+  "build": {"builderVersion": "$BUILDER_VERSION", "binaryLicense": "BSD-3-Clause", "externalLibraries": [], "tools": ["libzstd C API"]},
   "files": {
     "zstd-core.js": {"bytes": $(stat -c %s /out/zstd-core.js), "sha256": "$(sha256sum /out/zstd-core.js | cut -d' ' -f1)"},
     "zstd-core.wasm": {"bytes": $(stat -c %s /out/zstd-core.wasm), "sha256": "$(sha256sum /out/zstd-core.wasm | cut -d' ' -f1)"},

@@ -108,5 +108,37 @@ async function stageJq() {
   return 1;
 }
 
-const staged = (await stageFfmpeg()) + (await stageLibarchive()) + (await stageImageMagick()) + (await stageLibvips()) + (await stageGhostscript()) + (await stageJq());
+async function stageZstd() {
+  const env=await readEnv(path.join(root,"builders/zstd/versions.env"));
+  const version=env.ZSTD_REF.replace(/^v/,"");
+  const profiles=["browser-core","browser-full"];
+  for(const profile of profiles) {
+    const source=path.join(root,"builders/zstd/dist",profile);
+    let manifest;
+    try { manifest=JSON.parse(await fs.readFile(path.join(source,"manifest.json"),"utf8")); }
+    catch { console.log("[skip] Zstandard "+profile+": build both profiles first for local Playground");return 0; }
+    if(manifest.profile!==profile||manifest.upstream?.commit!==env.ZSTD_COMMIT||
+       manifest.upstream?.version!==version||manifest.build?.builderVersion!==env.BUILDER_VERSION)
+      throw new Error("Refusing a stale Zstandard local build: "+profile);
+  }
+  for(const profile of profiles) {
+    const src=path.join(root,"builders/zstd/dist",profile);
+    const dest=path.join(root,"site/assets/zstd",version,profile);
+    await fs.mkdir(dest,{recursive:true});
+    const files=profile==="browser-core"
+      ? ["zstd-core.js","zstd-core.wasm","browser-zstd.js","browser-zstd-worker.js","wasm-zoo.mjs"]
+      : ["zstd-cli.js","zstd-cli.wasm","browser-zstd-cli.js","browser-zstd-cli-worker.js","wasm-zoo-cli.mjs"];
+    for(const name of [...files,"manifest.json","features.json"]){
+      await fs.copyFile(path.join(src,name),path.join(dest,name));
+    }
+    console.log("[OK] staged local Zstandard "+profile);
+  }
+  await fs.writeFile(path.join(root,"site/zstd-playground/release-status.json"),
+    JSON.stringify({schemaVersion:1,state:"local-preview",tag:"zstd-v"+env.BUILDER_VERSION,
+      upstreamCommit:env.ZSTD_COMMIT},null,2)+"\n");
+  console.log("[OK] local-only preview status written; do not commit generated site assets or release status");
+  return 2;
+}
+
+const staged = (await stageFfmpeg()) + (await stageLibarchive()) + (await stageImageMagick()) + (await stageLibvips()) + (await stageGhostscript()) + (await stageJq()) + (await stageZstd());
 if (!staged) console.log('[info] No local release cores staged; the catalog can still be previewed.');

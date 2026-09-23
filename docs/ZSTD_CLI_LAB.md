@@ -58,3 +58,7 @@ source archive, Playground, and then independent npm/cross-browser
 verification. All merge, tag, release and publish decisions remain human
 controlled; the upstream candidate tracker remains `none` for Zstandard,
 and libvips remains adapter-gated.
+
+## Phase 3 release preparation
+
+Phase 3 packages both profiles into reviewed binaries plus exact corresponding source and checksums, preserving the native/browser interoperability hard gate. A human manually tags the reviewed main commit only after checking the release-bundle CI artifact; the tag-triggered release workflow rebuilds and verifies before publication. See ZSTD_RELEASE.md.

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="Compress or decompress .zst files entirely in your browser using the reviewed official Zstandard WebAssembly build.">
+  <meta name="theme-color" content="#f7f7f4"><title>Zstandard Playground · WASM Zoo</title>
+  <link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../playground.css">
+  <link rel="stylesheet" href="./playground.css">
+</head><body class="playground-page">
+<header class="topbar"><a class="brand" href="../"><span class="brand-mark">W</span><span>WASM Zoo</span></a>
+  <nav class="topnav"><a href="../jq-playground/">jq</a><a href="../libarchive-playground/">libarchive</a>
+    <a class="github-link" href="https://github.com/ttomohisa/wasm-zoo" rel="noreferrer">GitHub</a></nav>
+</header>
+<main class="playground-main">
+  <section class="playground-hero">
+    <div><span class="eyebrow">Zstandard <span id="version">1.5.7</span> · Playground</span>
+      <h1>Compress and decompress Zstandard files locally.</h1>
+      <p>Choose the compact native-library wrapper or the original upstream <code>zstd</code> CLI.
+        Each operation runs in an isolated browser Worker. Your files remain local.</p>
+    </div>
+    <div class="runtime-state"><span>Release</span>
+      <strong id="runtime-status" data-state="working" role="status">Checking published release…</strong>
+      <small>Both profiles are single-threaded. No SharedArrayBuffer or cross-origin isolation is required.
+        This page loads <strong>only verified published release assets</strong> on the public site.</small>
+    </div>
+  </section>
+  <section class="playground-grid">
+    <div class="playground-panel controls-panel">
+      <div class="panel-heading"><div><span class="eyebrow">01 · WebAssembly</span>
+        <h2>Profile and operation</h2></div><span id="core-status" class="core-status">Not loaded</span></div>
+      <div id="manifest-summary" class="manifest-summary"><span>Release assets not yet available.</span></div>
+      <label>Profile
+        <select id="profile">
+          <option value="browser-core">browser-core · native libzstd API</option>
+          <option value="browser-full">browser-full · original upstream CLI</option>
+        </select>
+      </label>
+      <label>Operation
+        <select id="operation"><option value="compress">Compress to .zst</option>
+          <option value="decompress">Decompress .zst</option></select>
+      </label>
+      <label id="level-label">Compression level
+        <select id="level"><option value="1">1 · fast</option><option selected value="3">3 · balanced</option>
+          <option value="9">9 · stronger</option><option value="19">19 · high compression</option></select>
+      </label>
+      <p class="panel-note">Core uses one-shot compression/decompression (frame content size required).
+        Full runs the original upstream command on explicitly staged MEMFS files.</p>
+    </div>
+    <div class="playground-panel command-panel">
+      <div class="panel-heading"><div><span class="eyebrow">02 · Local input</span><h2>Process a file</h2></div>
+        <span class="local-badge">No file uploads</span></div>
+      <label>Choose a file (up to 64 MiB)<input id="input-file" type="file"></label>
+      <button id="demo" type="button" class="secondary-action">Use repeating sample text</button>
+      <div id="selection" class="selection" aria-live="polite">No file selected.</div>
+      <button id="run" type="button" class="primary-button run-button" disabled>Compress locally</button>
+      <p id="message" class="message" role="status" aria-live="polite">
+        The Playground activates after the verified Zstandard release is published.
+      </p>
+      <div class="download-area"><a id="download" class="primary-button" hidden>Download result</a></div>
+    </div>
+  </section>
+  <section class="log-panel">
+    <div class="panel-heading"><div><span class="eyebrow">03 · Diagnostics</span>
+      <h2>Operation log</h2></div><span class="local-badge">Browser-only processing</span></div>
+    <pre id="log" class="zstd-log" aria-live="polite">Published release check pending.</pre>
+  </section>
+  <section class="playground-notes">
+    <div><strong>Source pin</strong><span>Official Zstandard v1.5.7 · exact upstream commit.</span></div>
+    <div><strong>Interop</strong><span>Native ↔ browser frame compatibility is verified in release CI.</span></div>
+    <div><strong>Limits</strong><span>No native filesystem, pthreads, optional external codecs or legacy-frame decoding.</span></div>
+  </section>
+</main><footer><p><strong>WASM Zoo</strong> · Zstandard Playground</p><p><a href="../">Back to catalog</a></p></footer>
+<script src="./app.js" type="module"></script>
+</body></html>
