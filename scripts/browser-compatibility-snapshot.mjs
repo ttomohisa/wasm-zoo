@@ -1,7 +1,7 @@
 import { assessThreadedRuntime } from "./threaded-browser-capabilities.mjs";
 
 export const browsers = Object.freeze(["chromium", "firefox", "webkit"]);
-export const packageSlugs = Object.freeze(["jq", "libarchive", "imagemagick", "ghostscript", "ffmpeg", "libvips"]);
+export const packageSlugs = Object.freeze(["jq", "libarchive", "imagemagick", "ghostscript", "zstd", "ffmpeg", "libvips"]);
 export const maxAgeMs = 14 * 24 * 60 * 60 * 1000;
 
 export function selectMainRun(runs) {
@@ -67,7 +67,8 @@ export function checkSource(run, now = new Date().toISOString()) {
 export function buildVerifiedSnapshot({ packages, run, records, generatedAt = new Date().toISOString() }) {
   const source = checkSource(run, generatedAt);
   const lookup = new Map(records.map((record) => [`${record.package}/${record.browser}`, record]));
-  if (lookup.size !== 18 || records.length !== 18) throw new Error("Expected exactly 18 distinct browser-operation records");
+  const expectedCount = packageSlugs.length * browsers.length;
+  if (lookup.size !== expectedCount || records.length !== expectedCount) throw new Error(`Expected exactly ${expectedCount} distinct browser-operation records`);
   const expected = [];
   for (const slug of packageSlugs) {
     const pkg = packages.find((item) => item.slug === slug);

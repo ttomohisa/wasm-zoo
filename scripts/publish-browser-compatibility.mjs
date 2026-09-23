@@ -71,7 +71,7 @@ try {
       }
     }
     snapshot = buildVerifiedSnapshot({ packages, run, records, generatedAt });
-    console.log(`[OK] verified all 18 exact-version results from main workflow run ${run.id}`);
+    console.log(`[OK] verified all ${packageSlugs.length * browsers.length} exact-version results from main workflow run ${run.id}`);
   }
 } catch (error) {
   const reason = String(error?.message || error).slice(0, 500);

@@ -70,7 +70,8 @@ function renderBrowserCompatibility() {
     browserCompatibility.state === 'verified' && sourceIsMain &&
     Number.isFinite(Date.parse(source?.completedAt)) &&
     Date.now() - Date.parse(source.completedAt) < 14 * 24 * 60 * 60 * 1000 &&
-    Array.isArray(browserCompatibility.results) && browserCompatibility.results.length === 18;
+    Array.isArray(browserCompatibility.results) &&
+    browserCompatibility.results.length === catalog.packages.filter((pkg) => pkg.status === 'available' && pkg.npm?.status === 'published').length * compatBrowsers.length;
   const records = verified ? browserCompatibility.results : [];
   const packages = catalog.packages.filter((pkg) => pkg.status === 'available' && pkg.npm?.status === 'published');
 
@@ -90,7 +91,7 @@ function renderBrowserCompatibility() {
   const unsupported = records.filter((item) => item.status === 'unsupported').length;
   if (summary) {
     summary.textContent = verified
-      ? `${passes}/18 verified operations${unsupported ? ` · ${unsupported} measured unsupported` : ''} · main CI ${source.completedAt.slice(0, 16).replace('T', ' ')} UTC`
+      ? `${passes}/${packages.length * compatBrowsers.length} verified operations${unsupported ? ` · ${unsupported} measured unsupported` : ''} · main CI ${source.completedAt.slice(0, 16).replace('T', ' ')} UTC`
       : `No current verified main-branch results · ${browserCompatibility?.reason || 'awaiting a matching CI run'}`;
   }
   if (sourceLink && sourceIsMain && /^https:\/\/github\.com\/ttomohisa\/wasm-zoo\/actions\/runs\/\d+$/.test(source.url || '')) {

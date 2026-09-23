@@ -293,6 +293,20 @@ const compatibility = {
 };
 
 try {
+  if (slug === "zstd" && !process.env.WASM_ZOO_NPM_PACKAGE_SPEC) {
+    // First publication was manual: bind every live Registry test to the
+    // exact SHA-1 of the three-browser-verified Phase 4A release-derived tarball.
+    phase = "registry-integrity";
+    const expectedShasum = "29add1aaf6ab0c3e9a3d538166a51a3f70cefa99";
+    const observedShasum = JSON.parse(run([
+      "view", `${packageName}@${version}`, "dist.shasum", "--json",
+      "--registry", "https://registry.npmjs.org/"
+    ], { capture: true }).stdout.trim());
+    if (observedShasum !== expectedShasum) {
+      throw new Error(`Registry Zstandard SHA-1 does not match the reviewed tarball: expected ${expectedShasum}, received ${observedShasum}`);
+    }
+    console.log(`[OK] npm Registry ${packageName}@${version} matches reviewed SHA-1 ${expectedShasum}`);
+  }
   const appPackage = {
     private: true,
     type: "module",
