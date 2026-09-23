@@ -1,6 +1,6 @@
 # Zstandard v0.15 Phase 3: manual release checklist
 
-This PR prepares but does NOT publish the official Zstandard 1.5.7 binaries or Playground. Exact official source commit: f8745da6ff1ad1e7bab384bd1f9d742439278e99. Emscripten 6.0.7 commit: 4483d70a78098ed5d860dff2dc21f3025b2da2ee.
+Zstandard 1.5.7 was published as GitHub Release `zstd-v0.3.0` after the Phase 3 manual-tag workflow succeeded. Exact official source commit: f8745da6ff1ad1e7bab384bd1f9d742439278e99. Emscripten 6.0.7 commit: 4483d70a78098ed5d860dff2dc21f3025b2da2ee.
 
 ## Review-only CI
 
@@ -47,3 +47,7 @@ ONLY after reviewing and merging the Phase 3 PR AND checking successful main CI 
 The tag-triggered release-zstd.yml independently rechecks the exact tag and main ancestry, rebuilds both profiles, re-runs Chromium and bidirectional native interoperability gates, validates the corresponding source archive plus checksums, and creates the GitHub Release only after these checks pass. It then dispatches Pages.
 
 Pages downloads ONLY an actually published GitHub Release; it verifies SHA256SUMS across every published release file and checks binary JS/WASM hashes and exact pinned version in both manifests. The public Playground remains disabled if release assets have not been published. A separate metadata promotion PR can then mark Zstandard available and expose its catalog link; npm rollout remains an independent future phase. libvips remains adapter-gated.
+
+## Promotion after release
+
+The release workflow completed successfully on the reviewed main commit and published both profile ZIPs, exact corresponding source, SHA-256 checksums, provenance and SBOM assets. This follow-up promotion changes only catalog/public metadata from `experimental` to `available`, enables the published-release Playground links, and records immutable release asset names. It does not publish npm or enable automatic upstream candidate promotion.

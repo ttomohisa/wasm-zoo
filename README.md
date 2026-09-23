@@ -21,12 +21,8 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 - libvips Playground: https://ttomohisa.github.io/wasm-zoo/libvips-playground/
 - Ghostscript Playground: https://ttomohisa.github.io/wasm-zoo/ghostscript-playground/
 - jq Playground: https://ttomohisa.github.io/wasm-zoo/jq-playground/
+- Zstandard Playground: https://ttomohisa.github.io/wasm-zoo/zstd-playground/
 
-## New experimental v0.15 candidate: Zstandard
-
-The [official Zstandard 1.5.7](builders/zstd/README.md) has two independently browser-tested experimental builds: browser-core with the original library C API and browser-full with the original upstream CLI on MEMFS. Phase 3 includes verified [corresponding-source release packaging and a published-release-only Playground](docs/ZSTD_RELEASE.md).
-
-**No GitHub release or npm publication is implied by merging this PR.** The catalog stays experimental until the human-tagged release succeeds and a later reviewed metadata PR promotes it.
 
 ## Available packages
 
@@ -38,12 +34,13 @@ The [official Zstandard 1.5.7](builders/zstd/README.md) has two independently br
 | libvips | 8.18.6 | 0.5.2 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.2` |
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
+| Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | not yet published |
 
 The project version is **WASM Zoo v0.14.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
 ### npm distribution
 
-WASM Zoo v0.13.0 completes the npm rollout: all six packages are public and have passed their package-specific Vite/Chromium live Registry smoke gates.
+WASM Zoo v0.13.0 completed npm rollout for the original six packages. Zstandard is now a seventh published GitHub Release package, while its npm rollout remains a separate reviewed phase.
 
 ```text
 npm install @wasm-zoo/jq
