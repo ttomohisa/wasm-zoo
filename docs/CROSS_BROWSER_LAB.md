@@ -34,9 +34,31 @@ node scripts/smoke-npm-package.mjs --slug imagemagick --browser webkit --result-
 node scripts/smoke-npm-package.mjs --slug ghostscript --browser chromium --result-json compat-results/ghostscript-chromium.json
 ```
 
-To request Playwright system dependencies on a supported Linux runner, set `WASM_ZOO_PLAYWRIGHT_WITH_DEPS=1`. `--browser` defaults to `chromium`, preserving the existing published npm smoke command for **all six packages**. Threaded FFmpeg and libvips remain Chromium-only until their separate cross-browser rollouts are reviewed.
+To request Playwright system dependencies on a supported Linux runner, set `WASM_ZOO_PLAYWRIGHT_WITH_DEPS=1`. `--browser` defaults to `chromium`, preserving the existing published npm smoke command for **all six packages**. The threaded FFmpeg/libvips test targets and their capability policy are described in Phase 3 below.
 
 The separate `.github/workflows/cross-browser-compat.yml` runs 12 package/browser jobs independently on relevant PRs, weekly, and via manual dispatch (at most four simultaneously). Each job uploads its own JSON result artifact even if the package operation fails, provided the runner was able to write it. The existing `npm-package-smoke.yml` stays in place.
+
+## Phase 3: threaded FFmpeg and libvips
+
+Run the existing **real-operation** npm fixtures in Chromium, Firefox, and WebKit for `@wasm-zoo/ffmpeg@0.2.8` (LGPL `browser-full`) and `@wasm-zoo/libvips@0.5.2` (`browser-core`, using its actual Embind API, **not** a made-up CLI). The FFmpeg fixture converts raw PCM to a RIFF/WAVE file; the libvips fixture resizes an image and checks JPEG/WebP output. These 6 tests are separate from the 12 single-threaded cases, for 18 total browser cells. Package versions and reviewed upstream pins are unchanged.
+
+Each threaded test verifies three **actual served HTTP response headers** (`COOP: same-origin`, `COEP: require-corp`, `CORP: same-origin`) plus a browser capability probe injected before the application module: secure context, `crossOriginIsolated`, `SharedArrayBuffer`, Web Worker, WebAssembly and a constructible shared WebAssembly memory. Do not assume the server headers imply a browser supports threads.
+
+The JSON `status` is assigned according to observed evidence:
+- `pass` requires every preflight capability **and** the package's verified real operation.
+- `unsupported` requires correct harness headers, a complete browser probe and an explicitly absent required capability. The browser version, measured flags and precise reason are recorded. A package operation exception, npm/Vite failure, missing probe or bad header is always `fail`, never `unsupported`.
+- `fail` rejects the CI cell. Chromium is a mandatory tested baseline for each threaded package: `--on-unsupported record` is forbidden for Chromium. Firefox/WebKit have an explicit `--on-unsupported record` policy so genuinely missing capabilities are visible as `unsupported` instead of falsely claiming a package regression.
+
+The separate `threaded-report` job downloads all six result artifacts, rechecks their reported browser capabilities and npm versions, rejects missing/incorrect results and *all* unsupported Chromium results, and publishes an aggregate JSON artifact and GitHub Actions step-summary table. An **unsupported** Firefox/WebKit cell remains visibly unsupported, not a pass claim. A failed or missing cell fails CI. The original 12-cell single-threaded job and existing published Chromium smoke remain in place.
+
+Examples:
+
+```sh
+node scripts/smoke-npm-package.mjs --slug ffmpeg --browser chromium --result-json compat-results/ffmpeg-chromium.json
+node scripts/smoke-npm-package.mjs --slug libvips --browser firefox --on-unsupported record --result-json compat-results/libvips-firefox.json
+node --test scripts/test-threaded-browser-capabilities.mjs
+node scripts/report-threaded-compatibility.mjs compat-results
+```
 
 ## Per-browser JSON contract (schemaVersion 1)
 
@@ -65,14 +87,14 @@ One result file is produced for each browser invocation. Example **shape**, not 
 
 * `pass`: published npm package built and executed the expected real operation.
 * `fail`: the run did not complete successfully. `phase` and `reason` distinguish npm install, bundle build, browser installation/launch, HTTP server, and real operation errors. An infrastructure failure is **not** automatically a package regression.
-* `unsupported` and `not-tested`: reserved for later rollout and aggregation. Do not guess `unsupported` just because a single browser test failed.
+* `unsupported`: Phase 3 only, for a confirmed absent threaded-runtime capability with correct harness headers and a complete probe. It is not a synonym for an unexplained browser failure. `not-tested` in the aggregate means the expected result artifact was missing and fails CI.
 
-A passing run includes `browserVersion`, the operation's `detail`, `phase: "complete"`, and a null `reason`. `testedAt` is recorded at completion. The CI matrix is the source of live results; do not publish example JSON or assume green status for browsers that have not completed an actual run.
+A passing run includes `browserVersion`, the operation's `detail`, `phase: "complete"`, and a null `reason`. Threaded records additionally include `runtimeCapabilities` and `responseHeaders` for independent validation; these are null for the single-threaded fixtures. `testedAt` is recorded at completion. The CI matrix is the source of live results; do not publish example JSON or assume green status for browsers that have not completed an actual run.
 
 ## Rollout boundaries
 
 1. Keep all single-threaded package/browser results grounded in real CI runs. A failed browser test is not automatically `unsupported`.
-2. Separately test threaded FFmpeg and libvips profiles with explicit SharedArrayBuffer, COOP/COEP, and cross-origin isolation checks. Distinguish environment `unsupported` from package `fail` using evidenced capability checks.
-3. Publish an aggregated machine-readable catalog compatibility matrix / Pages presentation only after the per-browser result contract has been proven. Do not edit reviewed upstream pins or package builder/npm versions for lab-only changes.
+2. Require review of the measured Phase 3 threaded-platform statuses (not merely green workflow labels). Revisit browsers recorded unsupported when their relevant platform capabilities change.
+3. Publish a versioned catalog compatibility matrix / Pages presentation only after the per-browser results have been reviewed. Do not edit reviewed upstream pins or package builder/npm versions for lab-only changes.
 
 The reviewed-pin model is unchanged: automation may prepare review-only promotion PRs but must never merge, tag, release, or publish on its own. libvips remains adapter-gated (5/6 automatic, not 6/6).
