@@ -38,7 +38,7 @@ The published Zstandard 1.5.7 `browser-full` upstream CLI is now prepared as `@w
 | libvips | 8.18.6 | 0.5.2 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.2` |
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
-| Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | not yet published |
+| Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` (canary; not public) |
 
 The project version is **WASM Zoo v0.14.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 

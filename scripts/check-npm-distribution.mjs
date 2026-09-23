@@ -164,7 +164,7 @@ try {
     "generic npm smoke must exercise Vite/Playwright and default to Chromium"
   );
   need(
-    smoke.includes('new Set(["jq", "libarchive", "imagemagick", "ghostscript", "ffmpeg", "libvips"])') &&
+    smoke.includes('new Set(["jq", "libarchive", "imagemagick", "ghostscript", "ffmpeg", "libvips", "zstd"])') &&
     smoke.includes('assessThreadedRuntime') &&
     smoke.includes('if (requiresIsolation)') &&
     smoke.includes('selectedBrowser === "chromium" && onUnsupported === "record"') &&
