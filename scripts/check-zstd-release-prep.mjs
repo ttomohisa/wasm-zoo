@@ -12,10 +12,15 @@ const fail=[];
 const need=(ok,why)=>{if(!ok)fail.push(why);};
 const expected=env.match(/^BUILDER_VERSION=(.+)$/m)?.[1];
 need(expected==="0.3.0", "Unexpected Zstandard release preparation builder pin");
-need(pkg.status==="experimental" && !pkg.release && !pkg.npm && pkg.tracker.candidateMode==="none",
-  "Do not mark a package available, claim a release, automate candidate promotion or publish npm in Phase 3");
+need(pkg.status==="available" && pkg.release?.tag==="zstd-v0.3.0" && !pkg.npm &&
+  pkg.tracker.candidateMode==="none",
+  "Promotion must record only the verified GitHub Release; npm and automatic candidate promotion remain separate gates");
+need(pkg.release?.sourceAsset==="zstd-sources-1.5.7-zoo-0.3.0.tar.gz" &&
+  pkg.release?.checksumsAsset==="SHA256SUMS.txt" &&
+  pkg.profiles.every(p=>p.playground===true && p.playgroundPath==="./zstd-playground/" && p.releaseAsset),
+  "Published release/profile metadata must reference the reviewed immutable assets and Playground");
 need(pkg.zoo.builderVersion===expected && pkg.profiles.length===2,
-  "Both reviewed experimental Zstandard profiles must be preserved");
+  "Both reviewed published Zstandard profiles must be preserved");
 for(const entry of ["site/zstd-playground/app.js","scripts/verify-staged-zstd.mjs",
  "builders/zstd/scripts/verify-build-inputs.mjs","builders/zstd/scripts/verify-release-assets.mjs",
  "builders/zstd/scripts/check-repository.mjs","scripts/smoke-zstd-playground.mjs"]) {
@@ -46,4 +51,4 @@ const pending=JSON.parse(read("site/zstd-playground/release-status.json"));
 need(pending.state==="not-published" && pending.tag==="zstd-v"+expected,
  "Committed Pages status must be disabled until a reviewed GitHub release exists");
 if(fail.length){fail.forEach(s=>console.error("[NG] "+s));process.exit(1);}
-console.log("[OK] Zstandard release-only staging, local Playground, manual tag, exact-source and safety contracts");
+console.log("[OK] Zstandard published-release metadata, fail-closed Pages staging, exact-source and safety contracts");
