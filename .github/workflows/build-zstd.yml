@@ -20,47 +20,66 @@ permissions:
 
 jobs:
   build:
-    name: Exact upstream libzstd build and Chromium roundtrip
+    name: Zstandard ${{ matrix.profile }} / Chromium real operation
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [browser-core, browser-full]
     steps:
       - uses: actions/checkout@v7
       - uses: docker/setup-buildx-action@v4
       - name: Set up Chrome
         id: chrome
         uses: browser-actions/setup-chrome@v2.2.0
+      - name: Install native zstd for mandatory two-way CLI frame interoperability
+        if: matrix.profile == 'browser-full'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zstd
+          zstd --version
       - name: Check shell, JavaScript, pins and conservative canary metadata
         run: |
           bash -n builders/zstd/build.sh builders/zstd/scripts/*.sh
           node builders/zstd/scripts/check-repository.mjs
-      - name: Build pinned libzstd and run a real Chromium compression roundtrip
+      - name: Compile pinned upstream Zstandard and run the real browser test
         shell: bash
         working-directory: builders/zstd
         env:
           ZSTD_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+          ZSTD_NATIVE_INTEROP: ${{ matrix.profile == 'browser-full' && 'required' || '' }}
         run: |
           chmod +x ./build.sh ./scripts/*.sh
-          ./build.sh browser-core
-      - name: Show version-locked manifest and evidence
+          ./build.sh '${{ matrix.profile }}'
+      - name: Validate experimental profile manifest and supply-chain evidence
         run: |
-          cat builders/zstd/dist/browser-core/manifest.json
-          test -s builders/zstd/dist/browser-core/provenance.json
-          test -s builders/zstd/dist/browser-core/sbom.cdx.json
+          node -e '
+            const fs=require("node:fs");
+            const id=process.argv[1], base="builders/zstd/dist/"+id+"/";
+            const manifest=JSON.parse(fs.readFileSync(base+"manifest.json","utf8"));
+            if(manifest.profile!==id || manifest.upstream?.version!=="1.5.7" ||
+               manifest.upstream?.commit!=="f8745da6ff1ad1e7bab384bd1f9d742439278e99") {
+              throw new Error("CI artifact provenance/profile disagrees with reviewed source pin");
+            }
+            for(const f of ["provenance.json","sbom.cdx.json","features.json"]) {
+              if(!fs.statSync(base+f).size) throw new Error("Missing "+f);
+            }
+            console.log("[OK] experimental "+id+" exact upstream version and supply-chain metadata");
+          ' '${{ matrix.profile }}'
       - name: Upload experimental build artifact (not a release)
         uses: actions/upload-artifact@v7
         with:
-          name: experimental-zstd-browser-core-${{ github.sha }}
+          name: experimental-zstd-${{ matrix.profile }}-${{ github.sha }}
           path: |
-            builders/zstd/dist/browser-core/zstd-core.js
-            builders/zstd/dist/browser-core/zstd-core.wasm
-            builders/zstd/dist/browser-core/browser-zstd.js
-            builders/zstd/dist/browser-core/browser-zstd-worker.js
-            builders/zstd/dist/browser-core/wasm-zoo.mjs
-            builders/zstd/dist/browser-core/manifest.json
-            builders/zstd/dist/browser-core/features.json
-            builders/zstd/dist/browser-core/provenance.json
-            builders/zstd/dist/browser-core/sbom.cdx.json
-            builders/zstd/dist/browser-core/BUILDINFO.txt
-            builders/zstd/dist/browser-core/LICENSE-zstd.txt
+            builders/zstd/dist/${{ matrix.profile }}/*.js
+            builders/zstd/dist/${{ matrix.profile }}/*.mjs
+            builders/zstd/dist/${{ matrix.profile }}/*.wasm
+            builders/zstd/dist/${{ matrix.profile }}/manifest.json
+            builders/zstd/dist/${{ matrix.profile }}/features.json
+            builders/zstd/dist/${{ matrix.profile }}/provenance.json
+            builders/zstd/dist/${{ matrix.profile }}/sbom.cdx.json
+            builders/zstd/dist/${{ matrix.profile }}/BUILDINFO.txt
+            builders/zstd/dist/${{ matrix.profile }}/LICENSE-zstd.txt
           retention-days: 30
           if-no-files-found: error
