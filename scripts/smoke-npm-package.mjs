@@ -19,6 +19,16 @@ for (let i = 2; i < process.argv.length; i += 2) {
 }
 const slug = args.slug || process.env.WASM_ZOO_NPM_SLUG;
 if (!slug) throw new Error("Missing --slug <package>");
+const selectedBrowser = args.browser || process.env.WASM_ZOO_NPM_BROWSER || "chromium";
+if (!["chromium", "firefox", "webkit"].includes(selectedBrowser)) {
+  throw new Error(`Unsupported --browser: ${selectedBrowser}`);
+}
+// Roll out cross-browser assertions one verified package at a time.
+// Existing smoke coverage for all other packages remains Chromium-only.
+if (slug !== "jq" && selectedBrowser !== "chromium") {
+  throw new Error(`Cross-browser npm smoke is not yet enabled for ${slug}; use Chromium`);
+}
+const resultPath = args["result-json"] ? path.resolve(args["result-json"]) : null;
 
 const fixtures = {
   jq: {
@@ -188,6 +198,27 @@ const packageSpec = process.env.WASM_ZOO_NPM_PACKAGE_SPEC || `${packageName}@${v
 const temp = await fs.mkdtemp(path.join(os.tmpdir(), `wasm-zoo-npm-${slug}-vite-`));
 let staticServer = null;
 let browser = null;
+let phase = "prepare";
+const profile = zoo.profiles.find((entry) => entry.id === npmMeta.profile);
+const requiresIsolation = Boolean(profile?.sharedArrayBuffer);
+const compatibility = {
+  schemaVersion: 1,
+  package: slug,
+  npmPackage: packageName,
+  npmVersion: version,
+  profile: npmMeta.profile,
+  browser: selectedBrowser,
+  browserVersion: null,
+  status: "fail",
+  testedAt: null,
+  phase,
+  detail: null,
+  reason: null,
+  runtimeRequirements: {
+    sharedArrayBuffer: requiresIsolation,
+    crossOriginIsolated: requiresIsolation
+  }
+};
 
 try {
   const appPackage = {
@@ -202,12 +233,14 @@ try {
   await fs.writeFile(path.join(temp, "vite.config.mjs"), `import { defineConfig } from "vite";\nexport default defineConfig({ build: { target: "es2022", assetsInlineLimit: 0 } });\n`);
   await fs.writeFile(path.join(temp, "src", "main.js"), fixture.main(packageName));
 
+  phase = "install";
   console.log(`[npm-smoke:${slug}] installing ${packageSpec}, vite@${VITE_VERSION}, playwright@${PLAYWRIGHT_VERSION}`);
   run(["install", "--ignore-scripts", "--no-audit", "--no-fund", "--package-lock=false", packageSpec, `vite@${VITE_VERSION}`, `playwright@${PLAYWRIGHT_VERSION}`], { cwd: temp });
 
   const installed = await readJson(path.join(temp, "node_modules", ...packageName.split("/"), "package.json"));
   if (installed.version !== version) throw new Error(`Registry package version mismatch: expected ${version}, installed ${installed.version}`);
 
+  phase = "build";
   console.log(`[npm-smoke:${slug}] building production Vite bundle`);
   run(["exec", "--", "vite", "build"], { cwd: temp });
   const dist = path.join(temp, "dist");
@@ -217,34 +250,52 @@ try {
     throw new Error(`Vite build emitted ${wasmFiles.length} Wasm asset(s); expected at least ${fixture.expectedWasmCount}: ${built.join(", ")}`);
   }
 
-  console.log(`[npm-smoke:${slug}] installing Playwright Chromium`);
+  phase = "browser-install";
+  console.log(`[npm-smoke:${slug}] installing Playwright ${selectedBrowser}`);
   const installArgs = ["exec", "--", "playwright", "install"];
   if (process.env.WASM_ZOO_PLAYWRIGHT_WITH_DEPS === "1") installArgs.push("--with-deps");
-  installArgs.push("chromium");
+  installArgs.push(selectedBrowser);
   run(installArgs, { cwd: temp });
 
+  phase = "serve";
   console.log(`[npm-smoke:${slug}] serving production dist with in-process Node HTTP server`);
   const served = await startStaticServer(dist);
   staticServer = served.server;
   await waitForHttp(served.url);
 
   const requireFromFixture = createRequire(path.join(temp, "package.json"));
-  const { chromium } = requireFromFixture("playwright");
-  browser = await chromium.launch({ headless: true });
+  phase = "browser-launch";
+  const browserType = requireFromFixture("playwright")[selectedBrowser];
+  browser = await browserType.launch({ headless: true });
+  compatibility.browserVersion = browser.version();
   const page = await browser.newPage();
   const browserLogs = [];
   page.on("console", (message) => browserLogs.push(`[console:${message.type()}] ${message.text()}`));
   page.on("pageerror", (error) => browserLogs.push(`[pageerror] ${error.stack || error}`));
+  phase = "browser-operation";
   await page.goto(served.url, { waitUntil: "load", timeout: 30000 });
   await page.waitForFunction((key) => window[key]?.ok === true || window[key]?.ok === false, fixture.resultKey, { timeout: fixture.browserTimeoutMs || 60000 });
   const result = await page.evaluate((key) => window[key], fixture.resultKey);
   if (!result?.ok) {
     throw new Error(`Published npm ${slug} failed in Vite production build: ${result?.message || "unknown error"}\n${result?.stack || ""}\n${browserLogs.join("\n")}`);
   }
-  console.log(`[OK] ${packageSpec} installed from npm, built with Vite ${VITE_VERSION}, and executed ${slug} in Chromium; detail=${JSON.stringify(result.detail)}`);
+  compatibility.status = "pass";
+  compatibility.phase = "complete";
+  compatibility.detail = result.detail;
+  console.log(`[OK] ${packageSpec} installed from npm, built with Vite ${VITE_VERSION}, and executed ${slug} in ${selectedBrowser}; detail=${JSON.stringify(result.detail)}`);
+} catch (error) {
+  compatibility.phase = phase;
+  compatibility.reason = error?.message || String(error);
+  throw error;
 } finally {
+  compatibility.testedAt = new Date().toISOString();
   if (browser) await browser.close().catch(() => {});
   await closeStaticServer(staticServer);
   await fs.rm(temp, { recursive: true, force: true });
+  if (resultPath) {
+    await fs.mkdir(path.dirname(resultPath), { recursive: true });
+    await fs.writeFile(resultPath, `${JSON.stringify(compatibility, null, 2)}\n`);
+    console.log(`[npm-smoke:${slug}] wrote compatibility result: ${resultPath}`);
+  }
   console.log(`[npm-smoke:${slug}] cleanup complete`);
 }
