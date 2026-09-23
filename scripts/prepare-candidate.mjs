@@ -20,7 +20,7 @@ const candidateSource = packageMeta.tracker?.candidateSource || null;
 // release tag and full source commit itself rather than trusting unverified caller inputs.
 if (values.slug === "zstd") {
   if (packageMeta.tracker?.candidateMode !== "auto") throw new Error("Zstandard auto candidate was not reviewed");
-  if (!/^\\d+\\.\\d+\\.\\d+$/.test(values.version) || values.ref !== `v${values.version}` ||
+  if (!/^\d+\.\d+\.\d+$/.test(values.version) || values.ref !== `v${values.version}` ||
       !/^[0-9a-f]{40}$/i.test(values.commit)) throw new Error("Refusing malformed Zstandard release/ref/commit");
   const headers = { Accept: "application/vnd.github+json", "User-Agent": "wasm-zoo-zstd-candidate",
     ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}) };

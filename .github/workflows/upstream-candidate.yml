@@ -306,6 +306,19 @@ jobs:
             fi
           done
           node scripts/verify-staged-zstd.mjs
+          # Isolated candidate UI test must use candidate catalog metadata, not reviewed main.
+          # Only the throwaway runner checkout is touched, never the reviewed pin on main.
+          node -e '
+            const fs=require("node:fs");
+            const f="site/catalog.json", c=JSON.parse(fs.readFileSync(f,"utf8"));
+            const z=c.packages.find(p=>p.slug==="zstd");
+            const env=Object.fromEntries(fs.readFileSync("builders/zstd/versions.env","utf8")
+              .split(/\\r?\\n/).filter(s=>/^[A-Z_]+=/.test(s)).map(s=>{const i=s.indexOf("=");return[s.slice(0,i),s.slice(i+1)];}));
+            z.upstream.version=env.ZSTD_REF.slice(1);
+            z.upstream.ref=env.ZSTD_REF;
+            z.zoo.builderVersion=env.BUILDER_VERSION;
+            fs.writeFileSync(f,JSON.stringify(c,null,2)+"\\n");
+          '
           node -e '
             const fs=require("node:fs");
             const env=Object.fromEntries(fs.readFileSync("builders/zstd/versions.env","utf8")

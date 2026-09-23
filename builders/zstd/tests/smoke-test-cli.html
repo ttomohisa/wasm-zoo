@@ -14,7 +14,7 @@ const abort = (error) => {
     runner = await load({ baseUrl: "./" });
     const manifest = await (await fetch("./manifest.json", { cache: "no-store" })).json();
     const upstreamVersion = manifest.upstream?.version;
-    if (!/^\\d+\\.\\d+\\.\\d+$/.test(upstreamVersion || "") ||
+    if (!/^\d+\.\d+\.\d+$/.test(upstreamVersion || "") ||
         manifest.upstream?.ref !== "v" + upstreamVersion ||
         !/^[0-9a-f]{40}$/i.test(manifest.upstream?.commit || "")) {
       throw new Error("Missing exact reviewed upstream version/ref/commit in generated CLI manifest");

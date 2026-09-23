@@ -11,7 +11,7 @@ const env=read("builders/zstd/versions.env");
 const fail=[];
 const need=(ok,why)=>{if(!ok)fail.push(why);};
 const expected=env.match(/^BUILDER_VERSION=(.+)$/m)?.[1];
-need(/^\\d+\\.\\d+\\.\\d+$/.test(expected||""), "Zstandard builder must retain a reviewed three-part patch version");
+need(/^\d+\.\d+\.\d+$/.test(expected||""), "Zstandard builder must retain a reviewed three-part patch version");
 need(pkg.status==="available" && pkg.release?.tag==="zstd-v"+expected &&
   (!pkg.npm || (pkg.npm.status==="published" && pkg.npm.package==="@wasm-zoo/zstd" && pkg.npm.profile==="browser-full")) &&
   pkg.tracker.candidateMode==="auto" &&
@@ -23,7 +23,7 @@ need(pkg.release?.sourceAsset===`zstd-sources-${pkg.upstream.version}-zoo-${expe
      p.releaseAsset===`zstd-${p.id}-${pkg.upstream.version}-zoo-${expected}.zip`),
   "Published release/profile metadata must reference the reviewed immutable assets and Playground");
 need(pkg.zoo.builderVersion===expected && pkg.profiles.length===2 &&
-  env.includes("ZSTD_REF=v"+pkg.upstream.version) && /^v\\d+\\.\\d+\\.\\d+$/.test(pkg.upstream.ref) &&
+  env.includes("ZSTD_REF=v"+pkg.upstream.version) && /^v\d+\.\d+\.\d+$/.test(pkg.upstream.ref) &&
   env.includes("ZSTD_COMMIT=") && pkg.npm?.publishedSource?.releaseTag==="zstd-v0.3.0",
   "Both reviewed published Zstandard profiles must be preserved");
 for(const entry of ["site/zstd-playground/app.js","scripts/verify-staged-zstd.mjs",
