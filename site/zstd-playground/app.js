@@ -154,6 +154,8 @@ async function init(){
       summary.textContent="Only published, verified release assets will be enabled here.";
       message.textContent="The reviewed release has not been published. No experimental CI binary is served publicly.";
       logNode.textContent="The Playground will activate after the manually tagged GitHub Release passes CI.\n";
+      if(localhost && new URL(location.href).searchParams.get("ci-smoke")==="1")
+        location.hash="#SMOKE_TEST_FAIL_Release_status_not_ready";
       return;
     }
     for(const profile of ["browser-core","browser-full"]) await manifestFor(profile);
@@ -208,6 +210,9 @@ async function init(){
   }catch(error){
     setStatus("error","Release check unavailable");
     message.textContent=error.message;logNode.textContent=error.stack||String(error);
+    if(["localhost","127.0.0.1"].includes(location.hostname) &&
+       new URL(location.href).searchParams.get("ci-smoke")==="1")
+      location.hash="#SMOKE_TEST_FAIL_"+encodeURIComponent(error.message);
   }
 }
 updateState();void init();
