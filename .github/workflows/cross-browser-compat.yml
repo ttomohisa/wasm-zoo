@@ -1,0 +1,51 @@
+name: Cross-browser compatibility lab (jq canary)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/smoke-npm-package.mjs'
+      - 'packages/jq/package.json'
+      - '.github/workflows/cross-browser-compat.yml'
+      - 'docs/CROSS_BROWSER_LAB.md'
+  schedule:
+    - cron: '41 3 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  jq-canary:
+    name: jq / ${{ matrix.browser }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Require current npm CLI
+        run: npm install --global npm@12.0.2
+      - name: Check smoke runner syntax
+        run: node --check scripts/smoke-npm-package.mjs
+      - name: Test published jq in Vite production build
+        env:
+          WASM_ZOO_PLAYWRIGHT_WITH_DEPS: '1'
+        run: >
+          node scripts/smoke-npm-package.mjs
+          --slug jq
+          --browser '${{ matrix.browser }}'
+          --result-json 'compat-results/jq-${{ matrix.browser }}.json'
+      - name: Upload browser compatibility result
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: jq-${{ matrix.browser }}-compatibility
+          path: compat-results/jq-${{ matrix.browser }}.json
+          if-no-files-found: warn
+          retention-days: 30
