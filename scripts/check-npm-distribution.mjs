@@ -151,10 +151,13 @@ try {
     "generic npm smoke must exercise Vite/Playwright and default to Chromium"
   );
   need(
-    smoke.includes('new Set(["jq", "libarchive", "imagemagick", "ghostscript"])') &&
-    smoke.includes("!crossBrowserSlugs.has(slug)") &&
-    smoke.includes('selectedBrowser !== "chromium"'),
-    "cross-browser smoke must enable only reviewed single-threaded packages and leave other packages Chromium-only"
+    smoke.includes('new Set(["jq", "libarchive", "imagemagick", "ghostscript", "ffmpeg", "libvips"])') &&
+    smoke.includes('assessThreadedRuntime') &&
+    smoke.includes('if (requiresIsolation)') &&
+    smoke.includes('selectedBrowser === "chromium" && onUnsupported === "record"') &&
+    smoke.includes('compatibility.runtimeCapabilities') &&
+    smoke.includes('compatibility.responseHeaders'),
+    "cross-browser smoke must run all reviewed packages and rigorously preflight threaded browsers"
   );
   const compatWorkflow = await fs.readFile(path.join(root, ".github", "workflows", "cross-browser-compat.yml"), "utf8");
   need(
@@ -165,6 +168,15 @@ try {
     compatWorkflow.includes("matrix.browser") &&
     compatWorkflow.includes("upload-artifact@v4"),
     "cross-browser workflow must matrix real published smoke over four single-threaded packages and three browsers"
+  );
+  need(
+    compatWorkflow.includes("slug: [ffmpeg, libvips]") &&
+    compatWorkflow.includes("name: Enforce observed threaded compatibility classifications") &&
+    compatWorkflow.includes("node scripts/report-threaded-compatibility.mjs") &&
+    compatWorkflow.includes("on-unsupported") &&
+    compatWorkflow.includes("threaded-*-compatibility") &&
+    compatWorkflow.includes("upload-artifact@v4"),
+    "threaded matrix must preserve independent per-browser results and enforce a reported capability policy"
   );
   need(smoke.includes("http.createServer") && smoke.includes("cleanup complete"), "generic npm smoke must serve dist in-process and explicitly complete cleanup");
   need(!smoke.includes('"vite", "preview"') && !smoke.includes("preview.kill("), "generic npm smoke must not use a Vite preview child process");
