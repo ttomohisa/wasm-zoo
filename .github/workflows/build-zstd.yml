@@ -1,0 +1,66 @@
+name: Build experimental Zstandard browser WASM
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "builders/zstd/**"
+      - "packages/zstd/**"
+      - ".github/workflows/build-zstd.yml"
+      - "scripts/generate-build-metadata.mjs"
+  push:
+    branches: [main]
+    paths:
+      - "builders/zstd/**"
+      - "packages/zstd/**"
+      - ".github/workflows/build-zstd.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Exact upstream libzstd build and Chromium roundtrip
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Check shell, JavaScript, pins and conservative canary metadata
+        run: |
+          bash -n builders/zstd/build.sh builders/zstd/scripts/*.sh
+          node builders/zstd/scripts/check-repository.mjs
+      - name: Build pinned libzstd and run a real Chromium compression roundtrip
+        shell: bash
+        working-directory: builders/zstd
+        env:
+          ZSTD_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-core
+      - name: Show version-locked manifest and evidence
+        run: |
+          cat builders/zstd/dist/browser-core/manifest.json
+          test -s builders/zstd/dist/browser-core/provenance.json
+          test -s builders/zstd/dist/browser-core/sbom.cdx.json
+      - name: Upload experimental build artifact (not a release)
+        uses: actions/upload-artifact@v7
+        with:
+          name: experimental-zstd-browser-core-${{ github.sha }}
+          path: |
+            builders/zstd/dist/browser-core/zstd-core.js
+            builders/zstd/dist/browser-core/zstd-core.wasm
+            builders/zstd/dist/browser-core/browser-zstd.js
+            builders/zstd/dist/browser-core/browser-zstd-worker.js
+            builders/zstd/dist/browser-core/wasm-zoo.mjs
+            builders/zstd/dist/browser-core/manifest.json
+            builders/zstd/dist/browser-core/features.json
+            builders/zstd/dist/browser-core/provenance.json
+            builders/zstd/dist/browser-core/sbom.cdx.json
+            builders/zstd/dist/browser-core/BUILDINFO.txt
+            builders/zstd/dist/browser-core/LICENSE-zstd.txt
+          retention-days: 30
+          if-no-files-found: error

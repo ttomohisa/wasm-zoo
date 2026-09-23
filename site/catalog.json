@@ -7,11 +7,11 @@
     "unofficial": true
   },
   "stats": {
-    "packages": 6,
+    "packages": 7,
     "available": 6,
-    "profiles": 8,
-    "featureMatrices": 6,
-    "referenceBuilds": 6,
+    "profiles": 9,
+    "featureMatrices": 7,
+    "referenceBuilds": 7,
     "supplyChainProfiles": 8
   },
   "packages": [
@@ -1595,6 +1595,144 @@
           "conversion"
         ]
       }
+    },
+    {
+      "schemaVersion": 2,
+      "slug": "zstd",
+      "name": "Zstandard",
+      "summary": "An exact-upstream Zstandard 1.5.7 compression/decompression WebAssembly canary; browser-core validation is in progress.",
+      "category": "archives",
+      "status": "experimental",
+      "order": 28,
+      "upstream": {
+        "version": "1.5.7",
+        "ref": "v1.5.7",
+        "released": "2025-02-19",
+        "homepage": "https://www.zstd.net/",
+        "repository": "https://github.com/facebook/zstd",
+        "license": "BSD-3-Clause (the upstream BSD option)"
+      },
+      "tracker": {
+        "type": "github-releases",
+        "repository": "facebook/zstd",
+        "versionPattern": "v?(\\d+\\.\\d+\\.\\d+)",
+        "candidateMode": "none",
+        "candidateProfiles": []
+      },
+      "zoo": {
+        "builderVersion": "0.1.0",
+        "toolchain": "Emscripten 6.0.7",
+        "buildModel": "libzstd-c-api-browser-core",
+        "reproducible": true,
+        "sourceBundle": false,
+        "checksums": false,
+        "browserSmokeTest": false,
+        "featureInventory": true,
+        "provenance": "in-toto Statement + SLSA Provenance v1 (pending CI validation)",
+        "sbom": "CycloneDX 1.6 JSON (pending CI validation)",
+        "supplyChainMetadata": false
+      },
+      "profiles": [
+        {
+          "id": "browser-core",
+          "label": "Browser Core (canary)",
+          "target": "browser",
+          "threads": false,
+          "simd": false,
+          "sharedArrayBuffer": false,
+          "worker": true,
+          "workerFs": false,
+          "arbitraryCli": false,
+          "network": false,
+          "features": [
+            "exact upstream libzstd 1.5.7 compression and decompression",
+            "single-frame in-memory C API",
+            "bounded output (64 MiB maximum)",
+            "dedicated worker without SharedArrayBuffer"
+          ],
+          "externalLibraries": [],
+          "output": "Experimental Zstandard compression/decompression library, not yet a generic CLI or published package",
+          "binaryLicense": "BSD-3-Clause",
+          "size": "Pending measured CI artifact",
+          "playground": false
+        }
+      ],
+      "comparison": [
+        {
+          "name": "Upstream native",
+          "version": "1.5.7",
+          "note": "Reference libzstd C library and full CLI, native filesystem and optional multithreading."
+        },
+        {
+          "name": "WASM Zoo",
+          "version": "1.5.7",
+          "note": "Experimental libzstd C API browser-core target only; public release pending CI review."
+        }
+      ],
+      "notes": [
+        "Canary does not claim a published release, npm artifact, or cross-browser validation until the actual upstream build and browser smoke gates pass.",
+        "The popular third-party zstd-codec source pins upstream Zstandard 1.3.6; its npm tarball's exact embedded core should be inspected separately before making a binary-level comparison.",
+        "Full upstream zstd CLI, streaming and dictionary workflows are separate rollout gates; this first target exposes safe one-shot compression/decompression only.",
+        "No cross-origin isolation is required by this single-threaded profile; never automatically publish based on successful candidate CI."
+      ],
+      "referenceWasm": {
+        "name": "zstd-codec",
+        "packageVersion": "0.1.5",
+        "upstreamVersion": "1.3.6",
+        "repository": "https://github.com/yoshihitoh/zstd-codec",
+        "checkedAt": "2026-09-23",
+        "note": "The third-party source repository's cpp/zstd submodule points to commit 4fa456d7f12f8b27bd3b2f5dfd4f46898cb31c24 (v1.3.6). This is source-pin evidence, not a binary audit of npm."
+      },
+      "capabilityMatrix": [
+        {
+          "feature": "Standard Zstandard 1.5.x frame encoding/decoding",
+          "native": "included",
+          "profiles": {
+            "browser-core": "included"
+          },
+          "note": "Canary uses upstream libzstd's one-shot C API; real browser roundtrip and frame-magic assertions are CI gates."
+        },
+        {
+          "feature": "Stream processing of unknown-length frames",
+          "native": "included",
+          "profiles": {
+            "browser-core": "excluded"
+          },
+          "note": "The initial one-shot API requires a known content size for decompression. Streaming will be a separate reviewed phase."
+        },
+        {
+          "feature": "Dictionary training and dictionary compression",
+          "native": "included",
+          "profiles": {
+            "browser-core": "excluded"
+          },
+          "note": "Upstream has dictionary APIs but this first browser-core wrapper intentionally does not expose them."
+        },
+        {
+          "feature": "Upstream zstd CLI and native filesystem",
+          "native": "included",
+          "profiles": {
+            "browser-core": "excluded"
+          },
+          "note": "Initial canary is a C-library wrapper rather than a CLI. Host files are never exposed."
+        },
+        {
+          "feature": "Threads and SharedArrayBuffer",
+          "native": "optional",
+          "profiles": {
+            "browser-core": "excluded"
+          },
+          "note": "Initial browser-core is single-threaded in an outer Worker, so COOP/COEP is not required."
+        },
+        {
+          "feature": "Network access",
+          "native": "platform",
+          "profiles": {
+            "browser-core": "na"
+          },
+          "note": "No runtime network API; local core and WASM resources are fetched by the browser."
+        }
+      ]
     }
   ]
 }

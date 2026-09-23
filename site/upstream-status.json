@@ -166,6 +166,31 @@
           "sourceSha256": "c20492bc8ebb96c87fa2e52a0926e1cda8cde95d66145e018ac713fed5da38cf"
         }
       }
+    },
+    {
+      "slug": "zstd",
+      "name": "Zstandard",
+      "status": "error",
+      "pinned": "1.5.7",
+      "pinnedRef": "v1.5.7",
+      "pinnedReleased": "2025-02-19",
+      "latest": null,
+      "latestRef": null,
+      "latestCommit": null,
+      "latestReleased": null,
+      "updateAvailable": false,
+      "lagDays": null,
+      "gap": {
+        "kind": "unknown",
+        "label": "Pending watcher verification",
+        "versionsBehind": null
+      },
+      "url": "https://github.com/facebook/zstd/releases/tag/v1.5.7",
+      "error": "First upstream watcher refresh pending",
+      "candidate": {
+        "mode": "none",
+        "profiles": []
+      }
     }
   ]
 }
