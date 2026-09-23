@@ -24,6 +24,7 @@ on:
       - "builders/ghostscript/runtime/wasm-zoo.mjs"
       - "builders/jq/runtime/browser-jq.js"
       - "builders/jq/runtime/wasm-zoo.mjs"
+      - "builders/zstd/runtime/**"
       - "VERSION"
       - ".github/workflows/pages.yml"
 
@@ -216,6 +217,55 @@ jobs:
           cp builders/jq/runtime/browser-jq.js "$dest/browser-jq.js"
           cp builders/jq/runtime/wasm-zoo.mjs "$dest/wasm-zoo.mjs"
           echo "[OK] staged jq ${version} ${tag}"
+
+      - name: Stage only checksum-verified published Zstandard release for Playground
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/zstd/versions.env
+          tag="zstd-v${BUILDER_VERSION}"
+          version="${ZSTD_REF#v}"
+          if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "[INFO] $tag not published: retaining disabled Zstandard Playground"
+            exit 0
+          fi
+          work="${RUNNER_TEMP}/wasm-zoo-pages-zstd"
+          rm -rf "$work" && mkdir -p "$work"
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir "$work"
+          (
+            cd "$work"
+            # Verify every published asset, including the corresponding source bundle
+            # and standalone provenance/SBOM, not just a manifest shipped in the ZIP.
+            sha256sum -c SHA256SUMS.txt
+          )
+          for profile in browser-core browser-full; do
+            asset="zstd-${profile}-${version}-zoo-${BUILDER_VERSION}.zip"
+            dest="site/assets/zstd/${version}/${profile}"
+            mkdir -p "$dest"
+            if [[ "$profile" == browser-core ]]; then
+              unzip -q -j "$work/$asset" \
+                zstd-core.js zstd-core.wasm manifest.json features.json \
+                browser-zstd.js browser-zstd-worker.js wasm-zoo.mjs -d "$dest"
+            else
+              unzip -q -j "$work/$asset" \
+                zstd-cli.js zstd-cli.wasm manifest.json features.json \
+                browser-zstd-cli.js browser-zstd-cli-worker.js wasm-zoo-cli.mjs -d "$dest"
+            fi
+          done
+          node scripts/verify-staged-zstd.mjs
+          node -e '
+            const fs=require("node:fs");
+            const path="site/zstd-playground/release-status.json";
+            const env=Object.fromEntries(fs.readFileSync("builders/zstd/versions.env","utf8")
+              .split(/\r?\n/).filter(s=>/^[A-Z_]+=/.test(s)).map(s=>{const p=s.indexOf("=");return[s.slice(0,p),s.slice(p+1)];}));
+            fs.writeFileSync(path,JSON.stringify({
+              schemaVersion:1,state:"published",tag:"zstd-v"+env.BUILDER_VERSION,
+              upstreamCommit:env.ZSTD_COMMIT
+            },null,2)+"\n");
+          '
+          echo "[OK] Published-only, checksum-verified Zstandard $tag Playground staged"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
