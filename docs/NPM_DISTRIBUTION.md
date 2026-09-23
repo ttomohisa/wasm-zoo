@@ -1,16 +1,16 @@
 # npm distribution
 
-WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`. WASM Zoo v0.13.0 completes the rollout across all six Zoo packages while keeping npm artifacts derived from the same reviewed immutable GitHub Release assets.
+WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`; v0.13.0 completed the original six-package rollout. WASM Zoo v0.15.0 records the separately reviewed and manually published seventh npm distribution, `@wasm-zoo/zstd@0.3.0`, using the exact immutable GitHub Release-derived CLI tarball.
 
-## Zstandard Phase 4B: published npm and verified Registry browser operations
+## Zstandard Phase 4B (completed): published npm and verified Registry browser operations
 
 `@wasm-zoo/zstd@0.3.0` was manually published to the public npm Registry from the immutable `zstd-v0.3.0` GitHub Release-derived **browser-full original upstream CLI** tarball verified by Phase 4A. The npm Registry `dist.shasum` is `29add1aaf6ab0c3e9a3d538166a51a3f70cefa99`, matching the reviewed artifact. The GitHub Release keeps the distinct `browser-core` library; npm does **not** replace the CLI with browser-core.
 
 The first publication used the reviewed tarball in the maintainer's local environment. Do not claim an npm Registry-generated build-environment provenance attestation for this manually uploaded release. The package still includes the immutable Release's independently verified `provenance.json` (in-toto/SLSA Provenance v1), CycloneDX SBOM, official-source license and the reviewed runtime overlays; these files must not be confused with an npm Registry-generated provenance attestation.
 
-The existing `npm-zstd-canary.yml` remains a **read-only immutable Release packaging regression** workflow: it downloads/checks every Release checksum, repacks without publishing and runs the exact local tarball through real Vite Chromium/Firefox/WebKit tests. Independently, `npm-package-smoke.yml` gates the reviewed promotion PR against the **real npm Registry + Vite/Chromium**. The expanded `cross-browser-compat.yml` uses the real Registry version in all three engines and verifies `dist.shasum` before installation. After the human merges the PR, the public compatibility dashboard accepts **21 real main-run results** only, never PR-only or older six-package evidence.
+The existing `npm-zstd-canary.yml` remains a **read-only immutable Release packaging regression** workflow: it downloads/checks every Release checksum, repacks without publishing and runs the exact local tarball through real Vite Chromium/Firefox/WebKit tests. Independently, `npm-package-smoke.yml` gates the reviewed promotion PR against the **real npm Registry + Vite/Chromium**. The expanded `cross-browser-compat.yml` uses the real Registry version in all three engines and verifies `dist.shasum` before installation. The reviewed PR was merged; its **main** compatibility run verified all 21 real Registry-backed browser operations, and the public dashboard accepts only complete fresh verified main evidence, never PR-only or older six-package evidence.
 
-Future npm-only versions follow the existing separate manual review and Trusted Publisher staged-publishing workflow. No candidate automation, tag, npm publication or merge is triggered by this PR. Zstandard `candidateMode` remains `none` and libvips remains `adapter-gated`.
+Future npm-only versions follow the existing separate manual review and Trusted Publisher staged-publishing workflow. No candidate automation, project tag, npm publication or merge is triggered by the v0.15.0 project-version PR. Zstandard `candidateMode` remains `none` and libvips remains `adapter-gated`.
 
 ## Distribution contract
 
