@@ -298,10 +298,13 @@ try {
     // exact SHA-1 of the three-browser-verified Phase 4A release-derived tarball.
     phase = "registry-integrity";
     const expectedShasum = "29add1aaf6ab0c3e9a3d538166a51a3f70cefa99";
-    const observedShasum = JSON.parse(run([
+    const registryValue = JSON.parse(run([
       "view", `${packageName}@${version}`, "dist.shasum", "--json",
       "--registry", "https://registry.npmjs.org/"
     ], { capture: true }).stdout.trim());
+    // npm 12 can return either a JSON string or a single-item array for view --json.
+    const observedShasum = typeof registryValue === "string" ? registryValue :
+      (Array.isArray(registryValue) && registryValue.length === 1 ? registryValue[0] : null);
     if (observedShasum !== expectedShasum) {
       throw new Error(`Registry Zstandard SHA-1 does not match the reviewed tarball: expected ${expectedShasum}, received ${observedShasum}`);
     }
