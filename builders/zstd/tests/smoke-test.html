@@ -1,0 +1,35 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>WASM Zoo Zstandard 1.5.7 experimental browser smoke</title>
+<pre id="log">Starting real libzstd browser test...</pre>
+<script type="module">
+import { load } from "./wasm-zoo.mjs";
+const el = document.querySelector("#log");
+const fail = (error) => {
+  el.textContent = error?.stack || String(error);
+  location.hash = "#SMOKE_TEST_FAIL_" + encodeURIComponent(error?.message || String(error));
+};
+(async () => {
+  let zstd;
+  try {
+    zstd = await load({ baseUrl: "./" });
+    const version = await zstd.version();
+    if (version !== 10507) throw new Error("Expected exact native Zstandard 1.5.7 version, received " + version);
+    const original = new TextEncoder().encode("WASM Zoo: Zstandard 1.5.7 exact-upstream real compression roundtrip. ".repeat(150));
+    const packed = await zstd.compress(original, { level: 5, timeoutMs: 60000 });
+    if (packed.length >= original.length) throw new Error("Expected meaningful compression: " + packed.length + " >= " + original.length);
+    if (![0x28, 0xb5, 0x2f, 0xfd].every((byte, i) => packed[i] === byte)) throw new Error("Missing standard Zstandard frame magic");
+    const restored = await zstd.decompress(packed, { timeoutMs: 60000 });
+    if (restored.length !== original.length || restored.some((byte, index) => byte !== original[index])) {
+      throw new Error("Decompressed bytes differ from original input");
+    }
+    let rejected = false;
+    try { await zstd.decompress(new Uint8Array([0x00, 0x01, 0x02, 0x03])); }
+    catch (error) { rejected = /Invalid Zstandard frame/.test(error.message); }
+    if (!rejected) throw new Error("Malformed Zstandard frame was not rejected");
+    el.textContent = "PASS native 1.5.7 / frame magic / real compress-decompress / malformed-frame rejection";
+    location.hash = "#SMOKE_TEST_PASS_zstd_1.5.7_roundtrip_and_invalid_frame";
+  } catch (error) { fail(error); }
+  finally { zstd?.dispose(); }
+})();
+</script>

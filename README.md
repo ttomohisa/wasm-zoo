@@ -22,6 +22,10 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 - Ghostscript Playground: https://ttomohisa.github.io/wasm-zoo/ghostscript-playground/
 - jq Playground: https://ttomohisa.github.io/wasm-zoo/jq-playground/
 
+## New experimental v0.15 candidate: Zstandard
+
+[Zstandard v1.5.7 browser-core canary](builders/zstd/README.md) is being built from the exact official upstream source using Emscripten 6.0.7. It is **not yet released** and has no npm package or Playground. The first phase uses libzstd's native compression/decompression C API and validates a real Zstandard frame in Chromium; full CLI, streaming and distribution require separate reviewed phases.
+
 ## Available packages
 
 | Package | Upstream | Zoo builder | Browser profile | Playground | npm rollout |

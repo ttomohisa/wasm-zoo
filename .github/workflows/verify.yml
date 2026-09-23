@@ -48,5 +48,7 @@ jobs:
         run: node builders/ghostscript/scripts/check-repository.mjs
       - name: Validate jq builder
         run: node builders/jq/scripts/check-repository.mjs
+      - name: Validate experimental Zstandard builder
+        run: node builders/zstd/scripts/check-repository.mjs
       - name: Ensure generated catalog is committed
         run: git diff --exit-code -- site/catalog.json
