@@ -5,6 +5,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { root, readJson } from "./lib.mjs";
+import { assessThreadedRuntime } from "./threaded-browser-capabilities.mjs";
 
 const VITE_VERSION = "8.2.2";
 const PLAYWRIGHT_VERSION = "1.63.0";
@@ -23,11 +24,14 @@ const selectedBrowser = args.browser || process.env.WASM_ZOO_NPM_BROWSER || "chr
 if (!["chromium", "firefox", "webkit"].includes(selectedBrowser)) {
   throw new Error(`Unsupported --browser: ${selectedBrowser}`);
 }
-// Expand the proven jq matrix to published single-threaded packages only.
-// Threaded FFmpeg/libvips remain Chromium-only until separately verified.
-const crossBrowserSlugs = new Set(["jq", "libarchive", "imagemagick", "ghostscript"]);
-if (!crossBrowserSlugs.has(slug) && selectedBrowser !== "chromium") {
-  throw new Error(`Cross-browser npm smoke is not yet enabled for ${slug}; use Chromium`);
+// The same real-operation fixtures run across all three browsers. Threaded
+// profiles get a capability preflight before any result is classified.
+const crossBrowserSlugs = new Set(["jq", "libarchive", "imagemagick", "ghostscript", "ffmpeg", "libvips"]);
+if (!crossBrowserSlugs.has(slug)) throw new Error(`Unknown cross-browser npm smoke target: ${slug}`);
+const onUnsupported = args["on-unsupported"] || "error";
+if (!["error", "record"].includes(onUnsupported)) throw new Error(`Invalid --on-unsupported: ${onUnsupported}`);
+if (selectedBrowser === "chromium" && onUnsupported === "record") {
+  throw new Error("Chromium is the required threaded baseline; --on-unsupported record is not allowed");
 }
 const resultPath = args["result-json"] ? path.resolve(args["result-json"]) : null;
 
@@ -62,6 +66,7 @@ const fixtures = {
   },
   libvips: {
     expectedWasmCount: 1,
+    browserTimeoutMs: 120000,
     resultKey: "__WASM_ZOO_NPM_SMOKE__",
     main(packageName) {
       return `import { load, assets } from ${JSON.stringify(packageName)};\n\nfunction decodeBase64(value) {\n  const binary = atob(value);\n  const out = new Uint8Array(binary.length);\n  for (let i = 0; i < binary.length; i += 1) out[i] = binary.charCodeAt(i);\n  return out;\n}\n\nconst status = document.querySelector("#status");\nwindow.__WASM_ZOO_NPM_SMOKE__ = { phase: "loading", assets, crossOriginIsolated };\nlet runtime = null;\nlet image = null;\nlet resized = null;\ntry {\n  if (!crossOriginIsolated || typeof SharedArrayBuffer === "undefined") throw new Error("libvips smoke requires cross-origin isolation");\n  runtime = await load();\n  const vips = runtime.api;\n  const input = decodeBase64("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGP4z8DA8J+BkYHh////DAAe9gT9Ce00PgAAAABJRU5ErkJggg==");\n  image = vips.Image.newFromBuffer(input);\n  if (image.width !== 2 || image.height !== 2) throw new Error("Unexpected libvips input size: " + image.width + "x" + image.height);\n  resized = image.resize(0.5);\n  if (resized.width !== 1 || resized.height !== 1) throw new Error("Unexpected libvips resized size: " + resized.width + "x" + resized.height);\n  const jpeg = resized.writeToBuffer(".jpg[Q=80]");\n  if (!jpeg || jpeg.byteLength < 20 || jpeg[0] !== 0xff || jpeg[1] !== 0xd8) throw new Error("libvips JPEG encode failed");\n  const webp = resized.writeToBuffer(".webp[Q=80]");\n  if (!webp || webp.byteLength < 20) throw new Error("libvips WebP encode failed");\n  const magic = String.fromCharCode(...webp.slice(0, 12));\n  if (!magic.startsWith("RIFF") || magic.slice(8, 12) !== "WEBP") throw new Error("libvips WebP signature mismatch");\n  window.__WASM_ZOO_NPM_SMOKE__ = { ok: true, detail: "libvips " + vips.version() + " 2x2 -> 1x1 JPEG/WebP", assets, crossOriginIsolated };\n  status.textContent = "PASS";\n} catch (error) {\n  window.__WASM_ZOO_NPM_SMOKE__ = { ok: false, message: error?.message || String(error), stack: error?.stack || "", assets, crossOriginIsolated };\n  status.textContent = "FAIL: " + (error?.message || error);\n  throw error;\n} finally {\n  try { resized?.delete(); } catch {}\n  try { image?.delete(); } catch {}\n  runtime?.dispose();\n}\n`;
@@ -215,6 +220,8 @@ const compatibility = {
   phase,
   detail: null,
   reason: null,
+  runtimeCapabilities: null,
+  responseHeaders: null,
   runtimeRequirements: {
     sharedArrayBuffer: requiresIsolation,
     crossOriginIsolated: requiresIsolation
@@ -270,23 +277,63 @@ try {
   browser = await browserType.launch({ headless: true });
   compatibility.browserVersion = browser.version();
   const page = await browser.newPage();
+  if (requiresIsolation) {
+    await page.addInitScript(() => {
+      const probe = {
+        secureContext: isSecureContext,
+        crossOriginIsolated,
+        sharedArrayBuffer: typeof SharedArrayBuffer === "function",
+        worker: typeof Worker === "function",
+        webAssembly: typeof WebAssembly === "object",
+        wasmSharedMemory: false
+      };
+      try {
+        probe.wasmSharedMemory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true }).buffer instanceof SharedArrayBuffer;
+      } catch {}
+      window.__WASM_ZOO_THREAD_PROBE__ = probe;
+    });
+  }
   const browserLogs = [];
   page.on("console", (message) => browserLogs.push(`[console:${message.type()}] ${message.text()}`));
   page.on("pageerror", (error) => browserLogs.push(`[pageerror] ${error.stack || error}`));
-  phase = "browser-operation";
-  await page.goto(served.url, { waitUntil: "load", timeout: 30000 });
-  await page.waitForFunction((key) => window[key]?.ok === true || window[key]?.ok === false, fixture.resultKey, { timeout: fixture.browserTimeoutMs || 60000 });
-  const result = await page.evaluate((key) => window[key], fixture.resultKey);
-  if (!result?.ok) {
-    throw new Error(`Published npm ${slug} failed in Vite production build: ${result?.message || "unknown error"}\n${result?.stack || ""}\n${browserLogs.join("\n")}`);
+  phase = "runtime-preflight";
+  const response = await page.goto(served.url, { waitUntil: "load", timeout: 30000 });
+  let unsupported = false;
+  if (requiresIsolation) {
+    compatibility.responseHeaders = response ? await response.allHeaders() : null;
+    compatibility.runtimeCapabilities = await page.evaluate(() => window.__WASM_ZOO_THREAD_PROBE__ || null);
+    const preflight = assessThreadedRuntime({
+      headers: compatibility.responseHeaders,
+      capabilities: compatibility.runtimeCapabilities
+    });
+    if (preflight.status === "fail") throw new Error(preflight.reason);
+    if (preflight.status === "unsupported") {
+      compatibility.status = "unsupported";
+      compatibility.phase = preflight.phase;
+      compatibility.reason = preflight.reason;
+      if (onUnsupported !== "record") throw new Error(`Unsupported threaded browser environment: ${preflight.reason}`);
+      unsupported = true;
+      console.log(`[UNSUPPORTED] ${packageSpec} in ${selectedBrowser}: ${preflight.reason}`);
+    }
   }
-  compatibility.status = "pass";
-  compatibility.phase = "complete";
-  compatibility.detail = result.detail;
-  console.log(`[OK] ${packageSpec} installed from npm, built with Vite ${VITE_VERSION}, and executed ${slug} in ${selectedBrowser}; detail=${JSON.stringify(result.detail)}`);
+  if (!unsupported) {
+    phase = "browser-operation";
+    await page.waitForFunction((key) => window[key]?.ok === true || window[key]?.ok === false, fixture.resultKey, { timeout: fixture.browserTimeoutMs || 60000 });
+    const result = await page.evaluate((key) => window[key], fixture.resultKey);
+    if (!result?.ok) {
+      throw new Error(`Published npm ${slug} failed in Vite production build: ${result?.message || "unknown error"}\n${result?.stack || ""}\n${browserLogs.join("\n")}`);
+    }
+    compatibility.status = "pass";
+    compatibility.phase = "complete";
+    compatibility.detail = result.detail;
+    console.log(`[OK] ${packageSpec} installed from npm, built with Vite ${VITE_VERSION}, and executed ${slug} in ${selectedBrowser}; detail=${JSON.stringify(result.detail)}`);
+  }
 } catch (error) {
-  compatibility.phase = phase;
-  compatibility.reason = error?.message || String(error);
+  if (compatibility.status !== "unsupported") {
+    compatibility.status = "fail";
+    compatibility.phase = phase;
+    compatibility.reason = error?.message || String(error);
+  }
   throw error;
 } finally {
   compatibility.testedAt = new Date().toISOString();
@@ -297,6 +344,10 @@ try {
     await fs.mkdir(path.dirname(resultPath), { recursive: true });
     await fs.writeFile(resultPath, `${JSON.stringify(compatibility, null, 2)}\n`);
     console.log(`[npm-smoke:${slug}] wrote compatibility result: ${resultPath}`);
+  }
+  if (process.env.GITHUB_STEP_SUMMARY && resultPath) {
+    await fs.appendFile(process.env.GITHUB_STEP_SUMMARY,
+      `### ${packageName}@${version} — ${selectedBrowser}\n\nStatus: **${compatibility.status.toUpperCase()}**\n\n${compatibility.reason || compatibility.detail || ""}\n\n`);
   }
   console.log(`[npm-smoke:${slug}] cleanup complete`);
 }
