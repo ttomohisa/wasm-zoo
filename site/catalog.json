@@ -1309,7 +1309,8 @@
           "upstreamVersion": "1.5.7",
           "builderVersion": "0.3.0",
           "releaseTag": "zstd-v0.3.0",
-          "releaseAsset": "zstd-browser-full-1.5.7-zoo-0.3.0.zip"
+          "releaseAsset": "zstd-browser-full-1.5.7-zoo-0.3.0.zip",
+          "commit": "f8745da6ff1ad1e7bab384bd1f9d742439278e99"
         }
       }
     },

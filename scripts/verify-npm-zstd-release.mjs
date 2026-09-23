@@ -9,7 +9,8 @@ const input=path.resolve(process.argv[index+1]),pkg=await readJson(path.join(roo
 const source=pkg.npm?.source||{};
 if(pkg.status!=="available"||pkg.npm?.profile!=="browser-full"||pkg.npm?.status!=="published"||
    pkg.npm?.version!=="0.3.0"||source.releaseTag!=="zstd-v0.3.0"||
-   source.upstreamVersion!=="1.5.7"||source.builderVersion!=="0.3.0")
+   source.upstreamVersion!=="1.5.7"||source.builderVersion!=="0.3.0"||
+   source.commit!=="f8745da6ff1ad1e7bab384bd1f9d742439278e99")
   throw new Error("Refusing Zstandard npm input outside the exact reviewed published npm source identity");
 const manifest=await readJson(path.join(input,"manifest.json"));
 const features=await readJson(path.join(input,"features.json"));
@@ -17,7 +18,7 @@ const provenance=await readJson(path.join(input,"provenance.json"));
 const sbom=await readJson(path.join(input,"sbom.cdx.json"));
 if(manifest.package!=="zstd"||manifest.profile!=="browser-full"||
  manifest.upstream?.ref!==`v${source.upstreamVersion}`||manifest.upstream?.version!==source.upstreamVersion||
- manifest.build?.builderVersion!==source.builderVersion||
+ manifest.upstream?.commit!==source.commit||manifest.build?.builderVersion!==source.builderVersion||
  features.profile!=="browser-full"||
  provenance._type!=="https://in-toto.io/Statement/v1"||
  provenance.predicateType!=="https://slsa.dev/provenance/v1"||

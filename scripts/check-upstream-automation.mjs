@@ -22,7 +22,8 @@ need(ghost.tracker?.candidateSource?.digestAlgorithm === 'sha256', 'Ghostscript 
 need(!(ghost.notes || []).some((note) => note.includes('Automatic upstream candidate substitution is intentionally disabled for Ghostscript')), 'Ghostscript notes must not claim automatic candidates are disabled');
 need(zstd.tracker?.candidateMode === 'auto', 'Zstandard must be candidateMode=auto');
 need(JSON.stringify(zstd.tracker?.candidateProfiles) === JSON.stringify(['browser-core', 'browser-full']), 'Zstandard automatic candidate must test both profiles');
-need(zstd.npm?.source?.releaseTag === 'zstd-v0.3.0' && zstd.npm?.source?.upstreamVersion === '1.5.7', 'Zstandard npm source identity must remain separately pinned');
+need(zstd.npm?.source?.releaseTag === 'zstd-v0.3.0' && zstd.npm?.source?.upstreamVersion === '1.5.7' &&
+  zstd.npm?.source?.commit === 'f8745da6ff1ad1e7bab384bd1f9d742439278e99', 'Zstandard npm source identity must remain separately pinned');
 const ghostOfficialArchive = `Ghostscript bundled third-party source set from the official ${ghost.upstream.version} release archive`;
 need((ghost.profiles || []).some((profile) => (profile.externalLibraries || []).includes(ghostOfficialArchive)), 'Ghostscript external library metadata must follow the reviewed upstream version');
 need((ghost.notes || []).some((note) => note.startsWith(`Official Ghostscript ${ghost.upstream.version} release source archive is pinned by SHA-256`)), 'Ghostscript official source archive note must follow the reviewed upstream version');

@@ -229,6 +229,7 @@ try {
     zstdMeta.npm?.profile==="browser-full" && zstdMeta.tracker?.candidateMode==="auto" &&
     zstdMeta.npm?.source?.upstreamVersion==="1.5.7" &&
     zstdMeta.npm?.source?.builderVersion==="0.3.0" &&
+    zstdMeta.npm?.source?.commit==="f8745da6ff1ad1e7bab384bd1f9d742439278e99" &&
     zstdMeta.npm?.source?.releaseTag==="zstd-v0.3.0" &&
     zstdMeta.npm?.source?.releaseAsset==="zstd-browser-full-1.5.7-zoo-0.3.0.zip",
     "Published Zstandard npm must retain its immutable source release while package updates use review-only candidate automation");
