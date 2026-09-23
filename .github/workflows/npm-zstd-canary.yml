@@ -89,7 +89,7 @@ jobs:
       - uses: actions/download-artifact@v7
         with:
           name: reviewed-zstd-npm-0.3.0-${{ github.sha }}
-          path: npm-zstd/artifacts
+          path: npm-zstd
       - name: Run real immutable-release CLI through Vite production build and browser
         shell: bash
         env:
