@@ -73,7 +73,16 @@ for (const rel of [...requiredDirs, ...optionalDirs]) {
 // Release binary/core assets remain immutable. Distribution wrappers are overlaid from
 // the reviewed current source so npm/bundler-only fixes do not rewrite old Releases.
 await fs.copyFile(path.join(root, "builders", args.slug, "runtime", classicScript), path.join(output, classicScript));
-await fs.copyFile(path.join(root, "builders", args.slug, "runtime", "wasm-zoo.mjs"), path.join(output, "wasm-zoo.mjs"));
+// A CLI release can use a separate reviewed consumer entry while keeping the
+// public npm export stable at ./wasm-zoo.mjs.
+const consumerScript = runtime.consumerScript || "wasm-zoo.mjs";
+await fs.copyFile(path.join(root, "builders", args.slug, "runtime", consumerScript), path.join(output, "wasm-zoo.mjs"));
+if (runtime.workerScript) {
+  // Worker must accompany the current reviewed wrapper; the original
+  // upstream CLI binary, manifest, provenance and SBOM remain immutable.
+  if (!required.includes(runtime.workerScript)) throw new Error("Declared npm worker must be required in its binary archive");
+  await fs.copyFile(path.join(root, "builders", args.slug, "runtime", runtime.workerScript), path.join(output, runtime.workerScript));
+}
 await fs.copyFile(path.join(root, "LICENSE"), path.join(output, "LICENSE.wasm-zoo.txt"));
 
 function generateEntry() {
@@ -92,7 +101,10 @@ function generateEntry() {
       `export const distributionProfile = ${JSON.stringify(profile)};`,
       "export const assets = Object.freeze({",
       `  coreJsUrl: new URL("./${asset.coreJs}", import.meta.url).href,`,
-      `  wasmUrl: new URL("./${asset.wasm}", import.meta.url).href`,
+      `  wasmUrl: new URL("./${asset.wasm}", import.meta.url).href${runtime.workerScript ? "," : ""}`,
+      ...(runtime.workerScript ? [
+        `  workerUrl: new URL("./${runtime.workerScript}", import.meta.url).href`
+      ] : []),
       "});",
       "",
       "export async function load(options = {}) {",
@@ -103,7 +115,10 @@ function generateEntry() {
       "    ...options,",
       "    profile: distributionProfile,",
       "    coreJsUrl: options.coreJsUrl || assets.coreJsUrl,",
-      "    wasmUrl: options.wasmUrl || assets.wasmUrl",
+      `    wasmUrl: options.wasmUrl || assets.wasmUrl${runtime.workerScript ? "," : ""}`,
+      ...(runtime.workerScript ? [
+        "    workerUrl: options.workerUrl || assets.workerUrl"
+      ] : []),
       "  });",
       "}",
       "",
