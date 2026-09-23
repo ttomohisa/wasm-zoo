@@ -23,9 +23,10 @@ const selectedBrowser = args.browser || process.env.WASM_ZOO_NPM_BROWSER || "chr
 if (!["chromium", "firefox", "webkit"].includes(selectedBrowser)) {
   throw new Error(`Unsupported --browser: ${selectedBrowser}`);
 }
-// Roll out cross-browser assertions one verified package at a time.
-// Existing smoke coverage for all other packages remains Chromium-only.
-if (slug !== "jq" && selectedBrowser !== "chromium") {
+// Expand the proven jq matrix to published single-threaded packages only.
+// Threaded FFmpeg/libvips remain Chromium-only until separately verified.
+const crossBrowserSlugs = new Set(["jq", "libarchive", "imagemagick", "ghostscript"]);
+if (!crossBrowserSlugs.has(slug) && selectedBrowser !== "chromium") {
   throw new Error(`Cross-browser npm smoke is not yet enabled for ${slug}; use Chromium`);
 }
 const resultPath = args["result-json"] ? path.resolve(args["result-json"]) : null;
