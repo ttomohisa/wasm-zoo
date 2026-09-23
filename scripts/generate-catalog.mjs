@@ -14,7 +14,7 @@ const catalog = {
   stats: {
     packages: packages.length,
     available: packages.filter((pkg) => pkg.status === "available").length,
-    profiles: packages.reduce((sum, pkg) => sum + pkg.profiles.length, 0),
+    profiles: packages.filter((pkg) => pkg.status === "available").reduce((sum, pkg) => sum + pkg.profiles.length, 0),
     featureMatrices: packages.filter((pkg) => pkg.capabilityMatrix?.length).length,
     referenceBuilds: packages.filter((pkg) => pkg.referenceWasm).length,
     supplyChainProfiles: packages.reduce((sum, pkg) => sum + (pkg.zoo?.supplyChainMetadata ? pkg.profiles.length : 0), 0)
