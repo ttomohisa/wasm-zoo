@@ -60,6 +60,12 @@ need(!watcherWorkflow.includes('echo "[skip] existing issue #${issue}: ${title}"
 const candidate = await read('scripts/prepare-candidate.mjs');
 need(candidate.includes('config.extraEnv'), 'candidate preparer must support extraEnv pins');
 need(candidate.includes('--source-sha256') || candidate.includes('source-sha256'), 'candidate preparer must validate source SHA-256');
+const metadataGenerator = await read('scripts/generate-build-metadata.mjs');
+need(metadataGenerator.includes('builtUpstreamVersion = manifest.upstream?.version') &&
+  metadataGenerator.includes('builtUpstreamRef = manifest.upstream?.ref') &&
+  metadataGenerator.includes('builtBuilderVersion = manifest.build?.builderVersion'),
+  'candidate provenance/SBOM must describe the actual manifest build identity rather than the previously reviewed package pin');
+
 const promotion = await read('scripts/prepare-promotion.mjs');
 need(promotion.includes('config.extraEnv'), 'promotion preparer must support extraEnv pins');
 need(promotion.includes('Promotion extra pin verification failed'), 'promotion preparer must verify promoted extra pins');
