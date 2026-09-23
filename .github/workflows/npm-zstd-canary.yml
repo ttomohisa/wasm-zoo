@@ -1,0 +1,109 @@
+# Review-only Zstandard npm bootstrap: no registry writes or automatic tags.
+name: Verify Zstandard npm prepublish canary
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "packages/zstd/**"
+      - "builders/zstd/runtime/**"
+      - "scripts/prepare-npm-package.mjs"
+      - "scripts/check-npm-distribution.mjs"
+      - "scripts/smoke-npm-package.mjs"
+      - "scripts/verify-npm-zstd-release.mjs"
+      - "package.json"
+      - ".github/workflows/npm-zstd-canary.yml"
+      - "docs/NPM_DISTRIBUTION.md"
+  push:
+    branches: [main]
+    paths:
+      - "packages/zstd/**"
+      - "builders/zstd/runtime/**"
+      - "scripts/prepare-npm-package.mjs"
+      - "scripts/check-npm-distribution.mjs"
+      - "scripts/smoke-npm-package.mjs"
+      - "scripts/verify-npm-zstd-release.mjs"
+      - ".github/workflows/npm-zstd-canary.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pack:
+    name: Verify immutable release, prepare and pack canary (no publish)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Require reviewed npm CLI
+        run: npm install --global npm@12.0.2
+      - name: Download and verify ALL assets of the immutable release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$(node -p "require('./packages/zstd/package.json').npm.status")" = canary
+          test "$(node -p "require('./packages/zstd/package.json').release.tag")" = zstd-v0.3.0
+          mkdir -p npm-zstd/download npm-zstd/input npm-zstd/artifacts
+          gh release download zstd-v0.3.0 --repo "$GITHUB_REPOSITORY" --dir npm-zstd/download
+          (cd npm-zstd/download && sha256sum -c SHA256SUMS.txt)
+          unzip -q npm-zstd/download/zstd-browser-full-1.5.7-zoo-0.3.0.zip -d npm-zstd/input
+          node scripts/verify-npm-zstd-release.mjs --input npm-zstd/input
+      - name: Prepare reviewed npm overlay, synthetic npm contracts and tarball
+        run: |
+          node scripts/prepare-npm-package.mjs --slug zstd --input npm-zstd/input --output npm-zstd/package
+          node scripts/check-npm-distribution.mjs
+          npm pack ./npm-zstd/package --json --ignore-scripts --pack-destination npm-zstd/artifacts | tee npm-zstd/pack.json
+          test -s npm-zstd/artifacts/wasm-zoo-zstd-0.3.0.tgz
+      - uses: actions/upload-artifact@v7
+        with:
+          name: reviewed-zstd-npm-0.3.0-${{ github.sha }}
+          path: |
+            npm-zstd/artifacts/wasm-zoo-zstd-0.3.0.tgz
+            npm-zstd/pack.json
+          retention-days: 30
+          if-no-files-found: error
+
+  browser:
+    name: Packed Zstandard CLI / Vite / ${{ matrix.browser }} (NOT registry)
+    needs: pack
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Require reviewed npm CLI
+        run: npm install --global npm@12.0.2
+      - uses: actions/download-artifact@v7
+        with:
+          name: reviewed-zstd-npm-0.3.0-${{ github.sha }}
+          path: npm-zstd/artifacts
+      - name: Run real immutable-release CLI through Vite production build and browser
+        shell: bash
+        env:
+          WASM_ZOO_PLAYWRIGHT_WITH_DEPS: '1'
+        run: |
+          set -euo pipefail
+          export WASM_ZOO_NPM_PACKAGE_SPEC="$PWD/npm-zstd/artifacts/wasm-zoo-zstd-0.3.0.tgz"
+          test -s "$WASM_ZOO_NPM_PACKAGE_SPEC"
+          node scripts/smoke-npm-package.mjs --slug zstd --browser '${{ matrix.browser }}' \
+            --result-json 'npm-zstd/compat-${{ matrix.browser }}.json'
+      - uses: actions/upload-artifact@v7
+        if: ${{ always() }}
+        with:
+          name: zstd-packed-${{ matrix.browser }}-${{ github.sha }}
+          path: npm-zstd/compat-${{ matrix.browser }}.json
+          retention-days: 30
+          if-no-files-found: warn
