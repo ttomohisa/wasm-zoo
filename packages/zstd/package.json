@@ -18,8 +18,11 @@
     "type": "github-releases",
     "repository": "facebook/zstd",
     "versionPattern": "v?(\\d+\\.\\d+\\.\\d+)",
-    "candidateMode": "none",
-    "candidateProfiles": []
+    "candidateMode": "auto",
+    "candidateProfiles": [
+      "browser-core",
+      "browser-full"
+    ]
   },
   "zoo": {
     "builderVersion": "0.3.0",
@@ -104,7 +107,7 @@
     "browser-core and browser-full both passed real Chromium operation tests; browser-full also passed bidirectional native zstd frame interoperability before publication.",
     "The public Playground stages only checksum-verified published release assets. Files are processed locally in browser Workers.",
     "The original upstream browser-full CLI is now distributed as @wasm-zoo/zstd@0.3.0. The published Registry version is independently tested in Chromium, Firefox and WebKit using real Vite-built operations.",
-    "Automatic upstream candidate promotion is intentionally not enabled yet: candidateMode remains none until the Zstandard adapter/promotion path is separately reviewed.",
+    "Stable upstream Zstandard releases are tested automatically in isolated browser-core and browser-full candidates, including mandatory browser-full native zstd interoperability. A successful candidate may open a review-only pin promotion PR; merge, package tag/release and npm publication remain manual.",
     "Both profiles are single-threaded and require no SharedArrayBuffer. browser-full omits native filesystem access, pthreads, external gzip/xz/lz4 codecs and legacy-frame decoding.",
     "@wasm-zoo/zstd@0.3.0 was manually published from the exact reviewed Phase 4A npm tarball; Registry dist.shasum 29add1aaf6ab0c3e9a3d538166a51a3f70cefa99. The npm package bundles only browser-full CLI; browser-core stays a separate immutable GitHub Release download. No npm Registry-generated provenance was attached to the first maintainer-side publish; reviewed CI in-toto/SLSA provenance.json remains bundled."
   ],
@@ -260,6 +263,12 @@
       "compression",
       "decompression",
       "upstream-cli"
-    ]
+    ],
+    "source": {
+      "upstreamVersion": "1.5.7",
+      "builderVersion": "0.3.0",
+      "releaseTag": "zstd-v0.3.0",
+      "releaseAsset": "zstd-browser-full-1.5.7-zoo-0.3.0.zip"
+    }
   }
 }

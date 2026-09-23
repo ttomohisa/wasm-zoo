@@ -7,7 +7,7 @@ on:
         description: Package slug
         required: true
         type: choice
-        options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq]
+        options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, zstd]
       version:
         description: Upstream version
         required: true
@@ -204,6 +204,46 @@ jobs:
           retention-days: 14
 
 
+  zstd:
+    if: inputs.slug == 'zstd'
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [browser-core, browser-full]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Install native zstd for mandatory browser-full interoperability
+        if: matrix.profile == 'browser-full'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zstd
+          zstd --version
+      - name: Prepare isolated exact-tag candidate and exact-version assertions
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/prepare-candidate.mjs --slug zstd --version "${{ inputs.version }}" --ref "${{ inputs.ref }}" --commit "${{ inputs.commit }}"
+      - name: Build candidate and run real browser/native smoke
+        shell: bash
+        working-directory: builders/zstd
+        env:
+          ZSTD_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+          ZSTD_NATIVE_INTEROP: ${{ matrix.profile == 'browser-full' && 'required' || '' }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh "${{ matrix.profile }}"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: candidate-zstd-${{ inputs.version }}-${{ matrix.profile }}
+          path: builders/zstd/dist/${{ matrix.profile }}/
+          retention-days: 14
+
+
   libvips-readiness:
     if: inputs.slug == 'libvips'
     runs-on: ubuntu-latest
@@ -224,7 +264,7 @@ jobs:
 
   report:
     if: always()
-    needs: [ffmpeg, libarchive, imagemagick, ghostscript, libvips-readiness, jq]
+    needs: [ffmpeg, libarchive, imagemagick, ghostscript, libvips-readiness, jq, zstd]
     runs-on: ubuntu-latest
     outputs:
       result: ${{ steps.result.outputs.result }}
@@ -240,6 +280,7 @@ jobs:
             imagemagick) result='${{ needs.imagemagick.result }}' ;;
             ghostscript) result='${{ needs.ghostscript.result }}' ;;
             jq) result='${{ needs.jq.result }}' ;;
+            zstd) result='${{ needs.zstd.result }}' ;;
             libvips) result='adapter-gated' ;;
             *) result='unknown' ;;
           esac
@@ -315,6 +356,7 @@ jobs:
             imagemagick) node builders/imagemagick/scripts/check-repository.mjs ;;
             ghostscript) node builders/ghostscript/scripts/check-repository.mjs ;;
             jq) node builders/jq/scripts/check-repository.mjs ;;
+            zstd) node builders/zstd/scripts/check-repository.mjs ;;
             *) echo "automatic promotion is not supported for ${{ inputs.slug }}" >&2; exit 1 ;;
           esac
           git diff --check

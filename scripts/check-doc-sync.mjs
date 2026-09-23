@@ -41,9 +41,10 @@ for (const pkg of packages) {
     need(Boolean(npmRow), "npm distribution row missing for " + pkg.npm.package);
     if (npmRow) {
       need(npmRow.includes("| `" + pkg.npm.version + "` |"), "npm distribution version is stale for " + pkg.npm.package);
-      need(npmRow.includes("| " + pkg.name + " " + pkg.upstream.version + " |"), "npm distribution upstream version is stale for " + pkg.npm.package);
-      need(npmRow.includes("| `" + pkg.zoo.builderVersion + "` |"), "npm distribution builder version is stale for " + pkg.npm.package);
-      need(npmRow.includes("`" + pkg.release.tag + "`"), "npm distribution release tag is stale for " + pkg.npm.package);
+      const npmSource = pkg.npm.source || {};
+      need(npmRow.includes("| " + pkg.name + " " + (npmSource.upstreamVersion || pkg.upstream.version) + " |"), "npm distribution upstream version is stale for " + pkg.npm.package);
+      need(npmRow.includes("| `" + (npmSource.builderVersion || pkg.zoo.builderVersion) + "` |"), "npm distribution builder version is stale for " + pkg.npm.package);
+      need(npmRow.includes("`" + (npmSource.releaseTag || pkg.release.tag) + "`"), "npm distribution release tag is stale for " + pkg.npm.package);
       need(npmRow.includes("| " + pkg.npm.status + " |"), "npm distribution status is stale for " + pkg.npm.package);
     }
   }
@@ -54,7 +55,7 @@ if (ghost) {
   need(readme.includes("ghostscript-" + ghost.upstream.version + ".tar.xz"), "README Ghostscript official source archive version is stale");
   need(readme.includes("gs" + ghost.upstream.version), "README Ghostscript source ref version is stale");
   need(!readme.includes("Automatic candidate builds are source-digest gated and therefore remain disabled"), "README must not claim Ghostscript automatic candidates are disabled");
-  need(readme.includes("For FFmpeg, libarchive, ImageMagick, Ghostscript and jq"), "README automatic package list must include Ghostscript");
+  need(readme.includes("For FFmpeg, libarchive, ImageMagick, Ghostscript, jq and Zstandard"), "README automatic package list must include Ghostscript and Zstandard");
 }
 
 if (errors.length) {

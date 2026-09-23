@@ -8,10 +8,11 @@ const errors = [];
 const need = (ok, message) => { if (!ok) errors.push(message); };
 const read = async (rel) => (await fs.readFile(path.join(root, rel), 'utf8')).replace(/\r\n/g, '\n');
 
-const auto = ['ffmpeg', 'libarchive', 'imagemagick', 'ghostscript', 'jq'];
+const auto = ['ffmpeg', 'libarchive', 'imagemagick', 'ghostscript', 'jq', 'zstd'];
 for (const slug of auto) need(Boolean(automaticCandidateConfig(slug)), `${slug} must have an automatic candidate config`);
 
 const ghost = await readJson(path.join(root, 'packages', 'ghostscript', 'package.json'));
+const zstd = await readJson(path.join(root, 'packages', 'zstd', 'package.json'));
 need(ghost.tracker?.candidateMode === 'auto', 'Ghostscript must be candidateMode=auto');
 need(ghost.tracker?.candidateSource?.repository === 'ArtifexSoftware/ghostpdl', 'Ghostscript candidate source repository must be ArtifexSoftware/ghostpdl');
 need(ghost.tracker?.candidateSource?.refTemplate === 'gs{version}', 'Ghostscript candidate source ref must be gs{version}');
@@ -19,6 +20,9 @@ need(ghost.tracker?.candidateSource?.releaseTagTemplate === 'gs{versionCompact}'
 need(ghost.tracker?.candidateSource?.assetNameTemplate === 'ghostscript-{version}.tar.xz', 'Ghostscript candidate source archive must be ghostscript-{version}.tar.xz');
 need(ghost.tracker?.candidateSource?.digestAlgorithm === 'sha256', 'Ghostscript candidate source digest must be SHA-256');
 need(!(ghost.notes || []).some((note) => note.includes('Automatic upstream candidate substitution is intentionally disabled for Ghostscript')), 'Ghostscript notes must not claim automatic candidates are disabled');
+need(zstd.tracker?.candidateMode === 'auto', 'Zstandard must be candidateMode=auto');
+need(JSON.stringify(zstd.tracker?.candidateProfiles) === JSON.stringify(['browser-core', 'browser-full']), 'Zstandard automatic candidate must test both profiles');
+need(zstd.npm?.source?.releaseTag === 'zstd-v0.3.0' && zstd.npm?.source?.upstreamVersion === '1.5.7', 'Zstandard npm source identity must remain separately pinned');
 const ghostOfficialArchive = `Ghostscript bundled third-party source set from the official ${ghost.upstream.version} release archive`;
 need((ghost.profiles || []).some((profile) => (profile.externalLibraries || []).includes(ghostOfficialArchive)), 'Ghostscript external library metadata must follow the reviewed upstream version');
 need((ghost.notes || []).some((note) => note.startsWith(`Official Ghostscript ${ghost.upstream.version} release source archive is pinned by SHA-256`)), 'Ghostscript official source archive note must follow the reviewed upstream version');
@@ -64,11 +68,16 @@ need(promotion.includes('values.slug === "ghostscript"') && promotion.includes('
 
 const workflow = await read('.github/workflows/upstream-candidate.yml');
 for (const marker of [
-  'options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq]',
+  'options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, zstd]',
   "ghostscript:\n    if: inputs.slug == 'ghostscript'",
   '--source-sha256 "${{ inputs.source_sha256 }}"',
   "ghostscript) result='${{ needs.ghostscript.result }}' ;;",
-  'ghostscript) node builders/ghostscript/scripts/check-repository.mjs ;;'
+  'ghostscript) node builders/ghostscript/scripts/check-repository.mjs ;;',
+  "zstd:\n    if: inputs.slug == 'zstd'",
+  "profile: [browser-core, browser-full]",
+  "ZSTD_NATIVE_INTEROP: ${{ matrix.profile == 'browser-full' && 'required' || '' }}",
+  "zstd) result='${{ needs.zstd.result }}' ;;",
+  'zstd) node builders/zstd/scripts/check-repository.mjs ;;'
 ]) need(workflow.includes(marker), `candidate workflow missing Ghostscript contract: ${marker}`);
 need(workflow.includes("  promotion-pr:") && workflow.includes("    if: ${{ always() && needs.report.outputs.result == 'success' }}") && workflow.includes("    needs: [report]"), "promotion PR job must use always() so skipped non-selected candidate jobs cannot suppress a successful promotion");
 
@@ -87,10 +96,11 @@ need(smoke.includes('manifest.json') && smoke.includes('expectedVersion'), 'Ghos
 
 const docs = await read('docs/AUTOMATED_PROMOTIONS.md');
 need(docs.includes('- Ghostscript') && docs.includes('GitHub\'s published SHA-256 asset digest'), 'automation docs must describe Ghostscript digest-pinned auto promotion');
+need(docs.includes('- Zstandard') && docs.includes('bidirectional native zstd interoperability'), 'automation docs must describe Zstandard native-interoperability candidate gate');
 
 if (errors.length) {
   console.error(`[NG] ${errors.length} upstream automation contract check(s)`);
   for (const error of errors) console.error(` - ${error}`);
   process.exit(1);
 }
-console.log('[OK] upstream promotion automation contract passed: FFmpeg/libarchive/ImageMagick/Ghostscript/jq auto, libvips adapter-gated');
+console.log('[OK] upstream promotion automation contract passed: FFmpeg/libarchive/ImageMagick/Ghostscript/jq/Zstandard auto, libvips adapter-gated');

@@ -222,8 +222,12 @@ try {
   const zstdMeta=await readJson(path.join(root,"packages/zstd/package.json"));
   need(zstdMeta.status==="available" && zstdMeta.npm?.status==="published" &&
     zstdMeta.npm?.package==="@wasm-zoo/zstd" && zstdMeta.npm?.version==="0.3.0" &&
-    zstdMeta.npm?.profile==="browser-full" && zstdMeta.tracker?.candidateMode==="none",
-    "Published Zstandard npm must retain the reviewed release pin without enabling candidate automation");
+    zstdMeta.npm?.profile==="browser-full" && zstdMeta.tracker?.candidateMode==="auto" &&
+    zstdMeta.npm?.source?.upstreamVersion==="1.5.7" &&
+    zstdMeta.npm?.source?.builderVersion==="0.3.0" &&
+    zstdMeta.npm?.source?.releaseTag==="zstd-v0.3.0" &&
+    zstdMeta.npm?.source?.releaseAsset==="zstd-browser-full-1.5.7-zoo-0.3.0.zip",
+    "Published Zstandard npm must retain its immutable source release while package updates use review-only candidate automation");
   need(smoke.includes("29add1aaf6ab0c3e9a3d538166a51a3f70cefa99") && smoke.includes("dist.shasum"),
     "The live Registry-backed Zstandard smoke must verify the exact reviewed tarball SHA-1");
   need(zstdMeta.npm.runtime.consumerScript==="wasm-zoo-cli.mjs" &&
