@@ -33,7 +33,7 @@ function selectFile(blob, name, sample=false){
 }
 demoButton.addEventListener("click",()=>{
   if(modeInput.value!=="compress"){message.textContent="The sample is for compression. Select a .zst file to decompress.";return;}
-  const text="WASM Zoo: official Zstandard 1.5.7 browser compression.\n".repeat(1000);
+  const text=(`WASM Zoo: official Zstandard ${pkg?.upstream?.version || "release"} browser compression.\n`).repeat(1000);
   selectFile(new Blob([text],{type:"text/plain"}),"zstd-sample.txt",true);
 });
 fileInput.addEventListener("change",()=>{

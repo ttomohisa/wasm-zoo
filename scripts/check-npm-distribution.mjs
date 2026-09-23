@@ -233,7 +233,7 @@ try {
     zstdMeta.npm?.package==="@wasm-zoo/zstd" && zstdMeta.npm?.version==="0.3.0" &&
     zstdMeta.npm?.profile==="browser-full" && zstdMeta.tracker?.candidateMode==="auto" &&
     JSON.stringify(zstdMeta.tracker?.candidateProfiles)===JSON.stringify(["browser-core","browser-full"]),
-    "Published Zstandard npm must retain the reviewed release pin without enabling candidate automation");
+    "Published Zstandard npm must retain immutable v0.3.0 source independently of review-only two-profile candidate automation");
   need(smoke.includes("29add1aaf6ab0c3e9a3d538166a51a3f70cefa99") && smoke.includes("dist.shasum"),
     "The live Registry-backed Zstandard smoke must verify the exact reviewed tarball SHA-1");
   need(zstdMeta.npm.runtime.consumerScript==="wasm-zoo-cli.mjs" &&

@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-_No changes yet._
+- enable source-ref-verified Zstandard upstream automation that builds both browser-core and browser-full, enforces bidirectional native CLI interop, verifies both artifacts/corresponding source/Playground, and creates **review-only** promotion PRs after all gates pass; preserve existing published npm 0.3.0 provenance independently and leave all merges/tags/releases/publication manual;
 
 ## v0.15.0
 

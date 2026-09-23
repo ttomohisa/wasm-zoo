@@ -27,13 +27,22 @@ The current automatic promotion set is defined in `scripts/upstream-config.mjs`:
 - ImageMagick
 - Ghostscript
 - jq
+- Zstandard (requires BOTH browser profiles, native interop, corresponding source and Playground)
 
 Ghostscript is source-archive-backed: the watcher requires the exact official `ghostscript-<version>.tar.xz` Release asset, consumes GitHub's published SHA-256 asset digest, resolves the matching `gs<version>` commit from `ArtifexSoftware/ghostpdl`, and passes all of those immutable values through candidate build and promotion preparation. For jq, candidate/promotion preparation also resolves the exact Oniguruma submodule commit from the candidate jq commit.
+
+### Zstandard: reviewed-pin pipeline and independent npm source
+
+For a newer official stable `facebook/zstd` Release, the watcher accepts only the canonical `vX.Y.Z` tag and exact resolved full commit SHA. Candidate preparation rechecks the live official Release (not draft/prerelease) and the same exact commit even on manual workflow dispatch. Candidate jobs build `browser-core` and `browser-full` in isolation, each with real Chromium roundtrip/frame/invalid-input tests. The CLI has mandatory native `zstd` interoperability **in both directions**. A dependent, required candidate job verifies both binary hashes against manifests and in-toto/SLSA provenance, verifies SBOMs, assembles the exact corresponding-source review bundle and runs the real staged two-profile Playground. A missing/skipped/failed profile or dependent review cannot produce a promotion PR.
+
+Successful candidates may create `automation/promote-zstd-<version>` review-only PRs that bump only the Zoo builder patch, reviewed upstream pin and *future, not-yet-published* GitHub Release metadata. PR CI and real builds must pass again. After a human merges and manually pushes the reviewed new `zstd-v<builder>` tag, the existing tag-triggered release workflow independently rebuilds, checks native/CLI interop and publishes the new release. A separately reviewed npm rollout may then version and publish a **new** npm tarball. The already published `@wasm-zoo/zstd@0.3.0` stays frozen to `zstd-v0.3.0`, including its Registry SHA-1 `29add1aaf6ab0c3e9a3d538166a51a3f70cefa99`. Existing npm browser tests continue to test those authentic immutable bytes; an unreleased candidate may never be relabeled as the published npm version.
+
+The published-only Playground intentionally shows *not yet released* after a new Zoo pin is merged until a human-reviewed Release actually exists. Do not silently serve old binary bytes under a new upstream version.
 
 ## Manual gates
 
 - `adapter-gated`: no promotion PR is created from the readiness result. libvips stays here because the wasm-vips adapter plus libvips/Emscripten compatibility patch pins must be reviewed as a unit.
-- `none`: upstream tracking may still create/update freshness information, but no automatic candidate substitution or promotion PR is attempted. No currently published package uses this mode after Ghostscript moved to digest-pinned automatic candidates.
+- `none`: upstream tracking may still create/update freshness information, but automatic candidate substitution/promotion is disabled until independently reviewed. Zstandard moved from this mode only after its dual-profile/native/corresponding-source gates were added.
 
 ## Required repository setting
 

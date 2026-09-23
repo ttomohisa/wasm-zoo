@@ -12,6 +12,10 @@ The existing `npm-zstd-canary.yml` remains a **read-only immutable Release packa
 
 Future npm-only versions follow the existing separate manual review and Trusted Publisher staged-publishing workflow. No candidate automation, project tag, npm publication or merge is triggered by the v0.15.0 project-version PR. Zstandard `candidateMode` remains `none` and libvips remains `adapter-gated`.
 
+## Future upstream Zstandard promotions and npm provenance
+
+The Zoo source/build pin and its new GitHub Release may advance after the review-only two-profile candidate and human merge. The existing published `@wasm-zoo/zstd@0.3.0` tarball must **not** silently change, be rebuilt from an unreleased new Zoo pin, or be marked as a new Registry release. The explicit `npm.publishedSource` metadata continues to identify immutable `zstd-v0.3.0` (Zstandard 1.5.7, Zoo builder 0.3.0, browser-full) and the reviewed Registry SHA-1. The npm synthetic packaging tests and historical local-tarball regression check use that source independent of a future Zoo builder pin; the public compatibility matrix uses the real unchanged Registry version. A separate review after the *new* manually approved GitHub Release updates npm version, npm source metadata and actual Registry checks before any new npm publication.
+
 ## Distribution contract
 
 An npm package is not a second native/WebAssembly build. `scripts/prepare-npm-package.mjs` reads each package's `npm` metadata, starts from the immutable binary ZIP declared by the selected Zoo profile, preserves its core JavaScript/Wasm, manifests, provenance, SBOM, BUILDINFO and license notices, then overlays only the current reviewed distribution wrapper files:

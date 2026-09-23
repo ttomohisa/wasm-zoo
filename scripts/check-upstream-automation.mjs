@@ -8,7 +8,7 @@ const errors = [];
 const need = (ok, message) => { if (!ok) errors.push(message); };
 const read = async (rel) => (await fs.readFile(path.join(root, rel), 'utf8')).replace(/\r\n/g, '\n');
 
-const auto = ['ffmpeg', 'libarchive', 'imagemagick', 'ghostscript', 'jq'];
+const auto = ['ffmpeg', 'libarchive', 'imagemagick', 'ghostscript', 'jq', 'zstd'];
 for (const slug of auto) need(Boolean(automaticCandidateConfig(slug)), `${slug} must have an automatic candidate config`);
 
 const ghost = await readJson(path.join(root, 'packages', 'ghostscript', 'package.json'));
@@ -23,6 +23,17 @@ const ghostOfficialArchive = `Ghostscript bundled third-party source set from th
 need((ghost.profiles || []).some((profile) => (profile.externalLibraries || []).includes(ghostOfficialArchive)), 'Ghostscript external library metadata must follow the reviewed upstream version');
 need((ghost.notes || []).some((note) => note.startsWith(`Official Ghostscript ${ghost.upstream.version} release source archive is pinned by SHA-256`)), 'Ghostscript official source archive note must follow the reviewed upstream version');
 
+const zstd = await readJson(path.join(root, 'packages', 'zstd', 'package.json'));
+need(zstd.tracker?.repository === 'facebook/zstd' && zstd.tracker?.type === 'github-releases' &&
+  zstd.tracker?.candidateMode === 'auto' &&
+  JSON.stringify(zstd.tracker?.candidateProfiles) === JSON.stringify(['browser-core','browser-full']),
+  'Zstandard may create a review-only promotion only after both exact-source profiles pass');
+need(zstd.npm?.publishedSource?.releaseTag === 'zstd-v0.3.0' &&
+  zstd.npm?.publishedSource?.registryShasum === '29add1aaf6ab0c3e9a3d538166a51a3f70cefa99',
+  'Automatic Zoo promotions must preserve the independently published npm 0.3.0 source');
+need(automaticCandidateConfig('zstd')?.refKey === 'ZSTD_REF' &&
+  automaticCandidateConfig('zstd')?.commitKey === 'ZSTD_COMMIT',
+  'Zstandard automatic candidate config must pin the canonical source ref and exact commit');
 const libvips = await readJson(path.join(root, 'packages', 'libvips', 'package.json'));
 need(libvips.tracker?.candidateMode === 'adapter-gated', 'libvips must remain adapter-gated');
 
@@ -55,21 +66,41 @@ need(!watcherWorkflow.includes('echo "[skip] existing issue #${issue}: ${title}"
 const candidate = await read('scripts/prepare-candidate.mjs');
 need(candidate.includes('config.extraEnv'), 'candidate preparer must support extraEnv pins');
 need(candidate.includes('--source-sha256') || candidate.includes('source-sha256'), 'candidate preparer must validate source SHA-256');
+need(candidate.includes('values.slug === "zstd"') && candidate.includes('release.draft || release.prerelease') &&
+  candidate.includes('actual.sha !== values.commit'),
+  'Direct Zstandard candidates must reverify official stable tag and exact commit');
 const promotion = await read('scripts/prepare-promotion.mjs');
 need(promotion.includes('config.extraEnv'), 'promotion preparer must support extraEnv pins');
 need(promotion.includes('Promotion extra pin verification failed'), 'promotion preparer must verify promoted extra pins');
 need(promotion.includes('README npm version'), 'promotion preparer must update README npm distribution versions');
 need(promotion.includes('docs/NPM_DISTRIBUTION.md') && promotion.includes('npm distribution release tag'), 'promotion preparer must update npm distribution documentation');
+need(promotion.includes('values.slug === "zstd"') &&
+  promotion.includes('official.draft || official.prerelease') &&
+  promotion.includes('target.sha !== values.commit') &&
+  promotion.includes('pkg.npm.publishedSource.releaseTag') &&
+  promotion.includes('state: "not-published"'),
+  'Promotion PR must reverify Zstandard candidate and preserve immutable public npm while staging the next Release');
 need(promotion.includes('values.slug === "ghostscript"') && promotion.includes('profile.externalLibraries') && promotion.includes('note.startsWith(`Official Ghostscript ${oldVersion} release source archive is pinned by SHA-256`)'), 'Ghostscript promotion must refresh current-version source-archive metadata');
 
 const workflow = await read('.github/workflows/upstream-candidate.yml');
 for (const marker of [
-  'options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq]',
+  'options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, zstd]',
   "ghostscript:\n    if: inputs.slug == 'ghostscript'",
   '--source-sha256 "${{ inputs.source_sha256 }}"',
   "ghostscript) result='${{ needs.ghostscript.result }}' ;;",
   'ghostscript) node builders/ghostscript/scripts/check-repository.mjs ;;'
 ]) need(workflow.includes(marker), `candidate workflow missing Ghostscript contract: ${marker}`);
+for (const marker of [
+  "zstd:\\n    if: inputs.slug == 'zstd'",
+  "profile: [browser-core, browser-full]",
+  "ZSTD_NATIVE_INTEROP: ${{ matrix.profile == 'browser-full' && 'required' || '' }}",
+  "name: Verify both candidate artifacts, corresponding source and Playground (no publish)",
+  "zstd) result='${{ needs.zstd-review.result }}' ;;",
+  "zstd) node builders/zstd/scripts/check-repository.mjs ;;"
+]) need(workflow.includes(marker.replace('\\n', '\n')), 'Zstandard dual-profile candidate/aggregator gate missing: '+marker);
+need(!workflow.includes('gh release create') && !workflow.includes('git tag -a') &&
+  !workflow.includes('gh pr merge') && !workflow.includes('npm publish'),
+  'Candidate and promotion PR workflow must never release, tag, merge or publish');
 need(workflow.includes("  promotion-pr:") && workflow.includes("    if: ${{ always() && needs.report.outputs.result == 'success' }}") && workflow.includes("    needs: [report]"), "promotion PR job must use always() so skipped non-selected candidate jobs cannot suppress a successful promotion");
 
 const env = await read('builders/ghostscript/versions.env');
@@ -93,4 +124,4 @@ if (errors.length) {
   for (const error of errors) console.error(` - ${error}`);
   process.exit(1);
 }
-console.log('[OK] upstream promotion automation contract passed: FFmpeg/libarchive/ImageMagick/Ghostscript/jq auto, libvips adapter-gated');
+console.log('[OK] upstream promotion automation contract passed: FFmpeg/libarchive/ImageMagick/Ghostscript/jq/Zstandard auto with two-profile Zstandard gate; libvips adapter-gated');
