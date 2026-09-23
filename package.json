@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "catalog": "node scripts/generate-catalog.mjs",
-    "check": "node scripts/validate.mjs && node scripts/check-consumer-api.mjs && node scripts/check-npm-distribution.mjs && node scripts/check-upstream-automation.mjs && node scripts/check-doc-sync.mjs && node --test scripts/test-threaded-browser-capabilities.mjs && node --test scripts/test-browser-compatibility-snapshot.mjs && node scripts/check-browser-compat-site.mjs",
+    "check": "node scripts/validate.mjs && node scripts/check-consumer-api.mjs && node scripts/check-npm-distribution.mjs && node scripts/check-upstream-automation.mjs && node scripts/check-doc-sync.mjs && node --test scripts/test-threaded-browser-capabilities.mjs && node --test scripts/test-browser-compatibility-snapshot.mjs && node scripts/check-browser-compat-site.mjs && node scripts/check-zstd-release-prep.mjs",
     "consumer:check": "node scripts/check-consumer-api.mjs",
     "check:upstream": "node scripts/check-upstream.mjs",
     "build:site": "node scripts/generate-catalog.mjs && npm run check",
@@ -29,6 +29,7 @@
     "promotion:check": "node scripts/check-upstream-automation.mjs",
     "docs:check": "node scripts/check-doc-sync.mjs",
     "compat:threaded:test": "node --test scripts/test-threaded-browser-capabilities.mjs",
-    "compat:publish:site": "node scripts/publish-browser-compatibility.mjs"
+    "compat:publish:site": "node scripts/publish-browser-compatibility.mjs",
+    "zstd:release:check": "node scripts/check-zstd-release-prep.mjs"
   }
 }
