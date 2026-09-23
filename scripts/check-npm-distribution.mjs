@@ -142,7 +142,14 @@ try {
 
   const smoke = await fs.readFile(path.join(root, "scripts", "smoke-npm-package.mjs"), "utf8");
   need(smoke.includes("jq:") && smoke.includes("libarchive:") && smoke.includes("imagemagick:") && smoke.includes("ghostscript:") && smoke.includes("libvips:") && smoke.includes("ffmpeg:"), "generic npm smoke must have jq, libarchive, ImageMagick, Ghostscript, libvips and FFmpeg fixtures");
-  need(smoke.includes("vite") && smoke.includes("playwright") && smoke.includes("chromium.launch"), "generic npm smoke must exercise Vite/Playwright/Chromium");
+  need(
+    smoke.includes("vite") &&
+    smoke.includes("playwright") &&
+    smoke.includes('process.env.WASM_ZOO_NPM_BROWSER || "chromium"') &&
+    smoke.includes('requireFromFixture("playwright")[selectedBrowser]') &&
+    smoke.includes("browserType.launch("),
+    "generic npm smoke must exercise Vite/Playwright and default to Chromium"
+  );
   need(smoke.includes("http.createServer") && smoke.includes("cleanup complete"), "generic npm smoke must serve dist in-process and explicitly complete cleanup");
   need(!smoke.includes('"vite", "preview"') && !smoke.includes("preview.kill("), "generic npm smoke must not use a Vite preview child process");
   need(smoke.includes("makeTar") && smoke.includes('tool: "bsdtar"'), "libarchive live smoke must perform a real bsdtar archive operation");
