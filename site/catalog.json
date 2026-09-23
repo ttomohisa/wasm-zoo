@@ -1059,8 +1059,11 @@
         "type": "github-releases",
         "repository": "facebook/zstd",
         "versionPattern": "v?(\\d+\\.\\d+\\.\\d+)",
-        "candidateMode": "none",
-        "candidateProfiles": []
+        "candidateMode": "auto",
+        "candidateProfiles": [
+          "browser-core",
+          "browser-full"
+        ]
       },
       "zoo": {
         "builderVersion": "0.3.0",
@@ -1145,7 +1148,7 @@
         "browser-core and browser-full both passed real Chromium operation tests; browser-full also passed bidirectional native zstd frame interoperability before publication.",
         "The public Playground stages only checksum-verified published release assets. Files are processed locally in browser Workers.",
         "The original upstream browser-full CLI is now distributed as @wasm-zoo/zstd@0.3.0. The published Registry version is independently tested in Chromium, Firefox and WebKit using real Vite-built operations.",
-        "Automatic upstream candidate promotion is intentionally not enabled yet: candidateMode remains none until the Zstandard adapter/promotion path is separately reviewed.",
+        "Automatic upstream candidate builds test both browser-core and browser-full with exact official source pins and bidirectional native/CLI interoperability. Successful isolated build + corresponding-source bundle + Playground checks may prepare a review-only promotion PR. Humans control merge, release tag and all publication; npm retains its independently pinned, already published immutable release until a separate reviewed npm rollout.",
         "Both profiles are single-threaded and require no SharedArrayBuffer. browser-full omits native filesystem access, pthreads, external gzip/xz/lz4 codecs and legacy-frame decoding.",
         "@wasm-zoo/zstd@0.3.0 was manually published from the exact reviewed Phase 4A npm tarball; Registry dist.shasum 29add1aaf6ab0c3e9a3d538166a51a3f70cefa99. The npm package bundles only browser-full CLI; browser-core stays a separate immutable GitHub Release download. No npm Registry-generated provenance was attached to the first maintainer-side publish; reviewed CI in-toto/SLSA provenance.json remains bundled."
       ],
@@ -1292,7 +1295,7 @@
         },
         "docs": {
           "description": "Unofficial WASM Zoo distribution of the original upstream Zstandard 1.5.7 zstd CLI for browsers.",
-          "runtimeNote": "Single-threaded original upstream CLI in an isolated Web Worker with MEMFS. Up to 64 MiB staged input and collected output. No SharedArrayBuffer required. Only browser-full is bundled in npm; browser-core is separately downloadable from the immutable GitHub Release. No native filesystem, pthreads, external codecs or legacy-frame decoding.",
+          "runtimeNote": "Single-threaded original upstream CLI in an isolated Web Worker with MEMFS. Up to 64 MiB staged input and collected output. No SharedArrayBuffer required. This published npm version is pinned to immutable zstd-v0.3.0 until a separately reviewed new npm version is manually published. Only browser-full is bundled in npm; browser-core is separately downloadable from the immutable GitHub Release. No native filesystem, pthreads, external codecs or legacy-frame decoding.",
           "example": "import { load } from \"@wasm-zoo/zstd\";\n\nconst zstd = await load();\ntry {\n  const original = new TextEncoder().encode(\"WASM Zoo \".repeat(100));\n  const packed = await zstd.exec([\"-q\", \"-f\", \"-5\", \"-o\", \"/result.zst\", \"/input.txt\"], {\n    files: [{ name: \"/input.txt\", data: original }],\n    outputs: [\"/result.zst\"]\n  });\n  console.log(packed.files[0].data);\n} finally {\n  zstd.dispose();\n}"
         },
         "keywords": [
@@ -1301,7 +1304,16 @@
           "compression",
           "decompression",
           "upstream-cli"
-        ]
+        ],
+        "publishedSource": {
+          "releaseTag": "zstd-v0.3.0",
+          "releaseAsset": "zstd-browser-full-1.5.7-zoo-0.3.0.zip",
+          "upstreamVersion": "1.5.7",
+          "upstreamRef": "v1.5.7",
+          "upstreamCommit": "f8745da6ff1ad1e7bab384bd1f9d742439278e99",
+          "builderVersion": "0.3.0",
+          "registryShasum": "29add1aaf6ab0c3e9a3d538166a51a3f70cefa99"
+        }
       }
     },
     {

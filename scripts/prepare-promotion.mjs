@@ -40,7 +40,11 @@ function bumpPatchVersion(value, label) {
 
 const newBuilder = bumpPatchVersion(oldBuilder, "builder version");
 const oldNpmVersion = pkg.npm?.version || null;
-const newNpmVersion = pkg.npm ? bumpPatchVersion(oldNpmVersion, "npm distribution version") : null;
+// An upstream promotion is NOT an npm publication: Zstandard's already public
+// npm 0.3.0 stays pinned to zstd-v0.3.0 until a separate reviewed npm rollout.
+const newNpmVersion = pkg.npm
+  ? (values.slug === "zstd" ? oldNpmVersion : bumpPatchVersion(oldNpmVersion, "npm distribution version"))
+  : null;
 
 function envReplace(text, key, value, file) {
   const pattern = new RegExp(`^${key}=.*$`, "m");
@@ -85,6 +89,18 @@ async function resolveSubmoduleCommit(submodule) {
   return data.sha;
 }
 
+// Defense in depth: the watched tag and exact commit must still be the official
+// stable Facebook/Zstandard Release when the bot actually prepares a PR.
+if (values.slug === "zstd") {
+  if (values.ref !== "v"+values.version || !/^\\d+\\.\\d+\\.\\d+$/.test(values.version)) {
+    throw new Error("Refusing promotion of a noncanonical Zstandard release tag");
+  }
+  const official = await githubJson(`https://api.github.com/repos/facebook/zstd/releases/tags/${encodeURIComponent(values.ref)}`);
+  const target = await githubJson(`https://api.github.com/repos/facebook/zstd/commits/${encodeURIComponent(values.ref)}`);
+  if (official.draft || official.prerelease || official.tag_name !== values.ref || target.sha !== values.commit) {
+    throw new Error("Zstandard promotion ref/commit is not the exact official stable Release");
+  }
+}
 const released = await resolveReleasedDate();
 const versionsFile = path.join(root, "builders", config.dir, "versions.env");
 let versionsText = await fs.readFile(versionsFile, "utf8");
@@ -129,6 +145,26 @@ pkg.release.page = `https://github.com/ttomohisa/wasm-zoo/releases/tag/${pkg.rel
 pkg.release.downloadBase = `https://github.com/ttomohisa/wasm-zoo/releases/download/${pkg.release.tag}/`;
 pkg.release.sourceAsset = `${values.slug}-sources-${values.version}-zoo-${newBuilder}.tar.gz`;
 
+if (values.slug === "zstd") {
+  if (!pkg.npm?.publishedSource ||
+      pkg.npm.publishedSource.releaseTag !== "zstd-v0.3.0" ||
+      pkg.npm.publishedSource.registryShasum !== "29add1aaf6ab0c3e9a3d538166a51a3f70cefa99") {
+    throw new Error("Refusing to overwrite independently published Zstandard npm provenance");
+  }
+  pkg.summary = `Official-source Zstandard ${values.version} WebAssembly, release-gated in browser-core and browser-full; publication remains manual. The independently published npm CLI retains its immutable source until a separate reviewed npm rollout.`;
+  for (const profile of pkg.profiles || []) {
+    profile.features = profile.features.map((value) => value.replaceAll(oldVersion, values.version));
+    profile.output = profile.output.replaceAll(oldVersion, values.version);
+  }
+  for (const item of pkg.comparison || []) item.note = item.note?.replaceAll(oldVersion, values.version);
+  for (const feature of pkg.capabilityMatrix || []) {
+    if (feature.note) feature.note = feature.note.replaceAll(oldVersion, values.version);
+  }
+  pkg.integration.notes = pkg.integration.notes.map((note) =>
+    note.startsWith("Use the immutable zstd-v")
+      ? `After manual publication use the immutable ${pkg.release.tag} GitHub Release; existing npm ${pkg.npm.version} independently retains ${pkg.npm.publishedSource.releaseTag}.`
+      : note);
+}
 if (values.slug === "ghostscript") {
   for (const profile of pkg.profiles || []) {
     profile.externalLibraries = (profile.externalLibraries || []).map((text) =>
@@ -181,9 +217,11 @@ await replaceFile("README.md", (input) => {
   if (pkg.npm && oldNpmVersion && newNpmVersion) {
     text = requireReplace(text, "`" + pkg.npm.package + "@" + oldNpmVersion + "`", "`" + pkg.npm.package + "@" + newNpmVersion + "`", "README npm version");
   }
-  text = requireReplace(text, `## ${pkg.name} ${oldVersion}`, `## ${pkg.name} ${values.version}`, "README package heading");
+  if (values.slug !== "zstd") {
+    text = requireReplace(text, `## ${pkg.name} ${oldVersion}`, `## ${pkg.name} ${values.version}`, "README package heading");
+  }
   text = text.replaceAll(`/assets/${values.slug}/${oldVersion}/`, `/assets/${values.slug}/${values.version}/`);
-  text = text.replaceAll(`${oldVersion}-zoo-${oldBuilder}`, `${values.version}-zoo-${newBuilder}`);
+  if (values.slug !== "zstd") text = text.replaceAll(`${oldVersion}-zoo-${oldBuilder}`, `${values.version}-zoo-${newBuilder}`);
   text = text.replaceAll(`git tag -a ${values.slug}-v${oldBuilder} -m "WASM Zoo ${pkg.name} v${oldBuilder}"`, `git tag -a ${values.slug}-v${newBuilder} -m "WASM Zoo ${pkg.name} v${newBuilder}"`);
   text = text.replaceAll(`git push origin ${values.slug}-v${oldBuilder}`, `git push origin ${values.slug}-v${newBuilder}`);
   // FFmpeg currently documents the tag as a standalone line rather than git commands.
@@ -207,7 +245,8 @@ await replaceFile("README.md", (input) => {
 });
 
 await replaceFile("docs/NPM_DISTRIBUTION.md", (input) => {
-  if (!pkg.npm || !oldNpmVersion || !newNpmVersion) return input;
+  // Zstandard's published npm row truthfully stays on its immutable old source.
+  if (values.slug === "zstd" || !pkg.npm || !oldNpmVersion || !newNpmVersion) return input;
   const lines = input.split("\n");
   const prefix = "| `" + pkg.npm.package + "` |";
   const index = lines.findIndex((line) => line.startsWith(prefix));
@@ -230,6 +269,12 @@ await replaceFile("CHANGELOG.md", (text) => {
 });
 
 await replaceFile(`site/${values.slug}-playground/index.html`, (text) => text.replaceAll(oldVersion, values.version), { optional: true });
+if (values.slug === "zstd") {
+  await replaceFile("site/zstd-playground/release-status.json", () => JSON.stringify({
+    schemaVersion: 1, state: "not-published", tag: pkg.release.tag,
+    upstreamCommit: values.commit
+  }, null, 2) + "\n");
+}
 
 if (values.slug === "libarchive") {
   await replaceFile("builders/libarchive/README.md", (text) => text.replace(`Pinned release: **libarchive ${oldVersion}**`, `Pinned release: **libarchive ${values.version}**`));
