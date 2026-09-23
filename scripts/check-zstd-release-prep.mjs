@@ -11,16 +11,20 @@ const env=read("builders/zstd/versions.env");
 const fail=[];
 const need=(ok,why)=>{if(!ok)fail.push(why);};
 const expected=env.match(/^BUILDER_VERSION=(.+)$/m)?.[1];
-need(expected==="0.3.0", "Unexpected Zstandard release preparation builder pin");
-need(pkg.status==="available" && pkg.release?.tag==="zstd-v0.3.0" &&
+need(/^\\d+\\.\\d+\\.\\d+$/.test(expected||""), "Zstandard builder must retain a reviewed three-part patch version");
+need(pkg.status==="available" && pkg.release?.tag==="zstd-v"+expected &&
   (!pkg.npm || (pkg.npm.status==="published" && pkg.npm.package==="@wasm-zoo/zstd" && pkg.npm.profile==="browser-full")) &&
-  pkg.tracker.candidateMode==="none",
-  "Keep exact reviewed release and published CLI npm distribution; upstream candidate promotion remains separately gated");
-need(pkg.release?.sourceAsset==="zstd-sources-1.5.7-zoo-0.3.0.tar.gz" &&
+  pkg.tracker.candidateMode==="auto" &&
+  JSON.stringify(pkg.tracker.candidateProfiles)===JSON.stringify(["browser-core","browser-full"]),
+  "Keep the reviewed release/dual-profile contract; only a verified candidate may create a review-only promotion PR");
+need(pkg.release?.sourceAsset===`zstd-sources-${pkg.upstream.version}-zoo-${expected}.tar.gz` &&
   pkg.release?.checksumsAsset==="SHA256SUMS.txt" &&
-  pkg.profiles.every(p=>p.playground===true && p.playgroundPath==="./zstd-playground/" && p.releaseAsset),
+  pkg.profiles.every(p=>p.playground===true && p.playgroundPath==="./zstd-playground/" &&
+     p.releaseAsset===`zstd-${p.id}-${pkg.upstream.version}-zoo-${expected}.zip`),
   "Published release/profile metadata must reference the reviewed immutable assets and Playground");
-need(pkg.zoo.builderVersion===expected && pkg.profiles.length===2,
+need(pkg.zoo.builderVersion===expected && pkg.profiles.length===2 &&
+  env.includes("ZSTD_REF=v"+pkg.upstream.version) && /^v\\d+\\.\\d+\\.\\d+$/.test(pkg.upstream.ref) &&
+  env.includes("ZSTD_COMMIT=") && pkg.npm?.publishedSource?.releaseTag==="zstd-v0.3.0",
   "Both reviewed published Zstandard profiles must be preserved");
 for(const entry of ["site/zstd-playground/app.js","scripts/verify-staged-zstd.mjs",
  "builders/zstd/scripts/verify-build-inputs.mjs","builders/zstd/scripts/verify-release-assets.mjs",

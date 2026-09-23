@@ -29,7 +29,7 @@ emcc -O2 -DNDEBUG -DXXH_NAMESPACE=ZSTD_ -DDEBUGLEVEL=0 -DZSTD_LEGACY_SUPPORT=0 -
 gzip -9 -n -c /out/zstd-cli.js > /out/zstd-cli.js.gz
 gzip -9 -n -c /out/zstd-cli.wasm > /out/zstd-cli.wasm.gz
 cp /src/zstd/LICENSE /out/LICENSE-zstd.txt
-cat > /out/features.json <<'EOF'
+cat > /out/features.json <<EOF
 {
   "schemaVersion": 1,
   "package": "zstd",
@@ -42,12 +42,12 @@ cat > /out/features.json <<'EOF'
     "pthreads": false, "simd": false, "network": false
   },
   "runtimeTested": [
-    "zstd --version displays 1.5.7", "CLI compress with a staged MEMFS input",
+    "zstd --version displays ${ZSTD_REF#v}", "CLI compress with a staged MEMFS input",
     "CLI decompress produces byte-identical output", "CLI decodes a native-zstd frame",
     "native zstd decodes a browser-produced CLI frame", "invalid input fails nonzero"
   ],
   "notes": [
-    "Experimental and not yet released to GitHub or npm",
+    "Review-gated release candidate: builds alone never publish binaries or npm",
     "Single-threaded upstream programs/*.c CLI with the reviewed libzstd.a",
     "Other-format gzip/xz/lz4 support and legacy-frame decoding are omitted",
     "All files reside in isolated per-execution Emscripten MEMFS",

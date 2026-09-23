@@ -39,7 +39,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y zstd
           zstd --version
-      - name: Check shell, JavaScript, pins and conservative canary metadata
+      - name: Check shell, JavaScript, reviewed pins and release safety
         run: |
           bash -n builders/zstd/build.sh builders/zstd/scripts/*.sh
           node builders/zstd/scripts/check-repository.mjs
@@ -58,8 +58,11 @@ jobs:
             const fs=require("node:fs");
             const id=process.argv[1], base="builders/zstd/dist/"+id+"/";
             const manifest=JSON.parse(fs.readFileSync(base+"manifest.json","utf8"));
-            if(manifest.profile!==id || manifest.upstream?.version!=="1.5.7" ||
-               manifest.upstream?.commit!=="f8745da6ff1ad1e7bab384bd1f9d742439278e99") {
+            const env=Object.fromEntries(fs.readFileSync("builders/zstd/versions.env","utf8")
+              .split(/\\r?\\n/).filter(s=>/^[A-Z_]+=/.test(s)).map(s=>{const i=s.indexOf("=");return [s.slice(0,i),s.slice(i+1)];}));
+            if(manifest.profile!==id || manifest.upstream?.version!==env.ZSTD_REF.slice(1) ||
+               manifest.upstream?.ref!==env.ZSTD_REF || manifest.upstream?.commit!==env.ZSTD_COMMIT ||
+               manifest.build?.builderVersion!==env.BUILDER_VERSION) {
               throw new Error("CI artifact provenance/profile disagrees with reviewed source pin");
             }
             for(const f of ["provenance.json","sbom.cdx.json","features.json"]) {

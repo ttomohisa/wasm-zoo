@@ -119,10 +119,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          source builders/zstd/versions.env
+          version="${ZSTD_REF#v}"
           gh release create "$GITHUB_REF_NAME" builders/zstd/release/* \
             --verify-tag \
-            --title "WASM Zoo · Zstandard 1.5.7 · browser-core and upstream browser-full" \
-            --notes "Unofficial official-source Zstandard 1.5.7 for browser WebAssembly. Both profiles are built from exact upstream commit f8745da6ff1ad1e7bab384bd1f9d742439278e99 using reviewed Emscripten 6.0.7. browser-core wraps bounded libzstd C APIs; browser-full compiles the original upstream zstd CLI on isolated MEMFS. Real Chromium operations and bidirectional native frame interoperability are release gates. Both binary ZIPs, exact corresponding source/build recipe, standalone in-toto/SLSA provenance, CycloneDX 1.6 SBOM and SHA-256 checksums are included. The browser profiles omit native OS filesystem, pthreads, external codecs, and legacy-frame support."
+            --title "WASM Zoo · Zstandard ${version} · browser-core and upstream browser-full" \
+            --notes "Unofficial official-source Zstandard ${version} for browser WebAssembly. Both profiles are built from exact reviewed upstream commit ${ZSTD_COMMIT} using Emscripten ${EMSDK_VERSION} at ${EMSCRIPTEN_COMMIT}. browser-core wraps bounded libzstd C APIs; browser-full compiles the original upstream zstd CLI on isolated MEMFS. Real Chromium operations and bidirectional native frame interoperability are release gates. Both binary ZIPs, exact corresponding source/build recipe, standalone in-toto/SLSA provenance, CycloneDX 1.6 SBOM and SHA-256 checksums are included. The browser profiles omit native OS filesystem, pthreads, external codecs, and legacy-frame support."
       - name: Refresh published-only Pages after GitHub Release exists
         shell: bash
         env:

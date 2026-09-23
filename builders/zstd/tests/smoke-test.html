@@ -1,6 +1,6 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>WASM Zoo Zstandard 1.5.7 experimental browser smoke</title>
+<title>WASM Zoo Zstandard exact-upstream browser smoke</title>
 <pre id="log">Starting real libzstd browser test...</pre>
 <script type="module">
 import { load } from "./wasm-zoo.mjs";
@@ -13,9 +13,19 @@ const fail = (error) => {
   let zstd;
   try {
     zstd = await load({ baseUrl: "./" });
+    const manifest = await (await fetch("./manifest.json", { cache: "no-store" })).json();
+    const upstreamVersion = manifest.upstream?.version;
+    if (!/^\\d+\\.\\d+\\.\\d+$/.test(upstreamVersion || "") ||
+        manifest.upstream?.ref !== "v" + upstreamVersion ||
+        !/^[0-9a-f]{40}$/i.test(manifest.upstream?.commit || "")) {
+      throw new Error("Missing exact reviewed upstream version/ref/commit in the generated manifest");
+    }
+    const [major, minor, patch] = upstreamVersion.split(".").map(Number);
     const version = await zstd.version();
-    if (version !== 10507) throw new Error("Expected exact native Zstandard 1.5.7 version, received " + version);
-    const original = new TextEncoder().encode("WASM Zoo: Zstandard 1.5.7 exact-upstream real compression roundtrip. ".repeat(150));
+    if (version !== major * 10000 + minor * 100 + patch) {
+      throw new Error("Native ZSTD_versionNumber does not match generated exact-source manifest: " + version);
+    }
+    const original = new TextEncoder().encode("WASM Zoo: Zstandard exact-upstream real compression roundtrip. ".repeat(150));
     const packed = await zstd.compress(original, { level: 5, timeoutMs: 60000 });
     if (packed.length >= original.length) throw new Error("Expected meaningful compression: " + packed.length + " >= " + original.length);
     if (![0x28, 0xb5, 0x2f, 0xfd].every((byte, i) => packed[i] === byte)) throw new Error("Missing standard Zstandard frame magic");
@@ -27,8 +37,8 @@ const fail = (error) => {
     try { await zstd.decompress(new Uint8Array([0x00, 0x01, 0x02, 0x03])); }
     catch (error) { rejected = /Invalid Zstandard frame/.test(error.message); }
     if (!rejected) throw new Error("Malformed Zstandard frame was not rejected");
-    el.textContent = "PASS native 1.5.7 / frame magic / real compress-decompress / malformed-frame rejection";
-    location.hash = "#SMOKE_TEST_PASS_zstd_1.5.7_roundtrip_and_invalid_frame";
+    el.textContent = "PASS native " + upstreamVersion + " / frame magic / real compress-decompress / malformed-frame rejection";
+    location.hash = "#SMOKE_TEST_PASS_zstd_" + upstreamVersion + "_roundtrip_and_invalid_frame";
   } catch (error) { fail(error); }
   finally { zstd?.dispose(); }
 })();

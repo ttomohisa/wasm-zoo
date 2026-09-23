@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><meta charset="utf-8"><title>WASM Zoo experimental native zstd CLI browser smoke</title>
-<pre id="log">Running original Zstandard 1.5.7 CLI smoke…</pre>
+<pre id="log">Running original Zstandard exact-source CLI smoke…</pre>
 <script type="module">
 import { load } from "./wasm-zoo-cli.mjs";
 const out = document.querySelector("#log");
@@ -12,9 +12,16 @@ const abort = (error) => {
   let runner;
   try {
     runner = await load({ baseUrl: "./" });
+    const manifest = await (await fetch("./manifest.json", { cache: "no-store" })).json();
+    const upstreamVersion = manifest.upstream?.version;
+    if (!/^\\d+\\.\\d+\\.\\d+$/.test(upstreamVersion || "") ||
+        manifest.upstream?.ref !== "v" + upstreamVersion ||
+        !/^[0-9a-f]{40}$/i.test(manifest.upstream?.commit || "")) {
+      throw new Error("Missing exact reviewed upstream version/ref/commit in generated CLI manifest");
+    }
     const version = await runner.exec(["--version"], { timeoutMs: 45000 });
     const versionOutput = version.stdout + version.stderr;
-    if (!versionOutput.includes("v1.5.7") && !versionOutput.includes("1.5.7")) {
+    if (!versionOutput.includes("v" + upstreamVersion) && !versionOutput.includes(upstreamVersion)) {
       throw new Error("Actual upstream CLI version mismatch: " + versionOutput.slice(0, 300));
     }
     const input = new Uint8Array(await (await fetch("./native-input.bin")).arrayBuffer());
@@ -65,8 +72,8 @@ const abort = (error) => {
       if (!post.ok) throw new Error("Failed to submit browser CLI frame for native verification");
       nativeStatus = "bidirectional-native-interop";
     }
-    out.textContent = "PASS original zstd CLI 1.5.7 / MEMFS roundtrip / invalid-frame rejection / " + nativeStatus;
-    location.hash = "#SMOKE_TEST_PASS_zstd_1.5.7_upstream_cli_" + nativeStatus;
+    out.textContent = "PASS original zstd CLI " + upstreamVersion + " / MEMFS roundtrip / invalid-frame rejection / " + nativeStatus;
+    location.hash = "#SMOKE_TEST_PASS_zstd_" + upstreamVersion + "_upstream_cli_" + nativeStatus;
   } catch (error) { abort(error); }
   finally { runner?.dispose(); }
 })();
