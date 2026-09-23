@@ -198,7 +198,12 @@ await replaceFile("README.md", (input) => {
   if (pkg.npm && oldNpmVersion && newNpmVersion) {
     text = requireReplace(text, "`" + pkg.npm.package + "@" + oldNpmVersion + "`", "`" + pkg.npm.package + "@" + newNpmVersion + "`", "README npm version");
   }
-  text = requireReplace(text, `## ${pkg.name} ${oldVersion}`, `## ${pkg.name} ${values.version}`, "README package heading");
+  if (values.slug === "zstd" && !text.includes(`## ${pkg.name} ${oldVersion}`)) {
+    // Zstandard is documented through the package table + dedicated v0.15/npm sections,
+    // not a legacy per-package README heading.
+  } else {
+    text = requireReplace(text, `## ${pkg.name} ${oldVersion}`, `## ${pkg.name} ${values.version}`, "README package heading");
+  }
   text = text.replaceAll(`/assets/${values.slug}/${oldVersion}/`, `/assets/${values.slug}/${values.version}/`);
   text = text.replaceAll(`${oldVersion}-zoo-${oldBuilder}`, `${values.version}-zoo-${newBuilder}`);
   text = text.replaceAll(`git tag -a ${values.slug}-v${oldBuilder} -m "WASM Zoo ${pkg.name} v${oldBuilder}"`, `git tag -a ${values.slug}-v${newBuilder} -m "WASM Zoo ${pkg.name} v${newBuilder}"`);
