@@ -63,6 +63,8 @@ const promotion = await read('scripts/prepare-promotion.mjs');
 need(promotion.includes('config.extraEnv'), 'promotion preparer must support extraEnv pins');
 need(promotion.includes('Promotion extra pin verification failed'), 'promotion preparer must verify promoted extra pins');
 need(promotion.includes('README npm version'), 'promotion preparer must update README npm distribution versions');
+need(promotion.includes('config.keepNpmPinned') && promotion.includes('site/zstd-playground/release-status.json'),
+  'Zstandard promotion must keep npm source/version pinned and reset Playground to unpublished for the new reviewed package tag');
 need(promotion.includes('docs/NPM_DISTRIBUTION.md') && promotion.includes('npm distribution release tag'), 'promotion preparer must update npm distribution documentation');
 need(promotion.includes('values.slug === "ghostscript"') && promotion.includes('profile.externalLibraries') && promotion.includes('note.startsWith(`Official Ghostscript ${oldVersion} release source archive is pinned by SHA-256`)'), 'Ghostscript promotion must refresh current-version source-archive metadata');
 

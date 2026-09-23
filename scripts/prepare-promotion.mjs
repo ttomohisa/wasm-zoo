@@ -40,7 +40,7 @@ function bumpPatchVersion(value, label) {
 
 const newBuilder = bumpPatchVersion(oldBuilder, "builder version");
 const oldNpmVersion = pkg.npm?.version || null;
-const newNpmVersion = pkg.npm ? bumpPatchVersion(oldNpmVersion, "npm distribution version") : null;
+const newNpmVersion = pkg.npm && !config.keepNpmPinned ? bumpPatchVersion(oldNpmVersion, "npm distribution version") : null;
 
 function envReplace(text, key, value, file) {
   const pattern = new RegExp(`^${key}=.*$`, "m");
@@ -117,7 +117,7 @@ pkg.upstream.version = values.version;
 pkg.upstream.ref = values.ref;
 pkg.upstream.released = released;
 pkg.zoo.builderVersion = newBuilder;
-if (pkg.npm) pkg.npm.version = newNpmVersion;
+if (pkg.npm && newNpmVersion) pkg.npm.version = newNpmVersion;
 for (const profile of pkg.profiles || []) {
   profile.releaseAsset = `${values.slug}-${profile.id}-${values.version}-zoo-${newBuilder}.zip`;
 }
@@ -128,6 +128,23 @@ pkg.release.tag = `${values.slug}-v${newBuilder}`;
 pkg.release.page = `https://github.com/ttomohisa/wasm-zoo/releases/tag/${pkg.release.tag}`;
 pkg.release.downloadBase = `https://github.com/ttomohisa/wasm-zoo/releases/download/${pkg.release.tag}/`;
 pkg.release.sourceAsset = `${values.slug}-sources-${values.version}-zoo-${newBuilder}.tar.gz`;
+
+if (values.slug === "zstd") {
+  const oldReleaseTag = `zstd-v${oldBuilder}`;
+  const newReleaseTag = `zstd-v${newBuilder}`;
+  const rewrite = (value) => {
+    if (typeof value === "string") return value.replaceAll(oldVersion, values.version).replaceAll(oldReleaseTag, newReleaseTag);
+    if (Array.isArray(value)) return value.map(rewrite);
+    if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, rewrite(child)]));
+    return value;
+  };
+  pkg.summary = rewrite(pkg.summary);
+  pkg.profiles = rewrite(pkg.profiles);
+  pkg.comparison = rewrite(pkg.comparison);
+  pkg.notes = rewrite(pkg.notes);
+  pkg.capabilityMatrix = rewrite(pkg.capabilityMatrix);
+  pkg.integration = rewrite(pkg.integration);
+}
 
 if (values.slug === "ghostscript") {
   for (const profile of pkg.profiles || []) {
@@ -195,6 +212,14 @@ await replaceFile("README.md", (input) => {
     const stop = end >= 0 ? end : text.length;
     text = text.slice(0, start) + text.slice(start, stop).replaceAll(oldVersion, values.version) + text.slice(stop);
   }
+  if (values.slug === "zstd") {
+    const start = text.indexOf(`## Zstandard ${values.version}`);
+    const end = start >= 0 ? text.indexOf("\n## ", start + 4) : -1;
+    if (start >= 0) {
+      const stop = end >= 0 ? end : text.length;
+      text = text.slice(0, start) + text.slice(start, stop).replaceAll(oldVersion, values.version) + text.slice(stop);
+    }
+  }
   if (values.slug === "jq") {
     const start = text.indexOf(`## jq ${values.version}`);
     const end = start >= 0 ? text.indexOf("\n## ", start + 4) : -1;
@@ -235,6 +260,40 @@ if (values.slug === "libarchive") {
   await replaceFile("builders/libarchive/README.md", (text) => text.replace(`Pinned release: **libarchive ${oldVersion}**`, `Pinned release: **libarchive ${values.version}**`));
   await replaceFile("builders/libarchive/docs/ARCHITECTURE.md", (text) => text.replace(`libarchive ${oldVersion}`, `libarchive ${values.version}`));
 }
+if (values.slug === "zstd") {
+  const versionNumber = (version) => {
+    const parts = String(version).split(".").map(Number);
+    if (parts.length !== 3 || parts.some((part) => !Number.isInteger(part) || part < 0)) {
+      throw new Error(`Unsupported Zstandard version: ${version}`);
+    }
+    return parts[0] * 10000 + parts[1] * 100 + parts[2];
+  };
+  const oldNumber = versionNumber(oldVersion);
+  const newNumber = versionNumber(values.version);
+  for (const rel of [
+    "builders/zstd/tests/smoke-test.html",
+    "builders/zstd/tests/smoke-test-cli.html",
+    "builders/zstd/scripts/build-cli.sh"
+  ]) {
+    await replaceFile(rel, (text) => {
+      let next = text.replaceAll(oldVersion, values.version);
+      if (rel.endsWith("tests/smoke-test.html")) next = next.replaceAll(String(oldNumber), String(newNumber));
+      return next;
+    });
+  }
+  await replaceFile("site/zstd-playground/app.js", (text) =>
+    text.replaceAll(oldVersion, values.version)
+      .replace(/const UPSTREAM_SHA = "[0-9a-f]{40}";/, `const UPSTREAM_SHA = "${values.commit}";`)
+  );
+  await replaceFile("site/zstd-playground/release-status.json", (text) => {
+    const state = JSON.parse(text);
+    state.state = "not-published";
+    state.tag = `zstd-v${newBuilder}`;
+    state.upstreamCommit = values.commit;
+    return JSON.stringify(state, null, 2) + "\n";
+  });
+}
+
 if (values.slug === "jq") {
   for (const rel of ["builders/jq/README.md", "builders/jq/docs/ARCHITECTURE.md", "builders/jq/scripts/build-full.sh", "builders/jq/tests/smoke-test.html"]) {
     await replaceFile(rel, (text) => text

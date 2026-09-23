@@ -8,25 +8,31 @@ const pkg = JSON.parse(fs.readFileSync(path.join(root, "../../packages/zstd/pack
 const failures = [];
 const need = (ok, reason) => { if (!ok) failures.push(reason); };
 const env = read("versions.env");
-for (const token of [
-  "BUILDER_VERSION=0.3.0",
-  "EMSDK_VERSION=6.0.7",
-  "EMSCRIPTEN_COMMIT=4483d70a78098ed5d860dff2dc21f3025b2da2ee",
-  "ZSTD_REF=v1.5.7",
-  "ZSTD_COMMIT=f8745da6ff1ad1e7bab384bd1f9d742439278e99"
-]) need(env.includes(token), "Missing required exact pin " + token);
-need(pkg.status === "available" && (!pkg.npm || (pkg.npm.status === "published" && pkg.npm.package === "@wasm-zoo/zstd" && pkg.npm.profile === "browser-full")) && pkg.release?.tag === "zstd-v0.3.0",
+const envMap = Object.fromEntries(env.split(/\r?\n/).filter((line) => /^[A-Z_]+=/.test(line)).map((line) => {
+  const index = line.indexOf("=");
+  return [line.slice(0, index), line.slice(index + 1)];
+}));
+for (const key of ["BUILDER_VERSION", "EMSDK_VERSION", "EMSCRIPTEN_COMMIT", "ZSTD_REF", "ZSTD_COMMIT"]) {
+  need(Boolean(envMap[key]), "Missing required exact pin " + key);
+}
+need(pkg.upstream?.ref === envMap.ZSTD_REF && pkg.upstream?.version === envMap.ZSTD_REF.replace(/^v/, ""),
+  "Reviewed package upstream version/ref must match exact versions.env");
+need(pkg.zoo?.builderVersion === envMap.BUILDER_VERSION, "Reviewed builder version must match versions.env");
+need(pkg.status === "available" && (!pkg.npm || (pkg.npm.status === "published" && pkg.npm.package === "@wasm-zoo/zstd" && pkg.npm.profile === "browser-full")) && pkg.release?.tag === `zstd-v${envMap.BUILDER_VERSION}`,
   "Published Zstandard must retain the reviewed zstd-v0.3.0 release and the registered browser-full npm distribution");
-need(pkg.release?.sourceAsset === "zstd-sources-1.5.7-zoo-0.3.0.tar.gz" &&
+need(pkg.release?.sourceAsset === `zstd-sources-${pkg.upstream.version}-zoo-${envMap.BUILDER_VERSION}.tar.gz` &&
   pkg.release?.checksumsAsset === "SHA256SUMS.txt",
   "Published Zstandard release metadata must retain exact source/checksum assets");
 need(pkg.zoo?.sourceBundle === true && pkg.zoo?.checksums === true &&
   pkg.zoo?.supplyChainMetadata === true,
   "Published Zstandard must expose source, checksum, provenance and SBOM metadata");
-need(pkg.tracker?.candidateMode === "none", "Automatic upstream candidate promotion remains separately gated after first public release");
-need(pkg.upstream?.version === "1.5.7" && pkg.profiles?.length === 2 &&
+need(pkg.tracker?.candidateMode === "auto" && JSON.stringify(pkg.tracker?.candidateProfiles) === JSON.stringify(["browser-core", "browser-full"]),
+  "Zstandard automatic candidate promotion must remain dual-profile and review-only");
+need(pkg.upstream?.version === envMap.ZSTD_REF.replace(/^v/, "") && pkg.profiles?.length === 2 &&
   pkg.profiles[0]?.id === "browser-core" && pkg.profiles[1]?.id === "browser-full",
   "Must preserve published browser-core and separate upstream browser-full profile");
+need(pkg.npm?.source?.releaseTag && pkg.npm?.source?.releaseAsset && pkg.npm?.source?.upstreamVersion && pkg.npm?.source?.builderVersion,
+  "Published npm distribution must retain an explicit immutable source identity across package promotions");
 need(pkg.profiles[1]?.arbitraryCli === true && pkg.profiles[1]?.workerFs === true &&
   pkg.profiles[1]?.sharedArrayBuffer === false, "CLI profile must document original CLI, isolated MEMFS and no SAB");
 for (const file of ["runtime/browser-zstd.js", "runtime/browser-zstd-worker.js", "runtime/wasm-zoo.mjs",
@@ -48,8 +54,10 @@ for (const token of ["ZSTD_compress(", "ZSTD_decompress(", "ZSTD_compressBound("
   need(c.includes(token), "Missing real upstream C API operation " + token);
 }
 const browser = read("tests/smoke-test.html");
-for (const token of ["version !== 10507", "zstd.compress(", "zstd.decompress(", "0x28, 0xb5, 0x2f, 0xfd",
-  "restored.some", "Invalid Zstandard frame", "SMOKE_TEST_PASS_zstd_1.5.7"]) {
+const versionParts = pkg.upstream.version.split(".").map(Number);
+const versionNumber = versionParts[0] * 10000 + versionParts[1] * 100 + versionParts[2];
+for (const token of [`version !== ${versionNumber}`, "zstd.compress(", "zstd.decompress(", "0x28, 0xb5, 0x2f, 0xfd",
+  "restored.some", "Invalid Zstandard frame", `SMOKE_TEST_PASS_zstd_${pkg.upstream.version}`]) {
   need(browser.includes(token), "Browser smoke must verify " + token);
 }
 const worker = read("runtime/browser-zstd-worker.js");
@@ -67,8 +75,8 @@ const docker = read("docker/Dockerfile");
 need(docker.includes('PROFILE" = "browser-core"') && docker.includes('PROFILE" = "browser-full"') &&
   docker.includes("build-cli.sh"), "Docker profile dispatch must build both profiles from exact-source checkout");
 const cliTest = read("tests/smoke-test-cli.html");
-for (const token of ["--version", "1.5.7", "/packed.zst", "/restored.bin", "0x28, 0xb5, 0x2f, 0xfd",
-  "native-fixture.zst", "__native-output", "native-restored.bin", "SMOKE_TEST_PASS_zstd_1.5.7_upstream_cli"]) {
+for (const token of ["--version", pkg.upstream.version, "/packed.zst", "/restored.bin", "0x28, 0xb5, 0x2f, 0xfd",
+  "native-fixture.zst", "__native-output", "native-restored.bin", `SMOKE_TEST_PASS_zstd_${pkg.upstream.version}_upstream_cli`]) {
   need(cliTest.includes(token), "CLI browser fixture missing a real test: " + token);
 }
 const harness = read("scripts/smoke-test.mjs");
