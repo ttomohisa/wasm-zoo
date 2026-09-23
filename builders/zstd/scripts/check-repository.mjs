@@ -15,12 +15,18 @@ for (const token of [
   "ZSTD_REF=v1.5.7",
   "ZSTD_COMMIT=f8745da6ff1ad1e7bab384bd1f9d742439278e99"
 ]) need(env.includes(token), "Missing required exact pin " + token);
-need(pkg.status === "experimental" && !pkg.npm && !pkg.release,
-  "Release preparation must not falsely mark Zstandard published before manual tagging");
-need(pkg.tracker?.candidateMode === "none", "Automation must be disabled until the canary is proven");
+need(pkg.status === "available" && !pkg.npm && pkg.release?.tag === "zstd-v0.3.0",
+  "Published Zstandard must record the reviewed zstd-v0.3.0 GitHub Release without claiming npm");
+need(pkg.release?.sourceAsset === "zstd-sources-1.5.7-zoo-0.3.0.tar.gz" &&
+  pkg.release?.checksumsAsset === "SHA256SUMS.txt",
+  "Published Zstandard release metadata must retain exact source/checksum assets");
+need(pkg.zoo?.sourceBundle === true && pkg.zoo?.checksums === true &&
+  pkg.zoo?.supplyChainMetadata === true,
+  "Published Zstandard must expose source, checksum, provenance and SBOM metadata");
+need(pkg.tracker?.candidateMode === "none", "Automatic upstream candidate promotion remains separately gated after first public release");
 need(pkg.upstream?.version === "1.5.7" && pkg.profiles?.length === 2 &&
   pkg.profiles[0]?.id === "browser-core" && pkg.profiles[1]?.id === "browser-full",
-  "Must preserve experimental browser-core and separate upstream browser-full profile");
+  "Must preserve published browser-core and separate upstream browser-full profile");
 need(pkg.profiles[1]?.arbitraryCli === true && pkg.profiles[1]?.workerFs === true &&
   pkg.profiles[1]?.sharedArrayBuffer === false, "CLI profile must document original CLI, isolated MEMFS and no SAB");
 for (const file of ["runtime/browser-zstd.js", "runtime/browser-zstd-worker.js", "runtime/wasm-zoo.mjs",
@@ -91,5 +97,5 @@ if (failures.length) {
   failures.forEach((reason) => console.error("[NG] " + reason));
   process.exitCode = 1;
 } else {
-  console.log("[OK] exact-source Zstandard core + upstream CLI experimental builder contracts");
+  console.log("[OK] exact-source published Zstandard core + upstream CLI release contracts");
 }
