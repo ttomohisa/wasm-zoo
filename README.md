@@ -24,9 +24,12 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 - Zstandard Playground: https://ttomohisa.github.io/wasm-zoo/zstd-playground/
 
 
-## Zstandard npm Phase 4 (review-only canary)
+## Zstandard npm Phase 4: manually published, Registry-backed
 
-The published Zstandard 1.5.7 `browser-full` upstream CLI is now prepared as `@wasm-zoo/zstd@0.3.0` **npm pre-publication canary**. The [review-only workflow](.github/workflows/npm-zstd-canary.yml) checks immutable release digests and tests the packed tarball in Vite across Chromium, Firefox and WebKit before a human initially publishes it. The existing six npm packages and public 18-operation Registry-backed matrix remain unchanged until the initial registry publish and separate post-publication review.
+The official Zstandard 1.5.7 `browser-full` original upstream CLI is now on npm as [`@wasm-zoo/zstd@0.3.0`](https://www.npmjs.com/package/@wasm-zoo/zstd). Its initial publication was explicitly approved by the maintainer and uses the **same immutable-release-derived tarball** that passed the three-browser Phase 4A canary: Registry `dist.shasum` is `29add1aaf6ab0c3e9a3d538166a51a3f70cefa99`. The separate `browser-core` library is available from the GitHub Release, not this npm tarball.
+
+The reviewed Phase 4B Lab adds the actual **npm Registry version** to Chromium, Firefox and WebKit using production Vite real-operation tests, expanding six packages / 18 results to seven packages / 21 results. Only a successful reviewed `main` Lab run may populate the public dashboard. npm and reviewed source pins are never changed automatically.
+
 
 ## Available packages
 
@@ -38,13 +41,13 @@ The published Zstandard 1.5.7 `browser-full` upstream CLI is now prepared as `@w
 | libvips | 8.18.6 | 0.5.2 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.2` |
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
-| Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` (canary; not public) |
+| Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
 
 The project version is **WASM Zoo v0.14.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
 ### npm distribution
 
-WASM Zoo v0.13.0 completed npm rollout for the original six packages. Zstandard is now a seventh published GitHub Release package, while its npm rollout remains a separate reviewed phase.
+WASM Zoo v0.13.0 completed npm rollout for the original six packages. Zstandard became the seventh npm distribution after a reviewed tarball passed Chromium, Firefox and WebKit prepublication tests and the maintainer manually published it.
 
 ```text
 npm install @wasm-zoo/jq
@@ -53,15 +56,16 @@ npm install @wasm-zoo/imagemagick
 npm install @wasm-zoo/ghostscript
 npm install @wasm-zoo/libvips
 npm install @wasm-zoo/ffmpeg
+npm install @wasm-zoo/zstd
 ```
 
 The FFmpeg npm package intentionally pins the LGPL `browser-full` profile; the separate `browser-full-gpl` / libx264 Release profile is not bundled into the same npm tarball. FFmpeg and libvips both use pthreads, so consumers must serve them with cross-origin isolation / SharedArrayBuffer support. The Vite/Chromium smoke supplies COOP/COEP; FFmpeg's fixture performs a real raw-PCM → WAV CLI conversion while libvips continues to exercise its library API. See [`docs/NPM_DISTRIBUTION.md`](docs/NPM_DISTRIBUTION.md).
 
 Future npm versions use Trusted Publisher OIDC with `npm stage publish`; the temporary rollout bootstrap/direct-publish path has been removed.
 
-### v0.14 Cross-browser Compatibility Lab
+### Cross-browser Compatibility Lab (v0.14 baseline, Zstandard extension)
 
-The browser lab executes **the six exact published npm distributions** in Chromium, Firefox and WebKit, using real package operations after a production Vite build—not an instantiate-only test. FFmpeg and libvips also verify COOP/COEP/CORP and measured threaded-runtime capabilities before execution. A genuinely missing browser capability is labeled `unsupported` only with explicit evidence; an unexpected error is `fail`.
+The browser lab executes **the seven exact published npm distributions** in Chromium, Firefox and WebKit, using real package operations after a production Vite build—not an instantiate-only test. FFmpeg and libvips also verify COOP/COEP/CORP and measured threaded-runtime capabilities before execution. A genuinely missing browser capability is labeled `unsupported` only with explicit evidence; an unexpected error is `fail`.
 
 The [public browser compatibility dashboard](https://ttomohisa.github.io/wasm-zoo/#compatibility) reads the **latest completed main-branch GitHub Actions evidence**. It displays tested package versions, browser engines, test time and a link to the source run. If the current latest run is failing, pending, stale, mismatched or missing artifacts, the site reports **not tested** rather than copying a previous passing result. Weekly checks refresh the evidence. See [Cross-browser Lab documentation](docs/CROSS_BROWSER_LAB.md) for the status policy.
 
