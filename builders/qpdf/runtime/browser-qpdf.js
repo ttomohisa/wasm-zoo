@@ -30,7 +30,7 @@
       try {
         importScripts(coreJsUrl);
         if (typeof createQpdfCore !== "function") throw new Error("createQpdfCore factory was not found.");
-        core = await createQpdfCore({ wasmBinary: new Uint8Array(wasmBytes), locateFile: (name) => new URL(name, coreJsUrl).href, noInitialRun: true, print: (m) => sendLog("stdout", m), printErr: (m) => sendLog("stderr", m) });
+        core = await createQpdfCore({ wasmBinary: new Uint8Array(wasmBytes), thisProgram: "qpdf", locateFile: (name) => new URL(name, coreJsUrl).href, noInitialRun: true, print: (m) => sendLog("stdout", m), printErr: (m) => sendLog("stderr", m) });
         for (const dir of dirs) { try { core.FS.mkdirTree(dir); } catch (_) {} }
         for (const file of files) { ensureParent(core.FS, file.name); core.FS.writeFile(file.name, new Uint8Array(file.data)); }
         let exitCode = 0;

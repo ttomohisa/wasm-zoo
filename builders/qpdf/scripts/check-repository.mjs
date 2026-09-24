@@ -26,9 +26,9 @@ for(const key of ["EMSCRIPTEN_COMMIT","QPDF_COMMIT"]) need(/^[0-9a-f]{40}$/.test
 need(/^[0-9a-f]{64}$/.test(env.QPDF_SOURCE_SHA256||""),"QPDF source SHA-256 must be exact");
 const docker=await read("docker/Dockerfile"); need(docker.includes("emscripten/emsdk:${EMSDK_VERSION}")&&docker.includes("fetch-qpdf.sh"),"Dockerfile must use pinned toolchain and verified source");
 const build=await read("scripts/build-full.sh");
-for(const marker of ["embuilder build zlib libjpeg","-fwasm-exceptions","REQUIRE_CRYPTO_NATIVE=ON","USE_IMPLICIT_CRYPTO=OFF","INCOMING_MODULE_JS_API=wasmBinary,locateFile,print,printErr","qpdf-core.wasm"]) need(build.includes(marker),"QPDF build missing contract marker: "+marker);
+for(const marker of ["embuilder build zlib libjpeg","-fwasm-exceptions","REQUIRE_CRYPTO_NATIVE=ON","USE_IMPLICIT_CRYPTO=OFF","INCOMING_MODULE_JS_API=wasmBinary,locateFile,print,printErr,thisProgram","qpdf-core.wasm"]) need(build.includes(marker),"QPDF build missing contract marker: "+marker);
 const fetcher=await read("scripts/fetch-qpdf.sh"); need(fetcher.includes("sha256sum -c")&&fetcher.includes('refs/tags/$QPDF_REF^{}'),"QPDF fetch must verify official digest and peeled tag commit");
-const runtime=await read("runtime/browser-qpdf.js"); need(runtime.includes("createQpdfCore")&&runtime.includes("WasmZooQpdf"),"QPDF runtime core contract mismatch");
+const runtime=await read("runtime/browser-qpdf.js"); need(runtime.includes("createQpdfCore")&&runtime.includes("WasmZooQpdf")&&runtime.includes('thisProgram: "qpdf"'),"QPDF runtime core contract mismatch");
 const consumer=await read("runtime/wasm-zoo.mjs"); need(consumer.includes('package: "qpdf"')&&consumer.includes('kind: "cli"'),"QPDF Consumer API metadata mismatch");
 const smoke=await read("tests/smoke-test.html"); for(const marker of ["--empty","--check","--linearize","--encrypt","--decrypt"]) need(smoke.includes(marker),"QPDF smoke missing real operation: "+marker);
 if(errors.length){console.error("[NG] "+errors.length+" QPDF repository check(s)");for(const e of errors)console.error(" - "+e);process.exit(1);}
