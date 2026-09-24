@@ -373,7 +373,7 @@ try {
   assert(verifyWorkflow.includes("check-metadata-contract.mjs"), "Verify workflow must validate provenance/SBOM release contracts");
   const candidate = await fs.readFile(path.join(root, ".github/workflows/upstream-candidate.yml"), "utf8");
   assert(candidate.includes("prepare-candidate.mjs") && candidate.includes("browser smoke test"), "Candidate workflow must substitute isolated pins and run browser smoke tests");
-  assert(candidate.includes("adapter-gated") && candidate.includes("libvips-readiness"), "libvips candidate workflow must preserve the adapter gate");
+  assert(candidate.includes("inputs.slug == 'libvips'") && candidate.includes("profile: [browser-core, browser-full]") && candidate.includes("--wasm-vips-commit") && candidate.includes("--emscripten-patch-commit"), "libvips candidate workflow must require the immutable adapter bundle and test both browser profiles");
   assert(candidate.includes("inputs.slug == 'jq'") && candidate.includes("JQ_WASM_BROWSER"), "Candidate workflow must support isolated jq upstream candidates");
   assert(candidate.includes("prepare-promotion.mjs") && candidate.includes("gh pr create"), "Successful automatic candidates must create review-only promotion PRs");
   assert(candidate.includes("gh workflow run verify.yml") && candidate.includes("build-${{ inputs.slug }}.yml"), "Promotion automation must dispatch repository/build checks explicitly");
