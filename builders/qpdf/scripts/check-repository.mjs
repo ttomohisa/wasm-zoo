@@ -37,4 +37,4 @@ const consumer=await read("runtime/wasm-zoo.mjs"); need(consumer.includes('packa
 const smoke=await read("tests/smoke-test.html"); for(const marker of ["makeOnePagePdf","--check","--linearize","--encrypt","--decrypt"]) need(smoke.includes(marker),"QPDF smoke missing real operation: "+marker);
 const releasePrep=await read("scripts/prepare-release.sh"); for(const marker of ["qpdf-browser-full-$QPDF_VERSION-zoo-$BUILDER_VERSION.zip","qpdf-sources-$QPDF_VERSION-zoo-$BUILDER_VERSION.tar.gz","zlib-LICENSE.txt","libjpeg-LICENSE.txt"]) need(releasePrep.includes(marker),"QPDF release prep missing reviewed asset/license marker: "+marker);
 if(errors.length){console.error("[NG] "+errors.length+" QPDF repository check(s)");for(const e of errors)console.error(" - "+e);process.exit(1);}
-console.log("[OK] QPDF 12.4.1 experimental builder contract verified");
+console.log("[OK] QPDF 12.4.1 reviewed release contract verified");

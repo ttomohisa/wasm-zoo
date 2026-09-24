@@ -3,7 +3,8 @@
 ## Unreleased
 
 - promote QPDF 12.4.1 from the experimental onboarding canary to an `available` reviewed package release configuration with tag `qpdf-v0.1.0`, immutable binary/source/provenance/SBOM/checksum assets and exact zlib/libjpeg license texts copied from the pinned Emscripten port sources;
-- add a QPDF Playground staged fail-closed from the published GitHub Release, supporting local PDF structural checks, linearization, AES-256 encryption and password decryption while keeping automatic candidates and npm publication disabled for separate review.
+- add a QPDF Playground staged fail-closed from the published GitHub Release, supporting local PDF structural checks, linearization, AES-256 encryption and password decryption while keeping automatic candidates and npm publication disabled for separate review;
+- classify a reviewed package whose human-created tag does not exist yet as Release Health `pending` rather than `error`; once a tag exists, a missing GitHub Release remains an error.
 
 - add QPDF 12.4.1 as the first `experimental` Package Onboarding canary, pinned to the official release archive SHA-256, signed-tag commit and Emscripten 6.0.8 toolchain without patching upstream QPDF;
 - build the original qpdf CLI with native QPDF crypto, Emscripten zlib/libjpeg ports and wasm-native exceptions, gated by a real Chromium one-page-PDF/check/linearize/AES-256 encrypt-decrypt smoke test while keeping Release, Playground, npm and automatic promotion disabled.
