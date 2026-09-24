@@ -45,6 +45,7 @@ The reviewed-pin model is unchanged: automation may prepare a PR, but it never a
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 | Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
+| QPDF | 12.4.1 | 0.1.0 | `browser-full` | yes | not published |
 
 The project version is **WASM Zoo v0.16.1**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
