@@ -14,6 +14,7 @@ need(pkg.tracker?.candidateMode==="none"&&pkg.tracker.candidateProfiles?.length=
 need(pkg.zoo?.builderVersion===env.BUILDER_VERSION,"QPDF builder version mismatch");
 need(pkg.zoo?.toolchain==="Emscripten "+env.EMSDK_VERSION,"QPDF toolchain metadata mismatch");
 need(profile?.target==="browser"&&profile?.threads===false&&profile?.sharedArrayBuffer===false,"QPDF browser-full runtime contract mismatch");
+need(profile?.binaryLicense==="Apache-2.0 / zlib / IJG","QPDF manifest binary license mismatch");
 need(profile?.playground===true&&profile?.playgroundPath==="./qpdf-playground/","QPDF reviewed release must expose the Playground");
 need(profile?.releaseAsset==="qpdf-browser-full-12.4.1-zoo-0.1.0.zip","QPDF release asset name mismatch");
 need(pkg.release?.tag==="qpdf-v0.1.0","QPDF release tag mismatch");
@@ -43,4 +44,4 @@ const smoke=await read("tests/smoke-test.html"); for(const marker of ["makeOnePa
 const release=await read("scripts/prepare-release.sh");
 for(const marker of ['qpdf-v${BUILDER_VERSION}',"sha512sum -c","zlib-LICENSE.txt","libjpeg-README.txt","emscripten-port-recipes","provenance-browser-full.json","sbom-browser-full.cdx.json"]) need(release.includes(marker),"QPDF release prep missing contract marker: "+marker);
 if(errors.length){console.error("[NG] "+errors.length+" QPDF repository check(s)");for(const e of errors)console.error(" - "+e);process.exit(1);}
-console.log("[OK] QPDF 12.4.1 experimental builder contract verified");
+console.log("[OK] QPDF 12.4.1 reviewed release builder contract verified");
