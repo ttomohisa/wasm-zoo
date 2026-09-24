@@ -1,0 +1,68 @@
+name: Build QPDF experimental browser WASM
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "builders/qpdf/**"
+      - "packages/qpdf/**"
+      - ".github/workflows/build-qpdf.yml"
+  pull_request:
+    paths:
+      - "builders/qpdf/**"
+      - "packages/qpdf/**"
+      - "site/catalog.json"
+      - "site/upstream-status.json"
+      - ".github/workflows/build-qpdf.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Static builder checks
+        shell: bash
+        run: |
+          bash -n builders/qpdf/build.sh builders/qpdf/scripts/*.sh
+          node --check builders/qpdf/runtime/browser-qpdf.js
+          node --check builders/qpdf/runtime/wasm-zoo.mjs
+          node --check builders/qpdf/scripts/smoke-test.mjs
+          node builders/qpdf/scripts/check-repository.mjs
+      - name: Build official-source QPDF CLI and run real Chromium smoke
+        shell: bash
+        working-directory: builders/qpdf
+        env:
+          QPDF_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - name: Show generated manifest
+        run: cat builders/qpdf/dist/browser-full/manifest.json
+      - name: Upload experimental canary artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-zoo-qpdf-experimental-browser-full-${{ github.sha }}
+          path: |
+            builders/qpdf/dist/browser-full/qpdf-core.js
+            builders/qpdf/dist/browser-full/qpdf-core.wasm
+            builders/qpdf/dist/browser-full/browser-qpdf.js
+            builders/qpdf/dist/browser-full/wasm-zoo.mjs
+            builders/qpdf/dist/browser-full/manifest.json
+            builders/qpdf/dist/browser-full/features.json
+            builders/qpdf/dist/browser-full/provenance.json
+            builders/qpdf/dist/browser-full/sbom.cdx.json
+            builders/qpdf/dist/browser-full/qpdf-config.txt
+            builders/qpdf/dist/browser-full/BUILDINFO.txt
+            builders/qpdf/dist/browser-full/LICENSE-QPDF.txt
+            builders/qpdf/dist/browser-full/NOTICE-QPDF.md
+          if-no-files-found: error
+          retention-days: 14

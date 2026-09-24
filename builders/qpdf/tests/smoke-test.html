@@ -1,0 +1,35 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>WASM Zoo QPDF experimental smoke test</title>
+<pre id="log">boot</pre>
+<script type="module">
+import { load } from "./wasm-zoo.mjs";
+const logEl=document.querySelector("#log"),lines=[];
+const onLog=({stream,message})=>{lines.push(`${stream}: ${message}`);logEl.textContent=lines.slice(-120).join("\n");};
+const fail=(error)=>{console.error(error);location.hash=`#SMOKE_TEST_FAIL_${encodeURIComponent(error?.message||String(error))}`;};
+const file=(result,name)=>result.files.find((entry)=>entry.name===name)?.data;
+const pdfHeader=(bytes)=>new TextDecoder().decode(bytes.slice(0,5));
+(async()=>{try{
+  location.hash="#SMOKE_TEST_RUNNING_version";
+  const qpdf=await load({baseUrl:"./"});
+  const version=await qpdf.exec(["--version"],{timeoutMs:30000,onLog});
+  if(!version.stdout.includes("qpdf version 12.4.1")) throw new Error(`qpdf --version mismatch: ${version.stdout}`);
+  location.hash="#SMOKE_TEST_RUNNING_create";
+  const created=await qpdf.exec(["--empty","/base.pdf"],{outputs:["/base.pdf"],timeoutMs:30000,onLog});
+  const base=file(created,"/base.pdf"); if(!base||pdfHeader(base)!=="%PDF-") throw new Error("qpdf --empty did not create a PDF");
+  location.hash="#SMOKE_TEST_RUNNING_check";
+  await qpdf.exec(["--check","/base.pdf"],{files:[{name:"/base.pdf",data:base}],timeoutMs:30000,onLog});
+  location.hash="#SMOKE_TEST_RUNNING_linearize";
+  const linear=await qpdf.exec(["/base.pdf","/linear.pdf","--linearize"],{files:[{name:"/base.pdf",data:base}],outputs:["/linear.pdf"],timeoutMs:30000,onLog});
+  const linearPdf=file(linear,"/linear.pdf"); if(!linearPdf||pdfHeader(linearPdf)!=="%PDF-") throw new Error("linearized output is not a PDF");
+  await qpdf.exec(["--check","/linear.pdf"],{files:[{name:"/linear.pdf",data:linearPdf}],timeoutMs:30000,onLog});
+  location.hash="#SMOKE_TEST_RUNNING_crypto";
+  const encrypted=await qpdf.exec(["--encrypt","user","owner","256","--","/linear.pdf","/encrypted.pdf"],{files:[{name:"/linear.pdf",data:linearPdf}],outputs:["/encrypted.pdf"],timeoutMs:30000,onLog});
+  const encryptedPdf=file(encrypted,"/encrypted.pdf"); if(!encryptedPdf||pdfHeader(encryptedPdf)!=="%PDF-") throw new Error("encrypted output is not a PDF");
+  const decrypted=await qpdf.exec(["--password=user","--decrypt","/encrypted.pdf","/decrypted.pdf"],{files:[{name:"/encrypted.pdf",data:encryptedPdf}],outputs:["/decrypted.pdf"],timeoutMs:30000,onLog});
+  const decryptedPdf=file(decrypted,"/decrypted.pdf"); if(!decryptedPdf||pdfHeader(decryptedPdf)!=="%PDF-") throw new Error("decrypted output is not a PDF");
+  await qpdf.exec(["--check","/decrypted.pdf"],{files:[{name:"/decrypted.pdf",data:decryptedPdf}],timeoutMs:30000,onLog});
+  qpdf.dispose();
+  location.hash="#SMOKE_TEST_PASS_QPDF_12.4.1_empty_check_linearize_AES256";
+}catch(error){fail(error);}})();
+</script>
