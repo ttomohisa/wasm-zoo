@@ -132,7 +132,7 @@
   "notes": [
     "QPDF 12.4.1 is pinned to signed tag v12.4.1, exact commit c37f83ae468abb6cc741f43b2f6fdeb66e550ffb and the GitHub-published official source archive SHA-256.",
     "The browser smoke starts from a deterministic one-page PDF and verifies --check, linearization, AES-256 encryption, password decryption and a final structural check.",
-    "The reviewed binary includes QPDF license/notice files plus the exact zlib and libjpeg license texts obtained from the pinned Emscripten port sources during the build.",
+    "The reviewed binary includes QPDF license/notice files plus the exact zlib license file and IJG libjpeg license-bearing README obtained from the pinned Emscripten port sources during the build.",
     "Automatic upstream promotion and npm publication remain disabled in this release stage; both are separate reviewed follow-up work."
   ],
   "integration": {

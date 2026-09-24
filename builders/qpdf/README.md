@@ -36,6 +36,6 @@ A successful build runs a real Chromium smoke test: version, structural validati
 
 After this release configuration is merged and reviewed, the maintainer may create the annotated package tag `qpdf-v0.1.0`. The tag-triggered release workflow rebuilds QPDF from the reviewed official source archive, reruns the real Chromium PDF smoke, prepares binary/corresponding-source/provenance/SBOM/checksum assets, and then creates the GitHub Release.
 
-The binary ZIP includes QPDF's license/notice plus the exact zlib and libjpeg license texts copied from the pinned Emscripten port source cache used by the build.
+The binary ZIP includes QPDF's license/notice plus the exact zlib license file and the IJG libjpeg license-bearing README copied from the pinned Emscripten port source cache used by the build.
 
 The public QPDF Playground is staged only from that published immutable Release. Until the tag exists, Pages fails closed and does not invent or substitute QPDF runtime assets.

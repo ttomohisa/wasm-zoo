@@ -21,8 +21,16 @@ find_port_license() {
   [[ -n "$result" && -s "$result" ]] || { echo "[ERROR] license text not found for Emscripten port: $pattern" >&2; exit 1; }
   printf '%s\n' "$result"
 }
+find_port_readme() {
+  local pattern="$1" result
+  result="$(find "$PORTS_CACHE" -type f \( -iname 'README' -o -iname 'README.*' \) -ipath "*$pattern*" | LC_ALL=C sort | head -n 1)"
+  [[ -n "$result" && -s "$result" ]] || { echo "[ERROR] license-bearing README not found for Emscripten port: $pattern" >&2; exit 1; }
+  printf '%s\n' "$result"
+}
 ZLIB_LICENSE="$(find_port_license zlib)"
-LIBJPEG_LICENSE="$(find_port_license libjpeg)"
+LIBJPEG_LICENSE="$(find_port_readme libjpeg)"
+grep -q "LEGAL ISSUES" "$LIBJPEG_LICENSE" || { echo "[ERROR] libjpeg README does not contain IJG LEGAL ISSUES" >&2; exit 1; }
+grep -q "Independent JPEG Group" "$LIBJPEG_LICENSE" || { echo "[ERROR] libjpeg README does not identify the Independent JPEG Group" >&2; exit 1; }
 
 COMMON_FLAGS="-O2 -fwasm-exceptions"
 LINK_FLAGS="-O2 -fwasm-exceptions -sDYNAMIC_EXECUTION=0 -sMODULARIZE=1 -sEXPORT_NAME=createQpdfCore -sENVIRONMENT=web,worker -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=33554432 -sMAXIMUM_MEMORY=536870912 -sSTACK_SIZE=2097152 -sINVOKE_RUN=0 -sEXIT_RUNTIME=0 -sFORCE_FILESYSTEM=1 -sINCOMING_MODULE_JS_API=wasmBinary,locateFile,print,printErr,thisProgram -sEXPORTED_RUNTIME_METHODS=FS,callMain"

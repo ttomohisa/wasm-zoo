@@ -59,7 +59,7 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" builders/qpdf/release/* \
             --verify-tag \
             --title "WASM Zoo · QPDF ${QPDF_VERSION} · browser build" \
-            --notes "Unofficial current-upstream QPDF CLI build for browser WebAssembly. Built from the exact signed QPDF v${QPDF_VERSION} tag/commit and GitHub-published official source archive SHA-256 with Emscripten ${EMSDK_VERSION}. The release uses QPDF native crypto plus pinned Emscripten zlib/libjpeg ports and includes corresponding source/build recipe, QPDF and third-party license texts, in-toto/SLSA provenance, CycloneDX 1.6 SBOM and SHA-256 checksums. Chromium smoke testing validates a deterministic one-page PDF, linearization and AES-256 encrypt/decrypt before publication."
+            --notes "Unofficial current-upstream QPDF CLI build for browser WebAssembly. Built from the exact signed QPDF v${QPDF_VERSION} tag/commit and GitHub-published official source archive SHA-256 with Emscripten ${EMSDK_VERSION}. The release uses QPDF native crypto plus pinned Emscripten zlib/libjpeg ports and includes corresponding source/build recipe, QPDF license/notice plus the pinned zlib license and IJG libjpeg legal README, in-toto/SLSA provenance, CycloneDX 1.6 SBOM and SHA-256 checksums. Chromium smoke testing validates a deterministic one-page PDF, linearization and AES-256 encrypt/decrypt before publication."
       - name: Refresh Pages so the Playground stages this release
         shell: bash
         env:
