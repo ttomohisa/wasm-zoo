@@ -5,7 +5,7 @@
   "summary": "Official-source QPDF CLI compiled as an experimental browser WebAssembly canary with exact source, tag/commit and toolchain pins.",
   "category": "document",
   "status": "experimental",
-  "order": 30,
+  "order": 50,
   "upstream": {
     "version": "12.4.1",
     "ref": "v12.4.1",
