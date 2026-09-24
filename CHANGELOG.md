@@ -3,7 +3,7 @@
 ## Unreleased
 
 - add QPDF 12.4.1 as the first `experimental` Package Onboarding canary, pinned to the official release archive SHA-256, signed-tag commit and Emscripten 6.0.8 toolchain without patching upstream QPDF;
-- build the original qpdf CLI with native QPDF crypto, Emscripten zlib/libjpeg ports and wasm-native exceptions, gated by a real Chromium empty-PDF/check/linearize/AES-256 encrypt-decrypt smoke test while keeping Release, Playground, npm and automatic promotion disabled.
+- build the original qpdf CLI with native QPDF crypto, Emscripten zlib/libjpeg ports and wasm-native exceptions, gated by a real Chromium one-page-PDF/check/linearize/AES-256 encrypt-decrypt smoke test while keeping Release, Playground, npm and automatic promotion disabled.
 
 - add a manifest-driven Package Onboarding Contract that validates staged planned/experimental/available package surfaces, executes every active builder repository checker, and fails when build/release/Playground/automatic-candidate wiring is incomplete;
 - remove the hard-coded seven-builder validation list from Verify catalog so future package builders are discovered through the onboarding contract, while retaining package-specific source/toolchain checks in each builder.

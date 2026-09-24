@@ -40,7 +40,7 @@ cat > /out/features.json <<EOF_JSON
   "tools": ["qpdf"],
   "features": {"upstreamCli": true, "pdfCheck": true, "linearization": true, "nativeCrypto": true, "encryption": true, "decryption": true, "wasmExceptions": true, "pthreads": false, "simd": false, "network": false},
   "filesystem": "Emscripten MEMFS",
-  "runtimeTested": ["qpdf --version", "empty PDF creation", "qpdf --check", "linearize", "AES-256 encrypt/decrypt"],
+  "runtimeTested": ["qpdf --version", "one-page PDF fixture check", "linearize", "AES-256 encrypt/decrypt"],
   "notes": ["Built from the official QPDF release archive after SHA-256 verification.", "QPDF itself is unpatched; browser adaptation is supplied through Emscripten flags and the thin Zoo runtime.", "QPDF native crypto is used without OpenSSL or GnuTLS.", "The initial canary is single-threaded and requires no SharedArrayBuffer."]
 }
 EOF_JSON

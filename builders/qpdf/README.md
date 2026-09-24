@@ -30,4 +30,4 @@ or:
 ./build.sh browser-full
 ```
 
-A successful build runs a real Chromium smoke test: version, empty PDF creation, structural check, linearization, AES-256 encryption/decryption, and final validation. It then emits the normal Zoo provenance and CycloneDX metadata. None of these canary artifacts are published automatically.
+A successful build runs a real Chromium smoke test: version, structural validation of a deterministic one-page PDF fixture, linearization, AES-256 encryption/decryption, and final validation. It then emits the normal Zoo provenance and CycloneDX metadata. None of these canary artifacts are published automatically.

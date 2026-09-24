@@ -1967,7 +1967,7 @@
           "profiles": {
             "browser-full": "included"
           },
-          "note": "Chromium smoke exercises --check and a real PDF rewrite."
+          "note": "Chromium smoke validates a deterministic one-page PDF fixture and performs a real PDF rewrite."
         },
         {
           "feature": "Linearization",
@@ -2006,7 +2006,7 @@
         "Experimental v0.17 onboarding canary: no GitHub package Release, Playground, npm publication or automatic promotion is enabled yet.",
         "The build consumes the official qpdf-12.4.1.tar.gz release asset and verifies its GitHub-published SHA-256 before extraction.",
         "The reviewed v12.4.1 annotated tag peels to exact upstream commit c37f83ae468abb6cc741f43b2f6fdeb66e550ffb.",
-        "The browser build uses QPDF's built-in native crypto provider, Emscripten zlib/libjpeg ports and wasm-native exception handling.",
+        "The browser smoke begins from a deterministic one-page PDF fixture; the browser build uses QPDF's built-in native crypto provider, Emscripten zlib/libjpeg ports and wasm-native exception handling.",
         "Promotion automation remains disabled until the experimental build and browser smoke are reviewed."
       ]
     }

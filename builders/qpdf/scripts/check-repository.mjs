@@ -30,6 +30,6 @@ for(const marker of ["embuilder build zlib libjpeg","-fwasm-exceptions","REQUIRE
 const fetcher=await read("scripts/fetch-qpdf.sh"); need(fetcher.includes("sha256sum -c")&&fetcher.includes('refs/tags/$QPDF_REF^{}'),"QPDF fetch must verify official digest and peeled tag commit");
 const runtime=await read("runtime/browser-qpdf.js"); need(runtime.includes("createQpdfCore")&&runtime.includes("WasmZooQpdf")&&runtime.includes('thisProgram: "qpdf"'),"QPDF runtime core contract mismatch");
 const consumer=await read("runtime/wasm-zoo.mjs"); need(consumer.includes('package: "qpdf"')&&consumer.includes('kind: "cli"'),"QPDF Consumer API metadata mismatch");
-const smoke=await read("tests/smoke-test.html"); for(const marker of ["--empty","--check","--linearize","--encrypt","--decrypt"]) need(smoke.includes(marker),"QPDF smoke missing real operation: "+marker);
+const smoke=await read("tests/smoke-test.html"); for(const marker of ["makeOnePagePdf","--check","--linearize","--encrypt","--decrypt"]) need(smoke.includes(marker),"QPDF smoke missing real operation: "+marker);
 if(errors.length){console.error("[NG] "+errors.length+" QPDF repository check(s)");for(const e of errors)console.error(" - "+e);process.exit(1);}
 console.log("[OK] QPDF 12.4.1 experimental builder contract verified");
