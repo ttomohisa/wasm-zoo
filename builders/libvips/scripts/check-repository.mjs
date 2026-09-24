@@ -17,18 +17,31 @@ for (const rel of ['scripts/smoke-test.mjs', 'scripts/compare-profiles.mjs', 'ru
   }
 }
 
-const env = read('versions.env');
-for (const expected of [
-  'BUILDER_VERSION=0.5.2',
-  'EMSDK_VERSION=6.0.8',
-  'EMSCRIPTEN_COMMIT=aeb67926e7de656da38bc807d83050af93578758',
-  'LIBVIPS_REF=v8.18.6',
-  'LIBVIPS_COMMIT=426af3f44246fce9cfa8dd51a353aa4dfd48c553',
-  'WASM_VIPS_COMMIT=79103664d21ce00982e80571cf12f58bd3dcc5f3',
-  'WASM_VIPS_VERSION=0.0.18',
-  'WASM_VIPS_LIBVIPS_PATCH_COMMIT=13e85e04f69050fe634fa24539a045be731838fd',
-  'WASM_VIPS_EMSCRIPTEN_PATCH_COMMIT=4bc39ffdd215e69e29d1b01c93217334cc732bd4'
-]) need(env.includes(expected), `pin missing: ${expected}`);
+const envText = read('versions.env');
+const env = Object.fromEntries(envText.split(/\r?\n/)
+  .map((line) => line.trim())
+  .filter((line) => line && !line.startsWith('#') && line.includes('='))
+  .map((line) => {
+    const i = line.indexOf('=');
+    return [line.slice(0, i), line.slice(i + 1).replace(/^[\"']|[\"']$/g, '')];
+  }));
+const pkg = JSON.parse(read('../../packages/libvips/package.json'));
+need(/^\d+\.\d+\.\d+$/.test(env.BUILDER_VERSION || ''), 'builder version must be x.y.z');
+need(env.BUILDER_VERSION === pkg.zoo?.builderVersion, 'builder version must match package metadata');
+need(/^\d+\.\d+\.\d+$/.test(env.EMSDK_VERSION || ''), 'EMSDK_VERSION must be x.y.z');
+need(env.EMSCRIPTEN_REF === env.EMSDK_VERSION, 'EMSCRIPTEN_REF must match the emsdk image version');
+need(pkg.zoo?.toolchain === `Emscripten ${env.EMSDK_VERSION}`, 'package toolchain must match EMSDK_VERSION');
+need(env.LIBVIPS_REF === `v${pkg.upstream?.version}`, 'LIBVIPS_REF must match package upstream version');
+need(/^\d+\.\d+\.\d+$/.test(env.WASM_VIPS_VERSION || ''), 'WASM_VIPS_VERSION must be x.y.z');
+need(pkg.referenceWasm?.packageVersion === env.WASM_VIPS_VERSION, 'reference wasm-vips version must match the pinned adapter');
+need(pkg.tracker?.candidateMode === 'auto', 'libvips must use fail-closed automatic adapter candidates');
+for (const key of [
+  'EMSCRIPTEN_COMMIT',
+  'LIBVIPS_COMMIT',
+  'WASM_VIPS_COMMIT',
+  'WASM_VIPS_LIBVIPS_PATCH_COMMIT',
+  'WASM_VIPS_EMSCRIPTEN_PATCH_COMMIT'
+]) need(/^[0-9a-f]{40}$/i.test(env[key] || ''), `${key} must be an exact 40-character commit`);
 
 for (const profile of ['browser-core', 'browser-full']) {
   need(fs.existsSync(path.join(root, 'profiles', profile, 'profile.env')), `profile missing: ${profile}`);
