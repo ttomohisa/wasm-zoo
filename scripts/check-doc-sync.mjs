@@ -18,6 +18,17 @@ need(readme.includes(`The project version is **WASM Zoo v${projectVersion}**`), 
 need(changelog.includes(`## v${projectVersion}\n`), "CHANGELOG must contain the current reviewed project version");
 need(changelog.startsWith("# Changelog\n\n## Unreleased\n"), "CHANGELOG must retain a separate Unreleased section");
 
+const [projectMajor, projectMinor] = projectVersion.split(".").map(Number);
+const releaseReviewPath = `docs/V${projectMajor}${String(projectMinor).padStart(2, "0")}_RELEASE.md`;
+let releaseReview = "";
+try { releaseReview = await read(releaseReviewPath); } catch {}
+need(Boolean(releaseReview), `${releaseReviewPath} must exist for the current reviewed project version`);
+if (releaseReview) {
+  need(releaseReview.startsWith(`# WASM Zoo v${projectVersion} — project release review\n`), `${releaseReviewPath} heading must match v${projectVersion}`);
+  need(releaseReview.includes("libvips") && releaseReview.includes("adapter-gated"), `${releaseReviewPath} must preserve the libvips adapter gate`);
+  need(releaseReview.includes("never automatically merges, tags, creates a GitHub Release or publishes npm"), `${releaseReviewPath} must preserve the human release boundary`);
+}
+
 function rowByPrefix(text, prefix) {
   return text.split("\n").find((line) => line.startsWith(prefix)) || "";
 }
