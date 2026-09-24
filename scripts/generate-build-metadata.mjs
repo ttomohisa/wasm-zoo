@@ -23,6 +23,9 @@ const profile = pkg.profiles?.find((item) => item.id === profileId);
 if (!profile) throw new Error(`unknown profile ${slug}/${profileId}`);
 const manifest = await readJson(path.join(dist, 'manifest.json'));
 if (manifest.profile !== profileId) throw new Error(`manifest profile mismatch: ${manifest.profile} != ${profileId}`);
+const builtUpstreamVersion = manifest.upstream?.version || pkg.upstream.version;
+const builtUpstreamRef = manifest.upstream?.ref || pkg.upstream.ref;
+const builtBuilderVersion = manifest.build?.builderVersion || pkg.zoo.builderVersion;
 
 function parseEnv(text) {
   const result = {};
@@ -121,10 +124,10 @@ const provenance = {
       buildType: `https://github.com/${repository}/tree/${process.env.GITHUB_SHA || 'main'}/builders/${slug}`,
       externalParameters: {
         package: slug,
-        upstreamVersion: pkg.upstream.version,
-        upstreamRef: pkg.upstream.ref,
+        upstreamVersion: builtUpstreamVersion,
+        upstreamRef: builtUpstreamRef,
         profile: profileId,
-        builderVersion: pkg.zoo.builderVersion,
+        builderVersion: builtBuilderVersion,
         target: profile.target,
         threads: profile.threads,
         simd: profile.simd
@@ -168,16 +171,16 @@ function componentFromExternal(text, index) {
 const components = [];
 components.push({
   type: 'library',
-  'bom-ref': `upstream:${slug}:${pkg.upstream.version}`,
+  'bom-ref': `upstream:${slug}:${builtUpstreamVersion}`,
   name: pkg.name,
-  version: pkg.upstream.version,
+  version: builtUpstreamVersion,
   licenses: [{ license: { name: pkg.upstream.license } }],
   externalReferences: [
     ...(pkg.upstream.repository ? [{ type: 'vcs', url: pkg.upstream.repository }] : []),
     ...(pkg.upstream.homepage ? [{ type: 'website', url: pkg.upstream.homepage }] : [])
   ],
   properties: [
-    { name: 'wasm-zoo:upstream-ref', value: pkg.upstream.ref || '' },
+    { name: 'wasm-zoo:upstream-ref', value: builtUpstreamRef || '' },
     { name: 'wasm-zoo:upstream-commit', value: manifest.upstream?.commit || versions[`${slug.toUpperCase()}_COMMIT`] || '' }
   ].filter((item) => item.value)
 });
@@ -212,11 +215,11 @@ try {
   }
 } catch {}
 
-const bomRef = `pkg:generic/wasm-zoo/${slug}@${encodeURIComponent(pkg.upstream.version)}?profile=${encodeURIComponent(profileId)}&zoo=${encodeURIComponent(pkg.zoo.builderVersion)}`;
+const bomRef = `pkg:generic/wasm-zoo/${slug}@${encodeURIComponent(builtUpstreamVersion)}?profile=${encodeURIComponent(profileId)}&zoo=${encodeURIComponent(builtBuilderVersion)}`;
 const sbom = {
   bomFormat: 'CycloneDX',
   specVersion: '1.6',
-  serialNumber: `urn:uuid:${deterministicUuid(`${slug}|${profileId}|${pkg.upstream.version}|${pkg.zoo.builderVersion}`)}`,
+  serialNumber: `urn:uuid:${deterministicUuid(`${slug}|${profileId}|${builtUpstreamVersion}|${builtBuilderVersion}`)}`,
   version: 1,
   metadata: {
     timestamp: generatedAt,
@@ -233,11 +236,11 @@ const sbom = {
       'bom-ref': bomRef,
       group: 'wasm-zoo',
       name: slug,
-      version: pkg.upstream.version,
+      version: builtUpstreamVersion,
       licenses: [{ license: { name: profile.binaryLicense } }],
       properties: [
         { name: 'wasm-zoo:profile', value: profileId },
-        { name: 'wasm-zoo:builder-version', value: pkg.zoo.builderVersion },
+        { name: 'wasm-zoo:builder-version', value: builtBuilderVersion },
         { name: 'wasm-zoo:target', value: profile.target },
         { name: 'wasm-zoo:sbom-completeness', value: slug === 'ghostscript' ? 'bundled component names are notice-derived; versions may be unspecified' : 'best-effort exact inventory from pinned build inputs' }
       ]

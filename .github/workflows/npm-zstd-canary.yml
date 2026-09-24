@@ -48,11 +48,13 @@ jobs:
         run: |
           set -euo pipefail
           test "$(node -p "require('./packages/zstd/package.json').npm.status")" = published
-          test "$(node -p "require('./packages/zstd/package.json').release.tag")" = zstd-v0.3.0
+          tag="$(node -p "require('./packages/zstd/package.json').npm.source.releaseTag")"
+          asset="$(node -p "require('./packages/zstd/package.json').npm.source.releaseAsset")"
+          test -n "$tag" && test -n "$asset"
           mkdir -p npm-zstd/download npm-zstd/input npm-zstd/artifacts
-          gh release download zstd-v0.3.0 --repo "$GITHUB_REPOSITORY" --dir npm-zstd/download
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir npm-zstd/download
           (cd npm-zstd/download && sha256sum -c SHA256SUMS.txt)
-          unzip -q npm-zstd/download/zstd-browser-full-1.5.7-zoo-0.3.0.zip -d npm-zstd/input
+          unzip -q "npm-zstd/download/$asset" -d npm-zstd/input
           node scripts/verify-npm-zstd-release.mjs --input npm-zstd/input
       - name: Prepare reviewed npm overlay, synthetic npm contracts and tarball
         run: |

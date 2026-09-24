@@ -50,5 +50,57 @@ jobs:
         run: node builders/jq/scripts/check-repository.mjs
       - name: Validate experimental Zstandard builder
         run: node builders/zstd/scripts/check-repository.mjs
+      - name: Rehearse future Zstandard candidate and review-only promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          next_version="$(node -e 'const p=require("./packages/zstd/package.json");const a=p.upstream.version.split(".").map(Number);a[2]++;process.stdout.write(a.join("."))')"
+          fake_commit="1111111111111111111111111111111111111111"
+          candidate_dir="$(mktemp -d)"
+          promotion_dir="$(mktemp -d)"
+          cleanup() {
+            git worktree remove --force "$candidate_dir" >/dev/null 2>&1 || true
+            git worktree remove --force "$promotion_dir" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          git worktree add --detach "$candidate_dir" HEAD
+          (
+            cd "$candidate_dir"
+            node scripts/prepare-candidate.mjs --slug zstd --version "$next_version" --ref "v$next_version" --commit "$fake_commit"
+            grep -q "$next_version" builders/zstd/tests/smoke-test.html
+            grep -q "$next_version" builders/zstd/tests/smoke-test-cli.html
+          )
+          git worktree remove --force "$candidate_dir"
+
+          git worktree add --detach "$promotion_dir" HEAD
+          (
+            cd "$promotion_dir"
+            old_npm="$(node -p 'require("./packages/zstd/package.json").npm.version')"
+            old_source="$(node -p 'JSON.stringify(require("./packages/zstd/package.json").npm.source)')"
+            node scripts/prepare-promotion.mjs --slug zstd --version "$next_version" --ref "v$next_version" --commit "$fake_commit" --released "2026-01-01T00:00:00Z"
+            npm run catalog
+            npm run check
+            npm run metadata:check
+            node - <<'NODE' "$old_npm" "$old_source" "$next_version"
+          const pkg = require("./packages/zstd/package.json");
+          const fs = require("fs");
+          const oldNpm = process.argv[2];
+          const oldSource = process.argv[3];
+          const nextVersion = process.argv[4];
+          if (pkg.upstream.version !== nextVersion) throw new Error("promotion did not move the reviewed upstream version");
+          if (pkg.npm.version !== oldNpm || JSON.stringify(pkg.npm.source) !== oldSource) {
+            throw new Error("package promotion changed the already-published npm identity");
+          }
+          if ((pkg.notes || []).filter((x) => x.includes("@wasm-zoo/zstd")).some((x) => x.includes(nextVersion))) {
+            throw new Error("promotion rewrote historical npm notes to the new package version");
+          }
+          const state = JSON.parse(fs.readFileSync("site/zstd-playground/release-status.json","utf8"));
+          if (state.state !== "not-published" || state.upstreamCommit !== "1111111111111111111111111111111111111111") {
+            throw new Error("promotion did not fail-close the Playground for the new reviewed release");
+          }
+          NODE
+            git diff --check
+          )
       - name: Ensure generated catalog is committed
         run: git diff --exit-code -- site/catalog.json

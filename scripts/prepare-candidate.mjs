@@ -81,6 +81,33 @@ if (config.submodule) {
 }
 await fs.writeFile(file, text);
 
+// Zstandard browser fixtures assert the exact upstream version. Candidate preparation
+// adjusts those assertions only in this isolated candidate workspace.
+if (values.slug === "zstd") {
+  const oldVersion = packageMeta.upstream.version;
+  const parseVersionNumber = (version) => {
+    const parts = String(version).split(".").map(Number);
+    if (parts.length !== 3 || parts.some((part) => !Number.isInteger(part) || part < 0)) {
+      throw new Error(`Unsupported Zstandard version: ${version}`);
+    }
+    return parts[0] * 10000 + parts[1] * 100 + parts[2];
+  };
+  const oldNumber = parseVersionNumber(oldVersion);
+  const newNumber = parseVersionNumber(values.version);
+  for (const rel of [
+    "builders/zstd/tests/smoke-test.html",
+    "builders/zstd/tests/smoke-test-cli.html",
+    "builders/zstd/scripts/build-cli.sh"
+  ]) {
+    const target = path.join(root, rel);
+    let body = await fs.readFile(target, "utf8");
+    if (!body.includes(oldVersion)) throw new Error(`Could not locate Zstandard ${oldVersion} assertion in ${rel}`);
+    body = body.replaceAll(oldVersion, values.version);
+    if (rel.endsWith("tests/smoke-test.html")) body = body.replaceAll(String(oldNumber), String(newNumber));
+    await fs.writeFile(target, body);
+  }
+}
+
 // jq's browser smoke test intentionally verifies the exact `jq --version` output.
 // Candidate preparation updates only the isolated candidate workspace, never the reviewed pin.
 if (values.slug === "jq") {

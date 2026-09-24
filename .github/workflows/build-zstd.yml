@@ -57,13 +57,26 @@ jobs:
           node -e '
             const fs=require("node:fs");
             const id=process.argv[1], base="builders/zstd/dist/"+id+"/";
+            const env=Object.fromEntries(fs.readFileSync("builders/zstd/versions.env","utf8")
+              .split(/\r?\n/).filter(line=>/^[A-Z_]+=/.test(line)).map(line=>{const i=line.indexOf("=");return[line.slice(0,i),line.slice(i+1)];}));
             const manifest=JSON.parse(fs.readFileSync(base+"manifest.json","utf8"));
-            if(manifest.profile!==id || manifest.upstream?.version!=="1.5.7" ||
-               manifest.upstream?.commit!=="f8745da6ff1ad1e7bab384bd1f9d742439278e99") {
+            if(manifest.profile!==id || manifest.upstream?.version!==env.ZSTD_REF.replace(/^v/,"") ||
+               manifest.upstream?.ref!==env.ZSTD_REF || manifest.upstream?.commit!==env.ZSTD_COMMIT ||
+               manifest.build?.builderVersion!==env.BUILDER_VERSION) {
               throw new Error("CI artifact provenance/profile disagrees with reviewed source pin");
             }
             for(const f of ["provenance.json","sbom.cdx.json","features.json"]) {
               if(!fs.statSync(base+f).size) throw new Error("Missing "+f);
+            }
+            const provenance=JSON.parse(fs.readFileSync(base+"provenance.json","utf8"));
+            const sbom=JSON.parse(fs.readFileSync(base+"sbom.cdx.json","utf8"));
+            const params=provenance.predicate?.buildDefinition?.externalParameters||{};
+            if(params.upstreamVersion!==manifest.upstream.version ||
+               params.upstreamRef!==manifest.upstream.ref ||
+               params.builderVersion!==manifest.build.builderVersion ||
+               sbom.metadata?.component?.version!==manifest.upstream.version ||
+               !sbom.metadata?.component?.properties?.some(p=>p.name==="wasm-zoo:builder-version" && p.value===manifest.build.builderVersion)) {
+              throw new Error("Candidate provenance/SBOM does not describe the actual manifest build identity");
             }
             console.log("[OK] experimental "+id+" exact upstream version and supply-chain metadata");
           ' '${{ matrix.profile }}'

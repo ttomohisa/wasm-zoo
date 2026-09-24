@@ -47,8 +47,8 @@ jobs:
           const meta = pkg.profiles.find((entry) => entry.id === profile);
           if (!pkg.npm || pkg.npm.status !== 'published' || !meta) throw new Error(`${slug} is not an npm-enabled distribution package`);
           if (!['pack', 'stage'].includes(mode)) throw new Error(`Unsupported npm mode: ${mode}`);
-          console.log(`tag=${pkg.release.tag}`);
-          console.log(`asset=${meta.releaseAsset}`);
+          console.log(`tag=${pkg.npm.source?.releaseTag || pkg.release.tag}`);
+          console.log(`asset=${pkg.npm.source?.releaseAsset || meta.releaseAsset}`);
           console.log(`npm_name=${pkg.npm.package}`);
           console.log(`npm_version=${pkg.npm.version}`);
           NODE

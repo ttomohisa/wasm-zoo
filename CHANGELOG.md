@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-_No changes yet._
+- enable Zstandard stable-release automation with exact-tag/commit candidates for both browser profiles, mandatory browser-full bidirectional native-zstd interoperability, and review-only promotion PRs while keeping merge/tag/release/npm publication human-controlled;
+- keep the already-published Zstandard npm source identity separately pinned so future package promotions cannot silently rewrite or republish `@wasm-zoo/zstd`;
 
 ## v0.15.0
 

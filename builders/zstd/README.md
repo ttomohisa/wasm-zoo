@@ -1,28 +1,38 @@
-# Zstandard v0.15 — release-preparation phase (review-only)
+# Zstandard browser builder
 
-This is a **review-only canary**, not an existing published seventh package.
+WASM Zoo builds Zstandard from the exact reviewed upstream tag/commit in `versions.env`. The package exposes two independently released browser profiles:
 
-- Official upstream: Meta/facebook Zstandard **v1.5.7**, exact commit `f8745da6ff1ad1e7bab384bd1f9d742439278e99`.
-- Toolchain: Emscripten **6.0.7**, exact compiler commit.
-- Build: two independent experimental profiles from the exact upstream source: `browser-core` (narrow in-memory C API) and `browser-full` (original `programs/*.c` CLI on Emscripten MEMFS). Both single-threaded without SharedArrayBuffer.
-- Browser test: actual compression, canonical frame magic `28 b5 2f fd`, exact roundtrip, verified `ZSTD_versionNumber()`, and invalid-frame rejection. No instantiate-only pass is accepted.
-- CLI `browser-full` is subject to native/browser interoperability tests. Native pthreads, optional external gzip/xz/lz4 codecs and legacy-frame decode are excluded; dictionaries are linked but not yet release-validated. No native filesystem or shell pipe semantics.
-- The JS API buffers staged input and requested outputs, with a total 64 MiB limit for each; it is not a streaming JS API.
-- npm distribution, an immutable GitHub Release, and Playground are future reviewed phases.
-- Source license: upstream BSD license option. The GPL alternative is **not** selected.
+- `browser-core`: bounded one-shot libzstd compression/decompression API in a dedicated Worker;
+- `browser-full`: the original upstream `zstd` CLI running on staged Emscripten MEMFS files.
 
-The existing six published packages, 18-cell public cross-browser matrix, package versions and reviewed pins remain unchanged. The Zstandard upstream tracker starts with `candidateMode: none` until this candidate has a proven browser build and the candidate pipeline has been separately reviewed.
+Both profiles are single-threaded and do not require SharedArrayBuffer. The real browser smoke tests verify standard Zstandard frame output, exact roundtrip and malformed-frame rejection. `browser-full` additionally requires **bidirectional native zstd interoperability** in CI before a candidate or release can pass.
 
-Run on Linux/macOS: `./builders/zstd/build.sh browser-core` or `./builders/zstd/build.sh browser-full`.
-Run on Windows: `./builders/zstd/build.bat browser-core` or `./builders/zstd/build.bat browser-full`.
-Set `ZSTD_WASM_BROWSER` to your Chrome/Chromium executable if not auto-detected.
+## Upstream automation
 
-The experimental CLI CI job also requires an installed native `zstd` executable for bidirectional frame tests. Local builds can omit it; the browser will still run CLI roundtrip and invalid-input tests. Detailed test gates: [Zstandard CLI Lab](../../docs/ZSTD_CLI_LAB.md).
+Stable GitHub Releases detected by the watcher are tested only in an isolated candidate workspace. The candidate substitutes the exact release tag/commit, rewrites exact-version smoke assertions for that workspace, builds **both** profiles, and requires the normal Chromium operation gates plus native interoperability for `browser-full`.
 
-After both profiles pass, a **separate** review-only PR can add corresponding-source bundles, a Playground and formal release tooling. A later npm/cross-browser rollout remains independent. Humans retain control of merges, tags, releases and npm publication.
+A successful candidate may create a **review-only promotion PR** that updates the reviewed source pin, builder patch version, package/release metadata and Playground pending-release identity. Automation never merges, creates a package tag, creates a GitHub Release or publishes npm.
 
-## Phase 3: release-ready assets and Playground
+The existing public npm distribution is deliberately independent from a package promotion. Its `npm.source` metadata keeps the exact immutable GitHub Release that produced the published tarball until a later npm-specific reviewed change updates that source/version. This prevents a new package pin from pretending an unpublished npm version already exists.
 
-The proposed manually created release tag is **zstd-v0.3.0**. It does not exist merely because this PR merges. The PR CI builds both profiles, assembles and verifies two ZIP files, fetches exact official source, bundles the Zoo build recipes, and verifies SHA-256, SLSA provenance and CycloneDX SBOM. The CI bundle is review-only, not public.
+libvips remains adapter-gated; Zstandard joining the automatic set does not change that policy.
 
-The site/zstd-playground/ page is publicly disabled until Pages downloads and checksums an actual reviewed GitHub Release. Local previews are explicitly restricted to localhost. See docs/ZSTD_RELEASE.md for commands.
+## Local build
+
+Linux/macOS:
+
+```sh
+./builders/zstd/build.sh browser-core
+./builders/zstd/build.sh browser-full
+```
+
+Windows PowerShell / cmd:
+
+```text
+builders\zstd\build.bat browser-core
+builders\zstd\build.bat browser-full
+```
+
+Set `ZSTD_WASM_BROWSER` to Chrome/Chromium when automatic detection is unavailable. Native interop is mandatory on CI for `browser-full`; local browser-only runs may omit the native executable.
+
+The exact current pins are always authoritative in `builders/zstd/versions.env`, and package/release metadata must agree with those pins.
