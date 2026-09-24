@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-23T08:42:00.850Z",
+  "generatedAt": "2026-09-24T08:34:59.522Z",
   "hasUpdates": false,
   "packages": [
     {
@@ -109,6 +109,33 @@
       }
     },
     {
+      "slug": "zstd",
+      "name": "Zstandard",
+      "status": "ok",
+      "pinned": "1.5.7",
+      "pinnedRef": "v1.5.7",
+      "pinnedReleased": "2025-02-19",
+      "latest": "1.5.7",
+      "latestRef": "v1.5.7",
+      "latestCommit": "f8745da6ff1ad1e7bab384bd1f9d742439278e99",
+      "latestReleased": "2025-02-19T21:50:11Z",
+      "updateAvailable": false,
+      "lagDays": 0,
+      "gap": {
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
+      },
+      "url": "https://github.com/facebook/zstd/releases/tag/v1.5.7",
+      "candidate": {
+        "mode": "auto",
+        "profiles": [
+          "browser-core",
+          "browser-full"
+        ]
+      }
+    },
+    {
       "slug": "libvips",
       "name": "libvips",
       "status": "ok",
@@ -128,7 +155,7 @@
       },
       "url": "https://github.com/libvips/libvips/releases/tag/v8.18.6",
       "candidate": {
-        "mode": "adapter-gated",
+        "mode": "auto",
         "profiles": [
           "browser-core",
           "browser-full"
@@ -165,31 +192,6 @@
           "sourceUrl": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10080/ghostscript-10.08.0.tar.xz",
           "sourceSha256": "c20492bc8ebb96c87fa2e52a0926e1cda8cde95d66145e018ac713fed5da38cf"
         }
-      }
-    },
-    {
-      "slug": "zstd",
-      "name": "Zstandard",
-      "status": "error",
-      "pinned": "1.5.7",
-      "pinnedRef": "v1.5.7",
-      "pinnedReleased": "2025-02-19",
-      "latest": null,
-      "latestRef": null,
-      "latestCommit": null,
-      "latestReleased": null,
-      "updateAvailable": false,
-      "lagDays": null,
-      "gap": {
-        "kind": "unknown",
-        "label": "Pending watcher verification",
-        "versionsBehind": null
-      },
-      "url": "https://github.com/facebook/zstd/releases/tag/v1.5.7",
-      "error": "First upstream watcher refresh pending",
-      "candidate": {
-        "mode": "none",
-        "profiles": []
       }
     },
     {

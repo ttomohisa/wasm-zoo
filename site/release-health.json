@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-23T15:15:56.864Z",
+  "generatedAt": "2026-09-24T08:35:09.892Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -171,6 +171,49 @@
       }
     },
     {
+      "slug": "zstd",
+      "name": "Zstandard",
+      "tag": "zstd-v0.3.0",
+      "release": {
+        "state": "ok",
+        "label": "Assets present",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/zstd-v0.3.0",
+        "publishedAt": "2026-09-23T14:54:50Z",
+        "assetCount": 10,
+        "missingAssets": []
+      },
+      "supplyChain": {
+        "state": "ok",
+        "label": "Provenance + SBOM published",
+        "expected": [
+          "provenance-browser-core.json",
+          "sbom-browser-core.cdx.json",
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ],
+        "missing": []
+      },
+      "buildGate": {
+        "state": "ok",
+        "label": "Passed",
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/35877438423",
+        "runId": 35877438423
+      },
+      "playground": {
+        "state": "ok",
+        "label": "HTTP 200",
+        "url": "https://ttomohisa.github.io/wasm-zoo/zstd-playground/"
+      },
+      "freshness": {
+        "state": "ok",
+        "label": "Current"
+      },
+      "overall": {
+        "state": "ok",
+        "label": "Healthy"
+      }
+    },
+    {
       "slug": "libvips",
       "name": "libvips",
       "tag": "libvips-v0.5.2",
@@ -253,57 +296,13 @@
         "state": "ok",
         "label": "Healthy"
       }
-    },
-    {
-      "slug": "zstd",
-      "name": "Zstandard",
-      "tag": "zstd-v0.3.0",
-      "release": {
-        "state": "ok",
-        "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/zstd-v0.3.0",
-        "publishedAt": "2026-09-23T14:54:50Z",
-        "assetCount": 10,
-        "missingAssets": []
-      },
-      "supplyChain": {
-        "state": "ok",
-        "label": "Provenance + SBOM published",
-        "expected": [
-          "provenance-browser-core.json",
-          "sbom-browser-core.cdx.json",
-          "provenance-browser-full.json",
-          "sbom-browser-full.cdx.json"
-        ],
-        "missing": []
-      },
-      "buildGate": {
-        "state": "ok",
-        "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/35877438423",
-        "runId": 35877438423
-      },
-      "playground": {
-        "state": "unknown",
-        "label": "Pages deployed; public HTTP check pending",
-        "url": "https://ttomohisa.github.io/wasm-zoo/zstd-playground/"
-      },
-      "freshness": {
-        "state": "unknown",
-        "label": "Pending upstream watcher verification"
-      },
-      "overall": {
-        "state": "warn",
-        "label": "Partially verified"
-      }
     }
   ],
   "summary": {
-    "healthy": 6,
-    "warning": 1,
+    "healthy": 7,
+    "warning": 0,
     "error": 0,
     "supplyChainPublished": 7,
     "total": 7
-  },
-  "baselineGeneratedAt": "2026-09-23T08:42:08.710Z"
+  }
 }
