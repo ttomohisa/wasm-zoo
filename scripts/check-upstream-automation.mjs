@@ -21,7 +21,6 @@ need(
   JSON.stringify([...auto].sort()) === JSON.stringify(manifestAuto.sort()),
   `automatic candidate configs must exactly match candidateMode=auto manifests: config=${[...auto].sort().join(',')} manifests=${manifestAuto.join(',')}`
 );
-need(!auto.includes('libvips'), 'libvips must remain outside the automatic candidate set while adapter-gated');
 
 const ghost = await readJson(path.join(root, 'packages', 'ghostscript', 'package.json'));
 const zstd = await readJson(path.join(root, 'packages', 'zstd', 'package.json'));
@@ -41,7 +40,22 @@ need((ghost.profiles || []).some((profile) => (profile.externalLibraries || []).
 need((ghost.notes || []).some((note) => note.startsWith(`Official Ghostscript ${ghost.upstream.version} release source archive is pinned by SHA-256`)), 'Ghostscript official source archive note must follow the reviewed upstream version');
 
 const libvips = await readJson(path.join(root, 'packages', 'libvips', 'package.json'));
-need(libvips.tracker?.candidateMode === 'adapter-gated', 'libvips must remain adapter-gated');
+need(libvips.tracker?.candidateMode === 'auto', 'libvips must use automatic adapter-bundle candidates');
+need(JSON.stringify(libvips.tracker?.candidateProfiles) === JSON.stringify(['browser-core', 'browser-full']), 'libvips automatic candidate must test both browser profiles');
+const libvipsConfig = automaticCandidateConfig('libvips');
+for (const [argKey, envKey] of Object.entries({
+  'emsdk-version': 'EMSDK_VERSION',
+  'emscripten-ref': 'EMSCRIPTEN_REF',
+  'emscripten-commit': 'EMSCRIPTEN_COMMIT',
+  'wasm-vips-commit': 'WASM_VIPS_COMMIT',
+  'wasm-vips-version': 'WASM_VIPS_VERSION',
+  'libvips-patch-commit': 'WASM_VIPS_LIBVIPS_PATCH_COMMIT',
+  'emscripten-patch-commit': 'WASM_VIPS_EMSCRIPTEN_PATCH_COMMIT'
+})) need(libvipsConfig?.extraEnv?.[argKey] === envKey, `libvips candidate config must carry ${envKey}`);
+const libvipsResolver = await read('scripts/libvips-adapter.mjs');
+for (const marker of ['wasm-vips/commits/master', 'wasm-vips-$VERSION_VIPS.patch', 'libvipsPatchCommit', 'emscriptenPatchCommit', 'ready: false']) {
+  need(libvipsResolver.includes(marker), `libvips adapter resolver contract missing: ${marker}`);
+}
 
 const config = automaticCandidateConfig('ghostscript');
 need(config?.extraEnv?.version === 'GHOSTSCRIPT_VERSION', 'Ghostscript candidate config must update GHOSTSCRIPT_VERSION');
@@ -63,7 +77,10 @@ for (const marker of [
   'gh issue edit "$issue"',
   'candidate_activity="$(gh issue view',
   'Candidate workflow dispatched by upstream watcher',
-  'Candidate workflow (dispatched by upstream watcher|finished)|Review-only promotion PR:'
+  'Candidate workflow (dispatched by upstream watcher|finished)|Review-only promotion PR:',
+  'candidate.adapter.adapterCommit',
+  'adapter_ready',
+  'Immutable adapter candidate workflow dispatched by upstream watcher'
 ]) {
   need(watcherWorkflow.includes(marker), `upstream watcher workflow must preserve/reuse existing issues safely: ${marker}`);
 }
@@ -93,7 +110,7 @@ const verifyWorkflow = await read('.github/workflows/verify.yml');
 need(verifyWorkflow.includes('npm run promotion:rehearse'), 'Verify catalog must run the shared automatic promotion rehearsal');
 need(!verifyWorkflow.includes('Rehearse future Zstandard candidate and review-only promotion'), 'Verify catalog must not retain the legacy Zstandard-only rehearsal');
 const rehearsal = await read('scripts/rehearse-upstream-promotions.mjs');
-for (const marker of ['automaticCandidateSlugs', 'git", ["worktree", "add"', 'config.keepNpmPinned', 'candidateMode !== "adapter-gated"']) {
+for (const marker of ['automaticCandidateSlugs', 'git", ["worktree", "add"', 'config.keepNpmPinned', 'including libvips adapter-bundle promotion']) {
   need(rehearsal.includes(marker), `shared promotion rehearsal contract missing: ${marker}`);
 }
 
@@ -113,12 +130,17 @@ for (const marker of [
   '--source-sha256 "${{ inputs.source_sha256 }}"',
   "ghostscript) result='${{ needs.ghostscript.result }}' ;;",
   'ghostscript) node builders/ghostscript/scripts/check-repository.mjs ;;',
+  "libvips:\n    if: inputs.slug == 'libvips'",
+  '--wasm-vips-commit "${{ inputs.adapter_commit }}"',
+  '--libvips-patch-commit "${{ inputs.libvips_patch_commit }}"',
+  "libvips) result='${{ needs.libvips.result }}' ;;",
+  'libvips) node builders/libvips/scripts/check-repository.mjs ;;',
   "zstd:\n    if: inputs.slug == 'zstd'",
   "profile: [browser-core, browser-full]",
   "ZSTD_NATIVE_INTEROP: ${{ matrix.profile == 'browser-full' && 'required' || '' }}",
   "zstd) result='${{ needs.zstd.result }}' ;;",
   'zstd) node builders/zstd/scripts/check-repository.mjs ;;'
-]) need(workflow.includes(marker), `candidate workflow missing Ghostscript contract: ${marker}`);
+]) need(workflow.includes(marker), `candidate workflow contract missing: ${marker}`);
 need(workflow.includes("  promotion-pr:") && workflow.includes("    if: ${{ always() && needs.report.outputs.result == 'success' }}") && workflow.includes("    needs: [report]"), "promotion PR job must use always() so skipped non-selected candidate jobs cannot suppress a successful promotion");
 
 const env = await read('builders/ghostscript/versions.env');
@@ -144,10 +166,11 @@ need(zstdReleaseWorkflow.includes('source builders/zstd/versions.env') &&
 const docs = await read('docs/AUTOMATED_PROMOTIONS.md');
 need(docs.includes('- Ghostscript') && docs.includes('GitHub\'s published SHA-256 asset digest'), 'automation docs must describe Ghostscript digest-pinned auto promotion');
 need(docs.includes('- Zstandard') && docs.includes('bidirectional native zstd interoperability'), 'automation docs must describe Zstandard native-interoperability candidate gate');
+need(docs.includes('- libvips') && docs.includes('fail-closed adapter bundle resolver'), 'automation docs must describe libvips immutable adapter-bundle candidates');
 
 if (errors.length) {
   console.error(`[NG] ${errors.length} upstream automation contract check(s)`);
   for (const error of errors) console.error(` - ${error}`);
   process.exit(1);
 }
-console.log(`[OK] upstream promotion automation contract passed: ${auto.join('/')} auto, libvips adapter-gated`);
+console.log(`[OK] upstream promotion automation contract passed: ${auto.join('/')} auto with libvips fail-closed adapter resolution`);
