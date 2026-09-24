@@ -14,6 +14,16 @@ LIBDIR="$SYSROOT/lib/wasm32-emscripten"
 [[ -s "$LIBDIR/libz.a" ]] || { echo "[ERROR] Emscripten zlib port missing" >&2; exit 1; }
 [[ -s "$LIBDIR/libjpeg.a" ]] || { echo "[ERROR] Emscripten libjpeg port missing" >&2; exit 1; }
 
+PORTS_CACHE="$(em-config CACHE)/ports"
+find_port_license() {
+  local pattern="$1" result
+  result="$(find "$PORTS_CACHE" -type f \( -iname 'LICENSE' -o -iname 'LICENSE.*' -o -iname 'COPYING' -o -iname 'COPYING.*' \) -ipath "*$pattern*" | LC_ALL=C sort | head -n 1)"
+  [[ -n "$result" && -s "$result" ]] || { echo "[ERROR] license text not found for Emscripten port: $pattern" >&2; exit 1; }
+  printf '%s\n' "$result"
+}
+ZLIB_LICENSE="$(find_port_license zlib)"
+LIBJPEG_LICENSE="$(find_port_license libjpeg)"
+
 COMMON_FLAGS="-O2 -fwasm-exceptions"
 LINK_FLAGS="-O2 -fwasm-exceptions -sDYNAMIC_EXECUTION=0 -sMODULARIZE=1 -sEXPORT_NAME=createQpdfCore -sENVIRONMENT=web,worker -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=33554432 -sMAXIMUM_MEMORY=536870912 -sSTACK_SIZE=2097152 -sINVOKE_RUN=0 -sEXIT_RUNTIME=0 -sFORCE_FILESYSTEM=1 -sINCOMING_MODULE_JS_API=wasmBinary,locateFile,print,printErr,thisProgram -sEXPORTED_RUNTIME_METHODS=FS,callMain"
 emcmake cmake -S /src/qpdf -B /src/qpdf/build-wasm \
@@ -92,4 +102,6 @@ Browser target:
 EOF_TXT
 cp /src/qpdf/LICENSE.txt /out/LICENSE-QPDF.txt
 cp /src/qpdf/NOTICE.md /out/NOTICE-QPDF.md
-printf '[OK] QPDF %s %s built from official source\n' "$QPDF_VERSION" "$PROFILE"
+cp "$ZLIB_LICENSE" /out/LICENSE-ZLIB.txt
+cp "$LIBJPEG_LICENSE" /out/LICENSE-LIBJPEG.txt
+printf '[OK] QPDF %s %s built from official source with reviewed third-party license inventory\n' "$QPDF_VERSION" "$PROFILE"

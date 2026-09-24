@@ -64,5 +64,7 @@ jobs:
             builders/qpdf/dist/browser-full/BUILDINFO.txt
             builders/qpdf/dist/browser-full/LICENSE-QPDF.txt
             builders/qpdf/dist/browser-full/NOTICE-QPDF.md
+            builders/qpdf/dist/browser-full/LICENSE-ZLIB.txt
+            builders/qpdf/dist/browser-full/LICENSE-LIBJPEG.txt
           if-no-files-found: error
           retention-days: 14

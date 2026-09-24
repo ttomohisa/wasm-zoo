@@ -1,0 +1,67 @@
+name: Release QPDF WASM
+
+on:
+  push:
+    tags:
+      - "qpdf-v*.*.*"
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Verify reviewed release tag
+        shell: bash
+        working-directory: builders/qpdf
+        run: |
+          set -euo pipefail
+          source ./versions.env
+          test "${GITHUB_REF_NAME}" = "qpdf-v${BUILDER_VERSION}"
+      - name: Static builder and repository checks
+        shell: bash
+        run: |
+          bash -n builders/qpdf/build.sh builders/qpdf/scripts/*.sh
+          node --check builders/qpdf/runtime/browser-qpdf.js
+          node --check builders/qpdf/runtime/wasm-zoo.mjs
+          node --check builders/qpdf/scripts/smoke-test.mjs
+          node builders/qpdf/scripts/check-repository.mjs
+      - name: Build and smoke-test reviewed browser-full
+        shell: bash
+        working-directory: builders/qpdf
+        env:
+          QPDF_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - name: Prepare binary, corresponding source and checksum assets
+        shell: bash
+        working-directory: builders/qpdf
+        run: ./scripts/prepare-release.sh
+      - name: Publish reviewed GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/qpdf/versions.env
+          gh release create "${GITHUB_REF_NAME}" builders/qpdf/release/* \
+            --verify-tag \
+            --title "WASM Zoo · QPDF ${QPDF_VERSION} · browser build" \
+            --notes "Unofficial current-upstream QPDF CLI build for browser WebAssembly. Built from the exact signed QPDF v${QPDF_VERSION} tag/commit and GitHub-published official source archive SHA-256 with Emscripten ${EMSDK_VERSION}. The release uses QPDF native crypto plus pinned Emscripten zlib/libjpeg ports and includes corresponding source/build recipe, QPDF and third-party license texts, in-toto/SLSA provenance, CycloneDX 1.6 SBOM and SHA-256 checksums. Chromium smoke testing validates a deterministic one-page PDF, linearization and AES-256 encrypt/decrypt before publication."
+      - name: Refresh Pages so the Playground stages this release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main
