@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- expose the reviewed upstream automation contract on Pages from package-manifest data, including candidate modes/profiles, review-only promotion paths and shared rehearsal coverage while showing libvips as adapter-gated rather than automatic;
 - add a shared offline synthetic promotion rehearsal for every `candidateMode: auto` package, validating next-version pin/release/npm behavior in isolated worktrees while explicitly keeping libvips adapter-gated;
 - enable Zstandard stable-release automation with exact-tag/commit candidates for both browser profiles, mandatory browser-full bidirectional native-zstd interoperability, and review-only promotion PRs while keeping merge/tag/release/npm publication human-controlled;
 - keep the already-published Zstandard npm source identity separately pinned so future package promotions cannot silently rewrite or republish `@wasm-zoo/zstd`;
