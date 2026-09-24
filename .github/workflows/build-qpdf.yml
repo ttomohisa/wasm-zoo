@@ -1,4 +1,4 @@
-name: Build QPDF experimental browser WASM
+name: Build QPDF browser WASM
 
 on:
   workflow_dispatch:
@@ -47,10 +47,10 @@ jobs:
           ./build.sh browser-full
       - name: Show generated manifest
         run: cat builders/qpdf/dist/browser-full/manifest.json
-      - name: Upload experimental canary artifact
+      - name: Upload reviewed build artifact
         uses: actions/upload-artifact@v7
         with:
-          name: wasm-zoo-qpdf-experimental-browser-full-${{ github.sha }}
+          name: wasm-zoo-qpdf-browser-full-${{ github.sha }}
           path: |
             builders/qpdf/dist/browser-full/qpdf-core.js
             builders/qpdf/dist/browser-full/qpdf-core.wasm
@@ -64,5 +64,7 @@ jobs:
             builders/qpdf/dist/browser-full/BUILDINFO.txt
             builders/qpdf/dist/browser-full/LICENSE-QPDF.txt
             builders/qpdf/dist/browser-full/NOTICE-QPDF.md
+            builders/qpdf/dist/browser-full/LICENSE-ZLIB.txt
+            builders/qpdf/dist/browser-full/LICENSE-LIBJPEG.txt
           if-no-files-found: error
           retention-days: 14

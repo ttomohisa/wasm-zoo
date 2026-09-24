@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- promote QPDF 12.4.1 from the experimental onboarding canary to an available reviewed package surface with a human-tag-triggered `qpdf-v0.1.0` GitHub Release workflow, corresponding source/provenance/SBOM/checksums and a published-only Playground;
+- pin and verify the exact zlib 1.3.2 and libjpeg 9f source inputs selected by Emscripten 6.0.8, carry their distribution notices into the QPDF binary release, and checksum-verify the full published release before Pages stages QPDF assets.
+
 - add QPDF 12.4.1 as the first `experimental` Package Onboarding canary, pinned to the official release archive SHA-256, signed-tag commit and Emscripten 6.0.8 toolchain without patching upstream QPDF;
 - build the original qpdf CLI with native QPDF crypto, Emscripten zlib/libjpeg ports and wasm-native exceptions, gated by a real Chromium one-page-PDF/check/linearize/AES-256 encrypt-decrypt smoke test while keeping Release, Playground, npm and automatic promotion disabled.
 

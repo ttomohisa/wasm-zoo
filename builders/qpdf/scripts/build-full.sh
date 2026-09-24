@@ -2,6 +2,7 @@
 set -euo pipefail
 : "${BUILDER_VERSION:?}" "${EMSDK_VERSION:?}" "${EMSCRIPTEN_COMMIT:?}" "${QPDF_VERSION:?}" "${QPDF_REF:?}" "${QPDF_COMMIT:?}" "${QPDF_SOURCE_URL:?}" "${QPDF_SOURCE_SHA256:?}"
 : "${PROFILE:=browser-full}"
+: "${ZLIB_VERSION:?}" "${ZLIB_SOURCE_URL:?}" "${ZLIB_SOURCE_SHA512:?}" "${LIBJPEG_VERSION:?}" "${LIBJPEG_SOURCE_URL:?}" "${LIBJPEG_SOURCE_SHA512:?}"
 PROFILE_DIR="/workspace/profiles/$PROFILE"
 # shellcheck disable=SC1090
 source "$PROFILE_DIR/profile.env"
@@ -56,7 +57,7 @@ cat <<EOF_JSON
   "upstream": {"name": "QPDF", "version": "$QPDF_VERSION", "ref": "$QPDF_REF", "commit": "$QPDF_COMMIT", "sourceUrl": "$QPDF_SOURCE_URL", "sourceSha256": "$QPDF_SOURCE_SHA256"},
   "toolchain": {"name": "Emscripten", "version": "$EMSDK_VERSION", "commit": "$EMSCRIPTEN_COMMIT"},
   "runtime": {"threads": false, "threadBackend": "none", "simd": false, "sharedArrayBuffer": false, "crossOriginIsolation": false, "worker": true, "network": false, "filesystem": "MEMFS", "initialMemory": 33554432, "maximumMemory": 536870912, "memoryGrowth": true, "stackSize": 2097152, "wasmExceptions": true},
-  "build": {"builderVersion": "$BUILDER_VERSION", "binaryLicense": "$PROFILE_BINARY_LICENSE", "cryptoProvider": "native", "externalLibraries": ["zlib (Emscripten port)", "libjpeg (Emscripten port)"], "tools": ["qpdf"]},
+  "build": {"builderVersion": "$BUILDER_VERSION", "binaryLicense": "$PROFILE_BINARY_LICENSE", "cryptoProvider": "native", "externalLibraries": ["zlib $ZLIB_VERSION (Emscripten 6.0.8 port)", "libjpeg $LIBJPEG_VERSION (Emscripten 6.0.8 port)"], "tools": ["qpdf"]},
   "files": {
 EOF_JSON
 first=1
@@ -85,11 +86,12 @@ Emscripten commit: $EMSCRIPTEN_COMMIT
 Browser target:
 - original upstream qpdf CLI
 - QPDF built-in native crypto; no OpenSSL/GnuTLS
-- Emscripten zlib + libjpeg ports
+- Emscripten zlib $ZLIB_VERSION + libjpeg $LIBJPEG_VERSION ports
 - wasm-native exceptions
 - single-threaded outer Worker + MEMFS
 - no SharedArrayBuffer, native host filesystem or Zoo-provided network access
 EOF_TXT
 cp /src/qpdf/LICENSE.txt /out/LICENSE-QPDF.txt
 cp /src/qpdf/NOTICE.md /out/NOTICE-QPDF.md
+/workspace/scripts/stage-third-party-licenses.sh /out
 printf '[OK] QPDF %s %s built from official source\n' "$QPDF_VERSION" "$PROFILE"

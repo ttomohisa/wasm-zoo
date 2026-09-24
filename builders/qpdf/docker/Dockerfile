@@ -32,8 +32,8 @@ ARG PROFILE=browser-full
 ENV BUILDER_VERSION=${BUILDER_VERSION} QPDF_REPOSITORY=${QPDF_REPOSITORY} QPDF_VERSION=${QPDF_VERSION} QPDF_REF=${QPDF_REF} QPDF_COMMIT=${QPDF_COMMIT} QPDF_SOURCE_URL=${QPDF_SOURCE_URL} QPDF_SOURCE_SHA256=${QPDF_SOURCE_SHA256} PROFILE=${PROFILE}
 COPY --from=source /src/qpdf /src/qpdf
 COPY profiles /workspace/profiles
-COPY scripts/build-full.sh /workspace/scripts/
-RUN chmod +x /workspace/scripts/build-full.sh && /workspace/scripts/build-full.sh
+COPY scripts/build-full.sh scripts/stage-third-party-licenses.sh /workspace/scripts/
+RUN chmod +x /workspace/scripts/*.sh && /workspace/scripts/build-full.sh
 
 FROM toolchain AS package
 COPY --from=build /out/ /out/

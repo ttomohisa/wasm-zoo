@@ -2,9 +2,9 @@
   "schemaVersion": 2,
   "slug": "qpdf",
   "name": "QPDF",
-  "summary": "Official-source QPDF CLI compiled as an experimental browser WebAssembly canary with exact source, tag/commit and toolchain pins.",
+  "summary": "Current upstream QPDF CLI compiled for browser WebAssembly from the official release source archive with exact source, tag/commit and toolchain pins.",
   "category": "document",
-  "status": "experimental",
+  "status": "available",
   "order": 50,
   "upstream": {
     "version": "12.4.1",
@@ -61,9 +61,10 @@
       ],
       "output": "Generic upstream qpdf CLI; PDF inputs and outputs are staged in browser MEMFS",
       "binaryLicense": "Apache-2.0 with zlib/libjpeg third-party notices",
-      "size": "Measured by the experimental build artifact",
+      "size": "Loaded from the published release manifest",
       "releaseAsset": "qpdf-browser-full-12.4.1-zoo-0.1.0.zip",
-      "playground": false
+      "playground": true,
+      "playgroundPath": "./qpdf-playground/"
     }
   ],
   "comparison": [
@@ -73,9 +74,9 @@
       "note": "Native QPDF CLI/library with host filesystem and platform-dependent crypto/dependency discovery."
     },
     {
-      "name": "WASM Zoo experimental",
+      "name": "WASM Zoo",
       "version": "12.4.1",
-      "note": "Exact official QPDF source archive compiled as the upstream CLI for browser MEMFS using native QPDF crypto."
+      "note": "Current upstream QPDF CLI built from the exact official release source archive for isolated Worker/MEMFS browser execution."
     }
   ],
   "capabilityMatrix": [
@@ -129,10 +130,31 @@
     }
   ],
   "notes": [
-    "Experimental v0.17 onboarding canary: no GitHub package Release, Playground, npm publication or automatic promotion is enabled yet.",
-    "The build consumes the official qpdf-12.4.1.tar.gz release asset and verifies its GitHub-published SHA-256 before extraction.",
+    "QPDF 12.4.1 is built from the official qpdf-12.4.1.tar.gz release asset and verifies its GitHub-published SHA-256 before extraction.",
     "The reviewed v12.4.1 annotated tag peels to exact upstream commit c37f83ae468abb6cc741f43b2f6fdeb66e550ffb.",
-    "The browser smoke begins from a deterministic one-page PDF fixture; the browser build uses QPDF's built-in native crypto provider, Emscripten zlib/libjpeg ports and wasm-native exception handling.",
-    "Promotion automation remains disabled until the experimental build and browser smoke are reviewed."
-  ]
+    "Emscripten 6.0.8 port inputs are pinned as zlib 1.3.2 and libjpeg 9f; their source hashes and distribution notices are carried into the release build.",
+    "The browser smoke starts from a deterministic one-page PDF fixture and verifies check, linearize, AES-256 encryption, decryption and final validation.",
+    "Automatic upstream promotion and npm publication remain disabled until separate reviewed PRs."
+  ],
+  "integration": {
+    "summary": "Self-host qpdf-core.js/qpdf-core.wasm plus the Zoo wrapper, stage PDF files in MEMFS, then execute ordinary qpdf CLI arguments locally in a Worker.",
+    "files": [
+      "browser-qpdf.js",
+      "qpdf-core.js",
+      "qpdf-core.wasm"
+    ],
+    "example": "<script src=\"/vendor/qpdf/browser-qpdf.js\"></script>\n<script type=\"module\">\nconst qpdf = WasmZooQpdf.loadHosted({ baseUrl: \"/vendor/qpdf/\" });\ntry {\n  const input = new Uint8Array(await (await fetch(\"/input.pdf\")).arrayBuffer());\n  const result = await qpdf.exec([\"/input.pdf\", \"/output.pdf\", \"--linearize\"], {\n    files: [{ name: \"/input.pdf\", data: input }],\n    outputs: [\"/output.pdf\"]\n  });\n  console.log(result.files[0]);\n} finally {\n  qpdf.dispose();\n}\n</script>",
+    "notes": [
+      "No SharedArrayBuffer or cross-origin isolation is required for browser-full.",
+      "The wrapper preserves QPDF's CLI argument model and adds only MEMFS file staging plus stdout/stderr capture.",
+      "Native host filesystem access is not available; files must be staged into MEMFS."
+    ]
+  },
+  "release": {
+    "tag": "qpdf-v0.1.0",
+    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/qpdf-v0.1.0",
+    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/qpdf-v0.1.0/",
+    "sourceAsset": "qpdf-sources-12.4.1-zoo-0.1.0.tar.gz",
+    "checksumsAsset": "SHA256SUMS.txt"
+  }
 }

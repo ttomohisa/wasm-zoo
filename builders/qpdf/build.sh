@@ -13,9 +13,12 @@ cache_args=(); if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then cache_args=(--cach
 docker buildx build "${cache_args[@]}" --file "$ROOT/docker/Dockerfile" --target export \
   --build-arg "BUILDER_VERSION=$BUILDER_VERSION" --build-arg "EMSDK_VERSION=$EMSDK_VERSION" --build-arg "EMSCRIPTEN_COMMIT=$EMSCRIPTEN_COMMIT" \
   --build-arg "QPDF_REPOSITORY=$QPDF_REPOSITORY" --build-arg "QPDF_VERSION=$QPDF_VERSION" --build-arg "QPDF_REF=$QPDF_REF" --build-arg "QPDF_COMMIT=$QPDF_COMMIT" \
-  --build-arg "QPDF_SOURCE_URL=$QPDF_SOURCE_URL" --build-arg "QPDF_SOURCE_SHA256=$QPDF_SOURCE_SHA256" --build-arg "PROFILE=$PROFILE" \
+  --build-arg "QPDF_SOURCE_URL=$QPDF_SOURCE_URL" --build-arg "QPDF_SOURCE_SHA256=$QPDF_SOURCE_SHA256" \
+  --build-arg "ZLIB_VERSION=$ZLIB_VERSION" --build-arg "ZLIB_SOURCE_URL=$ZLIB_SOURCE_URL" --build-arg "ZLIB_SOURCE_SHA512=$ZLIB_SOURCE_SHA512" \
+  --build-arg "LIBJPEG_VERSION=$LIBJPEG_VERSION" --build-arg "LIBJPEG_SOURCE_URL=$LIBJPEG_SOURCE_URL" --build-arg "LIBJPEG_SOURCE_SHA512=$LIBJPEG_SOURCE_SHA512" \
+  --build-arg "PROFILE=$PROFILE" \
   --output "type=local,dest=$OUT" "$ROOT"
-for file in browser-qpdf.js wasm-zoo.mjs qpdf-core.js qpdf-core.wasm manifest.json features.json qpdf-config.txt BUILDINFO.txt LICENSE-QPDF.txt NOTICE-QPDF.md smoke-test.html; do [[ -s "$OUT/$file" ]] || { echo "Missing build output: $file" >&2; exit 1; }; done
+for file in browser-qpdf.js wasm-zoo.mjs qpdf-core.js qpdf-core.wasm manifest.json features.json qpdf-config.txt BUILDINFO.txt LICENSE-QPDF.txt NOTICE-QPDF.md LICENSE-ZLIB.txt LICENSE-LIBJPEG.txt smoke-test.html; do [[ -s "$OUT/$file" ]] || { echo "Missing build output: $file" >&2; exit 1; }; done
 node "$ROOT/scripts/smoke-test.mjs" "$PROFILE"
 node "$ROOT/../../scripts/generate-build-metadata.mjs" --slug qpdf --profile "$PROFILE" --dist "$OUT"
 printf '\n[OK] QPDF %s build + real Chromium smoke + provenance/SBOM passed\n' "$PROFILE"
