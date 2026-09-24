@@ -66,7 +66,7 @@ if (ghost) {
   need(readme.includes("ghostscript-" + ghost.upstream.version + ".tar.xz"), "README Ghostscript official source archive version is stale");
   need(readme.includes("gs" + ghost.upstream.version), "README Ghostscript source ref version is stale");
   need(!readme.includes("Automatic candidate builds are source-digest gated and therefore remain disabled"), "README must not claim Ghostscript automatic candidates are disabled");
-  need(readme.includes("For FFmpeg, libarchive, ImageMagick, Ghostscript, jq and Zstandard"), "README automatic package list must include Ghostscript and Zstandard");
+  need(readme.includes("For FFmpeg, libarchive, ImageMagick, libvips, Ghostscript, jq and Zstandard"), "README automatic package list must include all reviewed automatic packages");
 }
 
 if (errors.length) {
