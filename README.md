@@ -24,12 +24,15 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 - Zstandard Playground: https://ttomohisa.github.io/wasm-zoo/zstd-playground/
 
 
-## v0.15.0: seventh package, npm release and verified 21-cell Lab
+## v0.16.0: reviewed automation contract and promotion rehearsal
 
-The official Zstandard 1.5.7 `browser-full` original upstream CLI is now on npm as [`@wasm-zoo/zstd@0.3.0`](https://www.npmjs.com/package/@wasm-zoo/zstd). Its initial publication was explicitly approved by the maintainer and uses the **same immutable-release-derived tarball** that passed the three-browser Phase 4A canary: Registry `dist.shasum` is `29add1aaf6ab0c3e9a3d538166a51a3f70cefa99`. The separate `browser-core` library is available from the GitHub Release, not this npm tarball.
+WASM Zoo v0.16.0 hardens the **upstream candidate → review-only promotion PR** path without changing any published package binary, reviewed upstream pin, builder version, npm version or immutable package release. Every package whose manifest declares `tracker.candidateMode: auto` is now covered by one shared offline synthetic promotion rehearsal that exercises the real promotion generator in isolated git worktrees before changes can be reviewed.
 
-The reviewed Phase 4B Lab adds the actual **npm Registry version** to Chromium, Firefox and WebKit using production Vite real-operation tests, expanding six packages / 18 results to seven packages / 21 results. Only a successful reviewed `main` Lab run may populate the public dashboard. npm and reviewed source pins are never changed automatically.
+The rehearsal verifies package-specific invariants instead of flattening them into one generic rule: Ghostscript keeps its official release-archive identity and SHA-256 metadata together, jq carries its exact Oniguruma submodule pin, and Zstandard preserves the already-published `@wasm-zoo/zstd@0.3.0` npm identity while a future reviewed source promotion makes its Playground fail closed until a separately reviewed npm release exists.
 
+The Pages dashboard now exposes an **Automation Contract** derived directly from package manifests. It shows candidate mode, candidate profiles, review-only promotion behavior and rehearsal coverage without becoming a live Issue/PR monitor. libvips remains explicitly `adapter-gated`; it is not treated as an ordinary automatic promotion.
+
+The reviewed-pin model is unchanged: automation may prepare a PR, but it never automatically merges, tags, creates a GitHub Release or publishes npm.
 
 ## Available packages
 
@@ -43,7 +46,7 @@ The reviewed Phase 4B Lab adds the actual **npm Registry version** to Chromium, 
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 | Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
 
-The project version is **WASM Zoo v0.15.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+The project version is **WASM Zoo v0.16.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
 ### npm distribution
 
@@ -63,13 +66,13 @@ The FFmpeg npm package intentionally pins the LGPL `browser-full` profile; the s
 
 Future npm versions use Trusted Publisher OIDC with `npm stage publish`; the temporary rollout bootstrap/direct-publish path has been removed.
 
-### Cross-browser Compatibility Lab (v0.15.0: 21 verified main-branch operations)
+### Cross-browser Compatibility Lab (current: 21 verified main-branch operations)
 
 The browser lab executes **the seven exact published npm distributions** in Chromium, Firefox and WebKit, using real package operations after a production Vite build—not an instantiate-only test. FFmpeg and libvips also verify COOP/COEP/CORP and measured threaded-runtime capabilities before execution. A genuinely missing browser capability is labeled `unsupported` only with explicit evidence; an unexpected error is `fail`.
 
 The [public browser compatibility dashboard](https://ttomohisa.github.io/wasm-zoo/#compatibility) reads the **latest eligible main-branch GitHub Actions run**, including unsuccessful or still-running attempts, so it never falls back to an older passing result. It displays tested package versions, browser engines, test time and a link to the source run. If the current latest run is failing, pending, stale, mismatched or missing artifacts, the site reports **not tested** rather than copying a previous passing result. Weekly checks refresh the evidence. See [Cross-browser Lab documentation](docs/CROSS_BROWSER_LAB.md) for the status policy.
 
-Project v0.15.0 formalizes the already reviewed and published Zstandard 1.5.7 release and npm distribution alongside the verified seven-package Lab. This project version bump **does not** change any package's reviewed upstream/toolchain pin, builder version, npm version or immutable release. The human maintainer controls PR merges and the optional `v0.15.0` project release tag; CI never automatically tags, releases or publishes. See [v0.15.0 release checklist](docs/V015_RELEASE.md).
+Project v0.16.0 keeps the v0.15.0 package/npm/21-cell distribution set unchanged and records the reviewed automation hardening: Zstandard automatic candidates, shared promotion rehearsal and the public manifest-driven Automation Contract. This project version bump **does not** change any package's reviewed upstream/toolchain pin, builder version, npm version or immutable release. The human maintainer controls PR merges and the optional `v0.16.0` project release tag; CI never automatically tags, releases or publishes. See [v0.16.0 release checklist](docs/V016_RELEASE.md).
 
 ## Release health and supply-chain metadata
 
