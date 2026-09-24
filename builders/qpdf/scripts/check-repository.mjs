@@ -1,0 +1,35 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
+const repoRoot=path.resolve(root,"../..");
+const errors=[]; const need=(ok,msg)=>{if(!ok)errors.push(msg);};
+const read=async(rel)=>(await fs.readFile(path.join(root,rel),"utf8")).replace(/\r\n/g,"\n");
+const env={}; for(const raw of (await read("versions.env")).split("\n")){const line=raw.trim();if(!line||line.startsWith("#")||!line.includes("="))continue;const i=line.indexOf("=");env[line.slice(0,i)]=line.slice(i+1).replace(/^['"]|['"]$/g,"");}
+const pkg=JSON.parse(await fs.readFile(path.join(repoRoot,"packages/qpdf/package.json"),"utf8"));
+const profile=pkg.profiles?.find((item)=>item.id==="browser-full");
+need(pkg.status==="experimental","QPDF must remain experimental in the builder-canary PR");
+need(pkg.upstream?.version==="12.4.1"&&pkg.upstream?.ref==="v12.4.1","QPDF manifest upstream pin mismatch");
+need(pkg.tracker?.candidateMode==="none"&&pkg.tracker.candidateProfiles?.length===0,"QPDF automatic candidates must remain disabled during experimental canary");
+need(pkg.zoo?.builderVersion===env.BUILDER_VERSION,"QPDF builder version mismatch");
+need(pkg.zoo?.toolchain==="Emscripten "+env.EMSDK_VERSION,"QPDF toolchain metadata mismatch");
+need(profile?.target==="browser"&&profile?.threads===false&&profile?.sharedArrayBuffer===false,"QPDF browser-full runtime contract mismatch");
+need(profile?.releaseAsset==="qpdf-browser-full-12.4.1-zoo-0.1.0.zip","QPDF future release asset name mismatch");
+need(env.BUILDER_VERSION==="0.1.0","unexpected QPDF builder version");
+need(env.EMSDK_VERSION==="6.0.8"&&env.EMSCRIPTEN_REF===env.EMSDK_VERSION,"unexpected Emscripten version/ref");
+need(env.EMSCRIPTEN_COMMIT==="aeb67926e7de656da38bc807d83050af93578758","unexpected Emscripten commit");
+need(env.QPDF_VERSION==="12.4.1"&&env.QPDF_REF==="v12.4.1","unexpected QPDF version/ref");
+need(env.QPDF_COMMIT==="c37f83ae468abb6cc741f43b2f6fdeb66e550ffb","unexpected QPDF exact commit");
+need(env.QPDF_SOURCE_URL==="https://github.com/qpdf/qpdf/releases/download/v12.4.1/qpdf-12.4.1.tar.gz","QPDF source must use the official release asset");
+need(env.QPDF_SOURCE_SHA256==="f045aa277be2356ff53a89a8622945958291177d2483afc20ede7c8a8cd3873c","unexpected official QPDF source SHA-256");
+for(const key of ["EMSCRIPTEN_COMMIT","QPDF_COMMIT"]) need(/^[0-9a-f]{40}$/.test(env[key]||""),key+" must be an exact 40-character commit");
+need(/^[0-9a-f]{64}$/.test(env.QPDF_SOURCE_SHA256||""),"QPDF source SHA-256 must be exact");
+const docker=await read("docker/Dockerfile"); need(docker.includes("emscripten/emsdk:${EMSDK_VERSION}")&&docker.includes("fetch-qpdf.sh"),"Dockerfile must use pinned toolchain and verified source");
+const build=await read("scripts/build-full.sh");
+for(const marker of ["embuilder build zlib libjpeg","-fwasm-exceptions","REQUIRE_CRYPTO_NATIVE=ON","USE_IMPLICIT_CRYPTO=OFF","INCOMING_MODULE_JS_API=wasmBinary,locateFile,print,printErr,thisProgram","qpdf-core.wasm"]) need(build.includes(marker),"QPDF build missing contract marker: "+marker);
+const fetcher=await read("scripts/fetch-qpdf.sh"); need(fetcher.includes("sha256sum -c")&&fetcher.includes('refs/tags/$QPDF_REF^{}'),"QPDF fetch must verify official digest and peeled tag commit");
+const runtime=await read("runtime/browser-qpdf.js"); need(runtime.includes("createQpdfCore")&&runtime.includes("WasmZooQpdf")&&runtime.includes('thisProgram: "qpdf"'),"QPDF runtime core contract mismatch");
+const consumer=await read("runtime/wasm-zoo.mjs"); need(consumer.includes('package: "qpdf"')&&consumer.includes('kind: "cli"'),"QPDF Consumer API metadata mismatch");
+const smoke=await read("tests/smoke-test.html"); for(const marker of ["makeOnePagePdf","--check","--linearize","--encrypt","--decrypt"]) need(smoke.includes(marker),"QPDF smoke missing real operation: "+marker);
+if(errors.length){console.error("[NG] "+errors.length+" QPDF repository check(s)");for(const e of errors)console.error(" - "+e);process.exit(1);}
+console.log("[OK] QPDF 12.4.1 experimental builder contract verified");

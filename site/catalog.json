@@ -7,12 +7,12 @@
     "unofficial": true
   },
   "stats": {
-    "packages": 7,
+    "packages": 8,
     "available": 7,
     "profiles": 10,
-    "featureMatrices": 7,
+    "featureMatrices": 8,
     "referenceBuilds": 7,
-    "supplyChainProfiles": 10
+    "supplyChainProfiles": 11
   },
   "packages": [
     {
@@ -1871,6 +1871,144 @@
           "conversion"
         ]
       }
+    },
+    {
+      "schemaVersion": 2,
+      "slug": "qpdf",
+      "name": "QPDF",
+      "summary": "Official-source QPDF CLI compiled as an experimental browser WebAssembly canary with exact source, tag/commit and toolchain pins.",
+      "category": "document",
+      "status": "experimental",
+      "order": 50,
+      "upstream": {
+        "version": "12.4.1",
+        "ref": "v12.4.1",
+        "released": "2026-08-27",
+        "homepage": "https://qpdf.sourceforge.io/",
+        "repository": "https://github.com/qpdf/qpdf",
+        "license": "Apache-2.0"
+      },
+      "tracker": {
+        "type": "github-releases",
+        "repository": "qpdf/qpdf",
+        "versionPattern": "v?(\\d+\\.\\d+\\.\\d+)",
+        "candidateMode": "none",
+        "candidateProfiles": []
+      },
+      "zoo": {
+        "builderVersion": "0.1.0",
+        "toolchain": "Emscripten 6.0.8",
+        "buildModel": "official-source-upstream-cli-native-crypto",
+        "reproducible": true,
+        "sourceBundle": true,
+        "checksums": true,
+        "browserSmokeTest": true,
+        "featureInventory": true,
+        "provenance": "in-toto Statement + SLSA Provenance v1",
+        "sbom": "CycloneDX 1.6 JSON",
+        "supplyChainMetadata": true
+      },
+      "profiles": [
+        {
+          "id": "browser-full",
+          "label": "Browser Full",
+          "target": "browser",
+          "threads": false,
+          "simd": false,
+          "sharedArrayBuffer": false,
+          "worker": true,
+          "workerFs": false,
+          "arbitraryCli": true,
+          "network": false,
+          "features": [
+            "upstream qpdf CLI",
+            "PDF structural validation with --check",
+            "PDF linearization",
+            "PDF encryption and decryption through QPDF native crypto",
+            "Emscripten MEMFS",
+            "WebAssembly native exceptions",
+            "machine-readable build inventory"
+          ],
+          "externalLibraries": [
+            "zlib (Emscripten port)",
+            "libjpeg (Emscripten port)"
+          ],
+          "output": "Generic upstream qpdf CLI; PDF inputs and outputs are staged in browser MEMFS",
+          "binaryLicense": "Apache-2.0 with zlib/libjpeg third-party notices",
+          "size": "Measured by the experimental build artifact",
+          "releaseAsset": "qpdf-browser-full-12.4.1-zoo-0.1.0.zip",
+          "playground": false
+        }
+      ],
+      "comparison": [
+        {
+          "name": "Upstream native",
+          "version": "12.4.1",
+          "note": "Native QPDF CLI/library with host filesystem and platform-dependent crypto/dependency discovery."
+        },
+        {
+          "name": "WASM Zoo experimental",
+          "version": "12.4.1",
+          "note": "Exact official QPDF source archive compiled as the upstream CLI for browser MEMFS using native QPDF crypto."
+        }
+      ],
+      "capabilityMatrix": [
+        {
+          "feature": "Upstream qpdf CLI",
+          "native": "included",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "The canary builds the upstream qpdf executable rather than reimplementing PDF operations in JavaScript."
+        },
+        {
+          "feature": "PDF structural checking and rewriting",
+          "native": "included",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "Chromium smoke validates a deterministic one-page PDF fixture and performs a real PDF rewrite."
+        },
+        {
+          "feature": "Linearization",
+          "native": "included",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "The canary smoke rewrites a generated PDF with --linearize and validates the result."
+        },
+        {
+          "feature": "Encryption/decryption",
+          "native": "included",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "QPDF's built-in native crypto provider is compiled without OpenSSL/GnuTLS."
+        },
+        {
+          "feature": "Host filesystem",
+          "native": "platform",
+          "profiles": {
+            "browser-full": "na"
+          },
+          "note": "Browser execution stages explicit files in Emscripten MEMFS."
+        },
+        {
+          "feature": "Threads / SharedArrayBuffer",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "excluded"
+          },
+          "note": "The initial QPDF browser canary is single-threaded and does not require cross-origin isolation."
+        }
+      ],
+      "notes": [
+        "Experimental v0.17 onboarding canary: no GitHub package Release, Playground, npm publication or automatic promotion is enabled yet.",
+        "The build consumes the official qpdf-12.4.1.tar.gz release asset and verifies its GitHub-published SHA-256 before extraction.",
+        "The reviewed v12.4.1 annotated tag peels to exact upstream commit c37f83ae468abb6cc741f43b2f6fdeb66e550ffb.",
+        "The browser smoke begins from a deterministic one-page PDF fixture; the browser build uses QPDF's built-in native crypto provider, Emscripten zlib/libjpeg ports and wasm-native exception handling.",
+        "Promotion automation remains disabled until the experimental build and browser smoke are reviewed."
+      ]
     }
   ]
 }

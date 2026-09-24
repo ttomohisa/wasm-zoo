@@ -191,6 +191,30 @@
         "mode": "none",
         "profiles": []
       }
+    },
+    {
+      "slug": "qpdf",
+      "name": "QPDF",
+      "status": "ok",
+      "pinned": "12.4.1",
+      "pinnedRef": "v12.4.1",
+      "pinnedReleased": "2026-08-27",
+      "latest": "12.4.1",
+      "latestRef": "v12.4.1",
+      "latestCommit": "c37f83ae468abb6cc741f43b2f6fdeb66e550ffb",
+      "latestReleased": "2026-08-27T23:56:39Z",
+      "updateAvailable": false,
+      "lagDays": 0,
+      "gap": {
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
+      },
+      "url": "https://github.com/qpdf/qpdf/releases/tag/v12.4.1",
+      "candidate": {
+        "mode": "none",
+        "profiles": []
+      }
     }
   ]
 }
