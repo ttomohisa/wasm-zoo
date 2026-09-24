@@ -1930,8 +1930,8 @@
             "machine-readable build inventory"
           ],
           "externalLibraries": [
-            "zlib (Emscripten port)",
-            "libjpeg (Emscripten port)"
+            "zlib 1.3.2 (Emscripten 6.0.8 port)",
+            "libjpeg 9f (Emscripten 6.0.8 port)"
           ],
           "output": "Generic upstream qpdf CLI; PDF inputs and outputs are staged in browser MEMFS",
           "binaryLicense": "Apache-2.0 with zlib/libjpeg third-party notices",
@@ -1960,7 +1960,7 @@
           "profiles": {
             "browser-full": "included"
           },
-          "note": "The canary builds the upstream qpdf executable rather than reimplementing PDF operations in JavaScript."
+          "note": "The browser build builds the upstream qpdf executable rather than reimplementing PDF operations in JavaScript."
         },
         {
           "feature": "PDF structural checking and rewriting",
@@ -1976,7 +1976,7 @@
           "profiles": {
             "browser-full": "included"
           },
-          "note": "The canary smoke rewrites a generated PDF with --linearize and validates the result."
+          "note": "The browser build smoke rewrites a generated PDF with --linearize and validates the result."
         },
         {
           "feature": "Encryption/decryption",
@@ -2000,7 +2000,7 @@
           "profiles": {
             "browser-full": "excluded"
           },
-          "note": "The initial QPDF browser canary is single-threaded and does not require cross-origin isolation."
+          "note": "The initial QPDF browser browser build is single-threaded and does not require cross-origin isolation."
         }
       ],
       "notes": [

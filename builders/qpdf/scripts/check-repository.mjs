@@ -27,7 +27,7 @@ need(/^[0-9a-f]{64}$/.test(env.QPDF_SOURCE_SHA256||""),"QPDF source SHA-256 must
 need(env.ZLIB_VERSION==="1.3.2"&&/^[0-9a-f]{128}$/.test(env.ZLIB_SOURCE_SHA512||""),"QPDF must pin Emscripten 6.0.8 zlib 1.3.2 source");
 need(env.LIBJPEG_VERSION==="9f"&&/^[0-9a-f]{128}$/.test(env.LIBJPEG_SOURCE_SHA512||""),"QPDF must pin Emscripten 6.0.8 libjpeg 9f source");
 need(pkg.release?.tag==="qpdf-v0.1.0"&&pkg.release?.sourceAsset==="qpdf-sources-12.4.1-zoo-0.1.0.tar.gz","QPDF reviewed release metadata mismatch");
-const docker=await read("docker/Dockerfile"); need(docker.includes("emscripten/emsdk:${EMSDK_VERSION}")&&docker.includes("fetch-qpdf.sh"),"Dockerfile must use pinned toolchain and verified source");
+const docker=await read("docker/Dockerfile"); need(docker.includes("emscripten/emsdk:${EMSDK_VERSION}")&&docker.includes("fetch-qpdf.sh")&&docker.includes("ZLIB_SOURCE_SHA512")&&docker.includes("LIBJPEG_SOURCE_SHA512"),"Dockerfile must use pinned toolchain, verified QPDF source and pinned Emscripten port inputs");
 const build=await read("scripts/build-full.sh");
 for(const marker of ["embuilder build zlib libjpeg","-fwasm-exceptions","REQUIRE_CRYPTO_NATIVE=ON","USE_IMPLICIT_CRYPTO=OFF","INCOMING_MODULE_JS_API=wasmBinary,locateFile,print,printErr,thisProgram","qpdf-core.wasm"]) need(build.includes(marker),"QPDF build missing contract marker: "+marker);
 const fetcher=await read("scripts/fetch-qpdf.sh"); need(fetcher.includes("sha256sum -c")&&fetcher.includes('refs/tags/$QPDF_REF^{}'),"QPDF fetch must verify official digest and peeled tag commit");
@@ -39,4 +39,4 @@ const runtime=await read("runtime/browser-qpdf.js"); need(runtime.includes("crea
 const consumer=await read("runtime/wasm-zoo.mjs"); need(consumer.includes('package: "qpdf"')&&consumer.includes('kind: "cli"'),"QPDF Consumer API metadata mismatch");
 const smoke=await read("tests/smoke-test.html"); for(const marker of ["makeOnePagePdf","--check","--linearize","--encrypt","--decrypt"]) need(smoke.includes(marker),"QPDF smoke missing real operation: "+marker);
 if(errors.length){console.error("[NG] "+errors.length+" QPDF repository check(s)");for(const e of errors)console.error(" - "+e);process.exit(1);}
-console.log("[OK] QPDF 12.4.1 experimental builder contract verified");
+console.log("[OK] QPDF 12.4.1 reviewed release/Playground contract verified");
