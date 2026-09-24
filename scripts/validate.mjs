@@ -367,9 +367,9 @@ try {
   const upstreamScript = await fs.readFile(path.join(root, "scripts/check-upstream.mjs"), "utf8");
   assert(upstreamScript.includes("refusing to replace the last good Pages snapshot"), "Upstream checker must preserve the last good snapshot when all trackers fail");
   const verifyWorkflow = await fs.readFile(path.join(root, ".github/workflows/verify.yml"), "utf8");
-  assert(verifyWorkflow.includes("builders/libvips/scripts/check-repository.mjs"), "Verify workflow must include libvips repository checks");
-  assert(verifyWorkflow.includes("builders/ghostscript/scripts/check-repository.mjs"), "Verify workflow must include Ghostscript repository checks");
-  assert(verifyWorkflow.includes("builders/jq/scripts/check-repository.mjs"), "Verify workflow must include jq repository checks");
+  assert(verifyWorkflow.includes("Validate repository and package onboarding"), "Verify workflow must run the manifest-driven package onboarding contract");
+  assert(verifyWorkflow.includes('builders/**'), "Verify workflow must watch every builder tree instead of a package-name allowlist");
+  assert(verifyWorkflow.includes('.github/workflows/**'), "Verify workflow must watch package workflow additions generically");
   assert(verifyWorkflow.includes("check-metadata-contract.mjs"), "Verify workflow must validate provenance/SBOM release contracts");
   const candidate = await fs.readFile(path.join(root, ".github/workflows/upstream-candidate.yml"), "utf8");
   assert(candidate.includes("prepare-candidate.mjs") && candidate.includes("browser smoke test"), "Candidate workflow must substitute isolated pins and run browser smoke tests");

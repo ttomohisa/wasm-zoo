@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- add a manifest-driven Package Onboarding Contract that validates staged planned/experimental/available package surfaces, executes every active builder repository checker, and fails when build/release/Playground/automatic-candidate wiring is incomplete;
+- remove the hard-coded seven-builder validation list from Verify catalog so future package builders are discovered through the onboarding contract, while retaining package-specific source/toolchain checks in each builder.
+
 ## v0.16.1
 
 - remove the libvips adapter gate by resolving the wasm-vips recipe, Emscripten source and both compatibility branch heads to immutable commits before any two-profile candidate build; if the adapter has not caught up, the watcher fails closed and retries later without creating a promotion PR;
