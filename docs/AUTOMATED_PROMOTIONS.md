@@ -33,6 +33,16 @@ Ghostscript is source-archive-backed: the watcher requires the exact official `g
 
 Zstandard uses the stable GitHub Release tag resolved to an exact upstream commit. Its candidate matrix builds and browser-tests both `browser-core` and `browser-full`; the full CLI candidate also requires **bidirectional native zstd interoperability** before the result can be `success`. A successful result may prepare a review-only package pin PR. That PR deliberately leaves the already-published npm version and its immutable source release pinned; npm update/publication is a later, separate reviewed step.
 
+## Promotion rehearsal contract
+
+`npm run promotion:rehearse` is the offline CI rehearsal for the review-only promotion generator. `Verify catalog` runs it for every slug exported by `scripts/upstream-config.mjs` as automatic.
+
+For each automatic package, the rehearsal creates an isolated detached worktree, synthesizes a strictly newer upstream version/ref and immutable-looking commit/source pins, runs `scripts/prepare-promotion.mjs`, regenerates the catalog, runs that package's repository checker, and requires `git diff --check` to pass. It then verifies that the reviewed source pin, builder patch version, release tag/assets and package-specific metadata all moved together.
+
+The rehearsal also preserves distribution-specific rules: Zstandard's already-published npm identity must remain byte-for-byte unchanged and its Playground must fail closed as `not-published`; jq receives a synthetic exact Oniguruma submodule pin; Ghostscript receives internally consistent release-tag/source-URL/SHA-256 metadata. No rehearsal performs a network lookup, build, tag, GitHub Release, merge or npm publication.
+
+libvips is intentionally outside this set. The rehearsal asserts that it remains `adapter-gated`; it must not become an ordinary automatic promotion merely to make the package count look complete.
+
 ## Manual gates
 
 - `adapter-gated`: no promotion PR is created from the readiness result. libvips stays here because the wasm-vips adapter plus libvips/Emscripten compatibility patch pins must be reviewed as a unit.

@@ -1,15 +1,27 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { automaticCandidateConfig } from './upstream-config.mjs';
+import { automaticCandidateConfig, automaticCandidateSlugs } from './upstream-config.mjs';
 import { readJson, root } from './lib.mjs';
 
 const errors = [];
 const need = (ok, message) => { if (!ok) errors.push(message); };
 const read = async (rel) => (await fs.readFile(path.join(root, rel), 'utf8')).replace(/\r\n/g, '\n');
 
-const auto = ['ffmpeg', 'libarchive', 'imagemagick', 'ghostscript', 'jq', 'zstd'];
+const auto = automaticCandidateSlugs;
 for (const slug of auto) need(Boolean(automaticCandidateConfig(slug)), `${slug} must have an automatic candidate config`);
+const packageEntries = await fs.readdir(path.join(root, 'packages'), { withFileTypes: true });
+const manifestAuto = [];
+for (const entry of packageEntries) {
+  if (!entry.isDirectory()) continue;
+  const pkg = await readJson(path.join(root, 'packages', entry.name, 'package.json'));
+  if (pkg.tracker?.candidateMode === 'auto') manifestAuto.push(entry.name);
+}
+need(
+  JSON.stringify([...auto].sort()) === JSON.stringify(manifestAuto.sort()),
+  `automatic candidate configs must exactly match candidateMode=auto manifests: config=${[...auto].sort().join(',')} manifests=${manifestAuto.join(',')}`
+);
+need(!auto.includes('libvips'), 'libvips must remain outside the automatic candidate set while adapter-gated');
 
 const ghost = await readJson(path.join(root, 'packages', 'ghostscript', 'package.json'));
 const zstd = await readJson(path.join(root, 'packages', 'zstd', 'package.json'));
@@ -77,6 +89,14 @@ need(promotion.includes('note.includes("@wasm-zoo/zstd") ? note : rewrite(note)'
 need(promotion.includes('docs/NPM_DISTRIBUTION.md') && promotion.includes('npm distribution release tag'), 'promotion preparer must update npm distribution documentation');
 need(promotion.includes('values.slug === "ghostscript"') && promotion.includes('profile.externalLibraries') && promotion.includes('note.startsWith(`Official Ghostscript ${oldVersion} release source archive is pinned by SHA-256`)'), 'Ghostscript promotion must refresh current-version source-archive metadata');
 
+const verifyWorkflow = await read('.github/workflows/verify.yml');
+need(verifyWorkflow.includes('npm run promotion:rehearse'), 'Verify catalog must run the shared automatic promotion rehearsal');
+need(!verifyWorkflow.includes('Rehearse future Zstandard candidate and review-only promotion'), 'Verify catalog must not retain the legacy Zstandard-only rehearsal');
+const rehearsal = await read('scripts/rehearse-upstream-promotions.mjs');
+for (const marker of ['automaticCandidateSlugs', 'git", ["worktree", "add"', 'config.keepNpmPinned', 'candidateMode !== "adapter-gated"']) {
+  need(rehearsal.includes(marker), `shared promotion rehearsal contract missing: ${marker}`);
+}
+
 const workflow = await read('.github/workflows/upstream-candidate.yml');
 for (const marker of [
   'options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, zstd]',
@@ -121,4 +141,4 @@ if (errors.length) {
   for (const error of errors) console.error(` - ${error}`);
   process.exit(1);
 }
-console.log('[OK] upstream promotion automation contract passed: FFmpeg/libarchive/ImageMagick/Ghostscript/jq/Zstandard auto, libvips adapter-gated');
+console.log(`[OK] upstream promotion automation contract passed: ${auto.join('/')} auto, libvips adapter-gated`);
