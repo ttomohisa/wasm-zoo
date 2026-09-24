@@ -9,6 +9,13 @@ source "$PROFILE_DIR/profile.env"
 [[ "$PROFILE_ID" == "$PROFILE" ]] || { echo "[ERROR] profile mismatch" >&2; exit 1; }
 rm -rf /out /src/qpdf/build-wasm && mkdir -p /out
 
+zlib_recipe="/emsdk/upstream/emscripten/tools/ports/zlib.py"
+jpeg_recipe="/emsdk/upstream/emscripten/tools/ports/libjpeg.py"
+grep -Fq "VERSION = '$ZLIB_VERSION'" "$zlib_recipe" || { echo "[ERROR] Emscripten zlib port version drift" >&2; exit 1; }
+grep -Fq "HASH = '$ZLIB_SOURCE_SHA512'" "$zlib_recipe" || { echo "[ERROR] Emscripten zlib port source digest drift" >&2; exit 1; }
+grep -Fq "VERSION = '$LIBJPEG_VERSION'" "$jpeg_recipe" || { echo "[ERROR] Emscripten libjpeg port version drift" >&2; exit 1; }
+grep -Fq "HASH = '$LIBJPEG_SOURCE_SHA512'" "$jpeg_recipe" || { echo "[ERROR] Emscripten libjpeg port source digest drift" >&2; exit 1; }
+
 embuilder build zlib libjpeg
 SYSROOT="$(em-config CACHE)/sysroot"
 LIBDIR="$SYSROOT/lib/wasm32-emscripten"

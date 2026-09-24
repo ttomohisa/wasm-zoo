@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- rehearse the complete QPDF release handoff in pull-request CI, including exact zlib/libjpeg corresponding source plus immutable Emscripten port recipe/header snapshots, without publishing or creating tags;
+- treat a reviewed package whose human release tag has not been created yet as `pending` in Release Health rather than as a broken release.
+
 - promote QPDF 12.4.1 from the experimental onboarding canary to an available reviewed package surface with a human-tag-triggered `qpdf-v0.1.0` GitHub Release workflow, corresponding source/provenance/SBOM/checksums and a published-only Playground;
 - pin and verify the exact zlib 1.3.2 and libjpeg 9f source inputs selected by Emscripten 6.0.8, carry their distribution notices into the QPDF binary release, and checksum-verify the full published release before Pages stages QPDF assets.
 

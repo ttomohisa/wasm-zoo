@@ -33,3 +33,9 @@ or:
 ```
 
 A successful build runs a real Chromium smoke test: version, structural validation of a deterministic one-page PDF fixture, linearization, AES-256 encryption/decryption, and final validation. It then emits the normal Zoo provenance and CycloneDX metadata. Package publication remains human-triggered: only a reviewed `qpdf-v0.1.0` tag starts the release workflow. The Release workflow publishes binary/source/provenance/SBOM/checksum assets and then asks Pages to stage the published artifact for the Playground.
+
+## Release rehearsal
+
+Normal QPDF pull-request CI prepares the complete reviewed release handoff after the real Chromium smoke test, without publishing it. The rehearsal verifies the exact QPDF, zlib and libjpeg source archives, includes immutable Emscripten port recipe/header snapshots in corresponding source, creates deterministic binary/source assets, emits provenance/SBOM/checksums, and uploads the handoff as a temporary Actions artifact for review.
+
+Publication still requires the human-created `qpdf-v0.1.0` tag.

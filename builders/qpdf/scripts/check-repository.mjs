@@ -29,12 +29,12 @@ need(env.LIBJPEG_VERSION==="9f"&&/^[0-9a-f]{128}$/.test(env.LIBJPEG_SOURCE_SHA51
 need(pkg.release?.tag==="qpdf-v0.1.0"&&pkg.release?.sourceAsset==="qpdf-sources-12.4.1-zoo-0.1.0.tar.gz","QPDF reviewed release metadata mismatch");
 const docker=await read("docker/Dockerfile"); need(docker.includes("emscripten/emsdk:${EMSDK_VERSION}")&&docker.includes("fetch-qpdf.sh")&&docker.includes("ZLIB_SOURCE_SHA512")&&docker.includes("LIBJPEG_SOURCE_SHA512"),"Dockerfile must use pinned toolchain, verified QPDF source and pinned Emscripten port inputs");
 const build=await read("scripts/build-full.sh");
-for(const marker of ["embuilder build zlib libjpeg","-fwasm-exceptions","REQUIRE_CRYPTO_NATIVE=ON","USE_IMPLICIT_CRYPTO=OFF","INCOMING_MODULE_JS_API=wasmBinary,locateFile,print,printErr,thisProgram","qpdf-core.wasm"]) need(build.includes(marker),"QPDF build missing contract marker: "+marker);
+for(const marker of ["embuilder build zlib libjpeg","zlib port version drift","libjpeg port version drift","-fwasm-exceptions","REQUIRE_CRYPTO_NATIVE=ON","USE_IMPLICIT_CRYPTO=OFF","INCOMING_MODULE_JS_API=wasmBinary,locateFile,print,printErr,thisProgram","qpdf-core.wasm"]) need(build.includes(marker),"QPDF build missing contract marker: "+marker);
 const fetcher=await read("scripts/fetch-qpdf.sh"); need(fetcher.includes("sha256sum -c")&&fetcher.includes('refs/tags/$QPDF_REF^{}'),"QPDF fetch must verify official digest and peeled tag commit");
 const thirdParty=await read("scripts/stage-third-party-licenses.sh");
 need(thirdParty.includes("sha512sum -c")&&thirdParty.includes("LICENSE-ZLIB.txt")&&thirdParty.includes("LICENSE-LIBJPEG.txt"),"QPDF third-party license staging must verify pinned source archives");
 const prepare=await read("scripts/prepare-release.sh");
-need(prepare.includes("zlib-LICENSE.txt")&&prepare.includes("libjpeg-README.txt"),"QPDF release ZIP must include third-party license notices");
+for(const marker of ["qpdf-v${BUILDER_VERSION}","sha512sum -c","zlib-LICENSE.txt","libjpeg-README.txt","emscripten-port-recipes","provenance-browser-full.json","sbom-browser-full.cdx.json"]) need(prepare.includes(marker),"QPDF release prep missing contract marker: "+marker);
 const runtime=await read("runtime/browser-qpdf.js"); need(runtime.includes("createQpdfCore")&&runtime.includes("WasmZooQpdf")&&runtime.includes('thisProgram: "qpdf"'),"QPDF runtime core contract mismatch");
 const consumer=await read("runtime/wasm-zoo.mjs"); need(consumer.includes('package: "qpdf"')&&consumer.includes('kind: "cli"'),"QPDF Consumer API metadata mismatch");
 const smoke=await read("tests/smoke-test.html"); for(const marker of ["makeOnePagePdf","--check","--linearize","--encrypt","--decrypt"]) need(smoke.includes(marker),"QPDF smoke missing real operation: "+marker);

@@ -47,6 +47,10 @@ jobs:
           ./build.sh browser-full
       - name: Show generated manifest
         run: cat builders/qpdf/dist/browser-full/manifest.json
+      - name: Prepare reviewed release handoff without publishing
+        shell: bash
+        working-directory: builders/qpdf
+        run: ./scripts/prepare-release.sh qpdf-v0.1.0
       - name: Upload reviewed build artifact
         uses: actions/upload-artifact@v7
         with:
@@ -66,5 +70,12 @@ jobs:
             builders/qpdf/dist/browser-full/NOTICE-QPDF.md
             builders/qpdf/dist/browser-full/LICENSE-ZLIB.txt
             builders/qpdf/dist/browser-full/LICENSE-LIBJPEG.txt
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload reviewed release handoff
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-zoo-qpdf-release-handoff-${{ github.sha }}
+          path: builders/qpdf/release/*
           if-no-files-found: error
           retention-days: 14
