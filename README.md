@@ -8,6 +8,7 @@
 [![libvips build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libvips.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libvips.yml)
 [![Ghostscript build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-ghostscript.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-ghostscript.yml)
 [![jq build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-jq.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-jq.yml)
+[![QPDF build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-qpdf.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-qpdf.yml)
 [![Upstream watcher](https://github.com/ttomohisa/wasm-zoo/actions/workflows/check-upstream.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/check-upstream.yml)
 
 **Current upstream software, compiled for WebAssembly.**
@@ -21,6 +22,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 - libvips Playground: https://ttomohisa.github.io/wasm-zoo/libvips-playground/
 - Ghostscript Playground: https://ttomohisa.github.io/wasm-zoo/ghostscript-playground/
 - jq Playground: https://ttomohisa.github.io/wasm-zoo/jq-playground/
+- QPDF Playground: https://ttomohisa.github.io/wasm-zoo/qpdf-playground/
 - Zstandard Playground: https://ttomohisa.github.io/wasm-zoo/zstd-playground/
 
 
@@ -45,6 +47,7 @@ The reviewed-pin model is unchanged: automation may prepare a PR, but it never a
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 | Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
+| QPDF | 12.4.1 | 0.1.0 | `browser-full` | yes | — |
 
 The project version is **WASM Zoo v0.16.1**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
@@ -251,6 +254,36 @@ const result = await archive.exec("bsdtar", [
 
 Each command gets an in-memory filesystem. Files returned from `collectDirs` can then be downloaded or processed by the calling application.
 
+## QPDF 12.4.1
+
+QPDF is the first package onboarded through the v0.17 staged Package Onboarding Contract. The reviewed `browser-full` profile preserves the upstream `qpdf` CLI in a fresh Worker with MEMFS, QPDF native crypto, wasm-native exceptions and the exact zlib 1.3.2 / IJG libjpeg 9f sources selected by Emscripten 6.0.8.
+
+The real Chromium gate validates a deterministic one-page PDF, linearizes it, encrypts it with AES-256, decrypts it and checks the result again.
+
+Release tag after this PR is reviewed, merged and main CI is green:
+
+```text
+git tag -a qpdf-v0.1.0 -m "WASM Zoo QPDF v0.1.0"
+git push origin qpdf-v0.1.0
+```
+
+The tag-triggered workflow rebuilds and smoke-tests the reviewed pins before creating the GitHub Release. The public Playground stages only SHA-256-verified release assets. Automatic upstream promotion and npm publication remain disabled pending separate reviews.
+
+### QPDF browser API
+
+```js
+const qpdf = await WasmZooQpdf.loadHosted({
+  baseUrl: "/assets/qpdf/12.4.1/browser-full/"
+});
+const result = await qpdf.exec([
+  "/input.pdf", "/output.pdf", "--linearize"
+], {
+  files: [{ name: "/input.pdf", data: pdfBytes }],
+  outputs: ["/output.pdf"]
+});
+qpdf.dispose();
+```
+
 ## Playgrounds and Pages
 
 Pages stages immutable binary cores from the matching GitHub Release rather than rebuilding them specifically for the demo. Thin JavaScript integration wrappers are taken from `main`, allowing Playground integration fixes without silently changing the published Wasm binary.
@@ -265,7 +298,7 @@ In the libarchive Playground, List/Extract expects an archive input, while Creat
 start-local.bat
 ```
 
-This regenerates the catalog, stages any locally built FFmpeg/libarchive/ImageMagick/libvips/Ghostscript/jq artifacts under ignored `site/assets/`, and serves:
+This regenerates the catalog, stages any locally built FFmpeg/libarchive/ImageMagick/libvips/Ghostscript/jq/QPDF/Zstandard artifacts under ignored `site/assets/`, and serves:
 
 ```text
 http://localhost:4173/
@@ -275,6 +308,8 @@ http://localhost:4173/imagemagick-playground/
 http://localhost:4173/libvips-playground/
 http://localhost:4173/ghostscript-playground/
 http://localhost:4173/jq-playground/
+http://localhost:4173/qpdf-playground/
+http://localhost:4173/zstd-playground/
 ```
 
 The catalog still works when no local Wasm build has been staged.

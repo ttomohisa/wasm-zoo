@@ -24,6 +24,8 @@ on:
       - "builders/ghostscript/runtime/wasm-zoo.mjs"
       - "builders/jq/runtime/browser-jq.js"
       - "builders/jq/runtime/wasm-zoo.mjs"
+      - "builders/qpdf/runtime/browser-qpdf.js"
+      - "builders/qpdf/runtime/wasm-zoo.mjs"
       - "builders/zstd/runtime/**"
       - "VERSION"
       - ".github/workflows/pages.yml"
@@ -217,6 +219,34 @@ jobs:
           cp builders/jq/runtime/browser-jq.js "$dest/browser-jq.js"
           cp builders/jq/runtime/wasm-zoo.mjs "$dest/wasm-zoo.mjs"
           echo "[OK] staged jq ${version} ${tag}"
+
+      - name: Stage only checksum-verified published QPDF release for Playground
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/qpdf/versions.env
+          tag="qpdf-v${BUILDER_VERSION}"
+          version="${QPDF_VERSION}"
+          if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "[WARN] ${tag} is not published yet; QPDF Playground assets will be staged after the human release tag workflow completes."
+            exit 0
+          fi
+          work="${RUNNER_TEMP}/wasm-zoo-pages-qpdf"
+          rm -rf "$work" && mkdir -p "$work"
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir "$work"
+          (
+            cd "$work"
+            sha256sum -c SHA256SUMS.txt
+          )
+          asset="qpdf-browser-full-${version}-zoo-${BUILDER_VERSION}.zip"
+          dest="site/assets/qpdf/${version}/browser-full"
+          mkdir -p "$dest"
+          unzip -q -j "$work/$asset" qpdf-core.js qpdf-core.wasm manifest.json features.json -d "$dest"
+          cp builders/qpdf/runtime/browser-qpdf.js "$dest/browser-qpdf.js"
+          cp builders/qpdf/runtime/wasm-zoo.mjs "$dest/wasm-zoo.mjs"
+          echo "[OK] checksum-verified QPDF ${version} ${tag} staged"
 
       - name: Stage only checksum-verified published Zstandard release for Playground
         shell: bash

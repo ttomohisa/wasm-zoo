@@ -108,6 +108,23 @@ async function stageJq() {
   return 1;
 }
 
+async function stageQpdf() {
+  const env=await readEnv(path.join(root,'builders','qpdf','versions.env'));
+  const version=env.QPDF_VERSION;
+  const profile='browser-full';
+  const source=path.join(root,'builders','qpdf','dist',profile);
+  const dest=path.join(root,'site','assets','qpdf',version,profile);
+  try { await fs.access(path.join(source,'manifest.json')); }
+  catch { console.log('[skip] QPDF browser-full: build it first for local Playground'); return 0; }
+  await fs.mkdir(dest,{recursive:true});
+  for(const name of ['qpdf-core.js','qpdf-core.wasm','manifest.json','features.json','wasm-zoo.mjs']) {
+    await fs.copyFile(path.join(source,name),path.join(dest,name));
+  }
+  await fs.copyFile(path.join(root,'builders','qpdf','runtime','browser-qpdf.js'),path.join(dest,'browser-qpdf.js'));
+  console.log('[OK] staged QPDF browser-full');
+  return 1;
+}
+
 async function stageZstd() {
   const env=await readEnv(path.join(root,"builders/zstd/versions.env"));
   const version=env.ZSTD_REF.replace(/^v/,"");
@@ -140,5 +157,5 @@ async function stageZstd() {
   return 2;
 }
 
-const staged = (await stageFfmpeg()) + (await stageLibarchive()) + (await stageImageMagick()) + (await stageLibvips()) + (await stageGhostscript()) + (await stageJq()) + (await stageZstd());
+const staged = (await stageFfmpeg()) + (await stageLibarchive()) + (await stageImageMagick()) + (await stageLibvips()) + (await stageGhostscript()) + (await stageJq()) + (await stageQpdf()) + (await stageZstd());
 if (!staged) console.log('[info] No local release cores staged; the catalog can still be previewed.');
