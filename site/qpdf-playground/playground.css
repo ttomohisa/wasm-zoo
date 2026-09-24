@@ -1,0 +1,1 @@
+.password-fields[hidden]{display:none}.password-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.download-area:empty{display:none}.download-area{min-height:38px}.log-output{height:min(430px,48vh)}@media(max-width:620px){.password-fields{grid-template-columns:1fr}}
