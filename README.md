@@ -24,13 +24,13 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 - Zstandard Playground: https://ttomohisa.github.io/wasm-zoo/zstd-playground/
 
 
-## v0.16.0: reviewed automation contract and promotion rehearsal
+## v0.16.1: fail-closed libvips adapter automation
 
-WASM Zoo v0.16.0 hardens the **upstream candidate → review-only promotion PR** path without changing any published package binary, reviewed upstream pin, builder version, npm version or immutable package release. Every package whose manifest declares `tracker.candidateMode: auto` is now covered by one shared offline synthetic promotion rehearsal that exercises the real promotion generator in isolated git worktrees before changes can be reviewed.
+WASM Zoo v0.16.1 completes the reviewed automatic-candidate contract across the **seven currently published packages** without changing any package binary, upstream pin, builder version, npm version or immutable package release.
 
-The rehearsal verifies package-specific invariants instead of flattening them into one generic rule: Ghostscript keeps its official release-archive identity and SHA-256 metadata together, jq carries its exact Oniguruma submodule pin, and Zstandard preserves the already-published `@wasm-zoo/zstd@0.3.0` npm identity while a future reviewed source promotion makes its Playground fail closed until a separately reviewed npm release exists.
+libvips no longer requires a manual adapter-readiness gate. When a newer stable libvips release appears, the watcher resolves the exact current `kleisauke/wasm-vips` commit and reads the libvips/Emscripten versions from that immutable adapter revision. It then freezes the official Emscripten source plus both libvips/Emscripten compatibility branch heads to exact commits before any candidate build is dispatched.
 
-The Pages dashboard now exposes an **Automation Contract** derived directly from package manifests. It shows candidate mode, candidate profiles, review-only promotion behavior and rehearsal coverage without becoming a live Issue/PR monitor. libvips remains explicitly `adapter-gated`; it is not treated as an ordinary automatic promotion.
+The path remains **fail-closed**: if wasm-vips has not caught up to the new libvips release, or any compatibility input cannot be resolved, the upstream Issue is refreshed but no candidate build or promotion PR is created. Once the complete adapter bundle is resolvable, both `browser-core` and `browser-full` must build and pass their real browser smoke tests before the normal review-only promotion PR can be prepared.
 
 The reviewed-pin model is unchanged: automation may prepare a PR, but it never automatically merges, tags, creates a GitHub Release or publishes npm.
 
@@ -46,7 +46,7 @@ The reviewed-pin model is unchanged: automation may prepare a PR, but it never a
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 | Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
 
-The project version is **WASM Zoo v0.16.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+The project version is **WASM Zoo v0.16.1**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
 ### npm distribution
 
@@ -72,7 +72,7 @@ The browser lab executes **the seven exact published npm distributions** in Chro
 
 The [public browser compatibility dashboard](https://ttomohisa.github.io/wasm-zoo/#compatibility) reads the **latest eligible main-branch GitHub Actions run**, including unsuccessful or still-running attempts, so it never falls back to an older passing result. It displays tested package versions, browser engines, test time and a link to the source run. If the current latest run is failing, pending, stale, mismatched or missing artifacts, the site reports **not tested** rather than copying a previous passing result. Weekly checks refresh the evidence. See [Cross-browser Lab documentation](docs/CROSS_BROWSER_LAB.md) for the status policy.
 
-Project v0.16.0 keeps the v0.15.0 package/npm/21-cell distribution set unchanged and records the reviewed automation hardening: Zstandard automatic candidates, shared promotion rehearsal and the public manifest-driven Automation Contract. This project version bump **does not** change any package's reviewed upstream/toolchain pin, builder version, npm version or immutable release. The human maintainer controls PR merges and the optional `v0.16.0` project release tag; CI never automatically tags, releases or publishes. See [v0.16.0 release checklist](docs/V016_RELEASE.md).
+Project v0.16.1 keeps the v0.16.0 package/npm/21-cell distribution set unchanged and records the libvips adapter-gate removal: all seven current packages now have automatic candidate contracts, while libvips remains fail-closed until its complete adapter bundle is resolved to immutable commits. This project version bump **does not** change any package's reviewed upstream/toolchain pin, builder version, npm version or immutable release. The human maintainer controls PR merges and the optional `v0.16.1` project release tag; CI never automatically tags, releases or publishes. See [v0.16.1 release checklist](docs/V0161_RELEASE.md).
 
 ## Release health and supply-chain metadata
 
