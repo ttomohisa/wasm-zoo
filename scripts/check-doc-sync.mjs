@@ -18,14 +18,21 @@ need(readme.includes(`The project version is **WASM Zoo v${projectVersion}**`), 
 need(changelog.includes(`## v${projectVersion}\n`), "CHANGELOG must contain the current reviewed project version");
 need(changelog.startsWith("# Changelog\n\n## Unreleased\n"), "CHANGELOG must retain a separate Unreleased section");
 
-const [projectMajor, projectMinor] = projectVersion.split(".").map(Number);
-const releaseReviewPath = `docs/V${projectMajor}${String(projectMinor).padStart(2, "0")}_RELEASE.md`;
+const [projectMajor, projectMinor, projectPatch] = projectVersion.split(".").map(Number);
+const releaseReviewStem = `V${projectMajor}${String(projectMinor).padStart(2, "0")}${projectPatch > 0 ? projectPatch : ""}`;
+const releaseReviewPath = `docs/${releaseReviewStem}_RELEASE.md`;
 let releaseReview = "";
 try { releaseReview = await read(releaseReviewPath); } catch {}
 need(Boolean(releaseReview), `${releaseReviewPath} must exist for the current reviewed project version`);
 if (releaseReview) {
   need(releaseReview.startsWith(`# WASM Zoo v${projectVersion} — project release review\n`), `${releaseReviewPath} heading must match v${projectVersion}`);
-  need(releaseReview.includes("libvips") && releaseReview.includes("adapter-gated"), `${releaseReviewPath} must preserve the libvips adapter gate`);
+  const releaseLibvips = packages.find((pkg) => pkg.slug === "libvips");
+  need(releaseReview.includes("libvips"), `${releaseReviewPath} must describe the libvips candidate contract`);
+  if (releaseLibvips?.tracker?.candidateMode === "auto") {
+    need(releaseReview.includes("fail-closed") && releaseReview.includes("adapter"), `${releaseReviewPath} must describe libvips fail-closed adapter automation`);
+  } else if (releaseLibvips?.tracker?.candidateMode === "adapter-gated") {
+    need(releaseReview.includes("adapter-gated"), `${releaseReviewPath} must preserve the libvips adapter gate`);
+  }
   need(releaseReview.includes("never automatically merges, tags, creates a GitHub Release or publishes npm"), `${releaseReviewPath} must preserve the human release boundary`);
 }
 
