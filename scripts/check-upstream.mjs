@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { loadPackages, compareVersions, root } from "./lib.mjs";
+import { resolveLibvipsAdapterBundle } from "./libvips-adapter.mjs";
 
 const args = new Set(process.argv.slice(2));
 const packages = await loadPackages();
@@ -159,6 +160,10 @@ for (const pkg of packages) {
     const gap = versionGap(latest.version, pinned);
     const updateAvailable = gap.kind === "behind";
     if (updateAvailable) report.hasUpdates = true;
+    let adapter = null;
+    if (updateAvailable && pkg.slug === "libvips" && pkg.tracker?.candidateMode === "auto") {
+      adapter = await resolveLibvipsAdapterBundle(latest.version, githubJson);
+    }
     report.packages.push({
       slug: pkg.slug,
       name: pkg.name,
@@ -177,7 +182,8 @@ for (const pkg of packages) {
       candidate: {
         mode: pkg.tracker.candidateMode || "none",
         profiles: pkg.tracker.candidateProfiles || [],
-        ...(latest.candidateSource ? { source: latest.candidateSource } : {})
+        ...(latest.candidateSource ? { source: latest.candidateSource } : {}),
+        ...(adapter ? { adapter } : {})
       }
     });
   } catch (error) {

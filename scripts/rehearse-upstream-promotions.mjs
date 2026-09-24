@@ -89,6 +89,21 @@ function buildSyntheticArgs(slug, pkg, config, nextVersion, nextRef, commit) {
         : null,
       "source-sha256": syntheticHex(`${slug}:source`, 64)
     };
+    if (slug === "libvips") {
+      const currentEmsdk = String(pkg.zoo?.toolchain || "").match(/Emscripten (\d+\.\d+\.\d+)/)?.[1];
+      if (!currentEmsdk) throw new Error("libvips: could not derive current Emscripten version");
+      const nextEmsdk = bumpPatchVersion(currentEmsdk, "libvips synthetic Emscripten version");
+      const nextAdapter = bumpPatchVersion(pkg.referenceWasm?.packageVersion, "libvips synthetic wasm-vips version");
+      Object.assign(extras, {
+        "emsdk-version": nextEmsdk,
+        "emscripten-ref": nextEmsdk,
+        "emscripten-commit": syntheticHex("libvips:emscripten", 40),
+        "wasm-vips-commit": syntheticHex("libvips:adapter", 40),
+        "wasm-vips-version": nextAdapter,
+        "libvips-patch-commit": syntheticHex("libvips:vips-patch", 40),
+        "emscripten-patch-commit": syntheticHex("libvips:emscripten-patch", 40)
+      });
+    }
     expected.extraEnv = {};
     for (const [argKey, envKey] of Object.entries(config.extraEnv)) {
       const value = extras[argKey];
@@ -140,6 +155,20 @@ async function validateRehearsal(worktree, slug, before, config, expected, nextV
     }
   }
 
+  if (slug === "libvips") {
+    if (after.zoo?.toolchain !== `Emscripten ${expected.extraEnv.EMSDK_VERSION}`) {
+      throw new Error("libvips: package toolchain did not follow the synthetic adapter bundle");
+    }
+    if (after.referenceWasm?.packageVersion !== expected.extraEnv.WASM_VIPS_VERSION ||
+        after.referenceWasm?.upstreamVersion !== nextVersion) {
+      throw new Error("libvips: reference wasm-vips metadata did not follow the synthetic adapter bundle");
+    }
+    const adapterRow = (after.comparison || []).find((item) => item.name === "wasm-vips adapter");
+    if (adapterRow?.version !== `${expected.extraEnv.WASM_VIPS_VERSION} / pinned commit`) {
+      throw new Error("libvips: adapter comparison metadata was not refreshed");
+    }
+  }
+
   if (slug === "zstd") {
     const state = await readJsonAt(worktree, "site/zstd-playground/release-status.json");
     if (state.state !== "not-published" || state.tag !== `zstd-v${expectedBuilder}` || state.upstreamCommit !== commit) {
@@ -179,9 +208,7 @@ async function rehearse(slug) {
 
 const configured = [...automaticCandidateSlugs];
 if (!configured.length) throw new Error("No automatic candidate packages are configured");
-if (configured.includes("libvips")) throw new Error("libvips must remain adapter-gated and must not enter automatic promotion rehearsal");
-const libvips = await readJsonAt(root, "packages/libvips/package.json");
-if (libvips.tracker?.candidateMode !== "adapter-gated") throw new Error("libvips must remain candidateMode=adapter-gated");
+if (!configured.includes("libvips")) throw new Error("libvips automatic adapter candidate must be covered by promotion rehearsal");
 
 for (const slug of configured) await rehearse(slug);
-console.log(`[OK] automatic promotion rehearsal passed for ${configured.length} packages; libvips remains adapter-gated`);
+console.log(`[OK] automatic promotion rehearsal passed for ${configured.length} packages including libvips adapter-bundle promotion`);

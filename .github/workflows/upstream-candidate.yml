@@ -40,10 +40,10 @@ on:
         description: Official source archive SHA-256 for source-archive-backed candidates
         required: false
         type: string
-
-permissions:
-  contents: read
-  issues: write
+      adapter_bundle:
+        description: Base64-encoded immutable libvips adapter bundle JSON
+        required: false
+        type: string
 
 jobs:
   ffmpeg:
@@ -244,27 +244,57 @@ jobs:
           retention-days: 14
 
 
-  libvips-readiness:
+  libvips:
     if: inputs.slug == 'libvips'
     runs-on: ubuntu-latest
+    timeout-minutes: 420
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [browser-core, browser-full]
     steps:
       - uses: actions/checkout@v7
-      - name: Explain adapter gate
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Prepare immutable adapter-bundle candidate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ADAPTER_BUNDLE: ${{ inputs.adapter_bundle }}
         shell: bash
         run: |
-          cat <<'MSG' >> "$GITHUB_STEP_SUMMARY"
-          ## libvips candidate is adapter-gated
-
-          WASM Zoo pins libvips together with the wasm-vips adapter and two compatibility patch commits.
-          A newly detected libvips release is not automatically substituted into the existing adapter because doing so could silently test the old libvips source or an incompatible patch set.
-
-          Update the wasm-vips adapter/patch pins first, then run the normal libvips build matrix and browser smoke tests.
-          MSG
-          echo "adapter-gated candidate: manual adapter pin review required"
+          set -euo pipefail
+          adapter_json="$(printf '%s' "$ADAPTER_BUNDLE" | base64 --decode)"
+          node scripts/prepare-candidate.mjs \
+            --slug libvips \
+            --version "${{ inputs.version }}" \
+            --ref "${{ inputs.ref }}" \
+            --commit "${{ inputs.commit }}" \
+            --emsdk-version "$(jq -r '.emsdkVersion' <<<"$adapter_json")" \
+            --emscripten-ref "$(jq -r '.emscriptenRef' <<<"$adapter_json")" \
+            --emscripten-commit "$(jq -r '.emscriptenCommit' <<<"$adapter_json")" \
+            --wasm-vips-commit "$(jq -r '.adapterCommit' <<<"$adapter_json")" \
+            --wasm-vips-version "$(jq -r '.adapterVersion' <<<"$adapter_json")" \
+            --libvips-patch-commit "$(jq -r '.libvipsPatchCommit' <<<"$adapter_json")" \
+            --emscripten-patch-commit "$(jq -r '.emscriptenPatchCommit' <<<"$adapter_json")"
+      - name: Build candidate and run browser smoke test
+        shell: bash
+        working-directory: builders/libvips
+        env:
+          LIBVIPS_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh "${{ matrix.profile }}"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: candidate-libvips-${{ inputs.version }}-${{ matrix.profile }}
+          path: builders/libvips/dist/${{ matrix.profile }}/
+          retention-days: 14
 
   report:
     if: always()
-    needs: [ffmpeg, libarchive, imagemagick, ghostscript, libvips-readiness, jq, zstd]
+    needs: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, zstd]
     runs-on: ubuntu-latest
     outputs:
       result: ${{ steps.result.outputs.result }}
@@ -281,7 +311,7 @@ jobs:
             ghostscript) result='${{ needs.ghostscript.result }}' ;;
             jq) result='${{ needs.jq.result }}' ;;
             zstd) result='${{ needs.zstd.result }}' ;;
-            libvips) result='adapter-gated' ;;
+            libvips) result='${{ needs.libvips.result }}' ;;
             *) result='unknown' ;;
           esac
           echo "result=$result" >> "$GITHUB_OUTPUT"
@@ -309,7 +339,7 @@ jobs:
           - result: **${RESULT}**
           - run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
 
-          For `auto` packages, a successful candidate is eligible for a review-only promotion PR. The automation never merges the PR, creates a release tag, or publishes a release. `adapter-gated` / `none` packages retain their manual gate.
+          For `auto` packages, a successful candidate is eligible for a review-only promotion PR. The automation never merges the PR, creates a release tag, or publishes a release. Packages without an automatic candidate contract retain their manual gate.
           EOF_BODY
           )
           gh issue comment "${{ inputs.issue_number }}" --repo "$GITHUB_REPOSITORY" --body "$body"
@@ -333,16 +363,34 @@ jobs:
         id: prepare
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: >-
-          node scripts/prepare-promotion.mjs
-          --slug "${{ inputs.slug }}"
-          --version "${{ inputs.version }}"
-          --ref "${{ inputs.ref }}"
-          --commit "${{ inputs.commit }}"
-          --released "${{ inputs.released }}"
-          --release-tag "${{ inputs.release_tag }}"
-          --source-url "${{ inputs.source_url }}"
-          --source-sha256 "${{ inputs.source_sha256 }}"
+          ADAPTER_BUNDLE: ${{ inputs.adapter_bundle }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(
+            node scripts/prepare-promotion.mjs
+            --slug "${{ inputs.slug }}"
+            --version "${{ inputs.version }}"
+            --ref "${{ inputs.ref }}"
+            --commit "${{ inputs.commit }}"
+            --released "${{ inputs.released }}"
+            --release-tag "${{ inputs.release_tag }}"
+            --source-url "${{ inputs.source_url }}"
+            --source-sha256 "${{ inputs.source_sha256 }}"
+          )
+          if [ "${{ inputs.slug }}" = "libvips" ]; then
+            adapter_json="$(printf '%s' "$ADAPTER_BUNDLE" | base64 --decode)"
+            args+=(
+              --emsdk-version "$(jq -r '.emsdkVersion' <<<"$adapter_json")"
+              --emscripten-ref "$(jq -r '.emscriptenRef' <<<"$adapter_json")"
+              --emscripten-commit "$(jq -r '.emscriptenCommit' <<<"$adapter_json")"
+              --wasm-vips-commit "$(jq -r '.adapterCommit' <<<"$adapter_json")"
+              --wasm-vips-version "$(jq -r '.adapterVersion' <<<"$adapter_json")"
+              --libvips-patch-commit "$(jq -r '.libvipsPatchCommit' <<<"$adapter_json")"
+              --emscripten-patch-commit "$(jq -r '.emscriptenPatchCommit' <<<"$adapter_json")"
+            )
+          fi
+          "${args[@]}"
       - name: Regenerate and validate reviewed metadata
         shell: bash
         run: |
@@ -355,6 +403,7 @@ jobs:
             libarchive) node builders/libarchive/scripts/check-repository.mjs ;;
             imagemagick) node builders/imagemagick/scripts/check-repository.mjs ;;
             ghostscript) node builders/ghostscript/scripts/check-repository.mjs ;;
+            libvips) node builders/libvips/scripts/check-repository.mjs ;;
             jq) node builders/jq/scripts/check-repository.mjs ;;
             zstd) node builders/zstd/scripts/check-repository.mjs ;;
             *) echo "automatic promotion is not supported for ${{ inputs.slug }}" >&2; exit 1 ;;

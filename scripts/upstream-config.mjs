@@ -20,6 +20,22 @@ export const automaticCandidateConfigs = {
     buildWorkflow: "build-imagemagick.yml",
     displayName: "ImageMagick"
   },
+  libvips: {
+    dir: "libvips",
+    refKey: "LIBVIPS_REF",
+    commitKey: "LIBVIPS_COMMIT",
+    buildWorkflow: "build-libvips.yml",
+    displayName: "libvips",
+    extraEnv: {
+      "emsdk-version": "EMSDK_VERSION",
+      "emscripten-ref": "EMSCRIPTEN_REF",
+      "emscripten-commit": "EMSCRIPTEN_COMMIT",
+      "wasm-vips-commit": "WASM_VIPS_COMMIT",
+      "wasm-vips-version": "WASM_VIPS_VERSION",
+      "libvips-patch-commit": "WASM_VIPS_LIBVIPS_PATCH_COMMIT",
+      "emscripten-patch-commit": "WASM_VIPS_EMSCRIPTEN_PATCH_COMMIT"
+    }
+  },
   ghostscript: {
     dir: "ghostscript",
     refKey: "GHOSTSCRIPT_REF",

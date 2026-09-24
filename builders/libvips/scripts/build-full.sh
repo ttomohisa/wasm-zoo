@@ -42,6 +42,7 @@ actual_adapter="$(git -C /src/wasm-vips rev-parse HEAD)"
 [[ "$actual_adapter" == "$WASM_VIPS_COMMIT" ]] || { echo "wasm-vips commit mismatch" >&2; exit 1; }
 grep -q "version: '$WASM_VIPS_VERSION'" /src/wasm-vips/meson.build || { echo "wasm-vips version mismatch" >&2; exit 1; }
 grep -q "VERSION_VIPS=$LIBVIPS_VERSION" /src/wasm-vips/build.sh || { echo "Pinned wasm-vips recipe does not target libvips $LIBVIPS_VERSION" >&2; exit 1; }
+grep -Eq "^FROM (docker\\.io/)?emscripten/emsdk:$EMSDK_VERSION$" /src/wasm-vips/Dockerfile || { echo "Pinned wasm-vips recipe does not target Emscripten $EMSDK_VERSION" >&2; exit 1; }
 
 # Replace the recipe's moving GitHub compare branch with our locally
 # reconstructed immutable patch.
@@ -109,8 +110,8 @@ for file in lib/vips.js lib/vips.wasm lib/vips.d.ts build/target/versions.json; 
   [[ -s "$file" ]] || { echo "Missing wasm-vips output: $file" >&2; exit 1; }
 done
 
-grep -q '"vips": "8.18.6"' build/target/versions.json || { echo "Built versions.json does not contain libvips 8.18.6" >&2; exit 1; }
-grep -q '"emscripten": "6.0.8"' build/target/versions.json || { echo "Built versions.json does not contain Emscripten 6.0.8" >&2; exit 1; }
+grep -Fq "\"vips\": \"$LIBVIPS_VERSION\"" build/target/versions.json || { echo "Built versions.json does not contain libvips $LIBVIPS_VERSION" >&2; exit 1; }
+grep -Fq "\"emscripten\": \"$EMSDK_VERSION\"" build/target/versions.json || { echo "Built versions.json does not contain Emscripten $EMSDK_VERSION" >&2; exit 1; }
 
 cp lib/vips.js /out/vips.js
 cp lib/vips.wasm /out/vips.wasm

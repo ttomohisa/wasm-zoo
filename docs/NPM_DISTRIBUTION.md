@@ -10,7 +10,7 @@ The first publication used the reviewed tarball in the maintainer's local enviro
 
 The existing `npm-zstd-canary.yml` remains a **read-only immutable Release packaging regression** workflow: it downloads/checks every Release checksum, repacks without publishing and runs the exact local tarball through real Vite Chromium/Firefox/WebKit tests. Independently, `npm-package-smoke.yml` gates the reviewed promotion PR against the **real npm Registry + Vite/Chromium**. The expanded `cross-browser-compat.yml` uses the real Registry version in all three engines and verifies `dist.shasum` before installation. The reviewed PR was merged; its **main** compatibility run verified all 21 real Registry-backed browser operations, and the public dashboard accepts only complete fresh verified main evidence, never PR-only or older six-package evidence.
 
-Future npm-only versions follow the existing separate manual review and Trusted Publisher staged-publishing workflow. No candidate automation, project tag, npm publication or merge is triggered by the v0.15.0 project-version PR. Zstandard `candidateMode` remains `none` and libvips remains `adapter-gated`.
+Future npm-only versions follow the existing separate manual review and Trusted Publisher staged-publishing workflow. Upstream candidate automation may prepare review-only package promotion PRs, including libvips only after its complete adapter bundle is resolved to immutable commits, but it never publishes npm. Registry publication remains a separate reviewed action from package promotion.
 
 ## Distribution contract
 

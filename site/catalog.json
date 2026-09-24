@@ -1333,7 +1333,7 @@
       "tracker": {
         "type": "github-releases",
         "repository": "libvips/libvips",
-        "candidateMode": "adapter-gated",
+        "candidateMode": "auto",
         "candidateProfiles": [
           "browser-core",
           "browser-full"
@@ -1450,6 +1450,7 @@
         }
       ],
       "notes": [
+        "Stable libvips candidates are automatic only after the watcher proves that the pinned wasm-vips master commit targets the same libvips release, resolves its Emscripten version, and converts both wasm-vips compatibility branches into immutable commit pins; otherwise the watcher leaves the candidate pending for a later retry.",
         "v0.5.2 promotes libvips 8.18.6 with the wasm-vips 0.0.18 adapter commit that explicitly targets 8.18.6, Emscripten 6.0.8, and immutable compatibility-patch heads reconstructed from the matching upstream commits; browser-core/browser-full feature policy remains unchanged.",
         "v0.5.1 is the first metadata-enabled libvips patch release for WASM Zoo v0.8.0: the WebAssembly feature set and upstream pin are unchanged while standalone SLSA provenance and CycloneDX SBOM assets are added to the release contract.",
         "libvips is published as a library API rather than a synthetic CLI wrapper.",
