@@ -43,6 +43,12 @@ The rehearsal also preserves distribution-specific rules: Zstandard's already-pu
 
 libvips is intentionally outside this set. The rehearsal asserts that it remains `adapter-gated`; it must not become an ordinary automatic promotion merely to make the package count look complete.
 
+## Public automation contract
+
+The Pages dashboard exposes the reviewed automation boundary directly from the generated package catalog. It shows each package's `tracker.candidateMode`, declared candidate profiles, whether the shared synthetic promotion rehearsal applies, and the corresponding review-only/manual promotion path.
+
+This surface is intentionally static with respect to repository operations. It does not poll current Issues, pull requests or workflow runs. Those remain operational evidence in GitHub, while the dashboard documents the reviewed policy encoded in package manifests. libvips therefore appears as `adapter-gated`, not as an automatic promotion.
+
 ## Manual gates
 
 - `adapter-gated`: no promotion PR is created from the readiness result. libvips stays here because the wasm-vips adapter plus libvips/Emscripten compatibility patch pins must be reviewed as a unit.

@@ -4,6 +4,7 @@ const dialogContent = document.querySelector('#dialog-content');
 const closeButton = document.querySelector('#dialog-close');
 const healthBody = document.querySelector('#release-health-body');
 const gapBody = document.querySelector('#version-gap-body');
+const automationBody = document.querySelector('#automation-contract-body');
 const matrixTabs = document.querySelector('#matrix-tabs');
 const matrixHost = document.querySelector('#feature-matrix');
 let catalog;
@@ -206,6 +207,26 @@ function renderVersionGap() {
   if (heroState) { heroState.textContent = behind ? `${behind} update${behind === 1 ? '' : 's'} ↑` : '✓ current'; heroState.classList.toggle('warn', behind > 0); }
 }
 
+
+function renderAutomationContract() {
+  if (!automationBody) return;
+  automationBody.innerHTML = catalog.packages.map((pkg) => {
+    const mode = pkg.tracker?.candidateMode || 'manual';
+    const profiles = (pkg.tracker?.candidateProfiles || []).map((id) => profileLabel(pkg, id));
+    const isAuto = mode === 'auto';
+    const isAdapterGated = mode === 'adapter-gated';
+    const modeLabel = isAuto ? 'AUTO' : isAdapterGated ? 'ADAPTER-GATED' : mode.toUpperCase();
+    const modeClass = isAuto ? 'auto' : isAdapterGated ? 'gated' : 'manual';
+    const promotion = isAuto ? 'Review-only PR' : isAdapterGated ? 'Adapter review first' : 'Manual review';
+    const rehearsal = isAuto ? 'Shared synthetic' : isAdapterGated ? 'Excluded from auto' : 'Not automatic';
+    const profileMarkup = profiles.length
+      ? profiles.map((label) => `<span class="automation-profile">${esc(label)}</span>`).join('')
+      : '<span class="automation-muted">Not declared</span>';
+    return `<tr><td><button class="gap-project" data-open="${esc(pkg.slug)}"><strong>${esc(pkg.name)}</strong><small>${esc(pkg.upstream?.version || statusLabel(pkg.status))}</small></button></td><td><span class="automation-mode ${modeClass}">${esc(modeLabel)}</span></td><td><div class="automation-profiles">${profileMarkup}</div></td><td><strong class="automation-policy">${esc(promotion)}</strong></td><td><span class="automation-rehearsal ${isAuto ? 'covered' : 'not-covered'}">${esc(rehearsal)}</span></td></tr>`;
+  }).join('');
+  automationBody.querySelectorAll('[data-open]').forEach((button) => button.addEventListener('click', () => openPackage(button.dataset.open)));
+}
+
 function renderFeatureMatrix() {
   const packages = catalog.packages.filter((pkg) => pkg.status === 'available' && pkg.capabilityMatrix?.length);
   if (!packages.length) { matrixTabs.innerHTML = ''; matrixHost.innerHTML = `<div class="empty">No feature matrices published yet.</div>`; return; }
@@ -343,6 +364,7 @@ try {
   renderReleaseHealth();
   renderBrowserCompatibility();
   renderVersionGap();
+  renderAutomationContract();
   renderFeatureMatrix();
   await enrichReleaseManifests();
   render();

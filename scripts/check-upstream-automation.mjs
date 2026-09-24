@@ -97,6 +97,15 @@ for (const marker of ['automaticCandidateSlugs', 'git", ["worktree", "add"', 'co
   need(rehearsal.includes(marker), `shared promotion rehearsal contract missing: ${marker}`);
 }
 
+const siteIndex = await read('site/index.html');
+const siteApp = await read('site/app.js');
+for (const marker of ['id="automation"', 'id="automation-contract-body"', 'Automation Contract', 'not a live operations monitor']) {
+  need(siteIndex.includes(marker), `public automation contract surface missing: ${marker}`);
+}
+for (const marker of ['pkg.tracker?.candidateMode', 'pkg.tracker?.candidateProfiles', "mode === 'auto'", "mode === 'adapter-gated'", 'Review-only PR', 'Adapter review first']) {
+  need(siteApp.includes(marker), `public automation contract renderer missing: ${marker}`);
+}
+
 const workflow = await read('.github/workflows/upstream-candidate.yml');
 for (const marker of [
   'options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, zstd]',
