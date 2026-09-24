@@ -1,4 +1,4 @@
-// WASM Zoo Consumer API v1 ESM adapter for jq.
+// WASM Zoo Consumer API v1 ESM adapter for QPDF.
 // The legacy browser wrapper remains supported; this module is an additive interface.
 export const API_VERSION = 1;
 
