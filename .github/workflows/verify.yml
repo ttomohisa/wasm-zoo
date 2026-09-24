@@ -9,17 +9,10 @@ on:
       - "site/**"
       - "scripts/**"
       - "docs/**"
-      - "builders/ffmpeg/versions.env"
-      - "builders/libarchive/**"
-      - "builders/imagemagick/**"
-      - "builders/libvips/**"
-      - "builders/ghostscript/**"
-      - "builders/jq/**"
+      - "builders/**"
       - "package.json"
       - "VERSION"
-      - ".github/workflows/verify.yml"
-      - ".github/workflows/check-upstream.yml"
-      - ".github/workflows/upstream-candidate.yml"
+      - ".github/workflows/**"
   pull_request:
 
 permissions:
@@ -32,24 +25,10 @@ jobs:
       - uses: actions/checkout@v7
       - name: Generate catalog
         run: npm run catalog
-      - name: Validate repository
+      - name: Validate repository and package onboarding
         run: |
           npm run check
           node scripts/check-metadata-contract.mjs
-      - name: Validate FFmpeg builder
-        run: node builders/ffmpeg/scripts/check-repository.mjs
-      - name: Validate libarchive builder
-        run: node builders/libarchive/scripts/check-repository.mjs
-      - name: Validate ImageMagick builder
-        run: node builders/imagemagick/scripts/check-repository.mjs
-      - name: Validate libvips builder
-        run: node builders/libvips/scripts/check-repository.mjs
-      - name: Validate Ghostscript builder
-        run: node builders/ghostscript/scripts/check-repository.mjs
-      - name: Validate jq builder
-        run: node builders/jq/scripts/check-repository.mjs
-      - name: Validate experimental Zstandard builder
-        run: node builders/zstd/scripts/check-repository.mjs
       - name: Rehearse all review-only automatic promotions
         run: npm run promotion:rehearse
       - name: Ensure generated catalog is committed

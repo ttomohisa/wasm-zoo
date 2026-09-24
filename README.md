@@ -136,6 +136,12 @@ npm run check:upstream:write
 
 The representative WASM projects are informational comparisons only and carry a `checkedAt` date in each package manifest; WASM Zoo does not treat those external projects as release dependencies.
 
+## Adding a package
+
+New animals follow the staged [Package onboarding contract](docs/PACKAGE_ONBOARDING.md). The contract lets a package begin as `experimental` with a real builder and browser smoke, then requires release/Playground wiring before `available`, and finally requires npm + Cross-browser Lab wiring before npm may be marked `published`.
+
+`npm run onboarding:check` discovers package manifests and builder checkers rather than relying on a hard-coded seven-package list. Package-specific source/toolchain invariants remain in each builder's own repository checker.
+
 ## What a Zoo package contains
 
 WASM Zoo aims to preserve the **upstream program/API shape** where practical. A published package should provide:
