@@ -1,12 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 : "${BUILDER_VERSION:?}" "${EMSDK_VERSION:?}" "${EMSCRIPTEN_COMMIT:?}" "${QPDF_VERSION:?}" "${QPDF_REF:?}" "${QPDF_COMMIT:?}" "${QPDF_SOURCE_URL:?}" "${QPDF_SOURCE_SHA256:?}"
+: "${ZLIB_PORT_VERSION:?}" "${ZLIB_SOURCE_SHA512:?}" "${LIBJPEG_PORT_VERSION:?}" "${LIBJPEG_SOURCE_SHA512:?}"
 : "${PROFILE:=browser-full}"
 PROFILE_DIR="/workspace/profiles/$PROFILE"
 # shellcheck disable=SC1090
 source "$PROFILE_DIR/profile.env"
 [[ "$PROFILE_ID" == "$PROFILE" ]] || { echo "[ERROR] profile mismatch" >&2; exit 1; }
 rm -rf /out /src/qpdf/build-wasm && mkdir -p /out
+
+zlib_recipe="/emsdk/upstream/emscripten/tools/ports/zlib.py"
+jpeg_recipe="/emsdk/upstream/emscripten/tools/ports/libjpeg.py"
+grep -Fq "VERSION = '$ZLIB_PORT_VERSION'" "$zlib_recipe" || { echo "[ERROR] Emscripten zlib port version drift" >&2; exit 1; }
+grep -Fq "HASH = '$ZLIB_SOURCE_SHA512'" "$zlib_recipe" || { echo "[ERROR] Emscripten zlib port source digest drift" >&2; exit 1; }
+grep -Fq "VERSION = '$LIBJPEG_PORT_VERSION'" "$jpeg_recipe" || { echo "[ERROR] Emscripten libjpeg port version drift" >&2; exit 1; }
+grep -Fq "HASH = '$LIBJPEG_SOURCE_SHA512'" "$jpeg_recipe" || { echo "[ERROR] Emscripten libjpeg port source digest drift" >&2; exit 1; }
 
 embuilder build zlib libjpeg
 SYSROOT="$(em-config CACHE)/sysroot"
@@ -56,7 +64,7 @@ cat <<EOF_JSON
   "upstream": {"name": "QPDF", "version": "$QPDF_VERSION", "ref": "$QPDF_REF", "commit": "$QPDF_COMMIT", "sourceUrl": "$QPDF_SOURCE_URL", "sourceSha256": "$QPDF_SOURCE_SHA256"},
   "toolchain": {"name": "Emscripten", "version": "$EMSDK_VERSION", "commit": "$EMSCRIPTEN_COMMIT"},
   "runtime": {"threads": false, "threadBackend": "none", "simd": false, "sharedArrayBuffer": false, "crossOriginIsolation": false, "worker": true, "network": false, "filesystem": "MEMFS", "initialMemory": 33554432, "maximumMemory": 536870912, "memoryGrowth": true, "stackSize": 2097152, "wasmExceptions": true},
-  "build": {"builderVersion": "$BUILDER_VERSION", "binaryLicense": "$PROFILE_BINARY_LICENSE", "cryptoProvider": "native", "externalLibraries": ["zlib (Emscripten port)", "libjpeg (Emscripten port)"], "tools": ["qpdf"]},
+  "build": {"builderVersion": "$BUILDER_VERSION", "binaryLicense": "$PROFILE_BINARY_LICENSE", "cryptoProvider": "native", "externalLibraries": ["zlib $ZLIB_PORT_VERSION (Emscripten port)", "libjpeg $LIBJPEG_PORT_VERSION (Emscripten port)"], "tools": ["qpdf"]},
   "files": {
 EOF_JSON
 first=1
@@ -81,6 +89,10 @@ Official source SHA-256: $QPDF_SOURCE_SHA256
 
 Emscripten version: $EMSDK_VERSION
 Emscripten commit: $EMSCRIPTEN_COMMIT
+zlib port version: $ZLIB_PORT_VERSION
+zlib source SHA-512: $ZLIB_SOURCE_SHA512
+libjpeg port version: $LIBJPEG_PORT_VERSION
+libjpeg source SHA-512: $LIBJPEG_SOURCE_SHA512
 
 Browser target:
 - original upstream qpdf CLI
