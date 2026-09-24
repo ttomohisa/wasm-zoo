@@ -47,6 +47,19 @@ if (candidateSource) {
 replaceEnv(config.refKey, values.ref);
 replaceEnv(config.commitKey, values.commit);
 
+function validateLibvipsAdapterArgs() {
+  if (values.slug !== "libvips") return;
+  for (const key of ["emscripten-commit", "wasm-vips-commit", "libvips-patch-commit", "emscripten-patch-commit"]) {
+    if (!/^[0-9a-f]{40}$/i.test(values[key] || "")) throw new Error(`--${key} must be a full 40-character Git commit SHA`);
+  }
+  for (const key of ["emsdk-version", "emscripten-ref", "wasm-vips-version"]) {
+    if (!/^\d+\.\d+\.\d+$/.test(values[key] || "")) throw new Error(`--${key} must be x.y.z`);
+  }
+  if (values["emscripten-ref"] !== values["emsdk-version"]) {
+    throw new Error("--emscripten-ref must match --emsdk-version for the pinned emsdk image");
+  }
+}
+validateLibvipsAdapterArgs();
 if (config.extraEnv) {
   for (const [argKey, envKey] of Object.entries(config.extraEnv)) {
     const value = values[argKey];

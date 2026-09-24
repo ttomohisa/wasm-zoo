@@ -88,6 +88,26 @@ async function resolveSubmoduleCommit(submodule) {
 const released = await resolveReleasedDate();
 const versionsFile = path.join(root, "builders", config.dir, "versions.env");
 let versionsText = await fs.readFile(versionsFile, "utf8");
+const oldEnv = Object.fromEntries(versionsText.split(/\r?\n/)
+  .map((line) => line.trim())
+  .filter((line) => line && !line.startsWith("#") && line.includes("="))
+  .map((line) => {
+    const i = line.indexOf("=");
+    return [line.slice(0, i), line.slice(i + 1).replace(/^[\"']|[\"']$/g, "")];
+  }));
+function validateLibvipsAdapterArgs() {
+  if (values.slug !== "libvips") return;
+  for (const key of ["emscripten-commit", "wasm-vips-commit", "libvips-patch-commit", "emscripten-patch-commit"]) {
+    if (!/^[0-9a-f]{40}$/i.test(values[key] || "")) throw new Error(`--${key} must be a full 40-character Git commit SHA`);
+  }
+  for (const key of ["emsdk-version", "emscripten-ref", "wasm-vips-version"]) {
+    if (!/^\d+\.\d+\.\d+$/.test(values[key] || "")) throw new Error(`--${key} must be x.y.z`);
+  }
+  if (values["emscripten-ref"] !== values["emsdk-version"]) {
+    throw new Error("--emscripten-ref must match --emsdk-version for the pinned emsdk image");
+  }
+}
+validateLibvipsAdapterArgs();
 versionsText = envReplace(versionsText, "BUILDER_VERSION", newBuilder, versionsFile);
 versionsText = envReplace(versionsText, config.refKey, values.ref, versionsFile);
 versionsText = envReplace(versionsText, config.commitKey, values.commit, versionsFile);
@@ -146,6 +166,28 @@ if (values.slug === "zstd") {
   pkg.integration = rewrite(pkg.integration);
 }
 
+if (values.slug === "libvips") {
+  const rewriteCurrent = (value) => {
+    if (typeof value === "string") return value.replaceAll(oldVersion, values.version);
+    if (Array.isArray(value)) return value.map(rewriteCurrent);
+    if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, rewriteCurrent(child)]));
+    return value;
+  };
+  pkg.summary = rewriteCurrent(pkg.summary);
+  pkg.profiles = rewriteCurrent(pkg.profiles);
+  pkg.capabilityMatrix = rewriteCurrent(pkg.capabilityMatrix);
+  pkg.integration = rewriteCurrent(pkg.integration);
+  pkg.zoo.toolchain = `Emscripten ${values["emsdk-version"]}`;
+  const adapterRow = (pkg.comparison || []).find((item) => item.name === "wasm-vips adapter");
+  if (!adapterRow) throw new Error("libvips comparison metadata is missing the wasm-vips adapter row");
+  adapterRow.version = `${values["wasm-vips-version"]} / pinned commit`;
+  if (pkg.referenceWasm) {
+    pkg.referenceWasm.packageVersion = values["wasm-vips-version"];
+    pkg.referenceWasm.upstreamVersion = values.version;
+    pkg.referenceWasm.checkedAt = new Date().toISOString().slice(0, 10);
+  }
+}
+
 if (values.slug === "ghostscript") {
   for (const profile of pkg.profiles || []) {
     profile.externalLibraries = (profile.externalLibraries || []).map((text) =>
@@ -168,7 +210,9 @@ if (values.slug === "jq") {
     return next;
   });
 }
-const promotionNote = `v${newBuilder} promotes ${pkg.name} ${values.version} after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.`;
+const promotionNote = values.slug === "libvips"
+  ? `v${newBuilder} promotes libvips ${values.version} with wasm-vips ${values["wasm-vips-version"]} at exact commit \`${values["wasm-vips-commit"]}\`, Emscripten ${values["emsdk-version"]}, and immutable libvips/Emscripten compatibility patch commits after both browser profiles passed the isolated candidate build and smoke tests.`
+  : `v${newBuilder} promotes ${pkg.name} ${values.version} after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.`;
 pkg.notes = [promotionNote, ...(pkg.notes || [])];
 await fs.writeFile(packageFile, `${JSON.stringify(pkg, null, 2)}\n`);
 
@@ -210,6 +254,16 @@ await replaceFile("README.md", (input) => {
   text = text.replaceAll(`git push origin ${values.slug}-v${oldBuilder}`, `git push origin ${values.slug}-v${newBuilder}`);
   // FFmpeg currently documents the tag as a standalone line rather than git commands.
   text = text.replace(new RegExp(`(^|\\n)${values.slug}-v${oldBuilder.replaceAll(".", "\\.")}($|\\n)`), `$1${values.slug}-v${newBuilder}$2`);
+  if (values.slug === "libvips") {
+    const start = text.indexOf("## libvips " + values.version);
+    const end = start >= 0 ? text.indexOf("\n## ", start + 4) : -1;
+    if (start < 0) throw new Error("Could not locate current libvips README section");
+    const stop = end >= 0 ? end : text.length;
+    let section = text.slice(start, stop).replaceAll(oldVersion, values.version);
+    if (oldEnv.EMSDK_VERSION) section = section.replaceAll(oldEnv.EMSDK_VERSION, values["emsdk-version"]);
+    if (oldEnv.WASM_VIPS_VERSION) section = section.replaceAll(oldEnv.WASM_VIPS_VERSION, values["wasm-vips-version"]);
+    text = text.slice(0, start) + section + text.slice(stop);
+  }
   if (values.slug === "ghostscript") {
     const start = text.indexOf("## Ghostscript " + values.version);
     const end = start >= 0 ? text.indexOf("\n## ", start + 4) : -1;
@@ -264,6 +318,16 @@ await replaceFile(`site/${values.slug}-playground/index.html`, (text) => text.re
 if (values.slug === "libarchive") {
   await replaceFile("builders/libarchive/README.md", (text) => text.replace(`Pinned release: **libarchive ${oldVersion}**`, `Pinned release: **libarchive ${values.version}**`));
   await replaceFile("builders/libarchive/docs/ARCHITECTURE.md", (text) => text.replace(`libarchive ${oldVersion}`, `libarchive ${values.version}`));
+}
+if (values.slug === "libvips") {
+  const refresh = (text) => {
+    let next = text.replaceAll(oldVersion, values.version);
+    if (oldEnv.EMSDK_VERSION) next = next.replaceAll(oldEnv.EMSDK_VERSION, values["emsdk-version"]);
+    if (oldEnv.WASM_VIPS_VERSION) next = next.replaceAll(oldEnv.WASM_VIPS_VERSION, values["wasm-vips-version"]);
+    return next;
+  };
+  await replaceFile("builders/libvips/README.md", refresh);
+  await replaceFile("builders/libvips/docs/ARCHITECTURE.md", refresh);
 }
 if (values.slug === "zstd") {
   const versionNumber = (version) => {
