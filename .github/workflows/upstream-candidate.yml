@@ -40,38 +40,10 @@ on:
         description: Official source archive SHA-256 for source-archive-backed candidates
         required: false
         type: string
-      adapter_commit:
-        description: Exact wasm-vips adapter commit for libvips candidates
+      adapter_bundle:
+        description: Base64-encoded immutable libvips adapter bundle JSON
         required: false
         type: string
-      adapter_version:
-        description: wasm-vips adapter version for libvips candidates
-        required: false
-        type: string
-      emsdk_version:
-        description: Exact Emscripten SDK version for libvips candidates
-        required: false
-        type: string
-      emscripten_ref:
-        description: Exact Emscripten source ref for libvips candidates
-        required: false
-        type: string
-      emscripten_commit:
-        description: Exact Emscripten source commit for libvips candidates
-        required: false
-        type: string
-      libvips_patch_commit:
-        description: Exact kleisauke/libvips compatibility patch head for libvips candidates
-        required: false
-        type: string
-      emscripten_patch_commit:
-        description: Exact kleisauke/emscripten compatibility patch head for libvips candidates
-        required: false
-        type: string
-
-permissions:
-  contents: read
-  issues: write
 
 jobs:
   ffmpeg:
@@ -289,19 +261,23 @@ jobs:
       - name: Prepare immutable adapter-bundle candidate
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: >-
-          node scripts/prepare-candidate.mjs
-          --slug libvips
-          --version "${{ inputs.version }}"
-          --ref "${{ inputs.ref }}"
-          --commit "${{ inputs.commit }}"
-          --emsdk-version "${{ inputs.emsdk_version }}"
-          --emscripten-ref "${{ inputs.emscripten_ref }}"
-          --emscripten-commit "${{ inputs.emscripten_commit }}"
-          --wasm-vips-commit "${{ inputs.adapter_commit }}"
-          --wasm-vips-version "${{ inputs.adapter_version }}"
-          --libvips-patch-commit "${{ inputs.libvips_patch_commit }}"
-          --emscripten-patch-commit "${{ inputs.emscripten_patch_commit }}"
+          ADAPTER_BUNDLE: ${{ inputs.adapter_bundle }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          adapter_json="$(printf '%s' "$ADAPTER_BUNDLE" | base64 --decode)"
+          node scripts/prepare-candidate.mjs \
+            --slug libvips \
+            --version "${{ inputs.version }}" \
+            --ref "${{ inputs.ref }}" \
+            --commit "${{ inputs.commit }}" \
+            --emsdk-version "$(jq -r '.emsdkVersion' <<<"$adapter_json")" \
+            --emscripten-ref "$(jq -r '.emscriptenRef' <<<"$adapter_json")" \
+            --emscripten-commit "$(jq -r '.emscriptenCommit' <<<"$adapter_json")" \
+            --wasm-vips-commit "$(jq -r '.adapterCommit' <<<"$adapter_json")" \
+            --wasm-vips-version "$(jq -r '.adapterVersion' <<<"$adapter_json")" \
+            --libvips-patch-commit "$(jq -r '.libvipsPatchCommit' <<<"$adapter_json")" \
+            --emscripten-patch-commit "$(jq -r '.emscriptenPatchCommit' <<<"$adapter_json")"
       - name: Build candidate and run browser smoke test
         shell: bash
         working-directory: builders/libvips
@@ -387,23 +363,34 @@ jobs:
         id: prepare
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: >-
-          node scripts/prepare-promotion.mjs
-          --slug "${{ inputs.slug }}"
-          --version "${{ inputs.version }}"
-          --ref "${{ inputs.ref }}"
-          --commit "${{ inputs.commit }}"
-          --released "${{ inputs.released }}"
-          --release-tag "${{ inputs.release_tag }}"
-          --source-url "${{ inputs.source_url }}"
-          --source-sha256 "${{ inputs.source_sha256 }}"
-          --emsdk-version "${{ inputs.emsdk_version }}"
-          --emscripten-ref "${{ inputs.emscripten_ref }}"
-          --emscripten-commit "${{ inputs.emscripten_commit }}"
-          --wasm-vips-commit "${{ inputs.adapter_commit }}"
-          --wasm-vips-version "${{ inputs.adapter_version }}"
-          --libvips-patch-commit "${{ inputs.libvips_patch_commit }}"
-          --emscripten-patch-commit "${{ inputs.emscripten_patch_commit }}"
+          ADAPTER_BUNDLE: ${{ inputs.adapter_bundle }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(
+            node scripts/prepare-promotion.mjs
+            --slug "${{ inputs.slug }}"
+            --version "${{ inputs.version }}"
+            --ref "${{ inputs.ref }}"
+            --commit "${{ inputs.commit }}"
+            --released "${{ inputs.released }}"
+            --release-tag "${{ inputs.release_tag }}"
+            --source-url "${{ inputs.source_url }}"
+            --source-sha256 "${{ inputs.source_sha256 }}"
+          )
+          if [ "${{ inputs.slug }}" = "libvips" ]; then
+            adapter_json="$(printf '%s' "$ADAPTER_BUNDLE" | base64 --decode)"
+            args+=(
+              --emsdk-version "$(jq -r '.emsdkVersion' <<<"$adapter_json")"
+              --emscripten-ref "$(jq -r '.emscriptenRef' <<<"$adapter_json")"
+              --emscripten-commit "$(jq -r '.emscriptenCommit' <<<"$adapter_json")"
+              --wasm-vips-commit "$(jq -r '.adapterCommit' <<<"$adapter_json")"
+              --wasm-vips-version "$(jq -r '.adapterVersion' <<<"$adapter_json")"
+              --libvips-patch-commit "$(jq -r '.libvipsPatchCommit' <<<"$adapter_json")"
+              --emscripten-patch-commit "$(jq -r '.emscriptenPatchCommit' <<<"$adapter_json")"
+            )
+          fi
+          "${args[@]}"
       - name: Regenerate and validate reviewed metadata
         shell: bash
         run: |

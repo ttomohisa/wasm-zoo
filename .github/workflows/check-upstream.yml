@@ -140,11 +140,10 @@ jobs:
                 continue
               fi
               if [ "$slug" = "libvips" ]; then
+                adapter_bundle="$(jq -c '.candidate.adapter | {adapterCommit,adapterVersion,emsdkVersion,emscriptenRef,emscriptenCommit,libvipsPatchCommit,emscriptenPatchCommit}' <<<"$item" | base64 -w0)"
                 gh workflow run upstream-candidate.yml --repo "$GITHUB_REPOSITORY" \
                   -f slug="$slug" -f version="$latest" -f ref="$ref" -f commit="$commit" -f released="$released" -f issue_number="$issue" \
-                  -f adapter_commit="$adapter_commit" -f adapter_version="$adapter_version" -f emsdk_version="$emsdk_version" \
-                  -f emscripten_ref="$emscripten_ref" -f emscripten_commit="$emscripten_commit" \
-                  -f libvips_patch_commit="$libvips_patch_commit" -f emscripten_patch_commit="$emscripten_patch_commit"
+                  -f adapter_bundle="$adapter_bundle"
                 gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" --body "Immutable adapter candidate workflow dispatched by upstream watcher for **libvips ${latest}**. All adapter and compatibility refs were resolved to exact commits before dispatch." >/dev/null
               else
                 gh workflow run upstream-candidate.yml --repo "$GITHUB_REPOSITORY" \

@@ -131,8 +131,10 @@ for (const marker of [
   "ghostscript) result='${{ needs.ghostscript.result }}' ;;",
   'ghostscript) node builders/ghostscript/scripts/check-repository.mjs ;;',
   "libvips:\n    if: inputs.slug == 'libvips'",
-  '--wasm-vips-commit "${{ inputs.adapter_commit }}"',
-  '--libvips-patch-commit "${{ inputs.libvips_patch_commit }}"',
+  'adapter_bundle:',
+  'ADAPTER_BUNDLE',
+  '--wasm-vips-commit "$(jq -r',
+  '--libvips-patch-commit "$(jq -r',
   "libvips) result='${{ needs.libvips.result }}' ;;",
   'libvips) node builders/libvips/scripts/check-repository.mjs ;;',
   "zstd:\n    if: inputs.slug == 'zstd'",
@@ -141,6 +143,7 @@ for (const marker of [
   "zstd) result='${{ needs.zstd.result }}' ;;",
   'zstd) node builders/zstd/scripts/check-repository.mjs ;;'
 ]) need(workflow.includes(marker), `candidate workflow contract missing: ${marker}`);
+need((workflow.match(/^      [a-z0-9_]+:\n        description:/gm) || []).length <= 10, 'candidate workflow_dispatch must stay within GitHub\'s 10-input limit');
 need(workflow.includes("  promotion-pr:") && workflow.includes("    if: ${{ always() && needs.report.outputs.result == 'success' }}") && workflow.includes("    needs: [report]"), "promotion PR job must use always() so skipped non-selected candidate jobs cannot suppress a successful promotion");
 
 const env = await read('builders/ghostscript/versions.env');
