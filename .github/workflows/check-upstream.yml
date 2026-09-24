@@ -73,6 +73,15 @@ jobs:
             release_tag="$(jq -r '.candidate.source.releaseTag // ""' <<<"$item")"
             source_url="$(jq -r '.candidate.source.sourceUrl // ""' <<<"$item")"
             source_sha256="$(jq -r '.candidate.source.sourceSha256 // ""' <<<"$item")"
+            adapter_ready="$(jq -r '.candidate.adapter.ready // true' <<<"$item")"
+            adapter_reason="$(jq -r '.candidate.adapter.reason // ""' <<<"$item")"
+            adapter_commit="$(jq -r '.candidate.adapter.adapterCommit // ""' <<<"$item")"
+            adapter_version="$(jq -r '.candidate.adapter.adapterVersion // ""' <<<"$item")"
+            emsdk_version="$(jq -r '.candidate.adapter.emsdkVersion // ""' <<<"$item")"
+            emscripten_ref="$(jq -r '.candidate.adapter.emscriptenRef // ""' <<<"$item")"
+            emscripten_commit="$(jq -r '.candidate.adapter.emscriptenCommit // ""' <<<"$item")"
+            libvips_patch_commit="$(jq -r '.candidate.adapter.libvipsPatchCommit // ""' <<<"$item")"
+            emscripten_patch_commit="$(jq -r '.candidate.adapter.emscriptenPatchCommit // ""' <<<"$item")"
             lag="$(jq -r '.lagDays' <<<"$item")"
             released="$(jq -r '.latestReleased // ""' <<<"$item")"
             title="[upstream] ${name} ${latest} detected"
@@ -93,6 +102,12 @@ jobs:
           | Candidate mode | ${mode} |
           | Candidate source archive | \`${source_url:-n/a}\` |
           | Candidate source SHA-256 | \`${source_sha256:-n/a}\` |
+          | Adapter bundle ready | \`${adapter_ready}\` |
+          | Adapter detail | ${adapter_reason:-n/a} |
+          | wasm-vips | \`${adapter_version:-n/a}\` / \`${adapter_commit:-n/a}\` |
+          | Emscripten | \`${emsdk_version:-n/a}\` / \`${emscripten_commit:-n/a}\` |
+          | libvips patch commit | \`${libvips_patch_commit:-n/a}\` |
+          | Emscripten patch commit | \`${emscripten_patch_commit:-n/a}\` |
 
           Upstream: ${url}
 
@@ -109,23 +124,37 @@ jobs:
             fi
             rm -f "$body_file"
 
-            candidate_activity="$(gh issue view "$issue" --repo "$GITHUB_REPOSITORY" --json comments | jq '[.comments[].body | select(test("Candidate workflow (dispatched by upstream watcher|finished)|Review-only promotion PR:"))] | length')"
+            if [ "$slug" = "libvips" ] && [ "$mode" = "auto" ]; then
+              candidate_activity="$(gh issue view "$issue" --repo "$GITHUB_REPOSITORY" --json comments | jq '[.comments[].body | select(test("Immutable adapter candidate workflow dispatched by upstream watcher|Review-only promotion PR:"))] | length')"
+            else
+              candidate_activity="$(gh issue view "$issue" --repo "$GITHUB_REPOSITORY" --json comments | jq '[.comments[].body | select(test("Candidate workflow (dispatched by upstream watcher|finished)|Review-only promotion PR:"))] | length')"
+            fi
             if [ "$candidate_activity" -gt 0 ]; then
               echo "[skip] issue #${issue} already has candidate/promotion activity"
               continue
             fi
 
             if [ "$mode" = "auto" ]; then
-              gh workflow run upstream-candidate.yml --repo "$GITHUB_REPOSITORY" \
-                -f slug="$slug" -f version="$latest" -f ref="$ref" -f commit="$commit" -f released="$released" -f issue_number="$issue" \
-                -f release_tag="$release_tag" -f source_url="$source_url" -f source_sha256="$source_sha256"
-              gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" --body "Candidate workflow dispatched by upstream watcher for **${slug} ${latest}**. The candidate workflow will post its final result here." >/dev/null
+              if [ "$slug" = "libvips" ] && [ "$adapter_ready" != "true" ]; then
+                echo "[candidate] libvips ${latest} waiting for adapter bundle: ${adapter_reason:-not ready}"
+                continue
+              fi
+              if [ "$slug" = "libvips" ]; then
+                gh workflow run upstream-candidate.yml --repo "$GITHUB_REPOSITORY" \
+                  -f slug="$slug" -f version="$latest" -f ref="$ref" -f commit="$commit" -f released="$released" -f issue_number="$issue" \
+                  -f adapter_commit="$adapter_commit" -f adapter_version="$adapter_version" -f emsdk_version="$emsdk_version" \
+                  -f emscripten_ref="$emscripten_ref" -f emscripten_commit="$emscripten_commit" \
+                  -f libvips_patch_commit="$libvips_patch_commit" -f emscripten_patch_commit="$emscripten_patch_commit"
+                gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" --body "Immutable adapter candidate workflow dispatched by upstream watcher for **libvips ${latest}**. All adapter and compatibility refs were resolved to exact commits before dispatch." >/dev/null
+              else
+                gh workflow run upstream-candidate.yml --repo "$GITHUB_REPOSITORY" \
+                  -f slug="$slug" -f version="$latest" -f ref="$ref" -f commit="$commit" -f released="$released" -f issue_number="$issue" \
+                  -f release_tag="$release_tag" -f source_url="$source_url" -f source_sha256="$source_sha256"
+                gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" --body "Candidate workflow dispatched by upstream watcher for **${slug} ${latest}**. The candidate workflow will post its final result here." >/dev/null
+              fi
               echo "[candidate] dispatched ${slug} ${latest} on issue #${issue}"
             elif [ "$mode" = "adapter-gated" ]; then
-              gh workflow run upstream-candidate.yml --repo "$GITHUB_REPOSITORY" \
-                -f slug="$slug" -f version="$latest" -f ref="$ref" -f commit="$commit" -f released="$released" -f issue_number="$issue"
-              gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" --body "Candidate workflow dispatched by upstream watcher for **${slug} ${latest}** (adapter-readiness mode). The candidate workflow will post its final result here." >/dev/null
-              echo "[candidate] dispatched adapter-readiness report for ${slug} ${latest} on issue #${issue}"
+              echo "[candidate] adapter-gated package requires manual pin review; no workflow dispatched"
             else
               echo "[candidate] automatic candidate disabled for ${slug}"
             fi
