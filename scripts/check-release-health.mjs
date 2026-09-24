@@ -99,9 +99,17 @@ for (const pkg of packages.filter((item) => item.status === 'available' && item.
     const sha = await resolveTagCommit(pkg.release.tag).catch(() => null);
     item.buildGate = await workflowGate(pkg.slug, pkg.release.tag, sha);
   } catch (error) {
-    item.release = { state: 'error', label: 'Release unavailable', error: error.message, url: pkg.release.page };
-    item.supplyChain = { state: 'unknown', label: 'Not inspectable', expected: contract.supply, missing: contract.supply };
-    item.buildGate = { state: 'unknown', label: 'Not inspectable' };
+    const releaseMissing = /^404\b/.test(String(error.message || ''));
+    const tagSha = releaseMissing ? await resolveTagCommit(pkg.release.tag).catch(() => null) : null;
+    if (releaseMissing && !tagSha) {
+      item.release = { state: 'pending', label: 'Reviewed tag pending', url: pkg.release.page, publishedAt: null, assetCount: 0, missingAssets: contract.classic };
+      item.supplyChain = { state: 'pending', label: 'Publishes with reviewed package release', expected: contract.supply, missing: contract.supply };
+      item.buildGate = { state: 'pending', label: 'Reviewed tag not created' };
+    } else {
+      item.release = { state: 'error', label: 'Release unavailable', error: error.message, url: pkg.release.page };
+      item.supplyChain = { state: 'unknown', label: 'Not inspectable', expected: contract.supply, missing: contract.supply };
+      item.buildGate = { state: 'unknown', label: 'Not inspectable' };
+    }
   }
   item.playground = await playgroundHealth(pkg);
   item.freshness = await freshnessFor(pkg.slug);
@@ -111,6 +119,7 @@ for (const pkg of packages.filter((item) => item.status === 'available' && item.
 report.summary = {
   healthy: report.packages.filter((item) => item.overall.state === 'ok').length,
   warning: report.packages.filter((item) => item.overall.state === 'warn').length,
+  pending: report.packages.filter((item) => item.overall.state === 'pending').length,
   error: report.packages.filter((item) => item.overall.state === 'error').length,
   supplyChainPublished: report.packages.filter((item) => item.supplyChain.state === 'ok').length,
   total: report.packages.length
