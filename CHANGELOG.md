@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- remove the libvips adapter gate by resolving the wasm-vips recipe, Emscripten source and both compatibility branch heads to immutable commits before any two-profile candidate build; if the adapter has not caught up, the watcher fails closed and retries later without creating a promotion PR;
 ## v0.16.0
 
 - expose the reviewed upstream automation contract on Pages from package-manifest data, including candidate modes/profiles, review-only promotion paths and shared rehearsal coverage while showing libvips as adapter-gated rather than automatic;

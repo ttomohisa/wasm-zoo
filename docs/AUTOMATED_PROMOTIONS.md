@@ -25,11 +25,14 @@ The current automatic promotion set is defined in `scripts/upstream-config.mjs`:
 - FFmpeg
 - libarchive
 - ImageMagick
+- libvips
 - Ghostscript
 - jq
 - Zstandard
 
 Ghostscript is source-archive-backed: the watcher requires the exact official `ghostscript-<version>.tar.xz` Release asset, consumes GitHub's published SHA-256 asset digest, resolves the matching `gs<version>` commit from `ArtifexSoftware/ghostpdl`, and passes all of those immutable values through candidate build and promotion preparation. For jq, candidate/promotion preparation also resolves the exact Oniguruma submodule commit from the candidate jq commit.
+
+libvips uses a **fail-closed adapter bundle resolver**. A newly detected stable libvips release is not dispatched until the exact `kleisauke/wasm-vips` master commit itself declares that same `VERSION_VIPS`. The watcher then reads the adapter's pinned Emscripten version and wasm-vips package version, resolves the official Emscripten ref plus `kleisauke/libvips:wasm-vips-<libvips>` and `kleisauke/emscripten:wasm-vips-<emscripten>` branch heads, and freezes every moving input to a 40-character commit before building both browser profiles. If any piece is missing or the adapter still targets the previous libvips release, the issue is refreshed but no candidate is dispatched; the daily watcher can retry later.
 
 Zstandard uses the stable GitHub Release tag resolved to an exact upstream commit. Its candidate matrix builds and browser-tests both `browser-core` and `browser-full`; the full CLI candidate also requires **bidirectional native zstd interoperability** before the result can be `success`. A successful result may prepare a review-only package pin PR. That PR deliberately leaves the already-published npm version and its immutable source release pinned; npm update/publication is a later, separate reviewed step.
 
@@ -41,18 +44,18 @@ For each automatic package, the rehearsal creates an isolated detached worktree,
 
 The rehearsal also preserves distribution-specific rules: Zstandard's already-published npm identity must remain byte-for-byte unchanged and its Playground must fail closed as `not-published`; jq receives a synthetic exact Oniguruma submodule pin; Ghostscript receives internally consistent release-tag/source-URL/SHA-256 metadata. No rehearsal performs a network lookup, build, tag, GitHub Release, merge or npm publication.
 
-libvips is intentionally outside this set. The rehearsal asserts that it remains `adapter-gated`; it must not become an ordinary automatic promotion merely to make the package count look complete.
+libvips participates in the same rehearsal only after its complete adapter bundle is modeled as immutable promotion inputs. The rehearsal verifies that synthetic Emscripten, wasm-vips and both compatibility-patch pins move together with the promoted libvips release.
 
 ## Public automation contract
 
 The Pages dashboard exposes the reviewed automation boundary directly from the generated package catalog. It shows each package's `tracker.candidateMode`, declared candidate profiles, whether the shared synthetic promotion rehearsal applies, and the corresponding review-only/manual promotion path.
 
-This surface is intentionally static with respect to repository operations. It does not poll current Issues, pull requests or workflow runs. Those remain operational evidence in GitHub, while the dashboard documents the reviewed policy encoded in package manifests. libvips therefore appears as `adapter-gated`, not as an automatic promotion.
+This surface is intentionally static with respect to repository operations. It does not poll current Issues, pull requests or workflow runs. Those remain operational evidence in GitHub, while the dashboard documents the reviewed policy encoded in package manifests. libvips now appears as `auto`, but its candidate still fails closed until the complete adapter bundle is resolvable.
 
 ## Manual gates
 
-- `adapter-gated`: no promotion PR is created from the readiness result. libvips stays here because the wasm-vips adapter plus libvips/Emscripten compatibility patch pins must be reviewed as a unit.
-- `none`: upstream tracking may still create/update freshness information, but no automatic candidate substitution or promotion PR is attempted. No currently published package uses this mode after Zstandard joined the reviewed automatic candidate set.
+- `adapter-gated`: retained as a supported fallback mode for packages whose adapter inputs cannot yet be resolved safely. No currently published package uses this mode after libvips gained its immutable adapter-bundle resolver.
+- `none`: upstream tracking may still create/update freshness information, but no automatic candidate substitution or promotion PR is attempted. No currently published package uses this mode.
 
 ## Required repository setting
 
