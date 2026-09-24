@@ -27,6 +27,7 @@
     "npm:smoke:libvips": "node scripts/smoke-npm-package.mjs --slug libvips",
     "npm:smoke:ffmpeg": "node scripts/smoke-npm-package.mjs --slug ffmpeg",
     "promotion:check": "node scripts/check-upstream-automation.mjs",
+    "promotion:rehearse": "node scripts/rehearse-upstream-promotions.mjs",
     "docs:check": "node scripts/check-doc-sync.mjs",
     "compat:threaded:test": "node --test scripts/test-threaded-browser-capabilities.mjs",
     "compat:publish:site": "node scripts/publish-browser-compatibility.mjs",

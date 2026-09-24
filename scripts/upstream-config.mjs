@@ -55,6 +55,8 @@ export const automaticCandidateConfigs = {
   }
 };
 
+export const automaticCandidateSlugs = Object.freeze(Object.keys(automaticCandidateConfigs));
+
 export function automaticCandidateConfig(slug) {
   return automaticCandidateConfigs[slug] || null;
 }
