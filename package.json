@@ -35,6 +35,7 @@
     "zstd:playground:smoke": "node scripts/smoke-zstd-playground.mjs",
     "npm:smoke:zstd": "node scripts/smoke-npm-package.mjs --slug zstd",
     "npm:zstd:verify-release": "node scripts/verify-npm-zstd-release.mjs",
-    "onboarding:check": "node scripts/check-package-onboarding.mjs"
+    "onboarding:check": "node scripts/check-package-onboarding.mjs",
+    "npm:qpdf:verify-release": "node scripts/verify-npm-qpdf-release.mjs"
   }
 }

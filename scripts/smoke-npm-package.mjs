@@ -26,7 +26,7 @@ if (!["chromium", "firefox", "webkit"].includes(selectedBrowser)) {
 }
 // The same real-operation fixtures run across all three browsers. Threaded
 // profiles get a capability preflight before any result is classified.
-const crossBrowserSlugs = new Set(["jq", "libarchive", "imagemagick", "ghostscript", "ffmpeg", "libvips", "zstd"]);
+const crossBrowserSlugs = new Set(["jq", "libarchive", "imagemagick", "ghostscript", "ffmpeg", "libvips", "zstd", "qpdf"]);
 if (!crossBrowserSlugs.has(slug)) throw new Error(`Unknown cross-browser npm smoke target: ${slug}`);
 const onUnsupported = args["on-unsupported"] || "error";
 if (!["error", "record"].includes(onUnsupported)) throw new Error(`Invalid --on-unsupported: ${onUnsupported}`);
@@ -36,6 +36,86 @@ if (selectedBrowser === "chromium" && onUnsupported === "record") {
 const resultPath = args["result-json"] ? path.resolve(args["result-json"]) : null;
 
 const fixtures = {
+  qpdf: {
+    expectedWasmCount: 1,
+    resultKey: "__WASM_ZOO_NPM_SMOKE__",
+    browserTimeoutMs: 90000,
+    main(packageName) {
+      return `import { load, assets } from ${JSON.stringify(packageName)};
+
+function makeQpdfOnePagePdf() {
+  const parts = ["%PDF-1.4\\n"];
+  const offsets = [0];
+  const add = (id, body) => {
+    offsets[id] = parts.join("").length;
+    parts.push(id + " 0 obj\\n" + body + "\\nendobj\\n");
+  };
+  add(1, "<< /Type /Catalog /Pages 2 0 R >>");
+  add(2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
+  add(3, "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Resources << >> /Contents 4 0 R >>");
+  add(4, "<< /Length 0 >>\\nstream\\n\\nendstream");
+  const xref = parts.join("").length;
+  parts.push("xref\\n0 5\\n0000000000 65535 f \\n");
+  for (let id = 1; id <= 4; id += 1) parts.push(String(offsets[id]).padStart(10, "0") + " 00000 n \\n");
+  parts.push("trailer\\n<< /Size 5 /Root 1 0 R >>\\nstartxref\\n" + xref + "\\n%%EOF\\n");
+  return new TextEncoder().encode(parts.join(""));
+}
+const pdfHeader = (bytes) => new TextDecoder("latin1").decode(bytes.slice(0, 5));
+
+const status = document.querySelector("#status");
+window.__WASM_ZOO_NPM_SMOKE__ = { phase: "loading", assets };
+let qpdf = null;
+try {
+  qpdf = await load();
+  if (qpdf.profile !== "browser-full" || qpdf.kind !== "cli" || !assets.coreJsUrl || !assets.wasmUrl) {
+    throw new Error("QPDF npm did not expose its reviewed browser-full CLI and emitted assets");
+  }
+  const base = makeQpdfOnePagePdf();
+  await qpdf.exec(["--check", "/input.pdf"], {
+    files: [{ name: "/input.pdf", data: base }],
+    timeoutMs: 30000
+  });
+  const linearized = await qpdf.exec(["/input.pdf", "/linear.pdf", "--linearize"], {
+    files: [{ name: "/input.pdf", data: base }],
+    outputs: ["/linear.pdf"],
+    timeoutMs: 30000
+  });
+  const linearPdf = linearized.files.find((file) => file.name === "/linear.pdf")?.data;
+  if (!linearPdf || pdfHeader(linearPdf) !== "%PDF-") throw new Error("QPDF linearized output is not a PDF");
+  const encrypted = await qpdf.exec(["--encrypt", "user", "owner", "256", "--", "/linear.pdf", "/encrypted.pdf"], {
+    files: [{ name: "/linear.pdf", data: linearPdf }],
+    outputs: ["/encrypted.pdf"],
+    timeoutMs: 30000
+  });
+  const encryptedPdf = encrypted.files.find((file) => file.name === "/encrypted.pdf")?.data;
+  if (!encryptedPdf || pdfHeader(encryptedPdf) !== "%PDF-") throw new Error("QPDF encrypted output is not a PDF");
+  const decrypted = await qpdf.exec(["--password=user", "--decrypt", "/encrypted.pdf", "/decrypted.pdf"], {
+    files: [{ name: "/encrypted.pdf", data: encryptedPdf }],
+    outputs: ["/decrypted.pdf"],
+    timeoutMs: 30000
+  });
+  const decryptedPdf = decrypted.files.find((file) => file.name === "/decrypted.pdf")?.data;
+  if (!decryptedPdf || pdfHeader(decryptedPdf) !== "%PDF-") throw new Error("QPDF decrypted output is not a PDF");
+  await qpdf.exec(["--check", "/decrypted.pdf"], {
+    files: [{ name: "/decrypted.pdf", data: decryptedPdf }],
+    timeoutMs: 30000
+  });
+  window.__WASM_ZOO_NPM_SMOKE__ = {
+    ok: true,
+    detail: "QPDF check/linearize/AES-256 encrypt/decrypt " + base.length + " -> " + decryptedPdf.length + " bytes",
+    assets
+  };
+  status.textContent = "PASS";
+} catch (error) {
+  window.__WASM_ZOO_NPM_SMOKE__ = { ok: false, message: error?.message || String(error), stack: error?.stack || "", assets };
+  status.textContent = "FAIL: " + (error?.message || error);
+  throw error;
+} finally {
+  qpdf?.dispose();
+}
+`;
+    }
+  },
   zstd: {
     expectedWasmCount: 1,
     resultKey: "__WASM_ZOO_NPM_SMOKE__",

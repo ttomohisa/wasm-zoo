@@ -55,6 +55,7 @@ export const automaticCandidateConfigs = {
     commitKey: "QPDF_COMMIT",
     buildWorkflow: "build-qpdf.yml",
     displayName: "QPDF",
+    keepNpmPinned: true,
     extraEnv: {
       version: "QPDF_VERSION",
       "source-url": "QPDF_SOURCE_URL",

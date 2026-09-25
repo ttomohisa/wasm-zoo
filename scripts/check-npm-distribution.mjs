@@ -6,7 +6,7 @@ import { root, readJson } from "./lib.mjs";
 
 const errors = [];
 const need = (condition, message) => { if (!condition) errors.push(message); };
-const npmSlugs = ["jq", "libarchive", "imagemagick", "ghostscript", "libvips", "ffmpeg", "zstd"];
+const npmSlugs = ["jq", "libarchive", "imagemagick", "ghostscript", "libvips", "ffmpeg", "zstd", "qpdf"];
 
 function spawnDirect(command, args, options = {}) {
   return spawnSync(command, args, {
@@ -158,7 +158,7 @@ try {
     "npm workflow must honor an independently pinned immutable npm source release");
 
   const smoke = await fs.readFile(path.join(root, "scripts", "smoke-npm-package.mjs"), "utf8");
-  need(smoke.includes("jq:") && smoke.includes("libarchive:") && smoke.includes("imagemagick:") && smoke.includes("ghostscript:") && smoke.includes("libvips:") && smoke.includes("ffmpeg:") && smoke.includes("zstd:"), "generic npm smoke must have jq, libarchive, ImageMagick, Ghostscript, libvips and FFmpeg fixtures");
+  need(smoke.includes("jq:") && smoke.includes("libarchive:") && smoke.includes("imagemagick:") && smoke.includes("ghostscript:") && smoke.includes("libvips:") && smoke.includes("ffmpeg:") && smoke.includes("zstd:") && smoke.includes("qpdf:"), "generic npm smoke must have real-operation fixtures for every npm-enabled package, including QPDF canary");
   need(
     smoke.includes("vite") &&
     smoke.includes("playwright") &&
@@ -168,13 +168,13 @@ try {
     "generic npm smoke must exercise Vite/Playwright and default to Chromium"
   );
   need(
-    smoke.includes('new Set(["jq", "libarchive", "imagemagick", "ghostscript", "ffmpeg", "libvips", "zstd"])') &&
+    smoke.includes('new Set(["jq", "libarchive", "imagemagick", "ghostscript", "ffmpeg", "libvips", "zstd", "qpdf"])') &&
     smoke.includes('assessThreadedRuntime') &&
     smoke.includes('if (requiresIsolation)') &&
     smoke.includes('selectedBrowser === "chromium" && onUnsupported === "record"') &&
     smoke.includes('compatibility.runtimeCapabilities') &&
     smoke.includes('compatibility.responseHeaders'),
-    "cross-browser smoke must run all reviewed packages and rigorously preflight threaded browsers"
+    "cross-browser smoke runner must know all reviewed/canary npm packages and rigorously preflight threaded browsers"
   );
   const compatWorkflow = await fs.readFile(path.join(root, ".github", "workflows", "cross-browser-compat.yml"), "utf8");
   need(
@@ -200,14 +200,16 @@ try {
   need(smoke.includes("makeTar") && smoke.includes('tool: "bsdtar"'), "libarchive live smoke must perform a real bsdtar archive operation");
   need(smoke.includes("output.png") && smoke.includes("PNG signature") && smoke.includes("readU32BE"), "ImageMagick live smoke must perform a real resize and validate emitted PNG bytes");
   need(smoke.includes("output.pdf") && smoke.includes("%PDF-") && smoke.includes("%%EOF"), "Ghostscript live smoke must convert PostScript to a PDF and validate its PDF framing");
+  need(smoke.includes("qpdf:") && smoke.includes("makeQpdfOnePagePdf") && smoke.includes("--linearize") && smoke.includes("--encrypt") && smoke.includes("--decrypt"), "QPDF npm smoke must validate a real PDF through check/linearize/AES-256 encrypt/decrypt");
   need(smoke.includes("libvips:") && smoke.includes("Image.newFromBuffer") && smoke.includes("writeToBuffer") && smoke.includes("crossOriginIsolated"), "libvips live smoke must exercise the library API under cross-origin isolation");
   need(smoke.includes("ffmpeg:") && smoke.includes("input.pcm") && smoke.includes("/output.wav") && smoke.includes("RIFF") && smoke.includes("WAVE"), "FFmpeg live smoke must convert raw PCM to WAV and validate RIFF/WAVE framing");
   need(smoke.includes("cross-origin-opener-policy") && smoke.includes("cross-origin-embedder-policy"), "generic npm smoke server must provide COOP/COEP for pthread packages");
   const smokeWorkflow = await fs.readFile(path.join(root, ".github", "workflows", "npm-package-smoke.yml"), "utf8");
-  need(smokeWorkflow.includes("options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd]") && smokeWorkflow.includes("scripts/smoke-npm-package.mjs") && smokeWorkflow.includes("echo 'slug=zstd'"), "generic npm smoke workflow must offer all seven published packages including Registry-backed Zstandard");
+  need(smokeWorkflow.includes("options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd]") && smokeWorkflow.includes("scripts/smoke-npm-package.mjs") && smokeWorkflow.includes("echo 'slug=zstd'") && !smokeWorkflow.includes("options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd, qpdf]"), "generic Registry smoke workflow must remain limited to the seven published packages until QPDF is public");
 
   const promotion = await fs.readFile(path.join(root, "scripts", "prepare-promotion.mjs"), "utf8");
   need(!promotion.includes("pkg.npm.version = newBuilder"), "promotion must not couple npm package versions back to builder versions");
+  need(promotion.includes('note.includes("@wasm-zoo/qpdf")') && (await fs.readFile(path.join(root, "scripts", "upstream-config.mjs"), "utf8")).includes("qpdf:") && (await fs.readFile(path.join(root, "scripts", "upstream-config.mjs"), "utf8")).includes("keepNpmPinned: true"), "QPDF package promotion must keep the independently reviewed npm source identity pinned");
   need(promotion.includes("pkg.npm.version = newNpmVersion"), "promotion must independently patch-bump npm distribution versions");
 
   const doc = await fs.readFile(path.join(root, "docs", "NPM_DISTRIBUTION.md"), "utf8");
@@ -223,6 +225,27 @@ try {
   need(ffmpegMeta.npm?.profile === "browser-full", "FFmpeg npm distribution must pin the LGPL browser-full profile");
   need(ffmpegMeta.npm?.packageFiles?.required?.includes("LICENSES/FFmpeg-COPYING.LGPLv2.1"), "FFmpeg npm package must retain the LGPL license copy");
   need(!(ffmpegMeta.npm?.packageFiles?.required || []).some((rel) => rel.endsWith("/x264-COPYING") || rel.endsWith("/FFmpeg-COPYING.GPLv2")), "FFmpeg npm browser-full package must not accidentally include GPL/x264-only release files");
+  const qpdfMeta=await readJson(path.join(root,"packages/qpdf/package.json"));
+  need(qpdfMeta.status==="available" && qpdfMeta.npm?.status==="canary" &&
+    qpdfMeta.npm?.package==="@wasm-zoo/qpdf" && qpdfMeta.npm?.version==="0.1.0" &&
+    qpdfMeta.npm?.profile==="browser-full" && qpdfMeta.npm?.source?.upstreamVersion==="12.4.1" &&
+    qpdfMeta.npm?.source?.builderVersion==="0.1.0" &&
+    qpdfMeta.npm?.source?.commit==="c37f83ae468abb6cc741f43b2f6fdeb66e550ffb" &&
+    qpdfMeta.npm?.source?.releaseTag==="qpdf-v0.1.0" &&
+    qpdfMeta.npm?.source?.releaseAsset==="qpdf-browser-full-12.4.1-zoo-0.1.0.zip",
+    "QPDF npm canary must remain pinned to the immutable reviewed qpdf-v0.1.0 browser-full source release");
+  need(qpdfMeta.npm?.packageFiles?.requiredDirs?.includes("LICENSES"),
+    "QPDF npm canary must recursively preserve QPDF/zlib/libjpeg release notices");
+  need(!workflow.includes("qpdf"), "Generic publish workflow must not expose QPDF before its initial Registry publication");
+
+  const qpdfCanary=await fs.readFile(path.join(root,".github/workflows/npm-qpdf-canary.yml"),"utf8");
+  need(qpdfCanary.includes("sha256sum -c SHA256SUMS.txt") &&
+    qpdfCanary.includes("scripts/verify-npm-qpdf-release.mjs") &&
+    qpdfCanary.includes("browser: [chromium, firefox, webkit]") &&
+    qpdfCanary.includes("WASM_ZOO_NPM_PACKAGE_SPEC") &&
+    !qpdfCanary.includes("npm publish") && !qpdfCanary.includes("npm stage publish"),
+    "QPDF immutable Release npm canary must verify checksums, pack only and run all three browsers without Registry writes");
+
   const zstdMeta=await readJson(path.join(root,"packages/zstd/package.json"));
   need(zstdMeta.status==="available" && zstdMeta.npm?.status==="published" &&
     zstdMeta.npm?.package==="@wasm-zoo/zstd" && zstdMeta.npm?.version==="0.3.0" &&
