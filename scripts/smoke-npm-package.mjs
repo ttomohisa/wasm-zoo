@@ -24,10 +24,6 @@ const selectedBrowser = args.browser || process.env.WASM_ZOO_NPM_BROWSER || "chr
 if (!["chromium", "firefox", "webkit"].includes(selectedBrowser)) {
   throw new Error(`Unsupported --browser: ${selectedBrowser}`);
 }
-// The same real-operation fixtures run across all three browsers. Threaded
-// profiles get a capability preflight before any result is classified.
-const crossBrowserSlugs = new Set(["jq", "libarchive", "imagemagick", "ghostscript", "ffmpeg", "libvips", "zstd", "qpdf"]);
-if (!crossBrowserSlugs.has(slug)) throw new Error(`Unknown cross-browser npm smoke target: ${slug}`);
 const onUnsupported = args["on-unsupported"] || "error";
 if (!["error", "record"].includes(onUnsupported)) throw new Error(`Invalid --on-unsupported: ${onUnsupported}`);
 if (selectedBrowser === "chromium" && onUnsupported === "record") {
@@ -341,6 +337,9 @@ async function closeStaticServer(server) {
 
 const zoo = await readJson(path.join(root, "packages", slug, "package.json"));
 const npmMeta = zoo.npm;
+if (zoo.status !== "available" || npmMeta?.status !== "published") {
+  throw new Error(`${slug} is not an available published npm distribution`);
+}
 const version = npmMeta?.version;
 const packageName = npmMeta?.package;
 if (!version || !packageName) throw new Error(`packages/${slug}/package.json is missing npm package/version`);
