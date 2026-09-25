@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { classifyNpmDistribution, npmSourceIdentity } from "./release-health-npm.mjs";
+import { classifyNpmDistribution, fetchNpmRegistryDistribution, npmSourceIdentity } from "./release-health-npm.mjs";
 
 function pkg(overrides = {}) {
   return {
@@ -119,4 +119,36 @@ test("unreviewed source drift is an error", () => {
   });
   assert.equal(health.state, "error");
   assert.equal(health.intentionalPin, false);
+});
+
+test("Registry fetch records exact version, latest version and dist identity", async () => {
+  const calls = [];
+  const fakeFetch = async (url) => {
+    calls.push(url);
+    if (url.endsWith("/0.2.9")) {
+      return {
+        ok: true,
+        status: 200,
+        async json() {
+          return { version: "0.2.9", dist: { shasum: "abc123", integrity: "sha512-test", tarball: "https://registry.example/pkg.tgz" } };
+        }
+      };
+    }
+    if (url.endsWith("/latest")) {
+      return {
+        ok: true,
+        status: 200,
+        async json() { return { version: "0.2.9" }; }
+      };
+    }
+    throw new Error("unexpected URL " + url);
+  };
+  const result = await fetchNpmRegistryDistribution(pkg(), fakeFetch);
+  assert.equal(result.available, true);
+  assert.equal(result.expectedVersion, "0.2.9");
+  assert.equal(result.latestVersion, "0.2.9");
+  assert.equal(result.shasum, "abc123");
+  assert.equal(result.integrity, "sha512-test");
+  assert.equal(calls.length, 2);
+  assert.ok(calls.every((url) => url.includes("%40wasm-zoo%2Fffmpeg")));
 });
