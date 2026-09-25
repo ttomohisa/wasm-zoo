@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- derive published npm operational membership from package manifests through a shared resolver, including the Cross-browser Lab single/threaded matrices, public compatibility snapshot expectations and threaded aggregate reporting, so a newly published npm package no longer needs package-name enrollment edits in those paths;
+- replace static npm workflow package choice lists with manifest-validated slug inputs and remove the QPDF rollout-specific pull-request smoke target in favor of a deterministic manifest-derived published baseline, while preserving package-specific real-operation fixtures and all reviewed release/npm publication boundaries;
+- update onboarding and distribution contracts so `npm.status: published` automatically enrolls an available package in the three-browser evidence set after its explicit package-specific smoke fixture and reviewed Registry metadata are present.
+
 ## v0.17.0
 
 - publish `@wasm-zoo/qpdf@0.1.0` from the exact three-browser-verified immutable `qpdf-v0.1.0` Release-derived tarball; record Registry `dist.shasum: 83b2a89ec339d58ab0dcaf3c118385c3396955f1` as the reviewed publication identity and keep local-bootstrap provenance claims separate from the package's bundled Release provenance/SBOM;
