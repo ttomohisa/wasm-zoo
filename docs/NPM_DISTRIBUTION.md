@@ -1,6 +1,6 @@
 # npm distribution
 
-WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`; v0.13.0 completed the original six-package rollout. WASM Zoo v0.15.0 records the separately reviewed and manually published seventh npm distribution, `@wasm-zoo/zstd@0.3.0`. The v0.17 QPDF rollout begins with a separate prepublication canary derived from the immutable `qpdf-v0.1.0` Release.
+WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`; v0.13.0 completed the original six-package rollout. WASM Zoo v0.15.0 records the separately reviewed and manually published seventh npm distribution, `@wasm-zoo/zstd@0.3.0`. The v0.17 QPDF rollout uses a separately reviewed prepublication canary derived from immutable `qpdf-v0.1.0`; that exact tarball is now the eighth public npm distribution.
 
 ## Zstandard Phase 4B (completed): published npm and verified Registry browser operations
 
@@ -22,13 +22,17 @@ An npm package is not a second native/WebAssembly build. `scripts/prepare-npm-pa
 
 Historical GitHub Release assets are never rewritten. npm-only wrapper/package corrections use an independent npm distribution version while retaining the exact upstream version, Zoo builder version and immutable Release identity in package metadata.
 
-## QPDF Phase 4A: immutable Release npm canary (not published)
+## QPDF Phase 4A: immutable Release npm canary (completed)
 
-`@wasm-zoo/qpdf@0.1.0` is defined in package metadata with `npm.status: canary`. The canary downloads **all** assets from the reviewed `qpdf-v0.1.0` GitHub Release, verifies `SHA256SUMS.txt`, validates the extracted browser-full identity (QPDF 12.4.1, exact source commit, Zoo builder 0.1.0, Emscripten 6.0.8, provenance/SBOM and bundled QPDF/zlib/libjpeg notices), and only then generates the npm tarball.
+The QPDF canary downloads **all** assets from the reviewed `qpdf-v0.1.0` GitHub Release, verifies `SHA256SUMS.txt`, validates the extracted browser-full identity (QPDF 12.4.1, exact source commit, Zoo builder 0.1.0, Emscripten 6.0.8, provenance/SBOM and bundled QPDF/zlib/libjpeg notices), and only then generates the npm tarball.
 
-The exact tarball is installed through `WASM_ZOO_NPM_PACKAGE_SPEC` into a clean Vite app and tested independently in Chromium, Firefox and WebKit. The operation performs structural check, linearization, AES-256 encryption, decryption and final PDF validation through the real upstream QPDF CLI. This workflow contains **no Registry write**.
+The exact tarball is installed through `WASM_ZOO_NPM_PACKAGE_SPEC` into a clean Vite app and tested independently in Chromium, Firefox and WebKit. The operation performs structural check, linearization, AES-256 encryption, decryption and final PDF validation through the real upstream QPDF CLI. This canary workflow remains **read-only** and contains no Registry write.
 
-QPDF is intentionally absent from `publish-npm.yml`, `npm-package-smoke.yml` and the public 21-cell Cross-browser Lab while its status is `canary`. After all three packed-tarball browser jobs are reviewed, the maintainer may perform the initial package-name publication manually. A subsequent reviewed PR will mark it `published`, wire Trusted Publisher updates, and expand the Registry-backed lab from 21 to 24 cells.
+## QPDF Phase 4B: published npm and 24-cell Registry lab
+
+`@wasm-zoo/qpdf@0.1.0` was manually published from that exact reviewed Phase 4A tarball. The public npm Registry reports `dist.shasum` `83b2a89ec339d58ab0dcaf3c118385c3396955f1`, matching the reviewed artifact.
+
+Package metadata now records `npm.status: published` plus that Registry SHA-1. Live Registry smoke verifies the SHA-1 before installation, then runs the real QPDF operation through Vite/Chromium. QPDF joins `publish-npm.yml` for future Trusted Publisher staged updates and joins the single-threaded Cross-browser Lab in Chromium, Firefox and WebKit, expanding the reviewed Registry-backed matrix from 21 to 24 cells. The initial local human publication does not claim npm Registry-generated build provenance; the package still preserves the immutable Release's independently verified provenance/SBOM files.
 
 ## Published packages
 
@@ -41,9 +45,9 @@ QPDF is intentionally absent from `publish-npm.yml`, `npm-package-smoke.yml` and
 | `@wasm-zoo/libvips` | `0.5.2` | libvips 8.18.6 | `0.5.2` | `libvips-v0.5.2` / `browser-core` | published |
 | `@wasm-zoo/ffmpeg` | `0.2.8` | FFmpeg 9.0.2 | `0.2.8` | `ffmpeg-v0.2.8` / `browser-full` | published |
 | `@wasm-zoo/zstd` | `0.3.0` | Zstandard 1.5.7 | `0.3.0` | `zstd-v0.3.0` / `browser-full` | published |
-| `@wasm-zoo/qpdf` | `0.1.0` | QPDF 12.4.1 | `0.1.0` | `qpdf-v0.1.0` / `browser-full` | canary |
+| `@wasm-zoo/qpdf` | `0.1.0` | QPDF 12.4.1 | `0.1.0` | `qpdf-v0.1.0` / `browser-full` | published |
 
-The original six packages completed their public Registry + Vite/Chromium gates; Zstandard is the seventh public distribution and its independent Registry browser gate is part of this reviewed phase. FFmpeg is intentionally pinned to the LGPL `browser-full` profile; the GPL/libx264 profile is not bundled into this package.
+The original six packages completed their public Registry + Vite/Chromium gates; Zstandard is the seventh public distribution and QPDF is the eighth. Both manually bootstrapped packages bind live Registry tests to the exact SHA-1 of their reviewed three-browser tarballs. FFmpeg is intentionally pinned to the LGPL `browser-full` profile; the GPL/libx264 profile is not bundled into this package.
 
 ## Consumer usage
 
@@ -194,6 +198,29 @@ try {
 
 `@wasm-zoo/ffmpeg` intentionally bundles only the LGPL `browser-full` profile. The repository's `browser-full-gpl` / libx264 build remains a separate immutable Release profile and is not silently mixed into the npm tarball. `load({ profile: "browser-full-gpl" })` is rejected. FFmpeg uses pthreads and therefore requires cross-origin isolation / `SharedArrayBuffer`, just like libvips.
 
+### QPDF
+
+```bash
+npm install @wasm-zoo/qpdf
+```
+
+```js
+import { load } from "@wasm-zoo/qpdf";
+
+const qpdf = await load();
+try {
+  const result = await qpdf.exec(["/input.pdf", "/output.pdf", "--linearize"], {
+    files: [{ name: "/input.pdf", data: inputBytes }],
+    outputs: ["/output.pdf"]
+  });
+  console.log(result.files[0].data);
+} finally {
+  qpdf.dispose();
+}
+```
+
+The npm package contains the reviewed single-threaded `browser-full` upstream QPDF CLI. It requires no SharedArrayBuffer. Inputs/outputs are explicitly staged through MEMFS, and the live Registry fixture verifies check, linearize, AES-256 encryption, decryption and final structural validation.
+
 ## Bundler asset handling
 
 The npm entry uses static `new URL(..., import.meta.url)` expressions for every core JavaScript/Wasm pair so modern bundlers can emit hashed production assets.
@@ -249,7 +276,7 @@ npm run npm:smoke:ffmpeg
 
 The jq fixture performs a real JSON transformation. The libarchive fixture creates a TAR in the browser, extracts it with `bsdtar`, and verifies the returned file bytes. The ImageMagick fixture creates a PPM image in the browser, resizes it with the real `magick` CLI, writes PNG, then validates its PNG signature and 2×2 IHDR dimensions. The Ghostscript fixture generates PostScript in-browser, converts it to PDF with the real `pdfwrite` device, and validates `%PDF-` / `%%EOF` framing. The libvips fixture runs under COOP/COEP, decodes a real PNG through `runtime.api`, resizes 2×2 to 1×1, then validates JPEG and WebP output signatures. The FFmpeg fixture runs under COOP/COEP, feeds raw signed 16-bit PCM into the real `ffmpeg` CLI, writes a WAV through `pcm_s16le`, and validates RIFF/WAVE framing.
 
-`.github/workflows/npm-package-smoke.yml` is manually selectable between jq, libarchive, ImageMagick, Ghostscript, libvips and FFmpeg. Pull-request and scheduled live-registry runs stay on the stable published jq package, while any package can be selected manually for a package-specific Registry regression.
+`.github/workflows/npm-package-smoke.yml` is manually selectable across all eight published packages. The QPDF published-promotion PR is gated on the live Registry QPDF fixture; scheduled live-registry runs keep the stable published jq baseline, while any package can be selected manually for a package-specific Registry regression.
 
 ## Publishing workflow
 
@@ -258,7 +285,7 @@ After v0.13.0, `.github/workflows/publish-npm.yml` has two manual modes:
 - `pack` — generate, validate and upload the `.tgz`; no Registry write;
 - `stage` — use npm Trusted Publisher OIDC and `npm stage publish` for an existing package version, followed by maintainer review and 2FA approval.
 
-All six `@wasm-zoo/*` package names already exist on npm and have package-level Trusted Publishers configured. The temporary rollout bootstrap mode, direct `npm publish` path and rollout-only repository secret dependency have been removed. Future updates therefore use no long-lived npm publish credential in GitHub Actions.
+All eight `@wasm-zoo/*` package names now exist on npm. The original six already use package-level Trusted Publishers; after the human bootstrap publications, Zstandard and QPDF join the same staged Trusted Publisher model for future versions. The temporary rollout bootstrap mode, direct `npm publish` path and rollout-only repository secret dependency have been removed. Future updates therefore use no long-lived npm publish credential in GitHub Actions.
 
 The reviewed flow is:
 
