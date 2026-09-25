@@ -1,0 +1,123 @@
+name: Promotion human handoff
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  handoff:
+    if: ${{ github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'automation/promote-') }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout reviewed merge
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Resolve promoted package and watcher issue
+        id: promotion
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t manifests < <(
+            gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --jq '.[].filename' |
+              grep -E '^packages/[^/]+/package\.json$' || true
+          )
+          if [ "${#manifests[@]}" -ne 1 ]; then
+            printf 'Expected exactly one promoted package manifest, found %s: %s\n' "${#manifests[@]}" "${manifests[*]-}" >&2
+            exit 1
+          fi
+          slug="${manifests[0]#packages/}"
+          slug="${slug%/package.json}"
+          node scripts/candidate-orchestration.mjs validate --slug "$slug"
+
+          body="$(jq -r '.pull_request.body // ""' "$GITHUB_EVENT_PATH")"
+          issue=""
+          if [[ "$body" =~ Refs[[:space:]]+#([0-9]+) ]]; then
+            issue="${BASH_REMATCH[1]}"
+          fi
+
+          echo "slug=$slug" >> "$GITHUB_OUTPUT"
+          echo "issue=$issue" >> "$GITHUB_OUTPUT"
+      - name: Generate reviewed human handoff
+        env:
+          SLUG: ${{ steps.promotion.outputs.slug }}
+          ISSUE_NUMBER: ${{ steps.promotion.outputs.issue }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(
+            node scripts/promotion-human-handoff.mjs
+            --slug "$SLUG"
+            --merge-sha "$MERGE_SHA"
+            --pr "$PR_NUMBER"
+          )
+          if [ -n "$ISSUE_NUMBER" ]; then
+            args+=(--issue "$ISSUE_NUMBER")
+          fi
+          "${args[@]}" > promotion-human-handoff.md
+          cat promotion-human-handoff.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Create or refresh handoff comment on merged PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker='<!-- wasm-zoo-human-handoff -->'
+          existing="$(
+            gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments"               --jq ".[] | select(.body | contains(\"$marker\")) | .id" | head -n 1
+          )"
+          body="$(cat promotion-human-handoff.md)"
+          if [ -n "$existing" ]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing" -f body="$body" >/dev/null
+            echo "[handoff] refreshed PR comment $existing"
+          else
+            gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file promotion-human-handoff.md
+            echo "[handoff] created PR comment"
+          fi
+      - name: Create or refresh handoff comment on watcher issue
+        if: ${{ steps.promotion.outputs.issue != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          ISSUE_NUMBER: ${{ steps.promotion.outputs.issue }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker="<!-- wasm-zoo-human-handoff-pr:$PR_NUMBER -->"
+          issue_file="$(mktemp)"
+          {
+            echo "$marker"
+            echo
+            echo "Promotion PR #$PR_NUMBER was merged."
+            echo
+            cat promotion-human-handoff.md
+          } > "$issue_file"
+
+          existing="$(
+            gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$ISSUE_NUMBER/comments"               --jq ".[] | select(.body | contains(\"$marker\")) | .id" | head -n 1
+          )"
+          body="$(cat "$issue_file")"
+          if [ -n "$existing" ]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing" -f body="$body" >/dev/null
+            echo "[handoff] refreshed watcher issue comment $existing"
+          else
+            gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$issue_file"
+            echo "[handoff] created watcher issue comment"
+          fi
+          rm -f "$issue_file"
