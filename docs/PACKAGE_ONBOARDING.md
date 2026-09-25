@@ -39,6 +39,7 @@ An available package additionally requires:
 - a release workflow that runs `prepare-release.sh` and creates a GitHub Release;
 - at least one Playground-enabled profile;
 - `site/<slug>-playground/index.html` and `app.js`;
+- a package-specific local-preview stager registered in `scripts/stage-local-playground.mjs`; `npm run check` validates that every available Playground package is registered without requiring a local build;
 - Pages staging for the package's published release assets.
 
 Changing a package to `available` before these surfaces exist is a contract failure.
@@ -73,4 +74,4 @@ npm run onboarding:check
 
 The same check is part of `npm run check` and therefore runs in the normal Verify catalog and Pages validation paths.
 
-Package-specific behavior should not be moved into this file merely to make every builder look identical. The onboarding contract owns **required surfaces and wiring**; each builder's `scripts/check-repository.mjs` owns its source, toolchain, feature and packaging invariants.
+Package-specific behavior should not be moved into this file merely to make every builder look identical. The onboarding contract owns **required surfaces and wiring**; each builder's `scripts/check-repository.mjs` owns its source, toolchain, feature and packaging invariants. Local Playground copying also remains package-specific, but the shared registration check prevents an available Playground package from being omitted from local preview.
