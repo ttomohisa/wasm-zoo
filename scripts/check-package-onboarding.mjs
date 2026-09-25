@@ -38,7 +38,7 @@ function jobBlock(text, job) {
   return new RegExp("(^|[^a-z0-9-])" + escaped + "([^a-z0-9-]|$)", "i").test(text);
 }
 ");
-  const match = text.match(new RegExp("^  " + escaped + ":\\n([\\s\\S]*?)(?=^  [a-z0-9_-]+:|\\Z)", "m"));
+  const match = text.match(new RegExp("^  " + escaped + ":\\n([\\s\\S]*?)(?=^  [a-z0-9_-]+:|(?![\\s\\S]))", "m"));
   return match ? match[0] : "";
 }
 
