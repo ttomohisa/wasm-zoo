@@ -7,29 +7,16 @@ on:
         description: Published npm package to verify
         required: true
         default: jq
-        type: choice
-        options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd, qpdf]
+        type: string
   pull_request:
     paths:
       - 'scripts/smoke-npm-*.mjs'
       - 'scripts/check-npm-distribution.mjs'
       - 'scripts/prepare-npm-package.mjs'
       - '.github/workflows/npm-package-smoke.yml'
-      - 'packages/jq/package.json'
-      - 'packages/libarchive/package.json'
-      - 'packages/imagemagick/package.json'
-      - 'packages/libvips/package.json'
-      - 'packages/ghostscript/package.json'
-      - 'packages/ffmpeg/package.json'
-      - 'packages/zstd/package.json'
-      - 'packages/qpdf/package.json'
-      - 'builders/libarchive/runtime/**'
-      - 'builders/imagemagick/runtime/**'
-      - 'builders/libvips/runtime/**'
-      - 'builders/ghostscript/runtime/**'
-      - 'builders/ffmpeg/runtime/**'
-      - 'builders/zstd/runtime/**'
-      - 'builders/qpdf/runtime/**'
+      - 'packages/**'
+      - 'builders/**/runtime/**'
+      - 'scripts/npm-package-set.mjs'
       - 'package.json'
   schedule:
     - cron: '17 3 * * 1'
@@ -54,12 +41,11 @@ jobs:
         run: |
           if [[ '${{ github.event_name }}' == 'workflow_dispatch' ]]; then
             echo 'slug=${{ inputs.slug }}' >> "$GITHUB_OUTPUT"
-          elif [[ '${{ github.event_name }}' == 'pull_request' ]]; then
-            # Gate the first Registry-backed QPDF promotion on real Vite/Chromium.
-            echo 'slug=qpdf' >> "$GITHUB_OUTPUT"
           else
-            # Keep the original jq baseline on the independent weekly smoke.
-            echo 'slug=jq' >> "$GITHUB_OUTPUT"
+            # PR and weekly smoke use a deterministic published single-threaded
+            # baseline derived from reviewed manifests; the full Lab covers all packages.
+            slug="$(node scripts/npm-package-set.mjs --baseline)"
+            echo "slug=$slug" >> "$GITHUB_OUTPUT"
           fi
       - name: Install and run published package through Vite + Chromium
         env:
