@@ -259,6 +259,8 @@ npm run npm:smoke -- --slug imagemagick
 npm run npm:smoke -- --slug ghostscript
 npm run npm:smoke -- --slug libvips
 npm run npm:smoke -- --slug ffmpeg
+npm run npm:smoke -- --slug zstd
+npm run npm:smoke -- --slug qpdf
 ```
 
 or the convenience scripts:
@@ -270,11 +272,13 @@ npm run npm:smoke:imagemagick
 npm run npm:smoke:ghostscript
 npm run npm:smoke:libvips
 npm run npm:smoke:ffmpeg
+npm run npm:smoke:zstd
+npm run npm:smoke:qpdf
 ```
 
 `scripts/smoke-npm-package.mjs` installs the exact public npm distribution into a clean app, uses pinned Vite and Playwright versions, performs a production build, checks the emitted Wasm asset count, serves `dist/` with an in-process Node HTTP server, executes the package in Chromium, closes browser/server resources, and emits an explicit cleanup marker.
 
-The jq fixture performs a real JSON transformation. The libarchive fixture creates a TAR in the browser, extracts it with `bsdtar`, and verifies the returned file bytes. The ImageMagick fixture creates a PPM image in the browser, resizes it with the real `magick` CLI, writes PNG, then validates its PNG signature and 2×2 IHDR dimensions. The Ghostscript fixture generates PostScript in-browser, converts it to PDF with the real `pdfwrite` device, and validates `%PDF-` / `%%EOF` framing. The libvips fixture runs under COOP/COEP, decodes a real PNG through `runtime.api`, resizes 2×2 to 1×1, then validates JPEG and WebP output signatures. The FFmpeg fixture runs under COOP/COEP, feeds raw signed 16-bit PCM into the real `ffmpeg` CLI, writes a WAV through `pcm_s16le`, and validates RIFF/WAVE framing.
+The jq fixture performs a real JSON transformation. The libarchive fixture creates a TAR in the browser, extracts it with `bsdtar`, and verifies the returned file bytes. The ImageMagick fixture creates a PPM image in the browser, resizes it with the real `magick` CLI, writes PNG, then validates its PNG signature and 2×2 IHDR dimensions. The Ghostscript fixture generates PostScript in-browser, converts it to PDF with the real `pdfwrite` device, and validates `%PDF-` / `%%EOF` framing. The libvips fixture runs under COOP/COEP, decodes a real PNG through `runtime.api`, resizes 2×2 to 1×1, then validates JPEG and WebP output signatures. The FFmpeg fixture runs under COOP/COEP, feeds raw signed 16-bit PCM into the real `ffmpeg` CLI, writes a WAV through `pcm_s16le`, and validates RIFF/WAVE framing. Zstandard compresses/decompresses a real `.zst` frame and rejects malformed input. QPDF performs structural check, linearization, AES-256 encryption, decryption and final structural validation. Zstandard and QPDF also verify their recorded Registry SHA-1 identities before live Registry installation.
 
 `.github/workflows/npm-package-smoke.yml` is manually selectable across all eight published packages. The QPDF published-promotion PR is gated on the live Registry QPDF fixture; scheduled live-registry runs keep the stable published jq baseline, while any package can be selected manually for a package-specific Registry regression.
 
