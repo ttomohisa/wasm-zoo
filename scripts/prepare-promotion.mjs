@@ -203,6 +203,7 @@ if (values.slug === "ghostscript") {
 
 if (values.slug === "qpdf") {
   pkg.notes = (pkg.notes || []).map((note) => {
+    if (note.includes("@wasm-zoo/qpdf")) return note;
     let next = note.replaceAll(oldVersion, values.version);
     if (oldEnv.QPDF_COMMIT) next = next.replaceAll(oldEnv.QPDF_COMMIT, values.commit);
     if (oldEnv.QPDF_SOURCE_SHA256 && values["source-sha256"]) next = next.replaceAll(oldEnv.QPDF_SOURCE_SHA256, values["source-sha256"]);

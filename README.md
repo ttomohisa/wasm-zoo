@@ -46,7 +46,7 @@ The reviewed-pin model is unchanged: automation may prepare a PR, but it never a
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 | Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
-| QPDF | 12.4.1 | 0.1.0 | `browser-full` | yes | not published |
+| QPDF | 12.4.1 | 0.1.0 | `browser-full` | yes | `@wasm-zoo/qpdf@0.1.0` (canary; not published) |
 
 The project version is **WASM Zoo v0.16.1**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
@@ -63,6 +63,8 @@ npm install @wasm-zoo/libvips
 npm install @wasm-zoo/ffmpeg
 npm install @wasm-zoo/zstd
 ```
+
+QPDF is the eighth npm rollout canary. `@wasm-zoo/qpdf@0.1.0` is **not public yet**: the reviewed immutable `qpdf-v0.1.0` Release-derived tarball must first pass Vite + Chromium/Firefox/WebKit real PDF operations. Initial Registry publication remains a human action after that evidence is reviewed.
 
 The FFmpeg npm package intentionally pins the LGPL `browser-full` profile; the separate `browser-full-gpl` / libx264 Release profile is not bundled into the same npm tarball. FFmpeg and libvips both use pthreads, so consumers must serve them with cross-origin isolation / SharedArrayBuffer support. The Vite/Chromium smoke supplies COOP/COEP; FFmpeg's fixture performs a real raw-PCM → WAV CLI conversion while libvips continues to exercise its library API. See [`docs/NPM_DISTRIBUTION.md`](docs/NPM_DISTRIBUTION.md).
 
@@ -120,7 +122,7 @@ WASM Zoo v0.6.0 makes freshness and target differences first-class catalog data 
 - **Feature Matrix** — Native vs every published browser profile using a shared state vocabulary: Included, Intentionally excluded, Browser N/A, Optional/platform-dependent and Unknown/not tested;
 - **Upstream Watcher** — daily stable-release discovery with a committed `site/upstream-status.json` snapshot, one issue per newly detected release and an isolated candidate workflow where automatic testing is safe.
 
-The watcher deliberately does **not** change `main`, merge pull requests, create release tags or publish releases. For FFmpeg, libarchive, ImageMagick, libvips, Ghostscript, jq and Zstandard, a newly detected stable release is substituted only inside the isolated candidate workflow and must pass the package's real browser smoke test. When an `auto` candidate succeeds, WASM Zoo prepares the reviewed pin/package/release metadata update on a bot branch, opens a **review-only promotion PR**, and explicitly dispatches `Verify catalog` plus the package build workflow on that branch. A human still reviews and merges the PR, then creates the release tag after the normal main-branch checks pass.
+The watcher deliberately does **not** change `main`, merge pull requests, create release tags or publish releases. For FFmpeg, libarchive, ImageMagick, libvips, Ghostscript, jq, Zstandard and QPDF, a newly detected stable release is substituted only inside the isolated candidate workflow and must pass the package's real browser smoke test. When an `auto` candidate succeeds, WASM Zoo prepares the reviewed pin/package/release metadata update on a bot branch, opens a **review-only promotion PR**, and explicitly dispatches `Verify catalog` plus the package build workflow on that branch. A human still reviews and merges the PR, then creates the release tag after the normal main-branch checks pass.
 
 Zstandard uses `auto`: both browser profiles must pass exact-tag/commit candidate builds, and `browser-full` must also pass bidirectional native-zstd frame interoperability before a review-only promotion PR can be created. Its existing npm distribution remains independently pinned until a later npm review. libvips now also uses `auto`, but fails closed before dispatch: the watcher requires an exact wasm-vips commit that already targets the detected libvips release, derives its Emscripten version, and freezes both libvips/Emscripten compatibility branch heads to immutable commits before building `browser-core` and `browser-full`. Ghostscript uses `auto`: the watcher resolves the exact official source archive and its GitHub-published SHA-256 digest plus the matching GhostPDL source commit before dispatching a candidate build. See `docs/AUTOMATED_PROMOTIONS.md` for the exact flow, permissions and fallback procedure.
 

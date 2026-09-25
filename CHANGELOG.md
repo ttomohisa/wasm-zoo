@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- add the prepublication `@wasm-zoo/qpdf@0.1.0` npm canary derived from immutable `qpdf-v0.1.0`, checksum-verify the complete GitHub Release, preserve QPDF/zlib/libjpeg notices, and gate the exact packed tarball with real QPDF check/linearize/AES-256 encrypt/decrypt operations in Chromium, Firefox and WebKit without any Registry write;
+- keep QPDF npm identity independently pinned across future automatic package promotions; QPDF remains outside the public Registry smoke and 21-cell compatibility matrix until a separate human first publication and reviewed 24-cell promotion.
+
 - enable QPDF stable-release automation using the official `qpdf-<version>.tar.gz` GitHub Release asset, published SHA-256 digest and exact `v<version>` source commit, with the real browser-full PDF smoke as the candidate gate and a review-only promotion PR after success;
 - add QPDF to the shared synthetic promotion rehearsal while keeping Emscripten 6.0.8, zlib 1.3.2 and libjpeg 9f independently reviewed/fixed, and preserve human-only merge, package tag, GitHub Release and npm publication boundaries.
 

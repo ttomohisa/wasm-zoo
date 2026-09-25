@@ -1,0 +1,111 @@
+# Immutable QPDF Release-derived npm tarball canary: no Registry writes or automatic tags.
+name: Verify immutable QPDF npm canary (no publish)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "packages/qpdf/**"
+      - "builders/qpdf/runtime/**"
+      - "scripts/prepare-npm-package.mjs"
+      - "scripts/check-npm-distribution.mjs"
+      - "scripts/smoke-npm-package.mjs"
+      - "scripts/verify-npm-qpdf-release.mjs"
+      - "package.json"
+      - ".github/workflows/npm-qpdf-canary.yml"
+      - "docs/NPM_DISTRIBUTION.md"
+  push:
+    branches: [main]
+    paths:
+      - "packages/qpdf/**"
+      - "builders/qpdf/runtime/**"
+      - "scripts/prepare-npm-package.mjs"
+      - "scripts/check-npm-distribution.mjs"
+      - "scripts/smoke-npm-package.mjs"
+      - "scripts/verify-npm-qpdf-release.mjs"
+      - ".github/workflows/npm-qpdf-canary.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pack:
+    name: Repack immutable QPDF release under reviewed npm overlay (no publish)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Require reviewed npm CLI
+        run: npm install --global npm@12.0.2
+      - name: Download and verify ALL assets of the immutable release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$(node -p "require('./packages/qpdf/package.json').npm.status")" = canary
+          tag="$(node -p "require('./packages/qpdf/package.json').npm.source.releaseTag")"
+          asset="$(node -p "require('./packages/qpdf/package.json').npm.source.releaseAsset")"
+          test -n "$tag" && test -n "$asset"
+          mkdir -p npm-qpdf/download npm-qpdf/input npm-qpdf/artifacts
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir npm-qpdf/download
+          (cd npm-qpdf/download && sha256sum -c SHA256SUMS.txt)
+          unzip -q "npm-qpdf/download/$asset" -d npm-qpdf/input
+          node scripts/verify-npm-qpdf-release.mjs --input npm-qpdf/input
+      - name: Prepare reviewed npm overlay, synthetic npm contracts and tarball
+        run: |
+          node scripts/prepare-npm-package.mjs --slug qpdf --input npm-qpdf/input --output npm-qpdf/package
+          node scripts/check-npm-distribution.mjs
+          npm pack ./npm-qpdf/package --json --ignore-scripts --pack-destination npm-qpdf/artifacts | tee npm-qpdf/pack.json
+          test -s npm-qpdf/artifacts/wasm-zoo-qpdf-0.1.0.tgz
+      - uses: actions/upload-artifact@v7
+        with:
+          name: reviewed-qpdf-npm-0.1.0-${{ github.sha }}
+          path: |
+            npm-qpdf/artifacts/wasm-zoo-qpdf-0.1.0.tgz
+            npm-qpdf/pack.json
+          retention-days: 30
+          if-no-files-found: error
+
+  browser:
+    name: Packed QPDF CLI / Vite / ${{ matrix.browser }} (NOT registry)
+    needs: pack
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Require reviewed npm CLI
+        run: npm install --global npm@12.0.2
+      - uses: actions/download-artifact@v7
+        with:
+          name: reviewed-qpdf-npm-0.1.0-${{ github.sha }}
+          path: npm-qpdf
+      - name: Run real immutable-release QPDF through Vite production build and browser
+        shell: bash
+        env:
+          WASM_ZOO_PLAYWRIGHT_WITH_DEPS: '1'
+        run: |
+          set -euo pipefail
+          export WASM_ZOO_NPM_PACKAGE_SPEC="$PWD/npm-qpdf/artifacts/wasm-zoo-qpdf-0.1.0.tgz"
+          test -s "$WASM_ZOO_NPM_PACKAGE_SPEC"
+          node scripts/smoke-npm-package.mjs --slug qpdf --browser '${{ matrix.browser }}' \
+            --result-json 'npm-qpdf/compat-${{ matrix.browser }}.json'
+      - uses: actions/upload-artifact@v7
+        if: ${{ always() }}
+        with:
+          name: qpdf-packed-${{ matrix.browser }}-${{ github.sha }}
+          path: npm-qpdf/compat-${{ matrix.browser }}.json
+          retention-days: 30
+          if-no-files-found: warn

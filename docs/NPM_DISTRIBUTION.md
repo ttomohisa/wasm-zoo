@@ -1,6 +1,6 @@
 # npm distribution
 
-WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`; v0.13.0 completed the original six-package rollout. WASM Zoo v0.15.0 records the separately reviewed and manually published seventh npm distribution, `@wasm-zoo/zstd@0.3.0`, using the exact immutable GitHub Release-derived CLI tarball.
+WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`; v0.13.0 completed the original six-package rollout. WASM Zoo v0.15.0 records the separately reviewed and manually published seventh npm distribution, `@wasm-zoo/zstd@0.3.0`. The v0.17 QPDF rollout begins with a separate prepublication canary derived from the immutable `qpdf-v0.1.0` Release.
 
 ## Zstandard Phase 4B (completed): published npm and verified Registry browser operations
 
@@ -22,6 +22,14 @@ An npm package is not a second native/WebAssembly build. `scripts/prepare-npm-pa
 
 Historical GitHub Release assets are never rewritten. npm-only wrapper/package corrections use an independent npm distribution version while retaining the exact upstream version, Zoo builder version and immutable Release identity in package metadata.
 
+## QPDF Phase 4A: immutable Release npm canary (not published)
+
+`@wasm-zoo/qpdf@0.1.0` is defined in package metadata with `npm.status: canary`. The canary downloads **all** assets from the reviewed `qpdf-v0.1.0` GitHub Release, verifies `SHA256SUMS.txt`, validates the extracted browser-full identity (QPDF 12.4.1, exact source commit, Zoo builder 0.1.0, Emscripten 6.0.8, provenance/SBOM and bundled QPDF/zlib/libjpeg notices), and only then generates the npm tarball.
+
+The exact tarball is installed through `WASM_ZOO_NPM_PACKAGE_SPEC` into a clean Vite app and tested independently in Chromium, Firefox and WebKit. The operation performs structural check, linearization, AES-256 encryption, decryption and final PDF validation through the real upstream QPDF CLI. This workflow contains **no Registry write**.
+
+QPDF is intentionally absent from `publish-npm.yml`, `npm-package-smoke.yml` and the public 21-cell Cross-browser Lab while its status is `canary`. After all three packed-tarball browser jobs are reviewed, the maintainer may perform the initial package-name publication manually. A subsequent reviewed PR will mark it `published`, wire Trusted Publisher updates, and expand the Registry-backed lab from 21 to 24 cells.
+
 ## Published packages
 
 | npm package | npm version | upstream | Zoo builder | source Release | state |
@@ -33,6 +41,7 @@ Historical GitHub Release assets are never rewritten. npm-only wrapper/package c
 | `@wasm-zoo/libvips` | `0.5.2` | libvips 8.18.6 | `0.5.2` | `libvips-v0.5.2` / `browser-core` | published |
 | `@wasm-zoo/ffmpeg` | `0.2.8` | FFmpeg 9.0.2 | `0.2.8` | `ffmpeg-v0.2.8` / `browser-full` | published |
 | `@wasm-zoo/zstd` | `0.3.0` | Zstandard 1.5.7 | `0.3.0` | `zstd-v0.3.0` / `browser-full` | published |
+| `@wasm-zoo/qpdf` | `0.1.0` | QPDF 12.4.1 | `0.1.0` | `qpdf-v0.1.0` / `browser-full` | canary |
 
 The original six packages completed their public Registry + Vite/Chromium gates; Zstandard is the seventh public distribution and its independent Registry browser gate is part of this reviewed phase. FFmpeg is intentionally pinned to the LGPL `browser-full` profile; the GPL/libx264 profile is not bundled into this package.
 
