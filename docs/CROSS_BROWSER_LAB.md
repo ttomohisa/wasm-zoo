@@ -1,4 +1,4 @@
-# Cross-browser Compatibility Lab (v0.14 baseline and v0.15 seven-package release)
+# Cross-browser Compatibility Lab (v0.14 baseline through v0.17 eight-package rollout)
 
 This lab tests **published npm packages**, not just WebAssembly instantiation. A clean temporary application installs the exact reviewed public npm version, creates a production Vite bundle, verifies its emitted Wasm assets, serves the bundle with an in-process HTTP server, and runs a real package operation in a Playwright browser.
 
@@ -64,7 +64,7 @@ node scripts/report-threaded-compatibility.mjs compat-results
 
 After human approval merges a reviewed Lab PR, the Lab also runs on relevant **main** pushes (as well as PRs, weekly schedules and manual dispatch). The Pages workflow regenerates the public dashboard after each completed main-branch Lab run. A PR-only CI pass is **not** silently promoted to a published live result.
 
-`scripts/publish-browser-compatibility.mjs` uses the read-only GitHub Actions token to select the **latest main-branch Lab run**, including failed or in-progress runs. It never falls back to an older green run after a newer run fails or starts. The historical v0.14 rollout required 18 artifacts for the original six packages; the current v0.15 release instead requires a completed, successful main run with **21 authentic individual JSON artifacts**, matching the current reviewed npm package versions/profiles, complete real-operation results and correct threaded preflight may be displayed as verified. Results must be no older than 14 days. If any required artifact is missing, altered, stale or version-mismatched, the current v0.15 generated site file is **unavailable with all 21 cells marked not-tested**, not a partial or fabricated PASS table. The client also refuses to display verified results older than 14 days without a fresh deployment.
+`scripts/publish-browser-compatibility.mjs` uses the read-only GitHub Actions token to select the **latest main-branch Lab run**, including failed or in-progress runs. It never falls back to an older green run after a newer run fails or starts. The historical v0.14 rollout required 18 artifacts for the original six packages and v0.15 required 21 after Zstandard. The current v0.17 QPDF rollout requires a completed, successful main run with **24 authentic individual JSON artifacts**, matching all eight reviewed npm package versions/profiles, complete real-operation results and correct threaded preflight before anything is displayed as verified. Results must be no older than 14 days. If any required artifact is missing, altered, stale or version-mismatched, the generated site file is **unavailable with all 24 cells marked not-tested**, not a partial or fabricated PASS table. The client also refuses to display verified results older than 14 days without a fresh deployment.
 
 The generated `site/browser-compatibility.json` is produced by Pages, not checked in as a permanent snapshot. Each verified file includes source run ID/URL/SHA and tested npm/browser versions with per-cell status. When GitHub APIs or artifacts are unavailable, the Pages build can still proceed with an explicit unavailable snapshot. Reviewers can use the Actions workflow summary and uploaded source artifacts to investigate.
 
@@ -76,7 +76,7 @@ npm run check
 npm run metadata:check
 ```
 
-The original v0.14.0 rollout is already released. The reviewed v0.15.0 project-version PR records the separately published Zstandard npm distribution and 21-cell extension. Only the human maintainer merges and may optionally create the `v0.15.0` project tag/release after verifying the updated main-branch Lab and Pages evidence. No candidate automation, CI job or Pages deployment auto-merges, tags, publishes or changes reviewed pins. Cross-browser results apply to each package's listed npm profile, not necessarily every release ZIP profile; FFmpeg's GPL variant and libvips's full profile are not included in the npm test matrix.
+The original v0.14.0 and v0.15.0 rollouts are already released. The current v0.17 work adds the separately human-published QPDF npm distribution and 24-cell extension while the project version remains v0.16.1 until finalization. Only the human maintainer merges and creates project/package release tags after reviewing updated main-branch Lab and Pages evidence. No candidate automation, CI job or Pages deployment auto-merges, tags, publishes or changes reviewed pins. Cross-browser results apply to each package's listed npm profile, not necessarily every release ZIP profile; FFmpeg's GPL variant and libvips's full profile are not included in the npm test matrix.
 
 ## Phase 5: v0.15.0 — Zstandard published Registry / 21-cell expansion
 
@@ -90,6 +90,20 @@ Use the same runner for the live Registry check:
 node scripts/smoke-npm-package.mjs --slug zstd --browser chromium --result-json compat-results/zstd-chromium.json
 node scripts/smoke-npm-package.mjs --slug zstd --browser firefox --result-json compat-results/zstd-firefox.json
 node scripts/smoke-npm-package.mjs --slug zstd --browser webkit --result-json compat-results/zstd-webkit.json
+```
+
+## Phase 6: v0.17 — QPDF published Registry / 24-cell expansion
+
+The reviewed QPDF Phase 4A canary produced one immutable Release-derived `@wasm-zoo/qpdf@0.1.0` tarball and ran it through real Vite operations in Chromium, Firefox and WebKit. The maintainer then published that exact tarball manually. npm Registry `dist.shasum` `83b2a89ec339d58ab0dcaf3c118385c3396955f1` matches the reviewed artifact.
+
+QPDF joins the single-threaded matrix alongside jq, libarchive, ImageMagick, Ghostscript and Zstandard. Its live Registry test verifies the recorded SHA-1 before installation, then performs structural `--check`, linearization, AES-256 encryption, decryption and final structural validation through the upstream QPDF CLI.
+
+The full matrix is now **6 single-threaded packages × 3 browsers + 2 threaded packages × 3 browsers = 24 real browser-operation cells**. A public verified snapshot requires all 24 exact-version results from the latest eligible successful reviewed-`main` run. Older 21-cell evidence cannot satisfy the current contract.
+
+```sh
+node scripts/smoke-npm-package.mjs --slug qpdf --browser chromium --result-json compat-results/qpdf-chromium.json
+node scripts/smoke-npm-package.mjs --slug qpdf --browser firefox --result-json compat-results/qpdf-firefox.json
+node scripts/smoke-npm-package.mjs --slug qpdf --browser webkit --result-json compat-results/qpdf-webkit.json
 ```
 
 ## Per-browser JSON contract (schemaVersion 1)
@@ -129,4 +143,4 @@ A passing run includes `browserVersion`, the operation's `detail`, `phase: "comp
 2. Require review of the measured Phase 3 threaded-platform statuses (not merely green workflow labels). Revisit browsers recorded unsupported when their relevant platform capabilities change.
 3. Publish a versioned catalog compatibility matrix / Pages presentation only after the per-browser results have been reviewed. Do not edit reviewed upstream pins or package builder/npm versions for lab-only changes.
 
-The reviewed-pin model is unchanged: automation may prepare review-only promotion PRs but must never merge, tag, release, or publish on its own. libvips remains adapter-gated (5/6 automatic, not 6/6).
+The reviewed-pin model is unchanged: automation may prepare review-only promotion PRs but must never merge, tag, release, or publish on its own. QPDF brings the current automatic-candidate set to 8/8; libvips remains fail-closed by resolving its adapter and compatibility inputs to immutable commits before candidate testing rather than using the former adapter-gated manual mode.

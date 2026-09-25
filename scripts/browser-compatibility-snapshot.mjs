@@ -1,7 +1,7 @@
 import { assessThreadedRuntime } from "./threaded-browser-capabilities.mjs";
 
 export const browsers = Object.freeze(["chromium", "firefox", "webkit"]);
-export const packageSlugs = Object.freeze(["jq", "libarchive", "imagemagick", "ghostscript", "zstd", "ffmpeg", "libvips"]);
+export const packageSlugs = Object.freeze(["jq", "libarchive", "imagemagick", "ghostscript", "zstd", "qpdf", "ffmpeg", "libvips"]);
 export const maxAgeMs = 14 * 24 * 60 * 60 * 1000;
 
 export function selectMainRun(runs) {

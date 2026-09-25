@@ -33,6 +33,7 @@ on:
       - 'packages/ffmpeg/package.json'
       - 'packages/libvips/package.json'
       - 'packages/zstd/package.json'
+      - 'packages/qpdf/package.json'
       - '.github/workflows/cross-browser-compat.yml'
       - 'docs/CROSS_BROWSER_LAB.md'
   schedule:
@@ -50,7 +51,7 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        slug: [jq, libarchive, imagemagick, ghostscript, zstd]
+        slug: [jq, libarchive, imagemagick, ghostscript, zstd, qpdf]
         browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@v7

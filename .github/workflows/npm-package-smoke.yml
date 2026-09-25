@@ -8,7 +8,7 @@ on:
         required: true
         default: jq
         type: choice
-        options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd]
+        options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd, qpdf]
   pull_request:
     paths:
       - 'scripts/smoke-npm-*.mjs'
@@ -22,12 +22,14 @@ on:
       - 'packages/ghostscript/package.json'
       - 'packages/ffmpeg/package.json'
       - 'packages/zstd/package.json'
+      - 'packages/qpdf/package.json'
       - 'builders/libarchive/runtime/**'
       - 'builders/imagemagick/runtime/**'
       - 'builders/libvips/runtime/**'
       - 'builders/ghostscript/runtime/**'
       - 'builders/ffmpeg/runtime/**'
       - 'builders/zstd/runtime/**'
+      - 'builders/qpdf/runtime/**'
       - 'package.json'
   schedule:
     - cron: '17 3 * * 1'
@@ -53,8 +55,8 @@ jobs:
           if [[ '${{ github.event_name }}' == 'workflow_dispatch' ]]; then
             echo 'slug=${{ inputs.slug }}' >> "$GITHUB_OUTPUT"
           elif [[ '${{ github.event_name }}' == 'pull_request' ]]; then
-            # Gate the first Registry-backed Zstandard promotion on real Vite/Chromium.
-            echo 'slug=zstd' >> "$GITHUB_OUTPUT"
+            # Gate the first Registry-backed QPDF promotion on real Vite/Chromium.
+            echo 'slug=qpdf' >> "$GITHUB_OUTPUT"
           else
             # Keep the original jq baseline on the independent weekly smoke.
             echo 'slug=jq' >> "$GITHUB_OUTPUT"

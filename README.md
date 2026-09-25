@@ -27,7 +27,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 
 ## v0.16.1: fail-closed libvips adapter automation
 
-WASM Zoo v0.16.1 completes the reviewed automatic-candidate contract across the **seven currently published packages** without changing any package binary, upstream pin, builder version, npm version or immutable package release.
+WASM Zoo v0.16.1 completes the reviewed automatic-candidate contract across the **eight currently available packages** without changing any package binary, upstream pin, builder version, npm version or immutable package release.
 
 libvips no longer requires a manual adapter-readiness gate. When a newer stable libvips release appears, the watcher resolves the exact current `kleisauke/wasm-vips` commit and reads the libvips/Emscripten versions from that immutable adapter revision. It then freezes the official Emscripten source plus both libvips/Emscripten compatibility branch heads to exact commits before any candidate build is dispatched.
 
@@ -46,13 +46,13 @@ The reviewed-pin model is unchanged: automation may prepare a PR, but it never a
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 | Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
-| QPDF | 12.4.1 | 0.1.0 | `browser-full` | yes | `@wasm-zoo/qpdf@0.1.0` (canary; not published) |
+| QPDF | 12.4.1 | 0.1.0 | `browser-full` | yes | `@wasm-zoo/qpdf@0.1.0` |
 
 The project version is **WASM Zoo v0.16.1**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
 
 ### npm distribution
 
-WASM Zoo v0.13.0 completed npm rollout for the original six packages. Zstandard became the seventh npm distribution after a reviewed tarball passed Chromium, Firefox and WebKit prepublication tests and the maintainer manually published it.
+WASM Zoo v0.13.0 completed npm rollout for the original six packages. Zstandard became the seventh npm distribution after a reviewed tarball passed Chromium, Firefox and WebKit prepublication tests and the maintainer manually published it. QPDF is now the eighth npm distribution, published from its independently reviewed three-browser canary tarball with the Registry SHA-1 bound to that exact artifact.
 
 ```text
 npm install @wasm-zoo/jq
@@ -62,21 +62,22 @@ npm install @wasm-zoo/ghostscript
 npm install @wasm-zoo/libvips
 npm install @wasm-zoo/ffmpeg
 npm install @wasm-zoo/zstd
+npm install @wasm-zoo/qpdf
 ```
 
-QPDF is the eighth npm rollout canary. `@wasm-zoo/qpdf@0.1.0` is **not public yet**: the reviewed immutable `qpdf-v0.1.0` Release-derived tarball must first pass Vite + Chromium/Firefox/WebKit real PDF operations. Initial Registry publication remains a human action after that evidence is reviewed.
+`@wasm-zoo/qpdf@0.1.0` is public. Its initial human publication used the exact immutable `qpdf-v0.1.0` Release-derived tarball that passed Vite + Chromium/Firefox/WebKit real PDF operations; Registry `dist.shasum` `83b2a89ec339d58ab0dcaf3c118385c3396955f1` matches that reviewed tarball. Future QPDF npm versions use the normal Trusted Publisher staged-review flow.
 
 The FFmpeg npm package intentionally pins the LGPL `browser-full` profile; the separate `browser-full-gpl` / libx264 Release profile is not bundled into the same npm tarball. FFmpeg and libvips both use pthreads, so consumers must serve them with cross-origin isolation / SharedArrayBuffer support. The Vite/Chromium smoke supplies COOP/COEP; FFmpeg's fixture performs a real raw-PCM → WAV CLI conversion while libvips continues to exercise its library API. See [`docs/NPM_DISTRIBUTION.md`](docs/NPM_DISTRIBUTION.md).
 
 Future npm versions use Trusted Publisher OIDC with `npm stage publish`; the temporary rollout bootstrap/direct-publish path has been removed.
 
-### Cross-browser Compatibility Lab (current: 21 verified main-branch operations)
+### Cross-browser Compatibility Lab (current target: 24 verified main-branch operations)
 
-The browser lab executes **the seven exact published npm distributions** in Chromium, Firefox and WebKit, using real package operations after a production Vite build—not an instantiate-only test. FFmpeg and libvips also verify COOP/COEP/CORP and measured threaded-runtime capabilities before execution. A genuinely missing browser capability is labeled `unsupported` only with explicit evidence; an unexpected error is `fail`.
+The browser lab executes **the eight exact published npm distributions** in Chromium, Firefox and WebKit, using real package operations after a production Vite build—not an instantiate-only test. FFmpeg and libvips also verify COOP/COEP/CORP and measured threaded-runtime capabilities before execution. A genuinely missing browser capability is labeled `unsupported` only with explicit evidence; an unexpected error is `fail`.
 
 The [public browser compatibility dashboard](https://ttomohisa.github.io/wasm-zoo/#compatibility) reads the **latest eligible main-branch GitHub Actions run**, including unsuccessful or still-running attempts, so it never falls back to an older passing result. It displays tested package versions, browser engines, test time and a link to the source run. If the current latest run is failing, pending, stale, mismatched or missing artifacts, the site reports **not tested** rather than copying a previous passing result. Weekly checks refresh the evidence. See [Cross-browser Lab documentation](docs/CROSS_BROWSER_LAB.md) for the status policy.
 
-Project v0.16.1 keeps the v0.16.0 package/npm/21-cell distribution set unchanged and records the libvips adapter-gate removal: all seven current packages now have automatic candidate contracts, while libvips remains fail-closed until its complete adapter bundle is resolved to immutable commits. This project version bump **does not** change any package's reviewed upstream/toolchain pin, builder version, npm version or immutable release. The human maintainer controls PR merges and the optional `v0.16.1` project release tag; CI never automatically tags, releases or publishes. See [v0.16.1 release checklist](docs/V0161_RELEASE.md).
+The project version remains v0.16.1 while the Unreleased v0.17 work adds QPDF as the eighth public npm distribution and expands the Registry-backed Lab from 21 to 24 cells. All eight current packages have review-only automatic candidate contracts; libvips remains fail-closed until its complete adapter bundle resolves to immutable commits. This rollout does not change any reviewed upstream/toolchain pin, builder version or immutable package release. The human maintainer controls PR merges and project/package release tags; CI never automatically merges, tags, releases or publishes reviewed changes. See [v0.16.1 release checklist](docs/V0161_RELEASE.md).
 
 ## Release health and supply-chain metadata
 
