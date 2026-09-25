@@ -136,27 +136,28 @@ for (const marker of ['pkg.tracker?.candidateMode', 'pkg.tracker?.candidateProfi
 
 const workflow = await read('.github/workflows/upstream-candidate.yml');
 for (const marker of [
-  'options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, qpdf, zstd]',
-  "ghostscript:\n    if: inputs.slug == 'ghostscript'",
+  'slug:\n        description: Package slug\n        required: true\n        type: string',
+  'registration:',
+  'node scripts/candidate-orchestration.mjs validate --slug',
+  'CANDIDATE_NEEDS_JSON: ${{ toJSON(needs) }}',
+  'scripts/candidate-orchestration.mjs result --slug',
+  'scripts/candidate-orchestration.mjs checker --slug',
+  "ghostscript:\n    needs: [registration]\n    if: inputs.slug == 'ghostscript'",
   '--source-sha256 "${{ inputs.source_sha256 }}"',
-  "ghostscript) result='${{ needs.ghostscript.result }}' ;;",
-  'ghostscript) node builders/ghostscript/scripts/check-repository.mjs ;;',
-  "libvips:\n    if: inputs.slug == 'libvips'",
+  "libvips:\n    needs: [registration]\n    if: inputs.slug == 'libvips'",
   'adapter_bundle:',
   'ADAPTER_BUNDLE',
   '--wasm-vips-commit "$(jq -r',
   '--libvips-patch-commit "$(jq -r',
-  "libvips) result='${{ needs.libvips.result }}' ;;",
-  'libvips) node builders/libvips/scripts/check-repository.mjs ;;',
-  "qpdf:\n    if: inputs.slug == 'qpdf'",
-  "qpdf) result='${{ needs.qpdf.result }}' ;;",
-  'qpdf) node builders/qpdf/scripts/check-repository.mjs ;;',
-  "zstd:\n    if: inputs.slug == 'zstd'",
+  "qpdf:\n    needs: [registration]\n    if: inputs.slug == 'qpdf'",
+  "zstd:\n    needs: [registration]\n    if: inputs.slug == 'zstd'",
   "profile: [browser-core, browser-full]",
-  "ZSTD_NATIVE_INTEROP: ${{ matrix.profile == 'browser-full' && 'required' || '' }}",
-  "zstd) result='${{ needs.zstd.result }}' ;;",
-  'zstd) node builders/zstd/scripts/check-repository.mjs ;;'
+  "ZSTD_NATIVE_INTEROP: ${{ matrix.profile == 'browser-full' && 'required' || '' }}"
 ]) need(workflow.includes(marker), `candidate workflow contract missing: ${marker}`);
+need(!workflow.includes('options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, qpdf, zstd]'),
+  'candidate workflow slug input must not retain a static eight-package choice allowlist');
+need(!workflow.includes("case \"$slug\" in") && !workflow.includes('case "${{ inputs.slug }}" in'),
+  'candidate result routing and promotion checker selection must not retain package-name case mappings');
 need((workflow.match(/^      [a-z0-9_]+:\n        description:/gm) || []).length <= 10, 'candidate workflow_dispatch must stay within GitHub\'s 10-input limit');
 need(workflow.includes("  promotion-pr:") && workflow.includes("    if: ${{ always() && needs.report.outputs.result == 'success' }}") && workflow.includes("    needs: [report]"), "promotion PR job must use always() so skipped non-selected candidate jobs cannot suppress a successful promotion");
 
