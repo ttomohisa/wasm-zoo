@@ -73,11 +73,11 @@ Future npm versions use Trusted Publisher OIDC with `npm stage publish`; the tem
 
 ### Cross-browser Compatibility Lab (current target: 24 verified main-branch operations)
 
-The browser lab executes **the eight exact published npm distributions** in Chromium, Firefox and WebKit, using real package operations after a production Vite build—not an instantiate-only test. FFmpeg and libvips also verify COOP/COEP/CORP and measured threaded-runtime capabilities before execution. A genuinely missing browser capability is labeled `unsupported` only with explicit evidence; an unexpected error is `fail`.
+The browser lab executes **every available manifest with `npm.status: published`** in Chromium, Firefox and WebKit, using real package operations after a production Vite build—not an instantiate-only test. The selected `npm.profile` determines whether the package enters the ordinary or threaded matrix from its declared runtime requirements. The current v0.17 set is eight packages / 24 cells. FFmpeg and libvips also verify COOP/COEP/CORP and measured threaded-runtime capabilities before execution. A genuinely missing browser capability is labeled `unsupported` only with explicit evidence; an unexpected error is `fail`.
 
 The [public browser compatibility dashboard](https://ttomohisa.github.io/wasm-zoo/#compatibility) reads the **latest eligible main-branch GitHub Actions run**, including unsuccessful or still-running attempts, so it never falls back to an older passing result. It displays tested package versions, browser engines, test time and a link to the source run. If the current latest run is failing, pending, stale, mismatched or missing artifacts, the site reports **not tested** rather than copying a previous passing result. Weekly checks refresh the evidence. See [Cross-browser Lab documentation](docs/CROSS_BROWSER_LAB.md) for the status policy.
 
-WASM Zoo v0.17.0 records QPDF as the eighth public npm distribution and the Registry-backed Lab expansion from 21 to 24 cells. The dated release evidence is reviewed-main Lab run #84 with 24/24 browser-operation passes and Pages run #139 publishing a verified 24-pass snapshot. This project release does not change any reviewed upstream/toolchain pin, builder version or immutable package release. The human maintainer controls PR merges and project/package release tags; CI never automatically merges, tags, releases or publishes reviewed changes. See [v0.17.0 release checklist](docs/V017_RELEASE.md).
+WASM Zoo v0.17.0 records QPDF as the eighth public npm distribution and the Registry-backed Lab expansion from 21 to 24 cells. The final reviewed-main release evidence is Lab run #86 with 24/24 browser-operation passes and Pages run #141 publishing a verified 24-pass snapshot. This project release does not change any reviewed upstream/toolchain pin, builder version or immutable package release. The human maintainer controls PR merges and project/package release tags; CI never automatically merges, tags, releases or publishes reviewed changes. See [v0.17.0 release checklist](docs/V017_RELEASE.md).
 
 ## Release health and supply-chain metadata
 
@@ -143,9 +143,11 @@ The representative WASM projects are informational comparisons only and carry a 
 
 ## Adding a package
 
-New animals follow the staged [Package onboarding contract](docs/PACKAGE_ONBOARDING.md). The contract lets a package begin as `experimental` with a real builder and browser smoke, then requires release/Playground wiring before `available`, and finally requires npm + Cross-browser Lab wiring before npm may be marked `published`.
+New animals follow the staged [Package onboarding contract](docs/PACKAGE_ONBOARDING.md). The contract lets a package begin as `experimental` with a real builder and browser smoke, then requires release/Playground wiring before `available`, and finally requires reviewed npm metadata plus a real package-specific npm smoke operation before npm may be marked `published`.
 
-`npm run onboarding:check` discovers package manifests and builder checkers rather than relying on a hard-coded seven-package list. Package-specific source/toolchain invariants remain in each builder's own repository checker.
+The Unreleased v0.18 operations work makes published npm enrollment manifest-driven: the generic npm workflow accepts a manifest-validated slug, and the Cross-browser Lab / public snapshot derive membership and threaded classification from `npm.status`, `npm.profile` and that profile's runtime requirements. A ninth published package therefore joins the three-browser evidence set without another package-name edit to those workflows.
+
+`npm run onboarding:check` discovers package manifests and builder checkers rather than relying on a package allowlist. Package-specific source/toolchain invariants and real-operation fixtures remain explicit and reviewed.
 
 ## What a Zoo package contains
 
