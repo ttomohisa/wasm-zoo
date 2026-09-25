@@ -270,6 +270,7 @@
       "releaseTag": "zstd-v0.3.0",
       "releaseAsset": "zstd-browser-full-1.5.7-zoo-0.3.0.zip",
       "commit": "f8745da6ff1ad1e7bab384bd1f9d742439278e99"
-    }
+    },
+    "registryShasum": "29add1aaf6ab0c3e9a3d538166a51a3f70cefa99"
   }
 }
