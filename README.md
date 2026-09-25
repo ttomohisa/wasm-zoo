@@ -25,6 +25,21 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 - QPDF Playground: https://ttomohisa.github.io/wasm-zoo/qpdf-playground/
 
 
+
+## v0.18.0: Manifest-driven Operations
+
+WASM Zoo v0.18.0 is a project-only operations release. It keeps all eight package upstream pins, Zoo builder versions, immutable package Release tags and npm versions unchanged while making routine package operations derive more of their behavior from reviewed manifests.
+
+Published npm enrollment and the Cross-browser Compatibility Lab package/threaded matrices are manifest-driven. Automatic candidate registration, result routing and promotion repository-checker selection are centralized without hiding package-specific build semantics. Successful candidates may still create only review-only promotion PRs; automation does not merge them.
+
+Promotion PRs now include a generated post-merge human handoff. After a real `automation/promote-*` PR is manually merged, a comment-only workflow posts the confirmed merge SHA plus the manual package tag, GitHub Release and conditional npm follow-up. QPDF and Zstandard retain their separately reviewed npm source pins.
+
+Release Health schema 2 adds live npm Registry alignment to the existing release/Playground/freshness/supply-chain view, including exact/latest version, source Release and `dist.shasum` state. Intentional `keepNpmPinned` drift is a separate-review warning; unexpected source drift or a recorded Registry SHA mismatch is an error.
+
+Local preview now has stagers for all eight available package Playgrounds, including QPDF, and CI fails if a future available Playground package is omitted from the local-stager registry. The reviewed-pin model is unchanged: automation may prepare review artifacts and comments, but merge, project/package tags, reviewed GitHub Releases and npm publication remain human-controlled.
+
+See [v0.18.0 project release review](docs/V018_RELEASE.md).
+
 ## v0.17.0: QPDF release, npm and 24-cell Lab
 
 WASM Zoo v0.17.0 records QPDF 12.4.1 as the eighth reviewed package and eighth public npm distribution, while preserving every package's independently reviewed upstream/toolchain pin, Zoo builder version and immutable package release identity.
@@ -48,7 +63,7 @@ All eight packages retain review-only automatic candidate contracts. libvips rem
 | Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
 | QPDF | 12.4.1 | 0.1.0 | `browser-full` | yes | `@wasm-zoo/qpdf@0.1.0` |
 
-The project version is **WASM Zoo v0.17.0**. Individual package builders, npm distribution versions and immutable package release tags keep their own versions so a package does not need to be republished merely because another animal is added.
+WASM Zoo v0.17.0 was the project release that completed the QPDF rollout. Individual package builders, npm distribution versions and immutable package release tags keep their own versions, so later project-only releases do not require package republishing.
 
 ### npm distribution
 
@@ -146,7 +161,7 @@ The representative WASM projects are informational comparisons only and carry a 
 
 New animals follow the staged [Package onboarding contract](docs/PACKAGE_ONBOARDING.md). The contract lets a package begin as `experimental` with a real builder and browser smoke, then requires release/Playground wiring before `available`, and finally requires reviewed npm metadata plus a real package-specific npm smoke operation before npm may be marked `published`.
 
-The Unreleased v0.18 operations work makes published npm enrollment manifest-driven: the generic npm workflow accepts a manifest-validated slug, and the Cross-browser Lab / public snapshot derive membership and threaded classification from `npm.status`, `npm.profile` and that profile's runtime requirements. A ninth published package therefore joins the three-browser evidence set without another package-name edit to those workflows.
+WASM Zoo v0.18.0 makes published npm enrollment manifest-driven: the generic npm workflow accepts a manifest-validated slug, and the Cross-browser Lab / public snapshot derive membership and threaded classification from `npm.status`, `npm.profile` and that profile's runtime requirements. A ninth published package therefore joins the three-browser evidence set without another package-name edit to those workflows.
 
 The same v0.18 cleanup also centralizes candidate registration/result/checker routing. `upstream-candidate.yml` now validates a requested automatic package through the reviewed manifest/config before running its explicit package-specific build job, then resolves its result and repository-checker path through a shared helper rather than repeating eight package-name case mappings. Package-specific jobs remain explicit where their source, profile or smoke requirements differ.
 
