@@ -154,7 +154,7 @@ v0.18 also generates the post-merge human handoff from reviewed package metadata
 
 The same operations pass extends Release Health with live npm distribution alignment. The dashboard records the reviewed npm version, source Release, current Registry version, live Registry SHA-1, whether a separately reviewed npm update is pending, and whether a pin is intentional. A Registry SHA mismatch or unreviewed source-release drift is an error; a deliberate `keepNpmPinned` mismatch is surfaced as a separate-review warning instead of a false release failure.
 
-`npm run onboarding:check` discovers package manifests and builder checkers rather than relying on a package allowlist. Package-specific source/toolchain invariants and real-operation fixtures remain explicit and reviewed.
+`npm run onboarding:check` discovers package manifests and builder checkers rather than relying on a package allowlist. The local-preview registration check likewise derives every available Playground package from manifests, so a future animal cannot ship a Playground while being silently omitted from `npm run stage:playground`. Package-specific source/toolchain invariants, local copy rules and real-operation fixtures remain explicit and reviewed.
 
 ## What a Zoo package contains
 
@@ -279,7 +279,7 @@ In the libarchive Playground, List/Extract expects an archive input, while Creat
 start-local.bat
 ```
 
-This regenerates the catalog, stages any locally built FFmpeg/libarchive/ImageMagick/libvips/Ghostscript/jq artifacts under ignored `site/assets/`, and serves:
+This regenerates the catalog, stages any locally built FFmpeg/libarchive/ImageMagick/libvips/Ghostscript/jq/Zstandard/QPDF artifacts under ignored `site/assets/`, and serves:
 
 ```text
 http://localhost:4173/
@@ -289,6 +289,8 @@ http://localhost:4173/imagemagick-playground/
 http://localhost:4173/libvips-playground/
 http://localhost:4173/ghostscript-playground/
 http://localhost:4173/jq-playground/
+http://localhost:4173/zstd-playground/
+http://localhost:4173/qpdf-playground/
 ```
 
 The catalog still works when no local Wasm build has been staged.
