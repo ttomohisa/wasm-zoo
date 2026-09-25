@@ -13,7 +13,7 @@ export function npmDistributionSets(packages) {
       npmPackage: pkg.npm.package,
       npmVersion: pkg.npm.version,
       profile: pkg.npm.profile,
-      threaded: Boolean(profile.threads || profile.sharedArrayBuffer),
+      threaded: Boolean(profile.sharedArrayBuffer),
       sharedArrayBuffer: Boolean(profile.sharedArrayBuffer)
     });
   }
