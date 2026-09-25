@@ -6,8 +6,7 @@ on:
       slug:
         description: Package slug
         required: true
-        type: choice
-        options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, qpdf, zstd]
+        type: string
       version:
         description: Upstream version
         required: true
@@ -46,7 +45,19 @@ on:
         type: string
 
 jobs:
+  registration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Validate automatic candidate registration
+        run: node scripts/candidate-orchestration.mjs validate --slug "${{ inputs.slug }}"
+
   ffmpeg:
+    needs: [registration]
     if: inputs.slug == 'ffmpeg'
     runs-on: ubuntu-latest
     timeout-minutes: 300
@@ -77,6 +88,7 @@ jobs:
           retention-days: 14
 
   libarchive:
+    needs: [registration]
     if: inputs.slug == 'libarchive'
     runs-on: ubuntu-latest
     timeout-minutes: 220
@@ -103,6 +115,7 @@ jobs:
           retention-days: 14
 
   imagemagick:
+    needs: [registration]
     if: inputs.slug == 'imagemagick'
     runs-on: ubuntu-latest
     timeout-minutes: 300
@@ -133,6 +146,7 @@ jobs:
           retention-days: 14
 
   jq:
+    needs: [registration]
     if: inputs.slug == 'jq'
     runs-on: ubuntu-latest
     timeout-minutes: 180
@@ -165,6 +179,7 @@ jobs:
 
 
   ghostscript:
+    needs: [registration]
     if: inputs.slug == 'ghostscript'
     runs-on: ubuntu-latest
     timeout-minutes: 300
@@ -205,6 +220,7 @@ jobs:
 
 
   qpdf:
+    needs: [registration]
     if: inputs.slug == 'qpdf'
     runs-on: ubuntu-latest
     timeout-minutes: 240
@@ -244,6 +260,7 @@ jobs:
           retention-days: 14
 
   zstd:
+    needs: [registration]
     if: inputs.slug == 'zstd'
     runs-on: ubuntu-latest
     timeout-minutes: 240
@@ -284,6 +301,7 @@ jobs:
 
 
   libvips:
+    needs: [registration]
     if: inputs.slug == 'libvips'
     runs-on: ubuntu-latest
     timeout-minutes: 420
@@ -333,28 +351,23 @@ jobs:
 
   report:
     if: always()
-    needs: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, qpdf, zstd]
+    needs: [registration, ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, qpdf, zstd]
     runs-on: ubuntu-latest
     outputs:
       result: ${{ steps.result.outputs.result }}
     steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
       - name: Build candidate result
         id: result
+        env:
+          CANDIDATE_NEEDS_JSON: ${{ toJSON(needs) }}
         shell: bash
         run: |
-          slug='${{ inputs.slug }}'
-          case "$slug" in
-            ffmpeg) result='${{ needs.ffmpeg.result }}' ;;
-            libarchive) result='${{ needs.libarchive.result }}' ;;
-            imagemagick) result='${{ needs.imagemagick.result }}' ;;
-            ghostscript) result='${{ needs.ghostscript.result }}' ;;
-            jq) result='${{ needs.jq.result }}' ;;
-            qpdf) result='${{ needs.qpdf.result }}' ;;
-            zstd) result='${{ needs.zstd.result }}' ;;
-            libvips) result='${{ needs.libvips.result }}' ;;
-            *) result='unknown' ;;
-          esac
-          echo "result=$result" >> "$GITHUB_OUTPUT"
+          result="$(node scripts/candidate-orchestration.mjs result --slug '${{ inputs.slug }}')"
           {
             echo '## Upstream candidate result'
             echo
@@ -438,17 +451,8 @@ jobs:
           npm run catalog
           npm run check
           npm run metadata:check
-          case "${{ inputs.slug }}" in
-            ffmpeg) node builders/ffmpeg/scripts/check-repository.mjs ;;
-            libarchive) node builders/libarchive/scripts/check-repository.mjs ;;
-            imagemagick) node builders/imagemagick/scripts/check-repository.mjs ;;
-            ghostscript) node builders/ghostscript/scripts/check-repository.mjs ;;
-            libvips) node builders/libvips/scripts/check-repository.mjs ;;
-            jq) node builders/jq/scripts/check-repository.mjs ;;
-            qpdf) node builders/qpdf/scripts/check-repository.mjs ;;
-            zstd) node builders/zstd/scripts/check-repository.mjs ;;
-            *) echo "automatic promotion is not supported for ${{ inputs.slug }}" >&2; exit 1 ;;
-          esac
+          checker="$(node scripts/candidate-orchestration.mjs checker --slug '${{ inputs.slug }}')"
+          node "$checker"
           git diff --check
       - name: Create or reuse promotion PR
         id: pr
