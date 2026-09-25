@@ -24,8 +24,28 @@ async function read(rel) {
 }
 
 function hasSlug(text, slug) {
+  const escaped = slug.replace(/[.*+?^$()|[\]\\]/g, "\\function hasSlug(text, slug) {
   const escaped = slug.replace(/[.*+?^$()|[\]\\]/g, "\\$&");
   return new RegExp("(^|[^a-z0-9-])" + escaped + "([^a-z0-9-]|$)", "i").test(text);
+}
+");
+  return new RegExp("(^|[^a-z0-9-])" + escaped + "([^a-z0-9-]|$)", "i").test(text);
+}
+
+function jobBlock(text, job) {
+  const escaped = job.replace(/[.*+?^$()|[\]\\]/g, "\\function hasSlug(text, slug) {
+  const escaped = slug.replace(/[.*+?^$()|[\]\\]/g, "\\$&");
+  return new RegExp("(^|[^a-z0-9-])" + escaped + "([^a-z0-9-]|$)", "i").test(text);
+}
+");
+  const match = text.match(new RegExp("^  " + escaped + ":\\n([\\s\\S]*?)(?=^  [a-z0-9_-]+:|\\Z)", "m"));
+  return match ? match[0] : "";
+}
+
+function inlineNeeds(text, job) {
+  const block = jobBlock(text, job);
+  const match = block.match(/^    needs:\s*\[([^\]]*)\]/m);
+  return new Set((match?.[1] || "").split(",").map((item) => item.trim()).filter(Boolean));
 }
 
 const [upstreamWorkflow, crossBrowserWorkflow, publishNpmWorkflow, pagesWorkflow, smokeNpm] = await Promise.all([
@@ -42,6 +62,12 @@ need(crossBrowserWorkflow.includes("node scripts/npm-package-set.mjs --github-ou
   "Cross-browser Lab must derive published npm package matrices from manifests");
 need(publishNpmWorkflow.includes("slug:\n        description: npm distribution package\n        required: true\n        type: string"),
   "publish-npm.yml slug input must accept manifest-validated package names without a static choice allowlist");
+need(upstreamWorkflow.includes("node scripts/candidate-orchestration.mjs validate --slug") &&
+  upstreamWorkflow.includes("CANDIDATE_NEEDS_JSON: ${{ toJSON(needs) }}") &&
+  upstreamWorkflow.includes("scripts/candidate-orchestration.mjs result --slug") &&
+  upstreamWorkflow.includes("scripts/candidate-orchestration.mjs checker --slug"),
+  "upstream candidate workflow must use the shared registration/result/checker resolver");
+const candidateReportNeeds = inlineNeeds(upstreamWorkflow, "report");
 
 const packageBase = path.join(root, "packages");
 const entries = (await fs.readdir(packageBase, { withFileTypes: true }))
@@ -192,9 +218,10 @@ for (const entry of entries) {
       need(config.dir === dirSlug, dirSlug + ": automatic candidate dir must match slug");
       need(config.buildWorkflow === "build-" + dirSlug + ".yml", dirSlug + ": automatic candidate buildWorkflow must be build-" + dirSlug + ".yml");
     }
-    need(upstreamWorkflow.includes("inputs.slug == '" + dirSlug + "'"), dirSlug + ": upstream-candidate.yml missing candidate job");
-    need(upstreamWorkflow.includes(dirSlug + ") result='"), dirSlug + ": upstream-candidate.yml report job missing result mapping");
-    need(upstreamWorkflow.includes(dirSlug + ") node builders/" + dirSlug + "/scripts/check-repository.mjs ;;"), dirSlug + ": promotion validation missing package checker");
+    const candidateJob = jobBlock(upstreamWorkflow, dirSlug);
+    need(candidateJob.includes("needs: [registration]") && candidateJob.includes("inputs.slug == '" + dirSlug + "'"),
+      dirSlug + ": upstream-candidate.yml missing registered candidate job");
+    need(candidateReportNeeds.has(dirSlug), dirSlug + ": report job needs list missing candidate job");
   }
 
   if (pkg.npm?.status === "published") {
