@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { readEnv, root } from './lib.mjs';
+import { loadPackages, readEnv, root } from './lib.mjs';
 
 async function stageFfmpeg() {
   const env = await readEnv(path.join(root, 'builders', 'ffmpeg', 'versions.env'));
@@ -108,6 +108,36 @@ async function stageJq() {
   return 1;
 }
 
+async function stageQpdf() {
+  const env = await readEnv(path.join(root, 'builders', 'qpdf', 'versions.env'));
+  const version = env.QPDF_VERSION;
+  const profile = 'browser-full';
+  const source = path.join(root, 'builders', 'qpdf', 'dist', profile);
+  const dest = path.join(root, 'site', 'assets', 'qpdf', version, profile);
+  let manifest;
+  try {
+    manifest = JSON.parse(await fs.readFile(path.join(source, 'manifest.json'), 'utf8'));
+  } catch {
+    console.log('[skip] QPDF browser-full: build it first for local Playground');
+    return 0;
+  }
+  if (manifest.package !== 'qpdf' ||
+      manifest.profile !== profile ||
+      manifest.upstream?.version !== version ||
+      manifest.upstream?.commit !== env.QPDF_COMMIT ||
+      manifest.build?.builderVersion !== env.BUILDER_VERSION) {
+    throw new Error('Refusing a stale QPDF local build: browser-full');
+  }
+  await fs.mkdir(dest, { recursive: true });
+  for (const name of ['qpdf-core.js', 'qpdf-core.wasm', 'manifest.json', 'features.json']) {
+    await fs.copyFile(path.join(source, name), path.join(dest, name));
+  }
+  await fs.copyFile(path.join(root, 'builders', 'qpdf', 'runtime', 'browser-qpdf.js'), path.join(dest, 'browser-qpdf.js'));
+  await fs.copyFile(path.join(root, 'builders', 'qpdf', 'runtime', 'wasm-zoo.mjs'), path.join(dest, 'wasm-zoo.mjs'));
+  console.log('[OK] staged QPDF browser-full');
+  return 1;
+}
+
 async function stageZstd() {
   const env=await readEnv(path.join(root,"builders/zstd/versions.env"));
   const version=env.ZSTD_REF.replace(/^v/,"");
@@ -140,5 +170,30 @@ async function stageZstd() {
   return 2;
 }
 
-const staged = (await stageFfmpeg()) + (await stageLibarchive()) + (await stageImageMagick()) + (await stageLibvips()) + (await stageGhostscript()) + (await stageJq()) + (await stageZstd());
-if (!staged) console.log('[info] No local release cores staged; the catalog can still be previewed.');
+const localStagers = new Map([
+  ['ffmpeg', stageFfmpeg],
+  ['libarchive', stageLibarchive],
+  ['imagemagick', stageImageMagick],
+  ['libvips', stageLibvips],
+  ['ghostscript', stageGhostscript],
+  ['jq', stageJq],
+  ['zstd', stageZstd],
+  ['qpdf', stageQpdf]
+]);
+
+const packages = await loadPackages();
+const requiredSlugs = packages
+  .filter((pkg) => pkg.status === 'available' && pkg.profiles?.some((profile) => profile.playground === true))
+  .map((pkg) => pkg.slug);
+
+for (const slug of requiredSlugs) {
+  if (!localStagers.has(slug)) throw new Error(`Missing local Playground stager for available package: ${slug}`);
+}
+
+if (process.argv.includes('--check-registration')) {
+  console.log(`[OK] local Playground stagers registered for ${requiredSlugs.length} available packages`);
+} else {
+  let staged = 0;
+  for (const slug of requiredSlugs) staged += await localStagers.get(slug)();
+  if (!staged) console.log('[info] No local release cores staged; the catalog can still be previewed.');
+}
