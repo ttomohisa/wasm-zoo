@@ -24,20 +24,12 @@ async function read(rel) {
 }
 
 function hasSlug(text, slug) {
-  const escaped = slug.replace(/[.*+?^$()|[\]\\]/g, "\\function hasSlug(text, slug) {
   const escaped = slug.replace(/[.*+?^$()|[\]\\]/g, "\\$&");
-  return new RegExp("(^|[^a-z0-9-])" + escaped + "([^a-z0-9-]|$)", "i").test(text);
-}
-");
   return new RegExp("(^|[^a-z0-9-])" + escaped + "([^a-z0-9-]|$)", "i").test(text);
 }
 
 function jobBlock(text, job) {
-  const escaped = job.replace(/[.*+?^$()|[\]\\]/g, "\\function hasSlug(text, slug) {
-  const escaped = slug.replace(/[.*+?^$()|[\]\\]/g, "\\$&");
-  return new RegExp("(^|[^a-z0-9-])" + escaped + "([^a-z0-9-]|$)", "i").test(text);
-}
-");
+  const escaped = job.replace(/[.*+?^$()|[\]\\]/g, "\\$&");
   const match = text.match(new RegExp("^  " + escaped + ":\\n([\\s\\S]*?)(?=^  [a-z0-9_-]+:|(?![\\s\\S]))", "m"));
   return match ? match[0] : "";
 }
