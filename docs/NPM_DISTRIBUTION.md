@@ -12,6 +12,19 @@ The existing `npm-zstd-canary.yml` remains a **read-only immutable Release packa
 
 Future npm-only versions follow the existing separate manual review and Trusted Publisher staged-publishing workflow. Upstream candidate automation may prepare review-only package promotion PRs, including libvips only after its complete adapter bundle is resolved to immutable commits, but it never publishes npm. Registry publication remains a separate reviewed action from package promotion.
 
+## Manifest-driven package membership
+
+The package manifests are the source of truth for npm operational membership. `scripts/npm-package-set.mjs` selects every available package whose `npm.status` is `published`, resolves its selected `npm.profile`, and classifies the distribution as single-threaded or threaded from that profile's runtime requirements.
+
+As a result:
+
+- `publish-npm.yml` accepts a slug and validates it against manifest metadata instead of maintaining an eight-package choice list;
+- the Cross-browser Lab derives both job matrices from the same manifest set;
+- the public compatibility publisher derives its expected package/result set from the same resolver;
+- package-specific real-operation fixtures remain explicit in `scripts/smoke-npm-package.mjs` and are still required by onboarding checks.
+
+This removes package-name enrollment edits without weakening package-specific runtime, licensing, source-identity or release contracts.
+
 ## Distribution contract
 
 An npm package is not a second native/WebAssembly build. `scripts/prepare-npm-package.mjs` reads each package's `npm` metadata, starts from the immutable binary ZIP declared by the selected Zoo profile, preserves its core JavaScript/Wasm, manifests, provenance, SBOM, BUILDINFO and license notices, then overlays only the current reviewed distribution wrapper files:
