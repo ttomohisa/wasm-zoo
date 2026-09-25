@@ -182,7 +182,7 @@ need(zstdReleaseWorkflow.includes('source builders/zstd/versions.env') &&
 
 const docs = await read('docs/AUTOMATED_PROMOTIONS.md');
 need(docs.includes('- Ghostscript') && docs.includes('GitHub\'s published SHA-256 asset digest'), 'automation docs must describe Ghostscript digest-pinned auto promotion');
-need(docs.includes('- QPDF') && docs.includes('official qpdf-<version>.tar.gz Release asset'), 'automation docs must describe QPDF digest-pinned auto promotion');
+need(docs.includes('- QPDF') && docs.includes('QPDF is also source-archive-backed') && docs.includes('qpdf-<version>.tar.gz'), 'automation docs must describe QPDF digest-pinned auto promotion');
 need(docs.includes('- Zstandard') && docs.includes('bidirectional native zstd interoperability'), 'automation docs must describe Zstandard native-interoperability candidate gate');
 need(docs.includes('- libvips') && docs.includes('fail-closed adapter bundle resolver'), 'automation docs must describe libvips immutable adapter-bundle candidates');
 
