@@ -147,6 +147,8 @@ New animals follow the staged [Package onboarding contract](docs/PACKAGE_ONBOARD
 
 The Unreleased v0.18 operations work makes published npm enrollment manifest-driven: the generic npm workflow accepts a manifest-validated slug, and the Cross-browser Lab / public snapshot derive membership and threaded classification from `npm.status`, `npm.profile` and that profile's runtime requirements. A ninth published package therefore joins the three-browser evidence set without another package-name edit to those workflows.
 
+The same v0.18 cleanup also centralizes candidate registration/result/checker routing. `upstream-candidate.yml` now validates a requested automatic package through the reviewed manifest/config before running its explicit package-specific build job, then resolves its result and repository-checker path through a shared helper rather than repeating eight package-name case mappings. Package-specific jobs remain explicit where their source, profile or smoke requirements differ.
+
 `npm run onboarding:check` discovers package manifests and builder checkers rather than relying on a package allowlist. Package-specific source/toolchain invariants and real-operation fixtures remain explicit and reviewed.
 
 ## What a Zoo package contains

@@ -8,19 +8,20 @@ For packages with `tracker.candidateMode: auto`:
 
 1. the daily upstream watcher detects a newer stable release;
 2. the watcher opens one upstream issue and dispatches `upstream-candidate.yml` with the exact ref, commit and release timestamp;
-3. the isolated candidate workspace substitutes the candidate pin and runs the package's real browser build/smoke test;
-4. only when the candidate result is `success`, `scripts/prepare-promotion.mjs` prepares the reviewed repository change on a fresh `main` checkout;
-5. the script bumps the package builder patch version, updates exact source pins and package/release metadata, refreshes current version-facing docs, and `npm run catalog` regenerates `site/catalog.json`;
-6. the workflow runs repository validation and the package repository checker before pushing anything;
-7. the bot pushes `automation/promote-<slug>-<version>` and opens a review-only PR;
-8. because workflow-created PR events can require approval when using the repository `GITHUB_TOKEN`, the workflow explicitly dispatches `verify.yml` and `build-<slug>.yml` on the promotion branch;
-9. a human reviews the diff and CI, merges the PR, confirms the normal `main` checks, and creates the release tag manually.
+3. a shared registration step validates the requested slug against `candidateMode: auto`, `scripts/upstream-config.mjs`, declared candidate profiles and the package repository checker before the selected package-specific build job can run;
+4. the isolated candidate workspace substitutes the candidate pin and runs the package's real browser build/smoke test;
+5. only when the candidate result is `success`, `scripts/prepare-promotion.mjs` prepares the reviewed repository change on a fresh `main` checkout;
+6. the script bumps the package builder patch version, updates exact source pins and package/release metadata, refreshes current version-facing docs, and `npm run catalog` regenerates `site/catalog.json`;
+7. the workflow runs repository validation and the repository checker returned by the shared candidate resolver before pushing anything;
+8. the bot pushes `automation/promote-<slug>-<version>` and opens a review-only PR;
+9. because workflow-created PR events can require approval when using the repository `GITHUB_TOKEN`, the workflow explicitly dispatches `verify.yml` and `build-<slug>.yml` on the promotion branch;
+10. a human reviews the diff and CI, merges the PR, confirms the normal `main` checks, and creates the release tag manually.
 
 The automation never merges a PR, creates a package release tag, or publishes a GitHub Release.
 
 ## Automatic packages
 
-The current automatic promotion set is defined in `scripts/upstream-config.mjs`:
+The current automatic promotion set is the exact intersection of package manifests with `tracker.candidateMode: auto` and entries in `scripts/upstream-config.mjs`. CI fails if those sets diverge:
 
 - FFmpeg
 - libarchive
@@ -38,6 +39,12 @@ QPDF is also source-archive-backed. The watcher accepts only the stable `v<versi
 libvips uses a **fail-closed adapter bundle resolver**. A newly detected stable libvips release is not dispatched until the exact `kleisauke/wasm-vips` master commit itself declares that same `VERSION_VIPS`. The watcher then reads the adapter's pinned Emscripten version and wasm-vips package version, resolves the official Emscripten ref plus `kleisauke/libvips:wasm-vips-<libvips>` and `kleisauke/emscripten:wasm-vips-<emscripten>` branch heads, and freezes every moving input to a 40-character commit before building both browser profiles. If any piece is missing or the adapter still targets the previous libvips release, the issue is refreshed but no candidate is dispatched; the daily watcher can retry later.
 
 Zstandard uses the stable GitHub Release tag resolved to an exact upstream commit. Its candidate matrix builds and browser-tests both `browser-core` and `browser-full`; the full CLI candidate also requires **bidirectional native zstd interoperability** before the result can be `success`. A successful result may prepare a review-only package pin PR. That PR deliberately leaves the already-published npm version and its immutable source release pinned; npm update/publication is a later, separate reviewed step.
+
+## Candidate orchestration contract
+
+`scripts/candidate-orchestration.mjs` owns the generic registration/routing layer around the explicit package build jobs. It validates manual/watcher input without a workflow-dispatch choice allowlist, selects the chosen job result from the GitHub Actions `needs` object, and returns the conventional `builders/<slug>/scripts/check-repository.mjs` path for promotion validation.
+
+Package-specific candidate jobs intentionally remain explicit. FFmpeg, libvips and Zstandard require different profile matrices; Ghostscript and QPDF require official source archive identity; libvips additionally requires the immutable adapter bundle. A future animal therefore adds one explicit build job and one report `needs` entry, but it does not add another result-routing case or repository-checker case.
 
 ## Promotion rehearsal contract
 

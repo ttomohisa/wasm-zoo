@@ -47,7 +47,9 @@ Changing a package to `available` before these surfaces exist is a contract fail
 
 `tracker.candidateMode` is one of `auto`, `adapter-gated`, or `none`.
 
-An `auto` package must declare valid candidate profiles, have an entry in `scripts/upstream-config.mjs`, and have a candidate job, result mapping and promotion repository-checker mapping in `upstream-candidate.yml`.
+An `auto` package must declare valid candidate profiles, have an entry in `scripts/upstream-config.mjs`, and have a package-specific candidate build job in `upstream-candidate.yml`. The workflow validates the requested slug against the reviewed manifest/config before any candidate job can run, resolves the selected job result through `scripts/candidate-orchestration.mjs`, and derives the promotion repository-checker path from the package slug instead of maintaining duplicate package-name case mappings.
+
+The report job still lists package-specific build jobs in `needs`, because those jobs deliberately remain explicit and may have different profiles, source preparation and smoke requirements. The onboarding contract verifies that every automatic package is present in that single report dependency list.
 
 The contract verifies wiring only. Package-specific source identity and build invariants remain in the package repository checker and the shared promotion rehearsal.
 
