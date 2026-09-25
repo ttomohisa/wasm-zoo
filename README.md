@@ -38,6 +38,8 @@ Release Health schema 2 adds live npm Registry alignment to the existing release
 
 Local preview now has stagers for all eight available package Playgrounds, including QPDF, and CI fails if a future available Playground package is omitted from the local-stager registry. The reviewed-pin model is unchanged: automation may prepare review artifacts and comments, but merge, project/package tags, reviewed GitHub Releases and npm publication remain human-controlled.
 
+The project version is **WASM Zoo v0.18.0**. Individual package builders, npm distribution versions and immutable package release tags remain independently versioned.
+
 See [v0.18.0 project release review](docs/V018_RELEASE.md).
 
 ## v0.17.0: QPDF release, npm and 24-cell Lab
