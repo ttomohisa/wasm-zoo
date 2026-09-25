@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.17.0
+
 - publish `@wasm-zoo/qpdf@0.1.0` from the exact three-browser-verified immutable `qpdf-v0.1.0` Release-derived tarball; record Registry `dist.shasum: 83b2a89ec339d58ab0dcaf3c118385c3396955f1` as the reviewed publication identity and keep local-bootstrap provenance claims separate from the package's bundled Release provenance/SBOM;
 - promote QPDF npm metadata from `canary` to `published`, add QPDF to the Trusted Publisher/staged update workflow and live Registry smoke, and expand the reviewed Cross-browser Compatibility Lab from 21 to 24 exact-version real-operation cells across eight public npm packages;
 
