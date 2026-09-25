@@ -47,7 +47,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          test "$(node -p "require('./packages/qpdf/package.json').npm.status")" = canary
+          status="$(node -p "require('./packages/qpdf/package.json').npm.status")"
+          test "$status" = canary || test "$status" = published
           tag="$(node -p "require('./packages/qpdf/package.json').npm.source.releaseTag")"
           asset="$(node -p "require('./packages/qpdf/package.json').npm.source.releaseAsset")"
           test -n "$tag" && test -n "$asset"
