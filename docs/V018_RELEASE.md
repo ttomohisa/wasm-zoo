@@ -11,7 +11,7 @@ This project release records the reviewed **Manifest-driven Operations** work al
 - Release Health schema 2 adds live npm Registry alignment to the existing Release/Playground/freshness/supply-chain checks. It records the reviewed npm version, source Release, Registry exact/latest version, live `dist.shasum`, follow-up state and intentional pin state.
 - Release Health treats a deliberate `keepNpmPinned` mismatch as a visible separate-review warning rather than a broken package Release; unreviewed source drift or a recorded Registry SHA mismatch remains an error.
 - Local Playground staging now covers all eight available packages, including QPDF. `npm run check` derives every available Playground package from manifests and fails if any one lacks a registered local stager.
-- The reviewed-pin boundary remains unchanged: automation may create review-only PRs and explanatory comments, but it **never automatically merges, tags, creates a reviewed GitHub Release or publishes npm**.
+- The reviewed-pin boundary remains unchanged: automation may create review-only PRs and explanatory comments, but it **never automatically merges, tags, creates a GitHub Release or publishes npm**.
 
 ## Reviewed pre-finalization evidence
 
