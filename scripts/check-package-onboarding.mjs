@@ -40,7 +40,7 @@ need(crossBrowserWorkflow.includes("node scripts/npm-package-set.mjs --github-ou
   crossBrowserWorkflow.includes("fromJSON(needs.package-set.outputs.single)") &&
   crossBrowserWorkflow.includes("fromJSON(needs.package-set.outputs.threaded)"),
   "Cross-browser Lab must derive published npm package matrices from manifests");
-need(publishNpmWorkflow.includes("Published npm package to distribute") === false || publishNpmWorkflow.includes("type: string"),
+need(publishNpmWorkflow.includes("slug:\n        description: npm distribution package\n        required: true\n        type: string"),
   "publish-npm.yml slug input must accept manifest-validated package names without a static choice allowlist");
 
 const packageBase = path.join(root, "packages");
