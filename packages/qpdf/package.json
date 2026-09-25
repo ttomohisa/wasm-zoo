@@ -144,7 +144,7 @@
     "Emscripten 6.0.8 port inputs are pinned as zlib 1.3.2 and libjpeg 9f; their source hashes and distribution notices are carried into the release build.",
     "The browser smoke starts from a deterministic one-page PDF fixture and verifies check, linearize, AES-256 encryption, decryption and final validation.",
     "Stable QPDF GitHub Releases are eligible for exact source-archive candidate builds and review-only promotion PRs; merge, package tag, GitHub Release and npm publication remain human-controlled.",
-    "@wasm-zoo/qpdf@0.1.0 is defined as a prepublication canary derived only from immutable qpdf-v0.1.0 / browser-full. Its exact tarball must pass real Vite operations in Chromium, Firefox and WebKit before any human Registry publication; package promotion keeps this npm source identity pinned until a separate npm review."
+    "@wasm-zoo/qpdf@0.1.0 was manually published from the exact three-browser-verified qpdf-v0.1.0 / browser-full tarball; npm Registry dist.shasum 83b2a89ec339d58ab0dcaf3c118385c3396955f1 matches that reviewed artifact. Future npm updates use the separate Trusted Publisher staged-review flow while package promotion keeps this npm source identity pinned until a separate npm review."
   ],
   "integration": {
     "summary": "Self-host qpdf-core.js/qpdf-core.wasm plus the Zoo wrapper, stage PDF files in MEMFS, then execute ordinary qpdf CLI arguments locally in a Worker.",
@@ -168,7 +168,7 @@
     "checksumsAsset": "SHA256SUMS.txt"
   },
   "npm": {
-    "status": "canary",
+    "status": "published",
     "package": "@wasm-zoo/qpdf",
     "version": "0.1.0",
     "profile": "browser-full",
@@ -225,6 +225,7 @@
       "releaseTag": "qpdf-v0.1.0",
       "releaseAsset": "qpdf-browser-full-12.4.1-zoo-0.1.0.zip",
       "commit": "c37f83ae468abb6cc741f43b2f6fdeb66e550ffb"
-    }
+    },
+    "registryShasum": "83b2a89ec339d58ab0dcaf3c118385c3396955f1"
   }
 }
