@@ -88,9 +88,10 @@ WASM Zoo v0.8.0 adds a distribution-level health layer instead of treating a suc
 - deployed Playground reachability;
 - upstream freshness;
 - standalone provenance and SBOM assets;
+- live npm Registry state for the reviewed package/version, including the source Release and Registry SHA-1 when available;
 - an aggregate health state.
 
-`site/release-health.json` is refreshed during Pages deployment and by the daily watcher. Older package releases remain valid when they predate the v0.8.0 supply-chain contract; they are shown as waiting for metadata rather than falsely marked broken.
+`site/release-health.json` is refreshed during Pages deployment and by the daily watcher. Its npm section distinguishes four operational states: aligned/current, Registry update pending, intentionally pinned for a separate npm review, and broken identity (for example a recorded `dist.shasum` mismatch). QPDF and Zstandard may therefore show an intentional npm pin after a future package promotion without being mislabeled as a broken GitHub Release. Older package releases remain valid when they predate the v0.8.0 supply-chain contract; they are shown as waiting for metadata rather than falsely marked broken.
 
 After a builder's real browser smoke test succeeds, every profile now generates:
 
@@ -150,6 +151,8 @@ The Unreleased v0.18 operations work makes published npm enrollment manifest-dri
 The same v0.18 cleanup also centralizes candidate registration/result/checker routing. `upstream-candidate.yml` now validates a requested automatic package through the reviewed manifest/config before running its explicit package-specific build job, then resolves its result and repository-checker path through a shared helper rather than repeating eight package-name case mappings. Package-specific jobs remain explicit where their source, profile or smoke requirements differ.
 
 v0.18 also generates the post-merge human handoff from reviewed package metadata. Promotion PRs show the expected tag/release/npm steps before merge; after a real `automation/promote-*` merge, a comment-only workflow posts the confirmed checklist to the PR and watcher issue. It can recommend `publish-npm.yml` pack/stage commands for packages whose npm version advances, or explicitly keep QPDF/Zstandard npm identities pinned, but it never performs the tag, Release, npm stage/approval or issue close itself.
+
+The same operations pass extends Release Health with live npm distribution alignment. The dashboard records the reviewed npm version, source Release, current Registry version, live Registry SHA-1, whether a separately reviewed npm update is pending, and whether a pin is intentional. A Registry SHA mismatch or unreviewed source-release drift is an error; a deliberate `keepNpmPinned` mismatch is surfaced as a separate-review warning instead of a false release failure.
 
 `npm run onboarding:check` discovers package manifests and builder checkers rather than relying on a package allowlist. Package-specific source/toolchain invariants and real-operation fixtures remain explicit and reviewed.
 

@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { loadPackages, root } from './lib.mjs';
+import { automaticCandidateConfig } from './upstream-config.mjs';
+import { classifyNpmDistribution, fetchNpmRegistryDistribution } from './release-health-npm.mjs';
 
 const args = new Set(process.argv.slice(2));
 const packages = await loadPackages();
@@ -65,15 +67,16 @@ function releaseAssetContract(pkg) {
   return { binary, classic, supply };
 }
 function aggregate(item) {
-  const critical = [item.buildGate.state, item.release.state, item.playground.state].filter((state) => state !== 'na');
+  const critical = [item.buildGate.state, item.release.state, item.playground.state, item.npm?.state].filter((state) => state && state !== 'na');
   if (critical.includes('error')) return { state: 'error', label: 'Action required' };
   if (critical.includes('pending')) return { state: 'pending', label: 'In progress' };
+  if (item.npm?.state === 'warn') return { state: 'warn', label: item.npm.intentionalPin ? 'npm separate review' : 'npm review' };
   if (item.freshness.state === 'warn') return { state: 'warn', label: 'Upstream review' };
   if (critical.includes('unknown')) return { state: 'warn', label: 'Partially verified' };
   return { state: 'ok', label: 'Healthy' };
 }
 
-const report = { schemaVersion: 1, generatedAt: new Date().toISOString(), repository, pagesBase, packages: [] };
+const report = { schemaVersion: 2, generatedAt: new Date().toISOString(), repository, pagesBase, packages: [] };
 for (const pkg of packages.filter((item) => item.status === 'available' && item.release?.tag)) {
   const item = { slug: pkg.slug, name: pkg.name, tag: pkg.release.tag };
   const contract = releaseAssetContract(pkg);
@@ -113,6 +116,8 @@ for (const pkg of packages.filter((item) => item.status === 'available' && item.
   }
   item.playground = await playgroundHealth(pkg);
   item.freshness = await freshnessFor(pkg.slug);
+  const npmRegistry = pkg.npm ? await fetchNpmRegistryDistribution(pkg) : {};
+  item.npm = classifyNpmDistribution(pkg, automaticCandidateConfig(pkg.slug), npmRegistry);
   item.overall = aggregate(item);
   report.packages.push(item);
 }
@@ -122,6 +127,11 @@ report.summary = {
   pending: report.packages.filter((item) => item.overall.state === 'pending').length,
   error: report.packages.filter((item) => item.overall.state === 'error').length,
   supplyChainPublished: report.packages.filter((item) => item.supplyChain.state === 'ok').length,
+  npmTotal: report.packages.filter((item) => item.npm?.state && item.npm.state !== 'na').length,
+  npmAligned: report.packages.filter((item) => item.npm?.state === 'ok').length,
+  npmFollowUp: report.packages.filter((item) => item.npm?.updatePending).length,
+  npmPinned: report.packages.filter((item) => item.npm?.intentionalPin).length,
+  npmErrors: report.packages.filter((item) => item.npm?.state === 'error').length,
   total: report.packages.length
 };
 
@@ -131,11 +141,11 @@ if (args.has('--write-site')) {
   else await fs.writeFile(path.join(root, 'site', 'release-health.json'), `${JSON.stringify(report, null, 2)}\n`);
 }
 if (args.has('--markdown')) {
-  console.log('| Project | Build gate | Release | Playground | Freshness | Provenance + SBOM | Overall |');
-  console.log('| --- | --- | --- | --- | --- | --- | --- |');
-  for (const item of report.packages) console.log(`| ${item.name} | ${item.buildGate.label} | ${item.release.label} | ${item.playground.label} | ${item.freshness.label} | ${item.supplyChain.label} | ${item.overall.label} |`);
+  console.log('| Project | Build gate | Release | Playground | Freshness | Provenance + SBOM | npm | Overall |');
+  console.log('| --- | --- | --- | --- | --- | --- | --- | --- |');
+  for (const item of report.packages) console.log(`| ${item.name} | ${item.buildGate.label} | ${item.release.label} | ${item.playground.label} | ${item.freshness.label} | ${item.supplyChain.label} | ${item.npm?.label || 'N/A'} | ${item.overall.label} |`);
 } else if (args.has('--json')) process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 else {
-  console.log(`WASM Zoo release health · ${report.summary.healthy}/${report.summary.total} healthy`);
+  console.log(`WASM Zoo release health · ${report.summary.healthy}/${report.summary.total} healthy · npm ${report.summary.npmAligned}/${report.summary.npmTotal} aligned`);
   for (const item of report.packages) console.log(`${item.overall.state === 'ok' ? '✓' : item.overall.state === 'error' ? '!' : '·'} ${item.name}: ${item.overall.label}`);
 }

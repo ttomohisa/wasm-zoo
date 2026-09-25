@@ -35,20 +35,34 @@ function healthBadge(check) {
   const label = check?.label || meta.label;
   return `<span class="health-badge ${meta.className}" title="${esc(label)}"><b>${meta.symbol}</b><span>${esc(label)}</span></span>`;
 }
+function npmHealthCell(check) {
+  if (!check || check.state === 'na') return healthBadge(check);
+  const details = [];
+  if (check.package && check.expectedVersion) details.push(`${check.package}@${check.expectedVersion}`);
+  if (check.sourceReleaseTag) details.push(`source ${check.sourceReleaseTag}`);
+  if (check.registryShasum) details.push(`sha1 ${check.registryShasum.slice(0, 10)}…`);
+  if (check.intentionalPin) details.push('separate review');
+  return `<div class="npm-health-cell">${healthBadge(check)}${details.length ? `<small>${details.map(esc).join(' · ')}</small>` : ''}</div>`;
+}
 function renderReleaseHealth() {
   if (!healthBody) return;
   const rows = catalog.packages.filter((pkg) => pkg.status === 'available').map((pkg) => {
     const item = healthFor(pkg.slug);
-    if (!item) return `<tr><td><button class="gap-project" data-open="${esc(pkg.slug)}"><strong>${esc(pkg.name)}</strong><small>${esc(pkg.release?.tag || '')}</small></button></td><td colspan="6">Live health snapshot unavailable.</td></tr>`;
-    return `<tr><td><button class="gap-project" data-open="${esc(pkg.slug)}"><strong>${esc(pkg.name)}</strong><small>${esc(item.tag || pkg.release?.tag || '')}</small></button></td><td>${healthBadge(item.buildGate)}</td><td>${healthBadge(item.release)}</td><td>${healthBadge(item.playground)}</td><td>${healthBadge(item.freshness)}</td><td>${healthBadge(item.supplyChain)}</td><td>${healthBadge(item.overall)}</td></tr>`;
+    if (!item) return `<tr><td><button class="gap-project" data-open="${esc(pkg.slug)}"><strong>${esc(pkg.name)}</strong><small>${esc(pkg.release?.tag || '')}</small></button></td><td colspan="7">Live health snapshot unavailable.</td></tr>`;
+    return `<tr><td><button class="gap-project" data-open="${esc(pkg.slug)}"><strong>${esc(pkg.name)}</strong><small>${esc(item.tag || pkg.release?.tag || '')}</small></button></td><td>${healthBadge(item.buildGate)}</td><td>${healthBadge(item.release)}</td><td>${healthBadge(item.playground)}</td><td>${healthBadge(item.freshness)}</td><td>${healthBadge(item.supplyChain)}</td><td>${npmHealthCell(item.npm)}</td><td>${healthBadge(item.overall)}</td></tr>`;
   }).join('');
-  healthBody.innerHTML = rows || '<tr><td colspan="7">No published packages.</td></tr>';
+  healthBody.innerHTML = rows || '<tr><td colspan="8">No published packages.</td></tr>';
   healthBody.querySelectorAll('[data-open]').forEach((button) => button.addEventListener('click', () => openPackage(button.dataset.open)));
   const total = Number(releaseHealth.summary?.total || catalog.stats.available || 0);
   const healthy = Number(releaseHealth.summary?.healthy || 0);
   const supply = Number(releaseHealth.summary?.supplyChainPublished || 0);
+  const npmTotal = Number(releaseHealth.summary?.npmTotal || 0);
+  const npmAligned = Number(releaseHealth.summary?.npmAligned || 0);
+  const npmFollowUp = Number(releaseHealth.summary?.npmFollowUp || 0);
   const summary = document.querySelector('#release-health-summary');
-  if (summary) summary.textContent = releaseHealth.generatedAt ? `${healthy}/${total} releases healthy · ${supply}/${total} currently expose standalone provenance + SBOM assets.` : 'Live release checks run on Pages deploy and the daily watcher.';
+  if (summary) summary.textContent = releaseHealth.generatedAt
+    ? `${healthy}/${total} releases healthy · npm ${npmAligned}/${npmTotal} aligned${npmFollowUp ? ` · ${npmFollowUp} npm follow-up${npmFollowUp === 1 ? '' : 's'} visible` : ''} · ${supply}/${total} provenance + SBOM.`
+    : 'Live release, Registry and supply-chain checks run on Pages deploy and the daily watcher.';
   const generated = document.querySelector('#release-health-generated');
   if (generated) generated.textContent = releaseHealth.generatedAt ? `Checked ${new Date(releaseHealth.generatedAt).toISOString().replace('T',' ').slice(0,16)} UTC` : 'Pending live check';
 }

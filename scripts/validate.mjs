@@ -298,6 +298,7 @@ const requiredSiteFiles = [
   ".github/workflows/upstream-candidate.yml",
   "scripts/check-upstream.mjs",
   "scripts/check-release-health.mjs",
+  "scripts/release-health-npm.mjs",
   "scripts/generate-build-metadata.mjs",
   "scripts/check-metadata-contract.mjs",
   "scripts/prepare-candidate.mjs",
@@ -353,9 +354,11 @@ try {
   assert(siteApp.includes("Use in your app") && siteApp.includes("data-copy-code"), "Package details must render integration guidance with copyable examples");
   assert(siteApp.includes("renderVersionGap") && siteApp.includes("renderFeatureMatrix"), "Pages must render Version Gap Dashboard and Feature Matrix");
   assert(siteApp.includes("renderReleaseHealth") && siteApp.includes("release-health.json"), "Pages must render Release Health Dashboard from the live snapshot");
+  assert(siteApp.includes("npmHealthCell") && siteApp.includes("npmAligned") && siteApp.includes("npmFollowUp"), "Release Health UI must expose npm Registry/source alignment and follow-up state");
   assert(siteApp.includes("matrix-state") && siteApp.includes("Intentionally excluded"), "Feature Matrix must distinguish excluded vs target-inapplicable states");
   const siteHtml = await fs.readFile(path.join(root, "site/index.html"), "utf8");
   assert(siteHtml.includes('id="health"') && siteHtml.includes("Release Health Dashboard"), "Pages must expose the Release Health Dashboard section");
+  assert(siteHtml.includes("<th>npm</th>"), "Release Health Dashboard must expose an npm column");
   assert(siteHtml.includes('id="freshness"') && siteHtml.includes("Version Gap Dashboard"), "Pages must expose the Version Gap Dashboard section");
   assert(siteHtml.includes('id="features"') && siteHtml.includes("Feature Matrix"), "Pages must expose the Feature Matrix section");
   const watcher = await fs.readFile(path.join(root, ".github/workflows/check-upstream.yml"), "utf8");
@@ -363,6 +366,9 @@ try {
   assert(watcher.includes("site/upstream-status.json") && watcher.includes("gh issue create") && watcher.includes("upstream-candidate.yml"), "Upstream watcher must publish status, open issues and dispatch candidates");
   assert(watcher.includes('-f released="$released"'), "Upstream watcher must pass the detected release date into candidate/promotion automation");
   assert(watcher.includes("site/release-health.json") && watcher.includes("check-release-health.mjs"), "Daily watcher must refresh Release Health alongside upstream freshness");
+  const releaseHealthScript = await fs.readFile(path.join(root, "scripts/check-release-health.mjs"), "utf8");
+  assert(releaseHealthScript.includes("fetchNpmRegistryDistribution") && releaseHealthScript.includes("classifyNpmDistribution"), "Release Health must inspect live npm Registry/source alignment");
+  assert(releaseHealthScript.includes("npmFollowUp") && releaseHealthScript.includes("npmPinned") && releaseHealthScript.includes("npmErrors"), "Release Health summary must expose npm follow-up/pin/error counts");
   assert(watcher.includes("gh workflow run pages.yml"), "Upstream watcher must explicitly refresh Pages after the bot snapshot commit");
   const upstreamScript = await fs.readFile(path.join(root, "scripts/check-upstream.mjs"), "utf8");
   assert(upstreamScript.includes("refusing to replace the last good Pages snapshot"), "Upstream checker must preserve the last good snapshot when all trackers fail");
@@ -400,8 +406,12 @@ try {
   assert(status.schemaVersion === 2 && Array.isArray(status.packages), "site/upstream-status.json schema is invalid");
   for (const pkg of packages) assert(status.packages.some((item) => item.slug === pkg.slug), `site/upstream-status.json missing ${pkg.slug}`);
   const health = await readJson(path.join(root, "site", "release-health.json"));
-  assert(health.schemaVersion === 1 && Array.isArray(health.packages), "site/release-health.json schema is invalid");
+  assert([1, 2].includes(health.schemaVersion) && Array.isArray(health.packages), "site/release-health.json schema is invalid");
   for (const pkg of packages.filter((item) => item.status === "available")) assert(health.packages.some((item) => item.slug === pkg.slug), `site/release-health.json missing ${pkg.slug}`);
+  if (health.schemaVersion === 2) {
+    for (const item of health.packages) assert(item.npm && typeof item.npm.state === "string", `site/release-health.json missing npm state for ${item.slug}`);
+    assert(Number.isInteger(health.summary?.npmTotal) && Number.isInteger(health.summary?.npmAligned), "site/release-health.json npm summary is invalid");
+  }
 } catch {
   errors.push("site/catalog.json is missing or invalid; run npm run catalog");
 }
