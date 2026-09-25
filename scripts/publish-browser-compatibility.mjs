@@ -4,11 +4,15 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { loadPackages, root } from "./lib.mjs";
 import {
-  baseSnapshot, browsers, packageSlugs, selectMainRun, buildVerifiedSnapshot
+  baseSnapshot, browsers, selectMainRun, buildVerifiedSnapshot
 } from "./browser-compatibility-snapshot.mjs";
+import { npmDistributionSets } from "./npm-package-set.mjs";
 
 const generatedAt = new Date().toISOString();
 const packages = await loadPackages();
+const packageSets = npmDistributionSets(packages);
+const packageSlugs = packageSets.all;
+const threadedSlugs = new Set(packageSets.threaded);
 const destination = path.join(root, "site", "browser-compatibility.json");
 const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
 const repository = process.env.GITHUB_REPOSITORY || "ttomohisa/wasm-zoo";
@@ -63,7 +67,7 @@ try {
     const records = [];
     for (const slug of packageSlugs) {
       for (const browser of browsers) {
-        const artifact = slug === "ffmpeg" || slug === "libvips"
+        const artifact = threadedSlugs.has(slug)
           ? `threaded-${slug}-${browser}-compatibility`
           : `${slug}-${browser}-compatibility`;
         const filename = path.join(work, artifact, `${slug}-${browser}.json`);
