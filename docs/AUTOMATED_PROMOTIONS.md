@@ -15,9 +15,12 @@ For packages with `tracker.candidateMode: auto`:
 7. the workflow runs repository validation and the repository checker returned by the shared candidate resolver before pushing anything;
 8. the bot pushes `automation/promote-<slug>-<version>` and opens a review-only PR;
 9. because workflow-created PR events can require approval when using the repository `GITHUB_TOKEN`, the workflow explicitly dispatches `verify.yml` and `build-<slug>.yml` on the promotion branch;
-10. a human reviews the diff and CI, merges the PR, confirms the normal `main` checks, and creates the release tag manually.
+10. the promotion PR includes a generated **After merge — human handoff** derived from the promoted package manifest;
+11. a human reviews the diff and CI and merges the PR;
+12. `promotion-handoff.yml` reacts only to a merged `automation/promote-*` PR, re-validates the promoted package, and posts the confirmed handoff to the merged PR and its watcher issue;
+13. the human follows that handoff to verify reviewed `main`, create/push the package tag, confirm the immutable Release, and perform any separately reviewed npm follow-up.
 
-The automation never merges a PR, creates a package release tag, or publishes a GitHub Release.
+The automation never merges a PR, creates a package release tag, creates a reviewed GitHub Release, publishes npm, or approves npm staging.
 
 ## Automatic packages
 
@@ -45,6 +48,23 @@ Zstandard uses the stable GitHub Release tag resolved to an exact upstream commi
 `scripts/candidate-orchestration.mjs` owns the generic registration/routing layer around the explicit package build jobs. It validates manual/watcher input without a workflow-dispatch choice allowlist, selects the chosen job result from the GitHub Actions `needs` object, and returns the conventional `builders/<slug>/scripts/check-repository.mjs` path for promotion validation.
 
 Package-specific candidate jobs intentionally remain explicit. FFmpeg, libvips and Zstandard require different profile matrices; Ghostscript and QPDF require official source archive identity; libvips additionally requires the immutable adapter bundle. A future animal therefore adds one explicit build job and one report `needs` entry, but it does not add another result-routing case or repository-checker case.
+
+## Post-merge human handoff
+
+`scripts/promotion-human-handoff.mjs` generates the operator checklist from the **promoted manifest**, not from a copied package list. The promotion PR embeds the planned checklist before review. After the PR is actually merged, `.github/workflows/promotion-handoff.yml` checks out the reviewed merge commit, identifies exactly one changed `packages/<slug>/package.json`, re-validates that slug through the automatic candidate contract, and regenerates the checklist with the exact merge SHA.
+
+The merged-PR comment includes copyable PowerShell / `gh` commands for:
+
+- checking the latest `Verify catalog` and package build workflows on `main`;
+- syncing local `main` and verifying that the reviewed promotion merge is an ancestor;
+- checking that the expected package tag does not already exist, then creating/pushing it manually;
+- confirming the package Release workflow and immutable GitHub Release;
+- preparing npm `pack` and `stage` runs only when the promoted npm identity is meant to advance;
+- closing the watcher issue after the package Release is confirmed.
+
+The npm guidance is metadata-aware. Normal published packages whose promotion bumps the npm distribution version receive separate `mode=pack` then `mode=stage` commands; the stage remains subject to maintainer review / npm 2FA. Packages configured with `keepNpmPinned` (currently QPDF and Zstandard) explicitly receive **no npm staging instruction**: their existing Registry identity remains pinned until a separate npm-only review.
+
+The handoff workflow only comments. It contains no `git tag`, `gh release create`, `npm publish` or `npm stage publish` execution path. Its comments are idempotent: a rerun refreshes the existing handoff comment rather than creating duplicate operator instructions.
 
 ## Promotion rehearsal contract
 
@@ -83,12 +103,6 @@ The bot branch is normally `automation/promote-<slug>-<version>`.
 
 ## Human release steps after merge
 
-After the promotion PR is merged:
+Use the generated **After merge — human handoff** on the merged promotion PR (and mirrored watcher issue comment) as the operational source of truth. It derives the expected package tag, build/release workflow names, npm behavior and exact commands from the reviewed promoted manifest.
 
-1. confirm `Verify catalog` and the package build workflow are green on `main`;
-2. update local `main` with `git pull --ff-only origin main`;
-3. confirm `HEAD` matches `origin/main`;
-4. create the package tag declared in `packages/<slug>/package.json` under `release.tag`;
-5. push that tag and confirm the package Release workflow succeeds;
-6. confirm Pages/Release Health as appropriate;
-7. close the upstream issue with the promotion PR and release tag recorded.
+The checklist remains advisory: every release/tag/npm action is performed by the human maintainer after reviewing the current `main` state.
