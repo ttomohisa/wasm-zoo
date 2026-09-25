@@ -162,7 +162,7 @@ try {
     "npm workflow must honor an independently pinned immutable npm source release");
 
   const smoke = await fs.readFile(path.join(root, "scripts", "smoke-npm-package.mjs"), "utf8");
-  need(smoke.includes("jq:") && smoke.includes("libarchive:") && smoke.includes("imagemagick:") && smoke.includes("ghostscript:") && smoke.includes("libvips:") && smoke.includes("ffmpeg:") && smoke.includes("zstd:") && smoke.includes("qpdf:"), "generic npm smoke must have real-operation fixtures for every npm-enabled package, including QPDF canary");
+  need(smoke.includes("jq:") && smoke.includes("libarchive:") && smoke.includes("imagemagick:") && smoke.includes("ghostscript:") && smoke.includes("libvips:") && smoke.includes("ffmpeg:") && smoke.includes("zstd:") && smoke.includes("qpdf:"), "generic npm smoke must have real-operation fixtures for every npm-enabled package, including published QPDF");
   need(
     smoke.includes("vite") &&
     smoke.includes("playwright") &&
@@ -178,7 +178,7 @@ try {
     smoke.includes('selectedBrowser === "chromium" && onUnsupported === "record"') &&
     smoke.includes('compatibility.runtimeCapabilities') &&
     smoke.includes('compatibility.responseHeaders'),
-    "cross-browser smoke runner must know all reviewed/canary npm packages and rigorously preflight threaded browsers"
+    "cross-browser smoke runner must know all reviewed npm packages and rigorously preflight threaded browsers"
   );
   const compatWorkflow = await fs.readFile(path.join(root, ".github", "workflows", "cross-browser-compat.yml"), "utf8");
   need(
