@@ -19,6 +19,7 @@ const run = {
 const fixtureSlugs = ["jq", "libarchive", "imagemagick", "ghostscript", "zstd", "qpdf", "ffmpeg", "libvips"];
 const packages = fixtureSlugs.map((slug) => ({
   slug,
+  status: "available",
   npm: { status: "published", package: `@wasm-zoo/${slug}`, version: "1.2.3", profile: "browser-full" },
   profiles: [{ id: "browser-full", sharedArrayBuffer: slug === "ffmpeg" || slug === "libvips" }]
 }));
