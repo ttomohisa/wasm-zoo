@@ -53,7 +53,7 @@ The report job still lists package-specific build jobs in `needs`, because those
 
 The contract verifies wiring only. Package-specific source identity and build invariants remain in the package repository checker and the shared promotion rehearsal.
 
-Automation remains review-only: it never automatically merges, creates release tags, creates GitHub Releases or publishes npm.
+Automation remains review-only: it never automatically merges, creates release tags, creates GitHub Releases or publishes npm. For automatic promotion PRs, the shared human-handoff generator may display exact post-merge commands in the PR/Issue, and the merge-triggered handoff workflow may refresh those comments, but neither path executes any release or Registry mutation.
 
 ## npm and the Cross-browser Lab
 

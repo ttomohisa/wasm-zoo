@@ -496,6 +496,13 @@ jobs:
           git commit -m "chore(${slug}): promote ${version} to builder ${builder}"
           git push -u origin "$branch"
 
+          handoff_file="$(mktemp)"
+          handoff_args=(node scripts/promotion-human-handoff.mjs --slug "$slug")
+          if [ -n "$issue" ]; then
+            handoff_args+=(--issue "$issue")
+          fi
+          "${handoff_args[@]}" > "$handoff_file"
+
           body_file="$(mktemp)"
           {
             echo "## Summary"
@@ -519,11 +526,13 @@ jobs:
             echo
             echo "This PR is review-only. Automation does **not** merge it, create a release tag, or publish a release."
             echo "Repository validation and the package build workflow are dispatched explicitly below because this PR is created with the repository GITHUB_TOKEN."
+            echo
+            cat "$handoff_file"
           } > "$body_file"
 
           pr_url="$(gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$branch" \
             --title "chore(${slug}): promote ${version} to builder ${builder}" --body-file "$body_file")"
-          rm -f "$body_file"
+          rm -f "$body_file" "$handoff_file"
           echo "[promotion] created $pr_url"
           echo "url=$pr_url" >> "$GITHUB_OUTPUT"
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
@@ -553,7 +562,7 @@ jobs:
           - builder: **${{ steps.prepare.outputs.builder_version }}**
           - validation: `Verify catalog` and `build-${{ inputs.slug }}.yml` dispatched on the promotion branch
 
-          Merge, release tag and publication remain manual.
+          Merge, release tag and publication remain manual. The promotion PR body contains the generated post-merge human handoff; after merge, `promotion-handoff.yml` posts the confirmed handoff back to this issue.
           EOF_BODY
           )
           gh issue comment "${{ inputs.issue_number }}" --repo "$GITHUB_REPOSITORY" --body "$body"
@@ -568,4 +577,5 @@ jobs:
             echo "- Branch: \`${{ steps.pr.outputs.branch }}\`"
             echo "- Builder: \`${{ steps.prepare.outputs.builder_version }}\`"
             echo "- Merge/tag/release: **manual**"
+            echo "- Post-merge handoff: **generated from reviewed package metadata**"
           } >> "$GITHUB_STEP_SUMMARY"
