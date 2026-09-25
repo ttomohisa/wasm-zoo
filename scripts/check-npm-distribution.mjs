@@ -75,6 +75,10 @@ try {
     need(pkg.wasmZoo?.npmVersion === npm.version, `${slug} npm metadata must record the npm distribution version`);
     need(pkg.publishConfig?.access === "public", `${slug} scoped npm package must publish with public access`);
     need(pkg.publishConfig?.provenance === true, `${slug} npm package must request provenance`);
+    if (npm.registryShasum != null) {
+      need(npm.status === "published", `${slug} registryShasum is only valid for a published npm package`);
+      need(/^[a-f0-9]{40}$/.test(npm.registryShasum), `${slug} registryShasum must be a lowercase SHA-1`);
+    }
     need(pkg.wasmZoo?.releaseTag === (npmSource.releaseTag || zoo.release.tag), `${slug} npm metadata must identify the immutable source release tag`);
     const profile = zoo.profiles.find((entry) => entry.id === npm.profile);
     need(pkg.wasmZoo?.releaseAsset === (npmSource.releaseAsset || profile?.releaseAsset), `${slug} npm metadata must identify the immutable source release asset`);
@@ -145,7 +149,7 @@ try {
   }
 
   const workflow = await fs.readFile(path.join(root, ".github", "workflows", "publish-npm.yml"), "utf8");
-  need(workflow.includes("options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd]"), "npm distribution workflow must expose all seven published npm packages");
+  need(workflow.includes("options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd, qpdf]"), "npm distribution workflow must expose all eight published npm packages");
   need(workflow.includes("pkg.npm.status !== 'published'"), "npm distribution workflow must require published npm packages after v0.13 rollout");
   need(workflow.includes("options: [pack, stage]"), "npm distribution workflow must expose only pack/stage after the v0.13 rollout");
   need(workflow.includes("id-token: write"), "npm distribution workflow must request OIDC id-token permission");
@@ -178,13 +182,13 @@ try {
   );
   const compatWorkflow = await fs.readFile(path.join(root, ".github", "workflows", "cross-browser-compat.yml"), "utf8");
   need(
-    compatWorkflow.includes("slug: [jq, libarchive, imagemagick, ghostscript, zstd]") &&
+    compatWorkflow.includes("slug: [jq, libarchive, imagemagick, ghostscript, zstd, qpdf]") &&
     compatWorkflow.includes("browser: [chromium, firefox, webkit]") &&
     compatWorkflow.includes("scripts/smoke-npm-package.mjs") &&
     compatWorkflow.includes("matrix.slug") &&
     compatWorkflow.includes("matrix.browser") &&
     compatWorkflow.includes("upload-artifact@v4"),
-    "cross-browser workflow must test all five published single-threaded packages in three browsers"
+    "cross-browser workflow must test all six published single-threaded packages in three browsers"
   );
   need(
     compatWorkflow.includes("slug: [ffmpeg, libvips]") &&
@@ -205,7 +209,7 @@ try {
   need(smoke.includes("ffmpeg:") && smoke.includes("input.pcm") && smoke.includes("/output.wav") && smoke.includes("RIFF") && smoke.includes("WAVE"), "FFmpeg live smoke must convert raw PCM to WAV and validate RIFF/WAVE framing");
   need(smoke.includes("cross-origin-opener-policy") && smoke.includes("cross-origin-embedder-policy"), "generic npm smoke server must provide COOP/COEP for pthread packages");
   const smokeWorkflow = await fs.readFile(path.join(root, ".github", "workflows", "npm-package-smoke.yml"), "utf8");
-  need(smokeWorkflow.includes("options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd]") && smokeWorkflow.includes("scripts/smoke-npm-package.mjs") && smokeWorkflow.includes("echo 'slug=zstd'") && !smokeWorkflow.includes("options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd, qpdf]"), "generic Registry smoke workflow must remain limited to the seven published packages until QPDF is public");
+  need(smokeWorkflow.includes("options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd, qpdf]") && smokeWorkflow.includes("scripts/smoke-npm-package.mjs") && smokeWorkflow.includes("echo 'slug=qpdf'"), "generic Registry smoke workflow must expose all eight published packages and gate this promotion on live QPDF");
 
   const promotion = await fs.readFile(path.join(root, "scripts", "prepare-promotion.mjs"), "utf8");
   need(!promotion.includes("pkg.npm.version = newBuilder"), "promotion must not couple npm package versions back to builder versions");
@@ -220,23 +224,26 @@ try {
   const ghostscriptMeta = await readJson(path.join(root, "packages", "ghostscript", "package.json"));
   const libvipsMeta = await readJson(path.join(root, "packages", "libvips", "package.json"));
   const ffmpegMeta = await readJson(path.join(root, "packages", "ffmpeg", "package.json"));
-  need(jqMeta.npm?.status === "published" && libarchiveMeta.npm?.status === "published" && imagemagickMeta.npm?.status === "published" && ghostscriptMeta.npm?.status === "published" && libvipsMeta.npm?.status === "published" && ffmpegMeta.npm?.status === "published", "all six npm packages must be marked published after Registry + Vite/Chromium gates pass");
+  need(jqMeta.npm?.status === "published" && libarchiveMeta.npm?.status === "published" && imagemagickMeta.npm?.status === "published" && ghostscriptMeta.npm?.status === "published" && libvipsMeta.npm?.status === "published" && ffmpegMeta.npm?.status === "published", "the original six npm packages must remain published after Registry + Vite/Chromium gates pass");
   need(libvipsMeta.npm?.profile === "browser-core", "libvips npm distribution must pin browser-core");
   need(ffmpegMeta.npm?.profile === "browser-full", "FFmpeg npm distribution must pin the LGPL browser-full profile");
   need(ffmpegMeta.npm?.packageFiles?.required?.includes("LICENSES/FFmpeg-COPYING.LGPLv2.1"), "FFmpeg npm package must retain the LGPL license copy");
   need(!(ffmpegMeta.npm?.packageFiles?.required || []).some((rel) => rel.endsWith("/x264-COPYING") || rel.endsWith("/FFmpeg-COPYING.GPLv2")), "FFmpeg npm browser-full package must not accidentally include GPL/x264-only release files");
   const qpdfMeta=await readJson(path.join(root,"packages/qpdf/package.json"));
-  need(qpdfMeta.status==="available" && qpdfMeta.npm?.status==="canary" &&
+  need(qpdfMeta.status==="available" && qpdfMeta.npm?.status==="published" &&
     qpdfMeta.npm?.package==="@wasm-zoo/qpdf" && qpdfMeta.npm?.version==="0.1.0" &&
     qpdfMeta.npm?.profile==="browser-full" && qpdfMeta.npm?.source?.upstreamVersion==="12.4.1" &&
     qpdfMeta.npm?.source?.builderVersion==="0.1.0" &&
     qpdfMeta.npm?.source?.commit==="c37f83ae468abb6cc741f43b2f6fdeb66e550ffb" &&
     qpdfMeta.npm?.source?.releaseTag==="qpdf-v0.1.0" &&
-    qpdfMeta.npm?.source?.releaseAsset==="qpdf-browser-full-12.4.1-zoo-0.1.0.zip",
-    "QPDF npm canary must remain pinned to the immutable reviewed qpdf-v0.1.0 browser-full source release");
+    qpdfMeta.npm?.source?.releaseAsset==="qpdf-browser-full-12.4.1-zoo-0.1.0.zip" &&
+    qpdfMeta.npm?.registryShasum==="83b2a89ec339d58ab0dcaf3c118385c3396955f1",
+    "Published QPDF npm must remain pinned to the immutable reviewed qpdf-v0.1.0 browser-full source release and exact Registry SHA-1");
   need(qpdfMeta.npm?.packageFiles?.requiredDirs?.includes("LICENSES"),
-    "QPDF npm canary must recursively preserve QPDF/zlib/libjpeg release notices");
-  need(!workflow.includes("qpdf"), "Generic publish workflow must not expose QPDF before its initial Registry publication");
+    "Published QPDF npm must recursively preserve QPDF/zlib/libjpeg release notices");
+  need(workflow.includes("qpdf"), "Generic publish workflow must expose QPDF after its initial human Registry publication");
+  need(smoke.includes("npmMeta.registryShasum") && smoke.includes("dist.shasum"),
+    "Live Registry-backed smokes must verify recorded reviewed tarball SHA-1 identities");
 
   const qpdfCanary=await fs.readFile(path.join(root,".github/workflows/npm-qpdf-canary.yml"),"utf8");
   need(qpdfCanary.includes("sha256sum -c SHA256SUMS.txt") &&
@@ -256,8 +263,8 @@ try {
     zstdMeta.npm?.source?.releaseTag==="zstd-v0.3.0" &&
     zstdMeta.npm?.source?.releaseAsset==="zstd-browser-full-1.5.7-zoo-0.3.0.zip",
     "Published Zstandard npm must retain its immutable source release while package updates use review-only candidate automation");
-  need(smoke.includes("29add1aaf6ab0c3e9a3d538166a51a3f70cefa99") && smoke.includes("dist.shasum"),
-    "The live Registry-backed Zstandard smoke must verify the exact reviewed tarball SHA-1");
+  need(zstdMeta.npm?.registryShasum==="29add1aaf6ab0c3e9a3d538166a51a3f70cefa99",
+    "Published Zstandard npm metadata must retain the exact reviewed Registry SHA-1");
   need(zstdMeta.npm.runtime.consumerScript==="wasm-zoo-cli.mjs" &&
     zstdMeta.npm.runtime.workerScript==="browser-zstd-cli-worker.js",
     "Zstandard npm must use the published CLI, not the separately published browser-core library API");
