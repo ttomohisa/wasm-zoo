@@ -23,8 +23,12 @@ need(files["site/app.js"].includes("renderBrowserCompatibility") &&
      files["site/app.js"].includes("browser-compatibility.json") &&
      files["site/app.js"].includes("source?.headBranch === 'main'") &&
      files["site/app.js"].includes("14 * 24 * 60 * 60 * 1000"), "Pages client must render proven, recent main-run evidence only");
-need(files[".github/workflows/cross-browser-compat.yml"].includes("slug: [jq, libarchive, imagemagick, ghostscript, zstd, qpdf]"),
-     "Eight-package lab must include published QPDF and Zstandard in its real single-threaded three-browser matrix");
+need(files[".github/workflows/cross-browser-compat.yml"].includes("node scripts/npm-package-set.mjs --github-output") &&
+     files[".github/workflows/cross-browser-compat.yml"].includes("fromJSON(needs.package-set.outputs.single)") &&
+     files[".github/workflows/cross-browser-compat.yml"].includes("fromJSON(needs.package-set.outputs.threaded)") &&
+     !files[".github/workflows/cross-browser-compat.yml"].includes("slug: [jq, libarchive") &&
+     !files[".github/workflows/cross-browser-compat.yml"].includes("slug: [ffmpeg, libvips]"),
+     "Cross-browser Lab package membership must be derived from published npm manifests rather than a package allowlist");
 need(files["site/app.js"].includes("packages.length * compatBrowsers.length"),
      "Public compatibility summary must derive its total from the current published package count");
 need(files[".github/workflows/cross-browser-compat.yml"].includes("branches: [main]") &&
