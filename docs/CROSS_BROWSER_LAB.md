@@ -34,7 +34,7 @@ node scripts/smoke-npm-package.mjs --slug imagemagick --browser webkit --result-
 node scripts/smoke-npm-package.mjs --slug ghostscript --browser chromium --result-json compat-results/ghostscript-chromium.json
 ```
 
-To request Playwright system dependencies on a supported Linux runner, set `WASM_ZOO_PLAYWRIGHT_WITH_DEPS=1`. `--browser` defaults to `chromium`, preserving the existing published npm smoke command for **all six packages**. The threaded FFmpeg/libvips test targets and their capability policy are described in Phase 3 below.
+To request Playwright system dependencies on a supported Linux runner, set `WASM_ZOO_PLAYWRIGHT_WITH_DEPS=1`. `--browser` defaults to `chromium`, preserving the existing published npm smoke command for every manifest-enrolled package. The threaded FFmpeg/libvips test targets and their capability policy are described in Phase 3 below.
 
 The separate `.github/workflows/cross-browser-compat.yml` runs the current published package/browser jobs independently on relevant PRs, weekly, and via manual dispatch. Package membership is resolved from reviewed manifests at runtime rather than copied into a YAML allowlist. Each job uploads its own JSON result artifact even if the package operation fails, provided the runner was able to write it. The existing `npm-package-smoke.yml` stays in place as an independent Chromium baseline.
 
@@ -49,7 +49,7 @@ The JSON `status` is assigned according to observed evidence:
 - `unsupported` requires correct harness headers, a complete browser probe and an explicitly absent required capability. The browser version, measured flags and precise reason are recorded. A package operation exception, npm/Vite failure, missing probe or bad header is always `fail`, never `unsupported`.
 - `fail` rejects the CI cell. Chromium is a mandatory tested baseline for each threaded package: `--on-unsupported record` is forbidden for Chromium. Firefox/WebKit have an explicit `--on-unsupported record` policy so genuinely missing capabilities are visible as `unsupported` instead of falsely claiming a package regression.
 
-The separate `threaded-report` job downloads the complete manifest-derived threaded result set, rechecks reported browser capabilities and npm versions, rejects missing/incorrect results and *all* unsupported Chromium results, and publishes an aggregate JSON artifact and GitHub Actions step-summary table. An **unsupported** Firefox/WebKit cell remains visibly unsupported, not a pass claim. A failed or missing cell fails CI. The original 12-cell single-threaded job and existing published Chromium smoke remain in place.
+The separate `threaded-report` job downloads the complete manifest-derived threaded result set, rechecks reported browser capabilities and npm versions, rejects missing/incorrect results and *all* unsupported Chromium results, and publishes an aggregate JSON artifact and GitHub Actions step-summary table. An **unsupported** Firefox/WebKit cell remains visibly unsupported, not a pass claim. A failed or missing cell fails CI. The historical single-threaded coverage model and the independent published Chromium smoke remain in place.
 
 Examples:
 
