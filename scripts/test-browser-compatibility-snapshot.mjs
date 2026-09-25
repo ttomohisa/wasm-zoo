@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  baseSnapshot, browsers, packageSlugs, selectMainRun, buildVerifiedSnapshot
+  baseSnapshot, browsers, selectMainRun, buildVerifiedSnapshot
 } from "./browser-compatibility-snapshot.mjs";
 
 const now = "2026-09-23T09:03:00.000Z";
@@ -16,11 +16,13 @@ const run = {
   created_at: "2026-09-23T08:34:00.000Z",
   updated_at: "2026-09-23T09:02:00.000Z"
 };
-const packages = packageSlugs.map((slug) => ({
+const fixtureSlugs = ["jq", "libarchive", "imagemagick", "ghostscript", "zstd", "qpdf", "ffmpeg", "libvips"];
+const packages = fixtureSlugs.map((slug) => ({
   slug,
   npm: { status: "published", package: `@wasm-zoo/${slug}`, version: "1.2.3", profile: "browser-full" },
   profiles: [{ id: "browser-full", sharedArrayBuffer: slug === "ffmpeg" || slug === "libvips" }]
 }));
+const expectedCount = packages.length * browsers.length;
 const headers = {
   "cross-origin-opener-policy": "same-origin",
   "cross-origin-embedder-policy": "require-corp",
@@ -35,7 +37,7 @@ const caps = {
   wasmSharedMemory: true
 };
 function makeRecords() {
-  return packageSlugs.flatMap((slug) => browsers.map((browser) => ({
+  return fixtureSlugs.flatMap((slug) => browsers.map((browser) => ({
     schemaVersion: 1,
     package: slug,
     npmPackage: `@wasm-zoo/${slug}`,
@@ -68,16 +70,16 @@ test("latest eligible main run wins even if newer run failed", () => {
 test("no main run never advertises a pass", () => {
   const snapshot = baseSnapshot(packages, now);
   assert.equal(snapshot.state, "unavailable");
-  assert.equal(snapshot.results.length, 24);
+  assert.equal(snapshot.results.length, expectedCount);
   assert.ok(snapshot.results.every((record) => record.status === "not-tested"));
 });
 
-test("only exact-version evidence from a successful main run produces 24 observed passes", () => {
+test("only exact-version evidence from a successful main run produces the complete observed matrix", () => {
   const snapshot = build(makeRecords());
   assert.equal(snapshot.state, "verified");
   assert.equal(snapshot.source.headBranch, "main");
   assert.equal(snapshot.source.runId, run.id);
-  assert.equal(snapshot.results.length, 24);
+  assert.equal(snapshot.results.length, expectedCount);
   assert.ok(snapshot.results.every((item) => item.status === "pass" && item.npmVersion === "1.2.3"));
 });
 
@@ -90,14 +92,14 @@ test("Zstandard requires the exact published npm profile and real browser operat
   forged.find((r) => r.package === "zstd").profile = "browser-core";
   assert.throws(() => build(forged), /identity\/version/);
   const missing = makeRecords().filter((r) => !(r.package === "zstd" && r.browser === "webkit"));
-  assert.throws(() => build(missing), /24 distinct/);
+  assert.throws(() => build(missing), new RegExp(`${expectedCount} distinct`));
 });
 
 test("missing, duplicated or wrong-version cells reject the entire snapshot", () => {
-  assert.throws(() => build(makeRecords().slice(1)), /24 distinct/);
+  assert.throws(() => build(makeRecords().slice(1)), new RegExp(`${expectedCount} distinct`));
   const duplicates = makeRecords();
   duplicates[0] = { ...duplicates[1] };
-  assert.throws(() => build(duplicates), /24 distinct/);
+  assert.throws(() => build(duplicates), new RegExp(`${expectedCount} distinct`));
   const mismatch = makeRecords();
   mismatch[0].npmVersion = "0.0.1";
   assert.throws(() => build(mismatch), /identity\/version/);
@@ -133,8 +135,8 @@ test("unsupported only reflects measured non-Chromium threaded capability loss",
   assert.throws(() => build(observed), /Unsupported lacks specific observed evidence/);
   firefox.responseHeaders = headers;
   firefox.browser = "chromium";
-  // Duplicating Chromium also invalidates the complete 24-cell set.
-  assert.throws(() => build(observed), /24 distinct/);
+  // Duplicating Chromium also invalidates the complete matrix.
+  assert.throws(() => build(observed), new RegExp(`${expectedCount} distinct`));
 });
 
 test("synthetic older package reports cannot silently survive reviewed version updates", () => {
@@ -143,4 +145,36 @@ test("synthetic older package reports cannot silently survive reviewed version u
     ? { ...pkg, npm: { ...pkg.npm, version: "1.2.4" } }
     : pkg);
   assert.throws(() => buildVerifiedSnapshot({ packages: otherPackages, run, records, generatedAt: now }), /identity\/version/);
+});
+
+test("a newly published npm manifest expands the matrix without a code allowlist", () => {
+  const next = {
+    slug: "new-animal",
+    status: "available",
+    npm: { status: "published", package: "@wasm-zoo/new-animal", version: "0.1.0", profile: "browser-full" },
+    profiles: [{ id: "browser-full", threads: false, sharedArrayBuffer: false }]
+  };
+  const expandedPackages = [...packages, next];
+  const expandedRecords = [
+    ...makeRecords(),
+    ...browsers.map((browser) => ({
+      schemaVersion: 1,
+      package: next.slug,
+      npmPackage: next.npm.package,
+      npmVersion: next.npm.version,
+      profile: next.npm.profile,
+      browser,
+      browserVersion: "1.0",
+      status: "pass",
+      testedAt: "2026-09-23T08:55:00.000Z",
+      phase: "complete",
+      detail: "real-operation validated",
+      reason: null,
+      responseHeaders: headers,
+      runtimeCapabilities: caps
+    }))
+  ];
+  const snapshot = buildVerifiedSnapshot({ packages: expandedPackages, run, records: expandedRecords, generatedAt: now });
+  assert.equal(snapshot.results.length, expandedPackages.length * browsers.length);
+  assert.equal(snapshot.results.filter((item) => item.package === next.slug).length, browsers.length);
 });
