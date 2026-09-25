@@ -10,7 +10,8 @@
 - centralize automatic candidate registration, selected-job result routing and promotion repository-checker resolution around reviewed manifests/config while keeping package-specific candidate build jobs explicit, removing the eight-package workflow-dispatch choice list and duplicate result/checker case mappings without changing review-only promotion boundaries;
 - generate a metadata-driven post-merge human handoff for automatic promotion PRs, embed the planned checklist in each review-only PR, and after a real promotion merge refresh idempotent PR/watcher-Issue comments with exact main-CI, package-tag, Release and conditional npm pack/stage commands while never executing merge/tag/Release/npm actions automatically;
 - extend Release Health with live npm Registry alignment, recording reviewed version/source Release, Registry latest/version SHA-1 and update-pending state while treating QPDF/Zstandard `keepNpmPinned` drift as a visible separate-review warning rather than a broken package Release, and treating unreviewed source drift or recorded SHA mismatch as errors;
-- complete eight-package local Playground parity by staging QPDF browser-full builds with reviewed version/commit/builder identity checks, and make `npm run check` fail when any available Playground package lacks a registered local stager.
+- complete eight-package local Playground parity by staging QPDF browser-full builds with reviewed version/commit/builder identity checks, and make `npm run check` fail when any available Playground package lacks a registered local stager;
+- make the npm workflow contract line-ending agnostic so the manifest-driven slug check passes identically on Windows CRLF and Linux LF checkouts instead of reporting a false static-allowlist failure on PowerShell/Windows.
 
 ## v0.17.0
 
