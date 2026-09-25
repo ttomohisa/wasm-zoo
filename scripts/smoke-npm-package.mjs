@@ -373,11 +373,12 @@ const compatibility = {
 };
 
 try {
-  if (slug === "zstd" && !process.env.WASM_ZOO_NPM_PACKAGE_SPEC) {
-    // First publication was manual: bind every live Registry test to the
-    // exact SHA-1 of the three-browser-verified Phase 4A release-derived tarball.
+  if (npmMeta.registryShasum && !process.env.WASM_ZOO_NPM_PACKAGE_SPEC) {
+    // Manual first publications are bound to the exact SHA-1 of the
+    // three-browser-verified immutable Release-derived tarball. Future
+    // Registry-backed smokes must keep observing that reviewed identity.
     phase = "registry-integrity";
-    const expectedShasum = "29add1aaf6ab0c3e9a3d538166a51a3f70cefa99";
+    const expectedShasum = npmMeta.registryShasum;
     const registryValue = JSON.parse(run([
       "view", `${packageName}@${version}`, "dist.shasum", "--json",
       "--registry", "https://registry.npmjs.org/"
@@ -386,7 +387,7 @@ try {
     const observedShasum = typeof registryValue === "string" ? registryValue :
       (Array.isArray(registryValue) && registryValue.length === 1 ? registryValue[0] : null);
     if (observedShasum !== expectedShasum) {
-      throw new Error(`Registry Zstandard SHA-1 does not match the reviewed tarball: expected ${expectedShasum}, received ${observedShasum}`);
+      throw new Error(`Registry ${packageName}@${version} SHA-1 does not match the reviewed tarball: expected ${expectedShasum}, received ${observedShasum}`);
     }
     console.log(`[OK] npm Registry ${packageName}@${version} matches reviewed SHA-1 ${expectedShasum}`);
   }
