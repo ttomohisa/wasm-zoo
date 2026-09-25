@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- enable QPDF stable-release automation using the official `qpdf-<version>.tar.gz` GitHub Release asset, published SHA-256 digest and exact `v<version>` source commit, with the real browser-full PDF smoke as the candidate gate and a review-only promotion PR after success;
+- add QPDF to the shared synthetic promotion rehearsal while keeping Emscripten 6.0.8, zlib 1.3.2 and libjpeg 9f independently reviewed/fixed, and preserve human-only merge, package tag, GitHub Release and npm publication boundaries.
+
 - rehearse the complete QPDF release handoff in pull-request CI, including exact zlib/libjpeg corresponding source plus immutable Emscripten port recipe/header snapshots, without publishing or creating tags;
 - treat a reviewed package whose human release tag has not been created yet as `pending` in Release Health rather than as a broken release.
 

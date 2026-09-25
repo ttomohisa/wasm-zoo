@@ -7,7 +7,7 @@ on:
         description: Package slug
         required: true
         type: choice
-        options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, zstd]
+        options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, qpdf, zstd]
       version:
         description: Upstream version
         required: true
@@ -204,6 +204,45 @@ jobs:
           retention-days: 14
 
 
+  qpdf:
+    if: inputs.slug == 'qpdf'
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Check QPDF shell syntax
+        shell: bash
+        run: bash -n builders/qpdf/build.sh builders/qpdf/scripts/*.sh
+      - name: Prepare candidate pin and official source digest
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          node scripts/prepare-candidate.mjs
+          --slug qpdf
+          --version "${{ inputs.version }}"
+          --ref "${{ inputs.ref }}"
+          --commit "${{ inputs.commit }}"
+          --release-tag "${{ inputs.release_tag }}"
+          --source-url "${{ inputs.source_url }}"
+          --source-sha256 "${{ inputs.source_sha256 }}"
+      - name: Build candidate and run real Chromium PDF smoke
+        shell: bash
+        working-directory: builders/qpdf
+        env:
+          QPDF_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - uses: actions/upload-artifact@v7
+        with:
+          name: candidate-qpdf-${{ inputs.version }}-browser-full
+          path: builders/qpdf/dist/browser-full/
+          retention-days: 14
+
   zstd:
     if: inputs.slug == 'zstd'
     runs-on: ubuntu-latest
@@ -294,7 +333,7 @@ jobs:
 
   report:
     if: always()
-    needs: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, zstd]
+    needs: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, qpdf, zstd]
     runs-on: ubuntu-latest
     outputs:
       result: ${{ steps.result.outputs.result }}
@@ -310,6 +349,7 @@ jobs:
             imagemagick) result='${{ needs.imagemagick.result }}' ;;
             ghostscript) result='${{ needs.ghostscript.result }}' ;;
             jq) result='${{ needs.jq.result }}' ;;
+            qpdf) result='${{ needs.qpdf.result }}' ;;
             zstd) result='${{ needs.zstd.result }}' ;;
             libvips) result='${{ needs.libvips.result }}' ;;
             *) result='unknown' ;;
@@ -405,6 +445,7 @@ jobs:
             ghostscript) node builders/ghostscript/scripts/check-repository.mjs ;;
             libvips) node builders/libvips/scripts/check-repository.mjs ;;
             jq) node builders/jq/scripts/check-repository.mjs ;;
+            qpdf) node builders/qpdf/scripts/check-repository.mjs ;;
             zstd) node builders/zstd/scripts/check-repository.mjs ;;
             *) echo "automatic promotion is not supported for ${{ inputs.slug }}" >&2; exit 1 ;;
           esac

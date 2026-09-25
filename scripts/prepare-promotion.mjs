@@ -201,6 +201,15 @@ if (values.slug === "ghostscript") {
   );
 }
 
+if (values.slug === "qpdf") {
+  pkg.notes = (pkg.notes || []).map((note) => {
+    let next = note.replaceAll(oldVersion, values.version);
+    if (oldEnv.QPDF_COMMIT) next = next.replaceAll(oldEnv.QPDF_COMMIT, values.commit);
+    if (oldEnv.QPDF_SOURCE_SHA256 && values["source-sha256"]) next = next.replaceAll(oldEnv.QPDF_SOURCE_SHA256, values["source-sha256"]);
+    return next;
+  });
+}
+
 if (values.slug === "jq") {
   pkg.notes = (pkg.notes || []).map((note) => {
     let next = note.replaceAll(oldVersion, values.version).replaceAll(pkg.upstream?.commit || "__never__", values.commit);
@@ -242,8 +251,8 @@ await replaceFile("README.md", (input) => {
   if (pkg.npm && oldNpmVersion && newNpmVersion) {
     text = requireReplace(text, "`" + pkg.npm.package + "@" + oldNpmVersion + "`", "`" + pkg.npm.package + "@" + newNpmVersion + "`", "README npm version");
   }
-  if (values.slug === "zstd" && !text.includes(`## ${pkg.name} ${oldVersion}`)) {
-    // Zstandard is documented through the package table + dedicated v0.15/npm sections,
+  if (["zstd", "qpdf"].includes(values.slug) && !text.includes(`## ${pkg.name} ${oldVersion}`)) {
+    // Zstandard and QPDF are documented through the package table / dedicated builder docs,
     // not a legacy per-package README heading.
   } else {
     text = requireReplace(text, `## ${pkg.name} ${oldVersion}`, `## ${pkg.name} ${values.version}`, "README package heading");
@@ -361,6 +370,22 @@ if (values.slug === "zstd") {
     state.upstreamCommit = values.commit;
     return JSON.stringify(state, null, 2) + "\n";
   });
+}
+
+if (values.slug === "qpdf") {
+  const refresh = (text) => {
+    let next = text.replaceAll(oldVersion, values.version)
+      .replaceAll(`qpdf-v${oldBuilder}`, `qpdf-v${newBuilder}`);
+    if (oldEnv.QPDF_COMMIT) next = next.replaceAll(oldEnv.QPDF_COMMIT, values.commit);
+    if (oldEnv.QPDF_SOURCE_SHA256 && values["source-sha256"]) next = next.replaceAll(oldEnv.QPDF_SOURCE_SHA256, values["source-sha256"]);
+    return next;
+  };
+  await replaceFile("builders/qpdf/README.md", refresh);
+  await replaceFile("builders/qpdf/docs/ARCHITECTURE.md", refresh);
+  await replaceFile("builders/qpdf/tests/smoke-test.html", (text) =>
+    text.replaceAll(`qpdf version ${oldVersion}`, `qpdf version ${values.version}`)
+      .replaceAll(`SMOKE_TEST_PASS_QPDF_${oldVersion.replaceAll(".", "_")}`, `SMOKE_TEST_PASS_QPDF_${values.version.replaceAll(".", "_")}`)
+  );
 }
 
 if (values.slug === "jq") {

@@ -4,7 +4,7 @@ QPDF is the first package added through the WASM Zoo v0.17 Package Onboarding Co
 
 It compiles the **upstream QPDF 12.4.1 CLI** to browser WebAssembly from the official GitHub Release source archive. The archive SHA-256, the signed release tag's peeled commit and the Emscripten toolchain are pinned independently.
 
-Current status: **available after the reviewed `qpdf-v0.1.0` package release is published**. The repository includes a release workflow and Playground staging, while npm and automatic upstream promotion remain disabled pending separate reviews.
+Current status: **available** with reviewed package release `qpdf-v0.1.0`. Stable upstream GitHub Releases are eligible for exact source-archive candidate builds and review-only promotion PRs; npm publication remains disabled pending a separate review.
 
 ## Reviewed pins
 
@@ -38,4 +38,4 @@ A successful build runs a real Chromium smoke test: version, structural validati
 
 Normal QPDF pull-request CI prepares the complete reviewed release handoff after the real Chromium smoke test, without publishing it. The rehearsal verifies the exact QPDF, zlib and libjpeg source archives, includes immutable Emscripten port recipe/header snapshots in corresponding source, creates deterministic binary/source assets, emits provenance/SBOM/checksums, and uploads the handoff as a temporary Actions artifact for review.
 
-Publication still requires the human-created `qpdf-v0.1.0` tag.
+Every future promotion still requires human review/merge and a human-created package tag. Automation never creates the tag, GitHub Release, or npm publication.

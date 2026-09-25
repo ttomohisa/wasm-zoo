@@ -23,6 +23,7 @@ need(
 );
 
 const ghost = await readJson(path.join(root, 'packages', 'ghostscript', 'package.json'));
+const qpdf = await readJson(path.join(root, 'packages', 'qpdf', 'package.json'));
 const zstd = await readJson(path.join(root, 'packages', 'zstd', 'package.json'));
 need(ghost.tracker?.candidateMode === 'auto', 'Ghostscript must be candidateMode=auto');
 need(ghost.tracker?.candidateSource?.repository === 'ArtifexSoftware/ghostpdl', 'Ghostscript candidate source repository must be ArtifexSoftware/ghostpdl');
@@ -31,6 +32,16 @@ need(ghost.tracker?.candidateSource?.releaseTagTemplate === 'gs{versionCompact}'
 need(ghost.tracker?.candidateSource?.assetNameTemplate === 'ghostscript-{version}.tar.xz', 'Ghostscript candidate source archive must be ghostscript-{version}.tar.xz');
 need(ghost.tracker?.candidateSource?.digestAlgorithm === 'sha256', 'Ghostscript candidate source digest must be SHA-256');
 need(!(ghost.notes || []).some((note) => note.includes('Automatic upstream candidate substitution is intentionally disabled for Ghostscript')), 'Ghostscript notes must not claim automatic candidates are disabled');
+need(qpdf.tracker?.candidateMode === 'auto', 'QPDF must be candidateMode=auto');
+need(JSON.stringify(qpdf.tracker?.candidateProfiles) === JSON.stringify(['browser-full']), 'QPDF automatic candidate must test browser-full');
+need(qpdf.tracker?.candidateSource?.repository === 'qpdf/qpdf', 'QPDF candidate source repository must be qpdf/qpdf');
+need(qpdf.tracker?.candidateSource?.refTemplate === 'v{version}' && qpdf.tracker?.candidateSource?.releaseTagTemplate === 'v{version}', 'QPDF candidate refs must follow v{version}');
+need(qpdf.tracker?.candidateSource?.assetNameTemplate === 'qpdf-{version}.tar.gz', 'QPDF candidate source archive must be qpdf-{version}.tar.gz');
+need(qpdf.tracker?.candidateSource?.digestAlgorithm === 'sha256', 'QPDF candidate source digest must be SHA-256');
+const qpdfConfig = automaticCandidateConfig('qpdf');
+need(qpdfConfig?.extraEnv?.version === 'QPDF_VERSION', 'QPDF candidate config must update QPDF_VERSION');
+need(qpdfConfig?.extraEnv?.['source-url'] === 'QPDF_SOURCE_URL', 'QPDF candidate config must update QPDF_SOURCE_URL');
+need(qpdfConfig?.extraEnv?.['source-sha256'] === 'QPDF_SOURCE_SHA256', 'QPDF candidate config must update QPDF_SOURCE_SHA256');
 need(zstd.tracker?.candidateMode === 'auto', 'Zstandard must be candidateMode=auto');
 need(JSON.stringify(zstd.tracker?.candidateProfiles) === JSON.stringify(['browser-core', 'browser-full']), 'Zstandard automatic candidate must test both profiles');
 need(zstd.npm?.source?.releaseTag === 'zstd-v0.3.0' && zstd.npm?.source?.upstreamVersion === '1.5.7' &&
@@ -125,7 +136,7 @@ for (const marker of ['pkg.tracker?.candidateMode', 'pkg.tracker?.candidateProfi
 
 const workflow = await read('.github/workflows/upstream-candidate.yml');
 for (const marker of [
-  'options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, zstd]',
+  'options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, qpdf, zstd]',
   "ghostscript:\n    if: inputs.slug == 'ghostscript'",
   '--source-sha256 "${{ inputs.source_sha256 }}"',
   "ghostscript) result='${{ needs.ghostscript.result }}' ;;",
@@ -137,6 +148,9 @@ for (const marker of [
   '--libvips-patch-commit "$(jq -r',
   "libvips) result='${{ needs.libvips.result }}' ;;",
   'libvips) node builders/libvips/scripts/check-repository.mjs ;;',
+  "qpdf:\n    if: inputs.slug == 'qpdf'",
+  "qpdf) result='${{ needs.qpdf.result }}' ;;",
+  'qpdf) node builders/qpdf/scripts/check-repository.mjs ;;',
   "zstd:\n    if: inputs.slug == 'zstd'",
   "profile: [browser-core, browser-full]",
   "ZSTD_NATIVE_INTEROP: ${{ matrix.profile == 'browser-full' && 'required' || '' }}",
@@ -168,6 +182,7 @@ need(zstdReleaseWorkflow.includes('source builders/zstd/versions.env') &&
 
 const docs = await read('docs/AUTOMATED_PROMOTIONS.md');
 need(docs.includes('- Ghostscript') && docs.includes('GitHub\'s published SHA-256 asset digest'), 'automation docs must describe Ghostscript digest-pinned auto promotion');
+need(docs.includes('- QPDF') && docs.includes('QPDF is also source-archive-backed') && docs.includes('qpdf-<version>.tar.gz'), 'automation docs must describe QPDF digest-pinned auto promotion');
 need(docs.includes('- Zstandard') && docs.includes('bidirectional native zstd interoperability'), 'automation docs must describe Zstandard native-interoperability candidate gate');
 need(docs.includes('- libvips') && docs.includes('fail-closed adapter bundle resolver'), 'automation docs must describe libvips immutable adapter-bundle candidates');
 

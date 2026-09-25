@@ -1892,8 +1892,17 @@
         "type": "github-releases",
         "repository": "qpdf/qpdf",
         "versionPattern": "v?(\\d+\\.\\d+\\.\\d+)",
-        "candidateMode": "none",
-        "candidateProfiles": []
+        "candidateMode": "auto",
+        "candidateProfiles": [
+          "browser-full"
+        ],
+        "candidateSource": {
+          "repository": "qpdf/qpdf",
+          "refTemplate": "v{version}",
+          "releaseTagTemplate": "v{version}",
+          "assetNameTemplate": "qpdf-{version}.tar.gz",
+          "digestAlgorithm": "sha256"
+        }
       },
       "zoo": {
         "builderVersion": "0.1.0",
@@ -2008,7 +2017,7 @@
         "The reviewed v12.4.1 annotated tag peels to exact upstream commit c37f83ae468abb6cc741f43b2f6fdeb66e550ffb.",
         "Emscripten 6.0.8 port inputs are pinned as zlib 1.3.2 and libjpeg 9f; their source hashes and distribution notices are carried into the release build.",
         "The browser smoke starts from a deterministic one-page PDF fixture and verifies check, linearize, AES-256 encryption, decryption and final validation.",
-        "Automatic upstream promotion and npm publication remain disabled until separate reviewed PRs."
+        "Stable QPDF GitHub Releases are eligible for exact source-archive candidate builds and review-only promotion PRs; merge, package tag, GitHub Release and npm publication remain human-controlled."
       ],
       "integration": {
         "summary": "Self-host qpdf-core.js/qpdf-core.wasm plus the Zoo wrapper, stage PDF files in MEMFS, then execute ordinary qpdf CLI arguments locally in a Worker.",
