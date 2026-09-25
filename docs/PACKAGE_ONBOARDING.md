@@ -55,14 +55,11 @@ Automation remains review-only: it never automatically merges, creates release t
 
 ## npm and the Cross-browser Lab
 
-A manifest with `npm.status: published` must also be wired into:
+A manifest with `npm.status: published` must also satisfy the shared npm package generator/runtime contract and provide a real package-specific operation in `scripts/smoke-npm-package.mjs`.
 
-- the `publish-npm.yml` package choices;
-- the shared npm package generator/runtime contract;
-- a real package-specific operation in `scripts/smoke-npm-package.mjs`;
-- the Chromium / Firefox / WebKit compatibility matrix.
+The generic npm distribution workflow accepts a manifest-validated slug rather than maintaining a package choice allowlist. The Cross-browser Lab resolves every available `npm.status: published` package from the manifests, looks up its selected `npm.profile`, and automatically places it in the single-threaded or threaded Chromium / Firefox / WebKit matrix from that profile's runtime requirements.
 
-This means a new package can be released to GitHub before npm rollout, while setting npm to `published` is not allowed until its registry and browser-test surfaces are present.
+This means a new package can be released to GitHub before npm rollout. Once its npm metadata is reviewed, its Registry package exists, and its real-operation smoke fixture is present, changing npm to `published` automatically enrolls it in the Lab without another package-name edit to the workflow.
 
 ## Commands
 
