@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { loadPackages, root } from "./lib.mjs";
 import { automaticCandidateConfig } from "./upstream-config.mjs";
 
@@ -63,6 +64,6 @@ async function main() {
   throw new Error("Usage: node scripts/candidate-orchestration.mjs <validate|checker|result> --slug <slug>");
 }
 
-if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1].replaceAll("\\", "/")}`).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   await main();
 }
