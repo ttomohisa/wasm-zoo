@@ -23,8 +23,8 @@ need(files["site/app.js"].includes("renderBrowserCompatibility") &&
      files["site/app.js"].includes("browser-compatibility.json") &&
      files["site/app.js"].includes("source?.headBranch === 'main'") &&
      files["site/app.js"].includes("14 * 24 * 60 * 60 * 1000"), "Pages client must render proven, recent main-run evidence only");
-need(files[".github/workflows/cross-browser-compat.yml"].includes("slug: [jq, libarchive, imagemagick, ghostscript, zstd]"),
-     "Seven-package lab must add the published single-threaded Zstandard CLI to its real three-browser matrix");
+need(files[".github/workflows/cross-browser-compat.yml"].includes("slug: [jq, libarchive, imagemagick, ghostscript, zstd, qpdf]"),
+     "Eight-package lab must include published QPDF and Zstandard in its real single-threaded three-browser matrix");
 need(files["site/app.js"].includes("packages.length * compatBrowsers.length"),
      "Public compatibility summary must derive its total from the current published package count");
 need(files[".github/workflows/cross-browser-compat.yml"].includes("branches: [main]") &&
