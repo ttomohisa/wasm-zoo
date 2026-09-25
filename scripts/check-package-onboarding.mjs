@@ -23,28 +23,6 @@ async function read(rel) {
   return (await fs.readFile(path.join(root, rel), "utf8")).replace(/\r\n/g, "\n");
 }
 
-function listInlineMatrix(text, key) {
-  const result = new Set();
-  const re = new RegExp("^\\s+" + key + ":\\s*\\[([^\\]]*)\\]", "gm");
-  for (const match of text.matchAll(re)) {
-    for (const item of match[1].split(",")) {
-      const value = item.trim().replace(/^['"]|['"]$/g, "");
-      if (value) result.add(value);
-    }
-  }
-  return result;
-}
-
-function workflowDispatchChoices(text, inputName) {
-  const anchor = "      " + inputName + ":\n";
-  const start = text.indexOf(anchor);
-  if (start < 0) return new Set();
-  const block = text.slice(start, start + 500);
-  const match = block.match(/options:\s*\[([^\]]*)\]/);
-  if (!match) return new Set();
-  return new Set(match[1].split(",").map((item) => item.trim().replace(/^['"]|['"]$/g, "")).filter(Boolean));
-}
-
 function hasSlug(text, slug) {
   const escaped = slug.replace(/[.*+?^$()|[\]\\]/g, "\\$&");
   return new RegExp("(^|[^a-z0-9-])" + escaped + "([^a-z0-9-]|$)", "i").test(text);
@@ -58,8 +36,13 @@ const [upstreamWorkflow, crossBrowserWorkflow, publishNpmWorkflow, pagesWorkflow
   read("scripts/smoke-npm-package.mjs")
 ]);
 
-const browserLabSlugs = listInlineMatrix(crossBrowserWorkflow, "slug");
-const npmChoices = workflowDispatchChoices(publishNpmWorkflow, "slug");
+need(crossBrowserWorkflow.includes("node scripts/npm-package-set.mjs --github-output") &&
+  crossBrowserWorkflow.includes("fromJSON(needs.package-set.outputs.single)") &&
+  crossBrowserWorkflow.includes("fromJSON(needs.package-set.outputs.threaded)"),
+  "Cross-browser Lab must derive published npm package matrices from manifests");
+need(publishNpmWorkflow.includes("slug:\n        description: npm distribution package\n        required: true\n        type: string"),
+  "publish-npm.yml slug input must accept manifest-validated package names without a static choice allowlist");
+
 const packageBase = path.join(root, "packages");
 const entries = (await fs.readdir(packageBase, { withFileTypes: true }))
   .filter((entry) => entry.isDirectory())
@@ -220,8 +203,6 @@ for (const entry of entries) {
     need(pkg.npm.publishWorkflow === "publish-npm.yml", dirSlug + ": npm.publishWorkflow must remain publish-npm.yml");
     need(Array.isArray(pkg.npm.packageFiles?.required) && pkg.npm.packageFiles.required.length > 0, dirSlug + ": published npm package requires packageFiles.required");
     need(Array.isArray(pkg.npm.runtime?.assets) && pkg.npm.runtime.assets.length > 0, dirSlug + ": published npm package requires runtime.assets");
-    need(npmChoices.has(dirSlug), dirSlug + ": publish-npm.yml workflow_dispatch choices missing slug");
-    need(browserLabSlugs.has(dirSlug), dirSlug + ": Cross-browser Lab matrix missing published npm package");
     need(hasSlug(smokeNpm, dirSlug), dirSlug + ": shared npm smoke runner has no package-specific fixture/operation");
   }
 }

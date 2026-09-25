@@ -1,4 +1,4 @@
-# Cross-browser Compatibility Lab (v0.14 baseline through v0.17 eight-package rollout)
+# Cross-browser Compatibility Lab (v0.14 baseline through v0.18 manifest-driven operations)
 
 This lab tests **published npm packages**, not just WebAssembly instantiation. A clean temporary application installs the exact reviewed public npm version, creates a production Vite bundle, verifies its emitted Wasm assets, serves the bundle with an in-process HTTP server, and runs a real package operation in a Playwright browser.
 
@@ -34,9 +34,9 @@ node scripts/smoke-npm-package.mjs --slug imagemagick --browser webkit --result-
 node scripts/smoke-npm-package.mjs --slug ghostscript --browser chromium --result-json compat-results/ghostscript-chromium.json
 ```
 
-To request Playwright system dependencies on a supported Linux runner, set `WASM_ZOO_PLAYWRIGHT_WITH_DEPS=1`. `--browser` defaults to `chromium`, preserving the existing published npm smoke command for **all six packages**. The threaded FFmpeg/libvips test targets and their capability policy are described in Phase 3 below.
+To request Playwright system dependencies on a supported Linux runner, set `WASM_ZOO_PLAYWRIGHT_WITH_DEPS=1`. `--browser` defaults to `chromium`, preserving the existing published npm smoke command for every manifest-enrolled package. The threaded FFmpeg/libvips test targets and their capability policy are described in Phase 3 below.
 
-The separate `.github/workflows/cross-browser-compat.yml` runs 12 package/browser jobs independently on relevant PRs, weekly, and via manual dispatch (at most four simultaneously). Each job uploads its own JSON result artifact even if the package operation fails, provided the runner was able to write it. The existing `npm-package-smoke.yml` stays in place.
+The separate `.github/workflows/cross-browser-compat.yml` runs the current published package/browser jobs independently on relevant PRs, weekly, and via manual dispatch. Package membership is resolved from reviewed manifests at runtime rather than copied into a YAML allowlist. Each job uploads its own JSON result artifact even if the package operation fails, provided the runner was able to write it. The existing `npm-package-smoke.yml` stays in place as an independent Chromium baseline.
 
 ## Phase 3: threaded FFmpeg and libvips
 
@@ -49,7 +49,7 @@ The JSON `status` is assigned according to observed evidence:
 - `unsupported` requires correct harness headers, a complete browser probe and an explicitly absent required capability. The browser version, measured flags and precise reason are recorded. A package operation exception, npm/Vite failure, missing probe or bad header is always `fail`, never `unsupported`.
 - `fail` rejects the CI cell. Chromium is a mandatory tested baseline for each threaded package: `--on-unsupported record` is forbidden for Chromium. Firefox/WebKit have an explicit `--on-unsupported record` policy so genuinely missing capabilities are visible as `unsupported` instead of falsely claiming a package regression.
 
-The separate `threaded-report` job downloads all six result artifacts, rechecks their reported browser capabilities and npm versions, rejects missing/incorrect results and *all* unsupported Chromium results, and publishes an aggregate JSON artifact and GitHub Actions step-summary table. An **unsupported** Firefox/WebKit cell remains visibly unsupported, not a pass claim. A failed or missing cell fails CI. The original 12-cell single-threaded job and existing published Chromium smoke remain in place.
+The separate `threaded-report` job downloads the complete manifest-derived threaded result set, rechecks reported browser capabilities and npm versions, rejects missing/incorrect results and *all* unsupported Chromium results, and publishes an aggregate JSON artifact and GitHub Actions step-summary table. An **unsupported** Firefox/WebKit cell remains visibly unsupported, not a pass claim. A failed or missing cell fails CI. The historical single-threaded coverage model and the independent published Chromium smoke remain in place.
 
 Examples:
 
@@ -66,6 +66,8 @@ After human approval merges a reviewed Lab PR, the Lab also runs on relevant **m
 
 `scripts/publish-browser-compatibility.mjs` uses the read-only GitHub Actions token to select the **latest main-branch Lab run**, including failed or in-progress runs. It never falls back to an older green run after a newer run fails or starts. The historical v0.14 rollout required 18 artifacts for the original six packages and v0.15 required 21 after Zstandard. The current v0.17 QPDF rollout requires a completed, successful main run with **24 authentic individual JSON artifacts**, matching all eight reviewed npm package versions/profiles, complete real-operation results and correct threaded preflight before anything is displayed as verified. Results must be no older than 14 days. If any required artifact is missing, altered, stale or version-mismatched, the generated site file is **unavailable with all 24 cells marked not-tested**, not a partial or fabricated PASS table. The client also refuses to display verified results older than 14 days without a fresh deployment.
 
+Starting with the v0.18 operations work, the expected package set and expected result count are derived from every available manifest with `npm.status: published`. The selected `npm.profile` decides whether the package enters the single-threaded or threaded matrix. The current v0.17 release therefore remains 8 packages / 24 cells, while a ninth published package automatically expands the required public evidence to 27 cells without editing an allowlist.
+
 The generated `site/browser-compatibility.json` is produced by Pages, not checked in as a permanent snapshot. Each verified file includes source run ID/URL/SHA and tested npm/browser versions with per-cell status. When GitHub APIs or artifacts are unavailable, the Pages build can still proceed with an explicit unavailable snapshot. Reviewers can use the Actions workflow summary and uploaded source artifacts to investigate.
 
 Validate snapshot classification rules with:
@@ -76,7 +78,7 @@ npm run check
 npm run metadata:check
 ```
 
-The original v0.14.0 and v0.15.0 rollouts are already released. The current v0.17 work adds the separately human-published QPDF npm distribution and 24-cell extension while the project version remains v0.16.1 until finalization. Only the human maintainer merges and creates project/package release tags after reviewing updated main-branch Lab and Pages evidence. No candidate automation, CI job or Pages deployment auto-merges, tags, publishes or changes reviewed pins. Cross-browser results apply to each package's listed npm profile, not necessarily every release ZIP profile; FFmpeg's GPL variant and libvips's full profile are not included in the npm test matrix.
+The original v0.14.0, v0.15.0 and v0.17.0 rollouts are released. v0.17.0 added the separately human-published QPDF npm distribution and established the 24-cell reviewed-main baseline. Only the human maintainer merges and creates project/package release tags after reviewing updated main-branch Lab and Pages evidence. No candidate automation, CI job or Pages deployment auto-merges, tags, publishes or changes reviewed pins. Cross-browser results apply to each package's listed npm profile, not necessarily every release ZIP profile; FFmpeg's GPL variant and libvips's full profile are not included in the npm test matrix.
 
 ## Phase 5: v0.15.0 — Zstandard published Registry / 21-cell expansion
 

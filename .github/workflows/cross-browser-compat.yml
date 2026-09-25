@@ -17,8 +17,9 @@ on:
       - 'package.json'
       - 'README.md'
       - 'site/**'
-      - '.github/workflows/pages.yml'
+      - 'packages/**'
       - 'scripts/browser-compatibility-snapshot.mjs'
+      - 'scripts/npm-package-set.mjs'
       - 'scripts/publish-browser-compatibility.mjs'
       - 'scripts/test-browser-compatibility-snapshot.mjs'
       - 'scripts/smoke-npm-package.mjs'
@@ -26,14 +27,6 @@ on:
       - 'scripts/test-threaded-browser-capabilities.mjs'
       - 'scripts/report-threaded-compatibility.mjs'
       - 'scripts/check-npm-distribution.mjs'
-      - 'packages/jq/package.json'
-      - 'packages/libarchive/package.json'
-      - 'packages/imagemagick/package.json'
-      - 'packages/ghostscript/package.json'
-      - 'packages/ffmpeg/package.json'
-      - 'packages/libvips/package.json'
-      - 'packages/zstd/package.json'
-      - 'packages/qpdf/package.json'
       - '.github/workflows/cross-browser-compat.yml'
       - 'docs/CROSS_BROWSER_LAB.md'
   schedule:
@@ -43,15 +36,34 @@ permissions:
   contents: read
 
 jobs:
+  package-set:
+    name: Resolve published npm package matrix
+    runs-on: ubuntu-24.04
+    outputs:
+      single: ${{ steps.packages.outputs.single }}
+      threaded: ${{ steps.packages.outputs.threaded }}
+      count: ${{ steps.packages.outputs.count }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Derive package sets from reviewed manifests
+        id: packages
+        run: node scripts/npm-package-set.mjs --github-output
+
   single-threaded:
     name: ${{ matrix.slug }} / ${{ matrix.browser }}
+    needs: [package-set]
+    if: ${{ needs.package-set.outputs.single != '[]' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
       fail-fast: false
       max-parallel: 4
       matrix:
-        slug: [jq, libarchive, imagemagick, ghostscript, zstd, qpdf]
+        slug: ${{ fromJSON(needs.package-set.outputs.single) }}
         browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@v7
@@ -82,13 +94,15 @@ jobs:
 
   threaded:
     name: ${{ matrix.slug }} / ${{ matrix.browser }} (threaded)
+    needs: [package-set]
+    if: ${{ needs.package-set.outputs.threaded != '[]' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 50
     strategy:
       fail-fast: false
       max-parallel: 2
       matrix:
-        slug: [ffmpeg, libvips]
+        slug: ${{ fromJSON(needs.package-set.outputs.threaded) }}
         browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@v7
@@ -123,8 +137,8 @@ jobs:
   threaded-report:
     name: Enforce observed threaded compatibility classifications
     runs-on: ubuntu-24.04
-    needs: [threaded]
-    if: ${{ always() }}
+    needs: [package-set, threaded]
+    if: ${{ always() && needs.package-set.outputs.threaded != '[]' }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6

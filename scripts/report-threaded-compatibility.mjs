@@ -1,10 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { root, readJson } from "./lib.mjs";
+import { loadPackages, root, readJson } from "./lib.mjs";
+import { npmDistributionSets } from "./npm-package-set.mjs";
 import { assessThreadedRuntime } from "./threaded-browser-capabilities.mjs";
 
 const dir = process.argv[2] || "compat-results";
-const targets = ["ffmpeg", "libvips"];
+const targets = npmDistributionSets(await loadPackages()).threaded;
 const browsers = ["chromium", "firefox", "webkit"];
 const records = [];
 const errors = [];
@@ -82,5 +83,5 @@ if (errors.length) {
   for (const error of errors) console.error(`[NG] ${error}`);
   process.exitCode = 1;
 } else {
-  console.log("[OK] six threaded browser results are real passes or explicitly evidenced unsupported environments");
+  console.log(`[OK] ${targets.length * browsers.length} threaded browser results are real passes or explicitly evidenced unsupported environments`);
 }

@@ -1,7 +1,7 @@
 import { assessThreadedRuntime } from "./threaded-browser-capabilities.mjs";
+import { npmDistributionSets } from "./npm-package-set.mjs";
 
 export const browsers = Object.freeze(["chromium", "firefox", "webkit"]);
-export const packageSlugs = Object.freeze(["jq", "libarchive", "imagemagick", "ghostscript", "zstd", "qpdf", "ffmpeg", "libvips"]);
 export const maxAgeMs = 14 * 24 * 60 * 60 * 1000;
 
 export function selectMainRun(runs) {
@@ -14,6 +14,7 @@ export function selectMainRun(runs) {
 }
 
 export function baseSnapshot(packages, generatedAt, source = null, state = "unavailable", reason = "No verified main-branch run") {
+  const packageSlugs = npmDistributionSets(packages).all;
   return {
     schemaVersion: 1,
     generatedAt,
@@ -65,6 +66,7 @@ export function checkSource(run, now = new Date().toISOString()) {
 }
 
 export function buildVerifiedSnapshot({ packages, run, records, generatedAt = new Date().toISOString() }) {
+  const packageSlugs = npmDistributionSets(packages).all;
   const source = checkSource(run, generatedAt);
   const lookup = new Map(records.map((record) => [`${record.package}/${record.browser}`, record]));
   const expectedCount = packageSlugs.length * browsers.length;

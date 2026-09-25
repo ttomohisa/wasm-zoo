@@ -8,9 +8,22 @@ WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`; v0.13.0 comple
 
 The first publication used the reviewed tarball in the maintainer's local environment. Do not claim an npm Registry-generated build-environment provenance attestation for this manually uploaded release. The package still includes the immutable Release's independently verified `provenance.json` (in-toto/SLSA Provenance v1), CycloneDX SBOM, official-source license and the reviewed runtime overlays; these files must not be confused with an npm Registry-generated provenance attestation.
 
-The existing `npm-zstd-canary.yml` remains a **read-only immutable Release packaging regression** workflow: it downloads/checks every Release checksum, repacks without publishing and runs the exact local tarball through real Vite Chromium/Firefox/WebKit tests. Independently, `npm-package-smoke.yml` gates the reviewed promotion PR against the **real npm Registry + Vite/Chromium**. The expanded `cross-browser-compat.yml` uses the real Registry version in all three engines and verifies `dist.shasum` before installation. The reviewed PR was merged; its **main** compatibility run verified all 21 real Registry-backed browser operations, and the public dashboard accepts only complete fresh verified main evidence, never PR-only or older six-package evidence.
+The existing `npm-zstd-canary.yml` remains a **read-only immutable Release packaging regression** workflow: it downloads/checks every Release checksum, repacks without publishing and runs the exact local tarball through real Vite Chromium/Firefox/WebKit tests. Independently, `npm-package-smoke.yml` keeps a manifest-derived published package as a real Registry + Vite/Chromium baseline. The full `cross-browser-compat.yml` resolves every available `npm.status: published` package from reviewed manifests and uses the real Registry version in all three engines, verifying recorded `dist.shasum` identities before installation when present. The public dashboard accepts only complete fresh verified main evidence, never PR-only or older partial evidence.
 
 Future npm-only versions follow the existing separate manual review and Trusted Publisher staged-publishing workflow. Upstream candidate automation may prepare review-only package promotion PRs, including libvips only after its complete adapter bundle is resolved to immutable commits, but it never publishes npm. Registry publication remains a separate reviewed action from package promotion.
+
+## Manifest-driven package membership
+
+The package manifests are the source of truth for npm operational membership. `scripts/npm-package-set.mjs` selects every available package whose `npm.status` is `published`, resolves its selected `npm.profile`, and classifies the distribution as single-threaded or threaded from that profile's runtime requirements.
+
+As a result:
+
+- `publish-npm.yml` accepts a slug and validates it against manifest metadata instead of maintaining an eight-package choice list;
+- the Cross-browser Lab derives both job matrices from the same manifest set;
+- the public compatibility publisher derives its expected package/result set from the same resolver;
+- package-specific real-operation fixtures remain explicit in `scripts/smoke-npm-package.mjs` and are still required by onboarding checks.
+
+This removes package-name enrollment edits without weakening package-specific runtime, licensing, source-identity or release contracts.
 
 ## Distribution contract
 
