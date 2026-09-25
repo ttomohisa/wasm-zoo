@@ -25,6 +25,30 @@ As a result:
 
 This removes package-name enrollment edits without weakening package-specific runtime, licensing, source-identity or release contracts.
 
+## Release Health npm alignment
+
+`scripts/check-release-health.mjs` now queries the public npm Registry for each reviewed `npm.status: published` package and records the result next to the package Release health. The source Release identity is derived from `npm.source` when an npm package is intentionally pinned to an older immutable Release, otherwise from the current reviewed package Release/profile.
+
+The resulting `site/release-health.json` records:
+
+- reviewed npm package + expected version;
+- live Registry presence of that exact version;
+- Registry `latest` version;
+- live `dist.shasum` SHA-1 (plus comparison to a recorded manifest SHA-1 when present);
+- source Release tag and source asset;
+- current package Release tag;
+- `updatePending` and `intentionalPin` state.
+
+Operational classification is fail-closed:
+
+- **Published/current** — reviewed version exists on npm and its source Release matches the current package Release;
+- **Registry update pending** — the reviewed npm version has been advanced in the promotion metadata but is not yet public;
+- **Pinned / separate npm review** — the package Release advanced while `keepNpmPinned` intentionally keeps npm bound to the previous immutable Release (currently QPDF and Zstandard);
+- **Error** — recorded Registry SHA-1 mismatch or non-policy source-release drift;
+- **Unknown** — Registry inspection was unavailable, which does not invent a healthy result.
+
+The dashboard therefore makes the GitHub Release ↔ npm lag visible without turning the separate npm approval boundary into automatic publication.
+
 ## Distribution contract
 
 An npm package is not a second native/WebAssembly build. `scripts/prepare-npm-package.mjs` reads each package's `npm` metadata, starts from the immutable binary ZIP declared by the selected Zoo profile, preserves its core JavaScript/Wasm, manifests, provenance, SBOM, BUILDINFO and license notices, then overlays only the current reviewed distribution wrapper files:
@@ -314,7 +338,7 @@ The reviewed flow is:
 
 ## Promotion interaction
 
-npm distribution versions are independent from Zoo builder versions. A package-only wrapper correction can patch-bump npm without changing the native/Wasm build. A future reviewed upstream promotion still patch-bumps the npm distribution version independently so an npm version is never accidentally reused.
+npm distribution versions are independent from Zoo builder versions. A package-only wrapper correction can patch-bump npm without changing the native/Wasm build. A future reviewed upstream promotion still patch-bumps the npm distribution version independently so an npm version is never accidentally reused, except for packages whose automatic promotion config deliberately sets `keepNpmPinned`; those remain on the prior npm source Release until a separate npm-only review. Release Health exposes that difference explicitly.
 
 ## Rollout completion
 
