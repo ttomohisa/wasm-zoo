@@ -49,6 +49,18 @@ export const automaticCandidateConfigs = {
       "source-sha256": "GHOSTSCRIPT_SOURCE_SHA256"
     }
   },
+  qpdf: {
+    dir: "qpdf",
+    refKey: "QPDF_REF",
+    commitKey: "QPDF_COMMIT",
+    buildWorkflow: "build-qpdf.yml",
+    displayName: "QPDF",
+    extraEnv: {
+      version: "QPDF_VERSION",
+      "source-url": "QPDF_SOURCE_URL",
+      "source-sha256": "QPDF_SOURCE_SHA256"
+    }
+  },
   zstd: {
     dir: "zstd",
     refKey: "ZSTD_REF",

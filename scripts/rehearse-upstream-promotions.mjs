@@ -169,6 +169,17 @@ async function validateRehearsal(worktree, slug, before, config, expected, nextV
     }
   }
 
+  if (slug === "qpdf") {
+    if (after.release?.sourceAsset !== `qpdf-sources-${nextVersion}-zoo-${expectedBuilder}.tar.gz`) {
+      throw new Error("qpdf: corresponding-source asset did not follow the promoted version/builder");
+    }
+    if (env.ZLIB_VERSION !== "1.3.2" || env.LIBJPEG_VERSION !== "9f" || env.EMSDK_VERSION !== "6.0.8") {
+      throw new Error("qpdf: fixed reviewed Emscripten/dependency pins drifted during upstream promotion rehearsal");
+    }
+    const smoke = await fs.readFile(path.join(worktree, "builders/qpdf/tests/smoke-test.html"), "utf8");
+    if (!smoke.includes(`qpdf version ${nextVersion}`)) throw new Error("qpdf: browser smoke exact-version gate was not refreshed");
+  }
+
   if (slug === "zstd") {
     const state = await readJsonAt(worktree, "site/zstd-playground/release-status.json");
     if (state.state !== "not-published" || state.tag !== `zstd-v${expectedBuilder}` || state.upstreamCommit !== commit) {

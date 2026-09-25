@@ -121,6 +121,21 @@ if (values.slug === "zstd") {
   }
 }
 
+// QPDF's browser smoke test verifies the exact upstream CLI version. Candidate
+// preparation updates only the isolated candidate workspace, never the reviewed pin.
+if (values.slug === "qpdf") {
+  const smokeFile = path.join(root, "builders", "qpdf", "tests", "smoke-test.html");
+  let smoke = await fs.readFile(smokeFile, "utf8");
+  const oldVersion = packageMeta.upstream.version;
+  if (!smoke.includes(`qpdf version ${oldVersion}`)) throw new Error(`Could not locate QPDF ${oldVersion} version expectation in smoke-test.html`);
+  smoke = smoke.replaceAll(`qpdf version ${oldVersion}`, `qpdf version ${values.version}`);
+  smoke = smoke.replaceAll(
+    `SMOKE_TEST_PASS_QPDF_${oldVersion.replaceAll(".", "_")}`,
+    `SMOKE_TEST_PASS_QPDF_${values.version.replaceAll(".", "_")}`
+  );
+  await fs.writeFile(smokeFile, smoke);
+}
+
 // jq's browser smoke test intentionally verifies the exact `jq --version` output.
 // Candidate preparation updates only the isolated candidate workspace, never the reviewed pin.
 if (values.slug === "jq") {

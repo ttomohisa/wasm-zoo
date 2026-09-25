@@ -214,8 +214,16 @@
       },
       "url": "https://github.com/qpdf/qpdf/releases/tag/v12.4.1",
       "candidate": {
-        "mode": "none",
-        "profiles": []
+        "mode": "auto",
+        "profiles": [
+          "browser-full"
+        ],
+        "source": {
+          "releaseTag": "v12.4.1",
+          "assetName": "qpdf-12.4.1.tar.gz",
+          "sourceUrl": "https://github.com/qpdf/qpdf/releases/download/v12.4.1/qpdf-12.4.1.tar.gz",
+          "sourceSha256": "f045aa277be2356ff53a89a8622945958291177d2483afc20ede7c8a8cd3873c"
+        }
       }
     }
   ]
