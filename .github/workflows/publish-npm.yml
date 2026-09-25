@@ -7,7 +7,7 @@ on:
         description: npm distribution package
         required: true
         type: choice
-        options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd]
+        options: [jq, libarchive, imagemagick, ghostscript, libvips, ffmpeg, zstd, qpdf]
       mode:
         description: Pack only or stage a new version
         required: true
