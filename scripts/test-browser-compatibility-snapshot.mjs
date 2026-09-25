@@ -68,16 +68,16 @@ test("latest eligible main run wins even if newer run failed", () => {
 test("no main run never advertises a pass", () => {
   const snapshot = baseSnapshot(packages, now);
   assert.equal(snapshot.state, "unavailable");
-  assert.equal(snapshot.results.length, 21);
+  assert.equal(snapshot.results.length, 24);
   assert.ok(snapshot.results.every((record) => record.status === "not-tested"));
 });
 
-test("only exact-version evidence from a successful main run produces 21 observed passes", () => {
+test("only exact-version evidence from a successful main run produces 24 observed passes", () => {
   const snapshot = build(makeRecords());
   assert.equal(snapshot.state, "verified");
   assert.equal(snapshot.source.headBranch, "main");
   assert.equal(snapshot.source.runId, run.id);
-  assert.equal(snapshot.results.length, 21);
+  assert.equal(snapshot.results.length, 24);
   assert.ok(snapshot.results.every((item) => item.status === "pass" && item.npmVersion === "1.2.3"));
 });
 
@@ -90,14 +90,14 @@ test("Zstandard requires the exact published npm profile and real browser operat
   forged.find((r) => r.package === "zstd").profile = "browser-core";
   assert.throws(() => build(forged), /identity\/version/);
   const missing = makeRecords().filter((r) => !(r.package === "zstd" && r.browser === "webkit"));
-  assert.throws(() => build(missing), /21 distinct/);
+  assert.throws(() => build(missing), /24 distinct/);
 });
 
 test("missing, duplicated or wrong-version cells reject the entire snapshot", () => {
-  assert.throws(() => build(makeRecords().slice(1)), /21 distinct/);
+  assert.throws(() => build(makeRecords().slice(1)), /24 distinct/);
   const duplicates = makeRecords();
   duplicates[0] = { ...duplicates[1] };
-  assert.throws(() => build(duplicates), /21 distinct/);
+  assert.throws(() => build(duplicates), /24 distinct/);
   const mismatch = makeRecords();
   mismatch[0].npmVersion = "0.0.1";
   assert.throws(() => build(mismatch), /identity\/version/);
@@ -133,8 +133,8 @@ test("unsupported only reflects measured non-Chromium threaded capability loss",
   assert.throws(() => build(observed), /Unsupported lacks specific observed evidence/);
   firefox.responseHeaders = headers;
   firefox.browser = "chromium";
-  // Duplicating Chromium also invalidates the complete 21-cell set.
-  assert.throws(() => build(observed), /21 distinct/);
+  // Duplicating Chromium also invalidates the complete 24-cell set.
+  assert.throws(() => build(observed), /24 distinct/);
 });
 
 test("synthetic older package reports cannot silently survive reviewed version updates", () => {
