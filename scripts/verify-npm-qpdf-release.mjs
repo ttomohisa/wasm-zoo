@@ -13,7 +13,7 @@ if(!args.input) throw new Error("Missing --input");
 const input=path.resolve(args.input);
 const zoo=await readJson(path.join(root,"packages/qpdf/package.json"));
 const npm=zoo.npm;
-if(npm?.status!=="canary"||npm.package!=="@wasm-zoo/qpdf") throw new Error("QPDF npm metadata is not in reviewed canary state");
+if(!["canary","published"].includes(npm?.status)||npm.package!=="@wasm-zoo/qpdf") throw new Error("QPDF npm metadata is not in a reviewed immutable-distribution state");
 const expectedFiles=[
   "browser-qpdf.js","wasm-zoo.mjs","qpdf-core.js","qpdf-core.wasm","manifest.json","features.json",
   "provenance.json","sbom.cdx.json","qpdf-config.txt","BUILDINFO.txt"
@@ -32,7 +32,7 @@ if(manifest.package!=="qpdf"||manifest.profile!=="browser-full") throw new Error
 if(manifest.upstream?.version!==npm.source.upstreamVersion||manifest.upstream?.ref!==`v${npm.source.upstreamVersion}`) throw new Error("QPDF release manifest upstream version/ref mismatch");
 if(manifest.upstream?.commit!==npm.source.commit) throw new Error("QPDF release manifest exact commit mismatch");
 if(manifest.build?.builderVersion!==npm.source.builderVersion) throw new Error("QPDF release manifest builder mismatch");
-if(manifest.toolchain?.version!=="6.0.8") throw new Error("QPDF npm canary must stay on reviewed Emscripten 6.0.8");
+if(manifest.toolchain?.version!=="6.0.8") throw new Error("QPDF npm distribution must stay on reviewed Emscripten 6.0.8");
 if(!/^[0-9a-f]{64}$/.test(manifest.upstream?.sourceSha256||"")) throw new Error("QPDF release manifest source SHA-256 missing");
 for(const rel of ["qpdf-core.js","qpdf-core.wasm"]){
   if(!manifest.files?.[rel]?.sha256||!Number.isFinite(manifest.files?.[rel]?.bytes)) throw new Error("QPDF release manifest missing hashed core file "+rel);
@@ -41,10 +41,10 @@ for(const rel of ["qpdf-core.js","qpdf-core.wasm"]){
 const provenance=await readJson(path.join(input,"provenance.json"));
 const params=provenance.predicate?.buildDefinition?.externalParameters;
 if(params?.package!=="qpdf"||params?.upstreamVersion!==npm.source.upstreamVersion||params?.builderVersion!==npm.source.builderVersion||params?.profile!=="browser-full"){
-  throw new Error("QPDF provenance identity does not match npm canary source");
+  throw new Error("QPDF provenance identity does not match the reviewed npm source");
 }
 const sbom=await readJson(path.join(input,"sbom.cdx.json"));
-if(sbom.bomFormat!=="CycloneDX"||sbom.specVersion!=="1.6") throw new Error("QPDF npm canary requires CycloneDX 1.6 SBOM");
+if(sbom.bomFormat!=="CycloneDX"||sbom.specVersion!=="1.6") throw new Error("QPDF npm distribution requires CycloneDX 1.6 SBOM");
 
 const buildInfo=await fs.readFile(path.join(input,"BUILDINFO.txt"),"utf8");
 for(const marker of [
@@ -56,4 +56,4 @@ for(const marker of [
 ]){
   if(!buildInfo.includes(marker)) throw new Error("QPDF BUILDINFO missing reviewed marker: "+marker);
 }
-console.log(`[OK] immutable QPDF ${npm.source.releaseTag}/${npm.source.releaseAsset} matches reviewed npm canary identity`);
+console.log(`[OK] immutable QPDF ${npm.source.releaseTag}/${npm.source.releaseAsset} matches reviewed immutable npm identity`);
