@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { pathToFileURL } from "node:url";
 import { loadPackages } from "./lib.mjs";
 
 export function npmDistributionSets(packages) {
@@ -37,7 +38,7 @@ function emitGithubOutput(sets) {
   return fs.appendFile(output, `${lines.join("\n")}\n`);
 }
 
-if (import.meta.url === new URL(`file://${process.argv[1]}`).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const sets = npmDistributionSets(await loadPackages());
   if (process.argv.includes("--github-output")) await emitGithubOutput(sets);
   else if (process.argv.includes("--baseline")) {
