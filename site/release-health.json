@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-24T08:35:09.892Z",
+  "generatedAt": "2026-09-25T08:56:43.343Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -302,36 +302,31 @@
       "name": "QPDF",
       "tag": "qpdf-v0.1.0",
       "release": {
-        "state": "pending",
-        "label": "Reviewed tag pending",
+        "state": "ok",
+        "label": "Assets present",
         "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/qpdf-v0.1.0",
-        "publishedAt": null,
-        "assetCount": 0,
-        "missingAssets": [
-          "qpdf-browser-full-12.4.1-zoo-0.1.0.zip",
-          "qpdf-sources-12.4.1-zoo-0.1.0.tar.gz",
-          "SHA256SUMS.txt"
-        ]
+        "publishedAt": "2026-09-25T00:13:54Z",
+        "assetCount": 6,
+        "missingAssets": []
       },
       "supplyChain": {
-        "state": "pending",
-        "label": "Publishes with reviewed package release",
+        "state": "ok",
+        "label": "Provenance + SBOM published",
         "expected": [
           "provenance-browser-full.json",
           "sbom-browser-full.cdx.json"
         ],
-        "missing": [
-          "provenance-browser-full.json",
-          "sbom-browser-full.cdx.json"
-        ]
+        "missing": []
       },
       "buildGate": {
-        "state": "pending",
-        "label": "Reviewed tag not created"
+        "state": "ok",
+        "label": "Passed",
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/36076319456",
+        "runId": 36076319456
       },
       "playground": {
-        "state": "pending",
-        "label": "Published assets not staged yet",
+        "state": "ok",
+        "label": "HTTP 200",
         "url": "https://ttomohisa.github.io/wasm-zoo/qpdf-playground/"
       },
       "freshness": {
@@ -339,17 +334,17 @@
         "label": "Current"
       },
       "overall": {
-        "state": "pending",
-        "label": "Awaiting reviewed package release"
+        "state": "ok",
+        "label": "Healthy"
       }
     }
   ],
   "summary": {
-    "healthy": 7,
+    "healthy": 8,
     "warning": 0,
-    "pending": 1,
+    "pending": 0,
     "error": 0,
-    "supplyChainPublished": 7,
+    "supplyChainPublished": 8,
     "total": 8
   }
 }
