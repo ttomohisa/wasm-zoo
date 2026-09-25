@@ -125,6 +125,32 @@ for (const marker of ['automaticCandidateSlugs', 'git", ["worktree", "add"', 'co
   need(rehearsal.includes(marker), `shared promotion rehearsal contract missing: ${marker}`);
 }
 
+const handoff = await read('scripts/promotion-human-handoff.mjs');
+for (const marker of [
+  'buildPromotionHumanHandoff',
+  'config?.keepNpmPinned',
+  '-f mode=pack',
+  '-f mode=stage',
+  'git merge-base --is-ancestor',
+  'Reviewed boundary'
+]) need(handoff.includes(marker), `promotion human handoff contract missing: ${marker}`);
+
+const handoffWorkflow = await read('.github/workflows/promotion-handoff.yml');
+for (const marker of [
+  'types: [closed]',
+  "startsWith(github.event.pull_request.head.ref, 'automation/promote-')",
+  'github.event.pull_request.merged == true',
+  'github.event.pull_request.merge_commit_sha',
+  'node scripts/candidate-orchestration.mjs validate --slug',
+  'scripts/promotion-human-handoff.mjs',
+  '<!-- wasm-zoo-human-handoff -->',
+  'gh pr comment',
+  'gh issue comment'
+]) need(handoffWorkflow.includes(marker), `promotion handoff workflow contract missing: ${marker}`);
+for (const forbidden of ['git tag -a', 'gh release create', 'npm publish', 'npm stage publish']) {
+  need(!handoffWorkflow.includes(forbidden), `promotion handoff workflow must never execute reviewed release/publication action: ${forbidden}`);
+}
+
 const siteIndex = await read('site/index.html');
 const siteApp = await read('site/app.js');
 for (const marker of ['id="automation"', 'id="automation-contract-body"', 'Automation Contract', 'not a live operations monitor']) {
@@ -152,7 +178,10 @@ for (const marker of [
   "qpdf:\n    needs: [registration]\n    if: inputs.slug == 'qpdf'",
   "zstd:\n    needs: [registration]\n    if: inputs.slug == 'zstd'",
   "profile: [browser-core, browser-full]",
-  "ZSTD_NATIVE_INTEROP: ${{ matrix.profile == 'browser-full' && 'required' || '' }}"
+  "ZSTD_NATIVE_INTEROP: ${{ matrix.profile == 'browser-full' && 'required' || '' }}",
+  'handoff_args=(node scripts/promotion-human-handoff.mjs --slug "$slug")',
+  'cat "$handoff_file"',
+  'promotion-handoff.yml'
 ]) need(workflow.includes(marker), `candidate workflow contract missing: ${marker}`);
 need(!workflow.includes('options: [ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, qpdf, zstd]'),
   'candidate workflow slug input must not retain a static eight-package choice allowlist');
@@ -186,6 +215,7 @@ need(docs.includes('- Ghostscript') && docs.includes('GitHub\'s published SHA-25
 need(docs.includes('- QPDF') && docs.includes('QPDF is also source-archive-backed') && docs.includes('qpdf-<version>.tar.gz'), 'automation docs must describe QPDF digest-pinned auto promotion');
 need(docs.includes('- Zstandard') && docs.includes('bidirectional native zstd interoperability'), 'automation docs must describe Zstandard native-interoperability candidate gate');
 need(docs.includes('- libvips') && docs.includes('fail-closed adapter bundle resolver'), 'automation docs must describe libvips immutable adapter-bundle candidates');
+need(docs.includes('Post-merge human handoff') && docs.includes('promotion-handoff.yml') && docs.includes('npm 2FA'), 'automation docs must describe the post-merge human handoff and retained npm approval boundary');
 
 if (errors.length) {
   console.error(`[NG] ${errors.length} upstream automation contract check(s)`);
