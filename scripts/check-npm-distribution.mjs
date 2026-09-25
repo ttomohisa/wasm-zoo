@@ -7,6 +7,7 @@ import { npmDistributionSets } from "./npm-package-set.mjs";
 
 const errors = [];
 const need = (condition, message) => { if (!condition) errors.push(message); };
+const normalizeLf = (text) => text.replace(/\r\n?/g, "\n");
 const npmPackages = await loadPackages();
 const npmSlugs = npmDistributionSets(npmPackages).all;
 
@@ -150,7 +151,7 @@ try {
     }
   }
 
-  const workflow = await fs.readFile(path.join(root, ".github", "workflows", "publish-npm.yml"), "utf8");
+  const workflow = normalizeLf(await fs.readFile(path.join(root, ".github", "workflows", "publish-npm.yml"), "utf8"));
   need(workflow.includes("slug:\n        description: npm distribution package\n        required: true\n        type: string"),
     "npm distribution workflow must accept manifest-validated package slugs without a static package allowlist");
   need(workflow.includes("pkg.npm.status !== 'published'"), "npm distribution workflow must require published npm packages after v0.13 rollout");
@@ -185,7 +186,7 @@ try {
     smoke.includes('compatibility.responseHeaders'),
     "cross-browser smoke runner must validate published manifests, require package-specific fixtures and rigorously preflight threaded browsers"
   );
-  const compatWorkflow = await fs.readFile(path.join(root, ".github", "workflows", "cross-browser-compat.yml"), "utf8");
+  const compatWorkflow = normalizeLf(await fs.readFile(path.join(root, ".github", "workflows", "cross-browser-compat.yml"), "utf8"));
   need(
     compatWorkflow.includes("node scripts/npm-package-set.mjs --github-output") &&
     compatWorkflow.includes("fromJSON(needs.package-set.outputs.single)") &&
@@ -214,7 +215,7 @@ try {
   need(smoke.includes("libvips:") && smoke.includes("Image.newFromBuffer") && smoke.includes("writeToBuffer") && smoke.includes("crossOriginIsolated"), "libvips live smoke must exercise the library API under cross-origin isolation");
   need(smoke.includes("ffmpeg:") && smoke.includes("input.pcm") && smoke.includes("/output.wav") && smoke.includes("RIFF") && smoke.includes("WAVE"), "FFmpeg live smoke must convert raw PCM to WAV and validate RIFF/WAVE framing");
   need(smoke.includes("cross-origin-opener-policy") && smoke.includes("cross-origin-embedder-policy"), "generic npm smoke server must provide COOP/COEP for pthread packages");
-  const smokeWorkflow = await fs.readFile(path.join(root, ".github", "workflows", "npm-package-smoke.yml"), "utf8");
+  const smokeWorkflow = normalizeLf(await fs.readFile(path.join(root, ".github", "workflows", "npm-package-smoke.yml"), "utf8"));
   need(smokeWorkflow.includes("type: string") &&
     smokeWorkflow.includes("scripts/npm-package-set.mjs --baseline") &&
     smokeWorkflow.includes("scripts/smoke-npm-package.mjs") &&
