@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-26T08:42:51.458Z",
-  "hasUpdates": false,
+  "generatedAt": "2026-09-27T09:23:05.503Z",
+  "hasUpdates": true,
   "packages": [
     {
       "slug": "ffmpeg",
@@ -142,24 +142,37 @@
       "pinned": "8.18.6",
       "pinnedRef": "v8.18.6",
       "pinnedReleased": "2026-08-25",
-      "latest": "8.18.6",
-      "latestRef": "v8.18.6",
-      "latestCommit": "426af3f44246fce9cfa8dd51a353aa4dfd48c553",
-      "latestReleased": "2026-08-25T15:34:01Z",
-      "updateAvailable": false,
-      "lagDays": 0,
+      "latest": "8.18.7",
+      "latestRef": "v8.18.7",
+      "latestCommit": "24ad4d042940e6bf99a68871ba886ca8847c9c82",
+      "latestReleased": "2026-09-26T11:31:21Z",
+      "updateAvailable": true,
+      "lagDays": 32,
       "gap": {
-        "kind": "current",
-        "label": "Current",
-        "versionsBehind": 0
+        "kind": "behind",
+        "label": "Update available",
+        "versionsBehind": 1
       },
-      "url": "https://github.com/libvips/libvips/releases/tag/v8.18.6",
+      "url": "https://github.com/libvips/libvips/releases/tag/v8.18.7",
       "candidate": {
         "mode": "auto",
         "profiles": [
           "browser-core",
           "browser-full"
-        ]
+        ],
+        "adapter": {
+          "ready": true,
+          "reason": "adapter and compatibility patch bundle resolved to immutable commits",
+          "adapterCommit": "dca91909178800875b575eb896d1fe4ed0a27931",
+          "adapterVersion": "0.0.18",
+          "emsdkVersion": "6.0.10",
+          "emscriptenRef": "6.0.10",
+          "emscriptenCommit": "d6c521a7f05449857c76bd99e396895583cf2083",
+          "libvipsPatchRef": "wasm-vips-8.18.7",
+          "libvipsPatchCommit": "e9ac3e5c29fed4e3c8678595564e4974f1ef05c1",
+          "emscriptenPatchRef": "wasm-vips-6.0.10",
+          "emscriptenPatchCommit": "d1aa1ceae8408311868149e0971473bd3e2eafab"
+        }
       }
     },
     {
@@ -201,28 +214,28 @@
       "pinned": "12.4.1",
       "pinnedRef": "v12.4.1",
       "pinnedReleased": "2026-08-27",
-      "latest": "12.4.1",
-      "latestRef": "v12.4.1",
-      "latestCommit": "c37f83ae468abb6cc741f43b2f6fdeb66e550ffb",
-      "latestReleased": "2026-08-27T23:56:39Z",
-      "updateAvailable": false,
-      "lagDays": 0,
+      "latest": "12.4.2",
+      "latestRef": "v12.4.2",
+      "latestCommit": "4eba95899886e851cc41d76886483b347612f2a8",
+      "latestReleased": "2026-09-27T00:01:39Z",
+      "updateAvailable": true,
+      "lagDays": 31,
       "gap": {
-        "kind": "current",
-        "label": "Current",
-        "versionsBehind": 0
+        "kind": "behind",
+        "label": "Update available",
+        "versionsBehind": 1
       },
-      "url": "https://github.com/qpdf/qpdf/releases/tag/v12.4.1",
+      "url": "https://github.com/qpdf/qpdf/releases/tag/v12.4.2",
       "candidate": {
         "mode": "auto",
         "profiles": [
           "browser-full"
         ],
         "source": {
-          "releaseTag": "v12.4.1",
-          "assetName": "qpdf-12.4.1.tar.gz",
-          "sourceUrl": "https://github.com/qpdf/qpdf/releases/download/v12.4.1/qpdf-12.4.1.tar.gz",
-          "sourceSha256": "f045aa277be2356ff53a89a8622945958291177d2483afc20ede7c8a8cd3873c"
+          "releaseTag": "v12.4.2",
+          "assetName": "qpdf-12.4.2.tar.gz",
+          "sourceUrl": "https://github.com/qpdf/qpdf/releases/download/v12.4.2/qpdf-12.4.2.tar.gz",
+          "sourceSha256": "8a58af5b6141319287c1883bec8bd1bd545b7567b7fc5e6ce5d25a1c85f36397"
         }
       }
     }
