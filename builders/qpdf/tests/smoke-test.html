@@ -33,7 +33,7 @@ function makeOnePagePdf(){
   location.hash="#SMOKE_TEST_RUNNING_version";
   const qpdf=await load({baseUrl:"./"});
   const version=await qpdf.exec(["--version"],{timeoutMs:30000,onLog});
-  if(!version.stdout.includes("qpdf version 12.4.1")) throw new Error(`qpdf --version mismatch: ${version.stdout}`);
+  if(!version.stdout.includes("qpdf version 12.4.2")) throw new Error(`qpdf --version mismatch: ${version.stdout}`);
 
   const base=makeOnePagePdf();
   if(pdfHeader(base)!=="%PDF-") throw new Error("fixture generator did not create a PDF header");

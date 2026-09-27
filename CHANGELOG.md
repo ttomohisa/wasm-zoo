@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- promote QPDF 12.4.2 to builder 0.1.1 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `4eba95899886e851cc41d76886483b347612f2a8`;
+
 ## v0.18.0
 
 - derive published npm operational membership from package manifests through a shared resolver, including the Cross-browser Lab single/threaded matrices, public compatibility snapshot expectations and threaded aggregate reporting, so a newly published npm package no longer needs package-name enrollment edits in those paths;
