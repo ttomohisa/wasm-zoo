@@ -240,14 +240,14 @@ try {
   need(!(ffmpegMeta.npm?.packageFiles?.required || []).some((rel) => rel.endsWith("/x264-COPYING") || rel.endsWith("/FFmpeg-COPYING.GPLv2")), "FFmpeg npm browser-full package must not accidentally include GPL/x264-only release files");
   const qpdfMeta=await readJson(path.join(root,"packages/qpdf/package.json"));
   need(qpdfMeta.status==="available" && qpdfMeta.npm?.status==="published" &&
-    qpdfMeta.npm?.package==="@wasm-zoo/qpdf" && qpdfMeta.npm?.version==="0.1.0" &&
-    qpdfMeta.npm?.profile==="browser-full" && qpdfMeta.npm?.source?.upstreamVersion==="12.4.1" &&
-    qpdfMeta.npm?.source?.builderVersion==="0.1.0" &&
-    qpdfMeta.npm?.source?.commit==="c37f83ae468abb6cc741f43b2f6fdeb66e550ffb" &&
-    qpdfMeta.npm?.source?.releaseTag==="qpdf-v0.1.0" &&
-    qpdfMeta.npm?.source?.releaseAsset==="qpdf-browser-full-12.4.1-zoo-0.1.0.zip" &&
-    qpdfMeta.npm?.registryShasum==="83b2a89ec339d58ab0dcaf3c118385c3396955f1",
-    "Published QPDF npm must remain pinned to the immutable reviewed qpdf-v0.1.0 browser-full source release and exact Registry SHA-1");
+    qpdfMeta.npm?.package==="@wasm-zoo/qpdf" && qpdfMeta.npm?.version==="0.1.1" &&
+    qpdfMeta.npm?.profile==="browser-full" && qpdfMeta.npm?.source?.upstreamVersion==="12.4.2" &&
+    qpdfMeta.npm?.source?.builderVersion==="0.1.1" &&
+    qpdfMeta.npm?.source?.commit==="4eba95899886e851cc41d76886483b347612f2a8" &&
+    qpdfMeta.npm?.source?.releaseTag==="qpdf-v0.1.1" &&
+    qpdfMeta.npm?.source?.releaseAsset==="qpdf-browser-full-12.4.2-zoo-0.1.1.zip" &&
+    qpdfMeta.npm?.registryShasum == null,
+    "Prepared QPDF npm 0.1.1 must target immutable qpdf-v0.1.1 browser-full and leave Registry SHA-1 unset until staged publication is approved");
   need(qpdfMeta.npm?.packageFiles?.requiredDirs?.includes("LICENSES"),
     "Published QPDF npm must recursively preserve QPDF/zlib/libjpeg release notices");
   need(smoke.includes("npmMeta.registryShasum") && smoke.includes("dist.shasum"),

@@ -63,7 +63,7 @@ All eight packages retain review-only automatic candidate contracts. libvips rem
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 | Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
-| QPDF | 12.4.2 | 0.1.1 | `browser-full` | yes | `@wasm-zoo/qpdf@0.1.0` |
+| QPDF | 12.4.2 | 0.1.1 | `browser-full` | yes | `@wasm-zoo/qpdf@0.1.1` (staged review pending) |
 
 WASM Zoo v0.17.0 was the project release that completed the QPDF rollout. Individual package builders, npm distribution versions and immutable package release tags keep their own versions, so later project-only releases do not require package republishing.
 
@@ -83,6 +83,8 @@ npm install @wasm-zoo/qpdf
 ```
 
 `@wasm-zoo/qpdf@0.1.0` is public. Its initial human publication used the exact immutable `qpdf-v0.1.0` Release-derived tarball that passed Vite + Chromium/Firefox/WebKit real PDF operations; Registry `dist.shasum` `83b2a89ec339d58ab0dcaf3c118385c3396955f1` matches that reviewed tarball. Future QPDF npm versions use the normal Trusted Publisher staged-review flow.
+
+The separately reviewed `@wasm-zoo/qpdf@0.1.1` follow-up is prepared from immutable `qpdf-v0.1.1` / QPDF 12.4.2. It is not treated as complete until staged publication is approved, the new Registry SHA-1 is recorded, and Registry-backed CI is green.
 
 The FFmpeg npm package intentionally pins the LGPL `browser-full` profile; the separate `browser-full-gpl` / libx264 Release profile is not bundled into the same npm tarball. FFmpeg and libvips both use pthreads, so consumers must serve them with cross-origin isolation / SharedArrayBuffer support. The Vite/Chromium smoke supplies COOP/COEP; FFmpeg's fixture performs a real raw-PCM → WAV CLI conversion while libvips continues to exercise its library API. See [`docs/NPM_DISTRIBUTION.md`](docs/NPM_DISTRIBUTION.md).
 
