@@ -18,7 +18,8 @@ export const automaticCandidateConfigs = {
     refKey: "IMAGEMAGICK_REF",
     commitKey: "IMAGEMAGICK_COMMIT",
     buildWorkflow: "build-imagemagick.yml",
-    displayName: "ImageMagick"
+    displayName: "ImageMagick",
+    keepNpmPinned: true
   },
   libvips: {
     dir: "libvips",

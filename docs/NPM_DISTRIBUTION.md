@@ -43,7 +43,7 @@ Operational classification is fail-closed:
 
 - **Published/current** — reviewed version exists on npm and its source Release matches the current package Release;
 - **Registry update pending** — the reviewed npm version has been advanced in the promotion metadata but is not yet public;
-- **Pinned / separate npm review** — the package Release advanced while `keepNpmPinned` intentionally keeps npm bound to the previous immutable Release (currently QPDF and Zstandard);
+- **Pinned / separate npm review** — the package Release advanced while `keepNpmPinned` intentionally keeps npm bound to the previous immutable Release (currently QPDF, Zstandard and ImageMagick);
 - **Error** — recorded Registry SHA-1 mismatch or non-policy source-release drift;
 - **Unknown** — Registry inspection was unavailable, which does not invent a healthy result.
 
