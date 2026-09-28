@@ -86,7 +86,7 @@ Package metadata now records `npm.status: published` plus that Registry SHA-1. L
 | `@wasm-zoo/libvips` | `0.5.2` | libvips 8.18.6 | `0.5.2` | `libvips-v0.5.2` / `browser-core` | published |
 | `@wasm-zoo/ffmpeg` | `0.2.8` | FFmpeg 9.0.2 | `0.2.8` | `ffmpeg-v0.2.8` / `browser-full` | published |
 | `@wasm-zoo/zstd` | `0.3.0` | Zstandard 1.5.7 | `0.3.0` | `zstd-v0.3.0` / `browser-full` | published |
-| `@wasm-zoo/qpdf` | `0.1.1` | QPDF 12.4.2 | `0.1.1` | `qpdf-v0.1.1` / `browser-full` | staged review pending |
+| `@wasm-zoo/qpdf` | `0.1.1` | QPDF 12.4.2 | `0.1.1` | `qpdf-v0.1.1` / `browser-full` | published |
 
 The original six packages completed their public Registry + Vite/Chromium gates; Zstandard is the seventh public distribution and QPDF is the eighth. Both manually bootstrapped packages bind live Registry tests to the exact SHA-1 of their reviewed three-browser tarballs. FFmpeg is intentionally pinned to the LGPL `browser-full` profile; the GPL/libx264 profile is not bundled into this package.
 
