@@ -83,7 +83,7 @@ Package metadata now records `npm.status: published` plus that Registry SHA-1. L
 | `@wasm-zoo/libarchive` | `0.3.1` | libarchive 3.8.9 | `0.3.1` | `libarchive-v0.3.1` | published |
 | `@wasm-zoo/imagemagick` | `0.4.4` | ImageMagick 7.1.2-32 | `0.4.4` | `imagemagick-v0.4.4` | published |
 | `@wasm-zoo/ghostscript` | `0.7.2` | Ghostscript 10.08.0 | `0.7.2` | `ghostscript-v0.7.2` | published |
-| `@wasm-zoo/libvips` | `0.5.2` | libvips 8.18.6 | `0.5.2` | `libvips-v0.5.2` / `browser-core` | published |
+| `@wasm-zoo/libvips` | `0.5.3` | libvips 8.18.7 | `0.5.3` | `libvips-v0.5.3` / `browser-core` | published |
 | `@wasm-zoo/ffmpeg` | `0.2.8` | FFmpeg 9.0.2 | `0.2.8` | `ffmpeg-v0.2.8` / `browser-full` | published |
 | `@wasm-zoo/zstd` | `0.3.0` | Zstandard 1.5.7 | `0.3.0` | `zstd-v0.3.0` / `browser-full` | published |
 | `@wasm-zoo/qpdf` | `0.1.1` | QPDF 12.4.2 | `0.1.1` | `qpdf-v0.1.1` / `browser-full` | published |
@@ -190,6 +190,10 @@ try {
 ```
 
 Ghostscript's WebAssembly binary is AGPL-3.0-or-later. The npm package preserves `LICENSE-Ghostscript.txt` and the complete reviewed `THIRD-PARTY-LICENSES/` directory from the immutable Release; consumers should review those notices before redistribution.
+
+### libvips npm 0.5.3 follow-up (review in progress)
+
+`@wasm-zoo/libvips@0.5.3` is prepared only from immutable `libvips-v0.5.3` / `libvips-browser-core-8.18.7-zoo-0.5.3.zip`, exact upstream commit `24ad4d042940e6bf99a68871ba886ca8847c9c82`, and Zoo builder 0.5.3. The npm profile remains `browser-core`; `browser-full` is not silently substituted into the Registry package. The new Registry SHA-1 is added to reviewed metadata only after Trusted Publisher staging is approved and the version is visible on the public Registry.
 
 ### libvips
 

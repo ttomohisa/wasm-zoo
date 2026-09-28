@@ -59,7 +59,7 @@ All eight packages retain review-only automatic candidate contracts. libvips rem
 | FFmpeg | 9.0.2 | 0.2.8 | `browser-full`, `browser-full-gpl` | yes | `@wasm-zoo/ffmpeg@0.2.8` |
 | libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes | `@wasm-zoo/libarchive@0.3.1` |
 | ImageMagick | 7.1.2-32 | 0.4.4 | `browser-full` | yes | `@wasm-zoo/imagemagick@0.4.4` |
-| libvips | 8.18.7 | 0.5.3 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.2` |
+| libvips | 8.18.7 | 0.5.3 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.3` (staged review pending) |
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 | Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
