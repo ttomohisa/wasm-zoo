@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- promote libvips 8.18.7 to builder 0.5.3 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `24ad4d042940e6bf99a68871ba886ca8847c9c82`;
+
 - unblock future libvips review-only promotions by validating the current immutable upstream/Emscripten/wasm-vips/compatibility commit pins structurally instead of requiring historical 8.18.6 constants, and keep the published libvips npm identity pinned to its prior immutable Release while the package Release advances; promotion rehearsal now covers the first-time npm source snapshot explicitly.
 
 - promote ImageMagick 7.1.2-32 to builder 0.4.4 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `ad98b244c995d2e3051757fa3b7855f45b550d24` while keeping `@wasm-zoo/imagemagick@0.4.3` bound to the immutable `imagemagick-v0.4.3` source release until a separate npm-only review;

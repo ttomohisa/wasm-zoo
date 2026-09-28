@@ -1,8 +1,8 @@
 # libvips builder
 
-Builds libvips 8.18.6 for browser WebAssembly and exposes the library through the pinned `wasm-vips` Embind API.
+Builds libvips 8.18.7 for browser WebAssembly and exposes the library through the pinned `wasm-vips` Embind API.
 
-The libvips source is the exact upstream `v8.18.6` release. The browser adapter, Emscripten 6.0.8 source ref and both compatibility-patch heads are pinned to immutable commits.
+The libvips source is the exact upstream `v8.18.7` release. The browser adapter, Emscripten 6.0.10 source ref and both compatibility-patch heads are pinned to immutable commits.
 
 ## Profiles
 
