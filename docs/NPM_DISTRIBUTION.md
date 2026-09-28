@@ -136,9 +136,9 @@ try {
 
 `libarchive` exposes the four published upstream CLI entry points through `load({ tool })`: `bsdtar`, `bsdcpio`, `bsdcat`, and `bsdunzip`.
 
-### ImageMagick npm 0.4.4 follow-up (review in progress)
+### ImageMagick npm 0.4.4 follow-up
 
-`@wasm-zoo/imagemagick@0.4.4` is prepared only from immutable `imagemagick-v0.4.4` / `imagemagick-browser-full-7.1.2-32-zoo-0.4.4.zip`, exact upstream commit `ad98b244c995d2e3051757fa3b7855f45b550d24`, and Zoo builder 0.4.4. The new Registry SHA-1 is added to reviewed metadata only after Trusted Publisher staging is approved and the version is visible on the public Registry.
+`@wasm-zoo/imagemagick@0.4.4` is published from immutable `imagemagick-v0.4.4` / `imagemagick-browser-full-7.1.2-32-zoo-0.4.4.zip`, exact upstream commit `ad98b244c995d2e3051757fa3b7855f45b550d24`, and Zoo builder 0.4.4. Trusted Publisher staged publication completed with reviewed Registry `dist.shasum` `a4dcbc9948eecf9e409d0e0c9fbd4a10463cd3e4`.
 
 ### ImageMagick
 

@@ -4,7 +4,7 @@
 
 - align the generic Registry/Vite smoke with npm-only pull-request staging: PR runs choose their deterministic baseline only from exact Registry-ready versions, while scheduled and manual Registry smokes keep the reviewed published-version requirement without prepublication deferral;
 
-- prepare the separately reviewed `@wasm-zoo/imagemagick@0.4.4` npm distribution from immutable `imagemagick-v0.4.4` / ImageMagick 7.1.2-32, binding the npm source identity to builder 0.4.4 and exact commit `ad98b244c995d2e3051757fa3b7855f45b550d24`; Registry SHA-1 remains unset until Trusted Publisher staging is approved and the public Registry identity is recorded;
+- publish the separately reviewed `@wasm-zoo/imagemagick@0.4.4` npm distribution from immutable `imagemagick-v0.4.4` / ImageMagick 7.1.2-32 through Trusted Publisher staged review, binding the source identity to builder 0.4.4 and exact commit `ad98b244c995d2e3051757fa3b7855f45b550d24` and recording Registry `dist.shasum` `a4dcbc9948eecf9e409d0e0c9fbd4a10463cd3e4`;
 
 - make Cross-browser Lab pull-request matrices Registry-aware for separately reviewed npm-only updates: exact-version npm 404s are deferred until Trusted Publisher approval, while all other Registry failures remain fail-closed and main/scheduled/manual runs still require the complete reviewed package set;
 

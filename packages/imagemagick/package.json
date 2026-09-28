@@ -99,7 +99,7 @@
   ],
   "notes": [
     "v0.4.4 promotes ImageMagick 7.1.2-32 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
-    "@wasm-zoo/imagemagick@0.4.4 is prepared from immutable imagemagick-v0.4.4 / ImageMagick 7.1.2-32 through the separate Trusted Publisher staged-review flow; its Registry SHA-1 is recorded only after publication.",
+    "@wasm-zoo/imagemagick@0.4.4 was published through the Trusted Publisher staged-review flow from immutable imagemagick-v0.4.4 / ImageMagick 7.1.2-32; npm Registry dist.shasum a4dcbc9948eecf9e409d0e0c9fbd4a10463cd3e4 records the reviewed public tarball identity.",
     "v0.4.3 promotes ImageMagick 7.1.2-31 after the isolated upstream candidate build and real Chromium smoke test passed; the browser-full feature set and Emscripten 6.0.6 toolchain remain unchanged.",
     "v0.4.2 promotes ImageMagick 7.1.2-30 after the isolated upstream candidate build and real Chromium smoke test passed; the browser-full feature set and Emscripten 6.0.6 toolchain remain unchanged.",
     "v0.4.1 is the first metadata-enabled ImageMagick patch release for WASM Zoo v0.8.0: the WebAssembly feature set and upstream pin are unchanged while standalone SLSA provenance and CycloneDX SBOM assets are added to the release contract.",
@@ -255,6 +255,7 @@
       "releaseTag": "imagemagick-v0.4.4",
       "releaseAsset": "imagemagick-browser-full-7.1.2-32-zoo-0.4.4.zip",
       "commit": "ad98b244c995d2e3051757fa3b7855f45b550d24"
-    }
+    },
+    "registryShasum": "a4dcbc9948eecf9e409d0e0c9fbd4a10463cd3e4"
   }
 }
