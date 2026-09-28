@@ -81,7 +81,7 @@ Package metadata now records `npm.status: published` plus that Registry SHA-1. L
 | --- | ---: | ---: | ---: | --- | --- |
 | `@wasm-zoo/jq` | `0.9.1` | jq 1.8.2 | `0.9.0` | `jq-v0.9.0` | published |
 | `@wasm-zoo/libarchive` | `0.3.1` | libarchive 3.8.9 | `0.3.1` | `libarchive-v0.3.1` | published |
-| `@wasm-zoo/imagemagick` | `0.4.3` | ImageMagick 7.1.2-31 | `0.4.3` | `imagemagick-v0.4.3` | published |
+| `@wasm-zoo/imagemagick` | `0.4.4` | ImageMagick 7.1.2-32 | `0.4.4` | `imagemagick-v0.4.4` | published |
 | `@wasm-zoo/ghostscript` | `0.7.2` | Ghostscript 10.08.0 | `0.7.2` | `ghostscript-v0.7.2` | published |
 | `@wasm-zoo/libvips` | `0.5.2` | libvips 8.18.6 | `0.5.2` | `libvips-v0.5.2` / `browser-core` | published |
 | `@wasm-zoo/ffmpeg` | `0.2.8` | FFmpeg 9.0.2 | `0.2.8` | `ffmpeg-v0.2.8` / `browser-full` | published |
@@ -135,6 +135,10 @@ try {
 ```
 
 `libarchive` exposes the four published upstream CLI entry points through `load({ tool })`: `bsdtar`, `bsdcpio`, `bsdcat`, and `bsdunzip`.
+
+### ImageMagick npm 0.4.4 follow-up
+
+`@wasm-zoo/imagemagick@0.4.4` is published from immutable `imagemagick-v0.4.4` / `imagemagick-browser-full-7.1.2-32-zoo-0.4.4.zip`, exact upstream commit `ad98b244c995d2e3051757fa3b7855f45b550d24`, and Zoo builder 0.4.4. Trusted Publisher staged publication completed with reviewed Registry `dist.shasum` `a4dcbc9948eecf9e409d0e0c9fbd4a10463cd3e4`.
 
 ### ImageMagick
 

@@ -41,9 +41,14 @@ jobs:
         run: |
           if [[ '${{ github.event_name }}' == 'workflow_dispatch' ]]; then
             echo 'slug=${{ inputs.slug }}' >> "$GITHUB_OUTPUT"
+          elif [[ '${{ github.event_name }}' == 'pull_request' ]]; then
+            # npm-only PRs can point reviewed metadata at an exact version that is
+            # intentionally not public until Trusted Publisher staging is approved.
+            # Select the deterministic baseline only from exact Registry-ready versions.
+            slug="$(node scripts/npm-package-set.mjs --registry-ready --baseline)"
+            echo "slug=$slug" >> "$GITHUB_OUTPUT"
           else
-            # PR and weekly smoke use a deterministic published single-threaded
-            # baseline derived from reviewed manifests; the full Lab covers all packages.
+            # Scheduled smoke must require the reviewed Registry state without deferral.
             slug="$(node scripts/npm-package-set.mjs --baseline)"
             echo "slug=$slug" >> "$GITHUB_OUTPUT"
           fi

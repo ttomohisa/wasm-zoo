@@ -227,9 +227,12 @@ try {
   const smokeWorkflow = normalizeLf(await fs.readFile(path.join(root, ".github", "workflows", "npm-package-smoke.yml"), "utf8"));
   need(smokeWorkflow.includes("type: string") &&
     smokeWorkflow.includes("scripts/npm-package-set.mjs --baseline") &&
+    smokeWorkflow.includes("scripts/npm-package-set.mjs --registry-ready --baseline") &&
+    smokeWorkflow.includes("github.event_name") &&
+    smokeWorkflow.includes("pull_request") &&
     smokeWorkflow.includes("scripts/smoke-npm-package.mjs") &&
     !smokeWorkflow.includes("echo 'slug=qpdf'"),
-    "generic Registry smoke workflow must accept manifest-validated slugs and use a manifest-derived baseline without rollout-specific QPDF targeting");
+    "generic Registry smoke workflow must use a manifest-derived baseline, defer exact-version 404s only on pull requests, and avoid rollout-specific package targeting");
 
   const promotion = await fs.readFile(path.join(root, "scripts", "prepare-promotion.mjs"), "utf8");
   need(!promotion.includes("pkg.npm.version = newBuilder"), "promotion must not couple npm package versions back to builder versions");
