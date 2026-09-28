@@ -389,7 +389,7 @@ const result = await image.exec([
 
 WASM Zoo v0.5.0 introduced libvips as the fourth available package. Unlike FFmpeg, libarchive and ImageMagick, libvips is published as a **library API** rather than a synthetic command-line wrapper.
 
-Both profiles use the pinned `wasm-vips` browser adapter while keeping libvips itself at the exact upstream `v8.18.7` release. The 0.5.2 promotion also moves the reviewed toolchain to Emscripten 6.0.10 and pins the matching libvips/Emscripten compatibility-patch heads. **`browser-core` is the recommended small profile** for Browser-Kitty-style work: JPEG/PNG/WebP plus the normal resize, thumbnail, colourspace, composite and convolution APIs. It removes TIFF, GIF, imagequant/quantizr and legacy PPM/Analyze/Radiance loaders. `browser-full` keeps JPEG/PNG/WebP/TIFF/GIF and imagequant. AVIF/HEIC, JPEG XL, SVG/resvg and UltraHDR remain disabled in both profiles.
+Both profiles use the pinned `wasm-vips` browser adapter while keeping libvips itself at the exact upstream `v8.18.7` release. The 0.5.3 promotion also moves the reviewed toolchain to Emscripten 6.0.10 and pins the matching libvips/Emscripten compatibility-patch heads. **`browser-core` is the recommended small profile** for Browser-Kitty-style work: JPEG/PNG/WebP plus the normal resize, thumbnail, colourspace, composite and convolution APIs. It removes TIFF, GIF, imagequant/quantizr and legacy PPM/Analyze/Radiance loaders. `browser-full` keeps JPEG/PNG/WebP/TIFF/GIF and imagequant. AVIF/HEIC, JPEG XL, SVG/resvg and UltraHDR remain disabled in both profiles.
 
 libvips retains its pthread + WebAssembly SIMD execution model. Therefore both browser profiles require **SharedArrayBuffer and cross-origin isolation (COOP/COEP)**.
 
