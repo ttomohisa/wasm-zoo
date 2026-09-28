@@ -12,7 +12,7 @@ Current status: **available** with reviewed package release `qpdf-v0.1.1`. Stabl
 - exact QPDF commit: `4eba95899886e851cc41d76886483b347612f2a8`
 - official source archive SHA-256: `8a58af5b6141319287c1883bec8bd1bd545b7567b7fc5e6ce5d25a1c85f36397`
 - Emscripten: 6.0.8 / exact commit `aeb67926e7de656da38bc807d83050af93578758`
-- Zoo builder: 0.1.0
+- Zoo builder: 0.1.1
 - Emscripten port zlib: 1.3.2, pinned source SHA-512
 - Emscripten port libjpeg: 9f, pinned source SHA-512
 
