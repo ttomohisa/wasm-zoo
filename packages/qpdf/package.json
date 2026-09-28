@@ -7,9 +7,9 @@
   "status": "available",
   "order": 50,
   "upstream": {
-    "version": "12.4.1",
-    "ref": "v12.4.1",
-    "released": "2026-08-27",
+    "version": "12.4.2",
+    "ref": "v12.4.2",
+    "released": "2026-09-27",
     "homepage": "https://qpdf.sourceforge.io/",
     "repository": "https://github.com/qpdf/qpdf",
     "license": "Apache-2.0"
@@ -31,7 +31,7 @@
     }
   },
   "zoo": {
-    "builderVersion": "0.1.0",
+    "builderVersion": "0.1.1",
     "toolchain": "Emscripten 6.0.8",
     "buildModel": "official-source-upstream-cli-native-crypto",
     "reproducible": true,
@@ -71,7 +71,7 @@
       "output": "Generic upstream qpdf CLI; PDF inputs and outputs are staged in browser MEMFS",
       "binaryLicense": "Apache-2.0 with zlib/libjpeg third-party notices",
       "size": "Loaded from the published release manifest",
-      "releaseAsset": "qpdf-browser-full-12.4.1-zoo-0.1.0.zip",
+      "releaseAsset": "qpdf-browser-full-12.4.2-zoo-0.1.1.zip",
       "playground": true,
       "playgroundPath": "./qpdf-playground/"
     }
@@ -79,12 +79,12 @@
   "comparison": [
     {
       "name": "Upstream native",
-      "version": "12.4.1",
+      "version": "12.4.2",
       "note": "Native QPDF CLI/library with host filesystem and platform-dependent crypto/dependency discovery."
     },
     {
       "name": "WASM Zoo",
-      "version": "12.4.1",
+      "version": "12.4.2",
       "note": "Current upstream QPDF CLI built from the exact official release source archive for isolated Worker/MEMFS browser execution."
     }
   ],
@@ -139,8 +139,9 @@
     }
   ],
   "notes": [
-    "QPDF 12.4.1 is built from the official qpdf-12.4.1.tar.gz release asset and verifies its GitHub-published SHA-256 before extraction.",
-    "The reviewed v12.4.1 annotated tag peels to exact upstream commit c37f83ae468abb6cc741f43b2f6fdeb66e550ffb.",
+    "v0.1.1 promotes QPDF 12.4.2 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
+    "QPDF 12.4.2 is built from the official qpdf-12.4.2.tar.gz release asset and verifies its GitHub-published SHA-256 before extraction.",
+    "The reviewed v12.4.2 annotated tag peels to exact upstream commit 4eba95899886e851cc41d76886483b347612f2a8.",
     "Emscripten 6.0.8 port inputs are pinned as zlib 1.3.2 and libjpeg 9f; their source hashes and distribution notices are carried into the release build.",
     "The browser smoke starts from a deterministic one-page PDF fixture and verifies check, linearize, AES-256 encryption, decryption and final validation.",
     "Stable QPDF GitHub Releases are eligible for exact source-archive candidate builds and review-only promotion PRs; merge, package tag, GitHub Release and npm publication remain human-controlled.",
@@ -161,10 +162,10 @@
     ]
   },
   "release": {
-    "tag": "qpdf-v0.1.0",
-    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/qpdf-v0.1.0",
-    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/qpdf-v0.1.0/",
-    "sourceAsset": "qpdf-sources-12.4.1-zoo-0.1.0.tar.gz",
+    "tag": "qpdf-v0.1.1",
+    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/qpdf-v0.1.1",
+    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/qpdf-v0.1.1/",
+    "sourceAsset": "qpdf-sources-12.4.2-zoo-0.1.1.tar.gz",
     "checksumsAsset": "SHA256SUMS.txt"
   },
   "npm": {
