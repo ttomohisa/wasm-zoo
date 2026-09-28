@@ -146,8 +146,33 @@ async function validateRehearsal(worktree, slug, before, config, expected, nextV
 
   if (before.npm) {
     if (config.keepNpmPinned) {
-      if (JSON.stringify(after.npm) !== JSON.stringify(before.npm)) {
-        throw new Error(`${slug}: immutable published npm identity changed during package promotion rehearsal`);
+      if (after.npm?.version !== before.npm.version) {
+        throw new Error(`${slug}: pinned npm version changed during package promotion rehearsal`);
+      }
+      if (before.npm.source) {
+        if (JSON.stringify(after.npm) !== JSON.stringify(before.npm)) {
+          throw new Error(`${slug}: immutable published npm identity changed during package promotion rehearsal`);
+        }
+      } else {
+        const beforeEnv = await readEnvAt(root, `builders/${config.dir}/versions.env`);
+        const beforeProfile = (before.profiles || []).find((profile) => profile.id === before.npm.profile);
+        const expectedSource = {
+          upstreamVersion: before.upstream.version,
+          builderVersion: before.zoo.builderVersion,
+          releaseTag: before.release.tag,
+          releaseAsset: beforeProfile?.releaseAsset,
+          commit: beforeEnv[config.commitKey]
+        };
+        const afterWithoutSource = { ...after.npm };
+        const beforeWithoutSource = { ...before.npm };
+        delete afterWithoutSource.source;
+        delete beforeWithoutSource.source;
+        if (JSON.stringify(afterWithoutSource) !== JSON.stringify(beforeWithoutSource)) {
+          throw new Error(`${slug}: pinned npm metadata changed while snapshotting its immutable source identity`);
+        }
+        if (JSON.stringify(after.npm?.source) !== JSON.stringify(expectedSource)) {
+          throw new Error(`${slug}: first pinned promotion did not snapshot the prior immutable npm source identity`);
+        }
       }
     } else {
       const expectedNpm = bumpPatchVersion(before.npm.version, `${slug} npm version`);

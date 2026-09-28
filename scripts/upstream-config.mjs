@@ -27,6 +27,7 @@ export const automaticCandidateConfigs = {
     commitKey: "LIBVIPS_COMMIT",
     buildWorkflow: "build-libvips.yml",
     displayName: "libvips",
+    keepNpmPinned: true,
     extraEnv: {
       "emsdk-version": "EMSDK_VERSION",
       "emscripten-ref": "EMSCRIPTEN_REF",

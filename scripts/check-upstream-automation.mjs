@@ -63,6 +63,7 @@ for (const [argKey, envKey] of Object.entries({
   'libvips-patch-commit': 'WASM_VIPS_LIBVIPS_PATCH_COMMIT',
   'emscripten-patch-commit': 'WASM_VIPS_EMSCRIPTEN_PATCH_COMMIT'
 })) need(libvipsConfig?.extraEnv?.[argKey] === envKey, `libvips candidate config must carry ${envKey}`);
+need(libvipsConfig?.keepNpmPinned === true, 'libvips package promotion must keep the published npm identity pinned for a separate npm review');
 const libvipsResolver = await read('scripts/libvips-adapter.mjs');
 for (const marker of ['wasm-vips/commits/master', 'wasm-vips-$VERSION_VIPS.patch', 'libvipsPatchCommit', 'emscriptenPatchCommit', 'ready: false']) {
   need(libvipsResolver.includes(marker), `libvips adapter resolver contract missing: ${marker}`);
@@ -112,6 +113,8 @@ need(promotion.includes('Promotion extra pin verification failed'), 'promotion p
 need(promotion.includes('README npm version'), 'promotion preparer must update README npm distribution versions');
 need(promotion.includes('config.keepNpmPinned') && promotion.includes('site/zstd-playground/release-status.json'),
   'Zstandard promotion must keep npm source/version pinned and reset Playground to unpublished for the new reviewed package tag');
+need(promotion.includes('config.keepNpmPinned && !pkg.npm.source') && promotion.includes('sourceCommit = oldEnv[config.commitKey]'),
+  'first-time pinned package promotion must snapshot the prior immutable npm source identity');
 need(promotion.includes('note.includes("@wasm-zoo/zstd") ? note : rewrite(note)'),
   'Zstandard promotion must not rewrite historical published npm source notes to the new package upstream version');
 need(promotion.includes('docs/NPM_DISTRIBUTION.md') && promotion.includes('npm distribution release tag'), 'promotion preparer must update npm distribution documentation');

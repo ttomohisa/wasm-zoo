@@ -62,7 +62,7 @@ The merged-PR comment includes copyable PowerShell / `gh` commands for:
 - preparing npm `pack` and `stage` runs only when the promoted npm identity is meant to advance;
 - closing the watcher issue after the package Release is confirmed.
 
-The npm guidance is metadata-aware. Normal published packages whose promotion bumps the npm distribution version receive separate `mode=pack` then `mode=stage` commands; the stage remains subject to maintainer review / npm 2FA. Packages configured with `keepNpmPinned` (currently QPDF and Zstandard) explicitly receive **no npm staging instruction**: their existing Registry identity remains pinned until a separate npm-only review.
+The npm guidance is metadata-aware. Normal published packages whose promotion bumps the npm distribution version receive separate `mode=pack` then `mode=stage` commands; the stage remains subject to maintainer review / npm 2FA. Packages configured with `keepNpmPinned` (currently QPDF, Zstandard, ImageMagick and libvips) explicitly receive **no npm staging instruction**: their existing Registry identity remains pinned until a separate npm-only review.
 
 The handoff workflow only comments. It contains no `git tag`, `gh release create`, `npm publish` or `npm stage publish` execution path. Its comments are idempotent: a rerun refreshes the existing handoff comment rather than creating duplicate operator instructions.
 
@@ -72,9 +72,9 @@ The handoff workflow only comments. It contains no `git tag`, `gh release create
 
 For each automatic package, the rehearsal creates an isolated detached worktree, synthesizes a strictly newer upstream version/ref and immutable-looking commit/source pins, runs `scripts/prepare-promotion.mjs`, regenerates the catalog, runs that package's repository checker, and requires `git diff --check` to pass. It then verifies that the reviewed source pin, builder patch version, release tag/assets and package-specific metadata all moved together.
 
-The rehearsal also preserves distribution-specific rules: Zstandard's already-published npm identity must remain byte-for-byte unchanged and its Playground must fail closed as `not-published`; jq receives a synthetic exact Oniguruma submodule pin; Ghostscript receives internally consistent release-tag/source-URL/SHA-256 metadata. No rehearsal performs a network lookup, build, tag, GitHub Release, merge or npm publication.
+The rehearsal also preserves distribution-specific rules: a `keepNpmPinned` package must keep its published npm version fixed; when an older manifest has no explicit `npm.source`, the first pinned promotion may add exactly one snapshot of the prior immutable Release identity, while later promotions must preserve it byte-for-byte. Zstandard's Playground also fails closed as `not-published`; jq receives a synthetic exact Oniguruma submodule pin; Ghostscript receives internally consistent release-tag/source-URL/SHA-256 metadata. No rehearsal performs a network lookup, build, tag, GitHub Release, merge or npm publication.
 
-libvips participates in the same rehearsal only after its complete adapter bundle is modeled as immutable promotion inputs. The rehearsal verifies that synthetic Emscripten, wasm-vips and both compatibility-patch pins move together with the promoted libvips release.
+libvips participates in the same rehearsal only after its complete adapter bundle is modeled as immutable promotion inputs. The rehearsal verifies that synthetic Emscripten, wasm-vips and both compatibility-patch pins move together with the promoted libvips release, while its already-published npm distribution stays on the previously reviewed immutable source until a separate npm-only review.
 
 ## Public automation contract
 

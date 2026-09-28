@@ -32,7 +32,7 @@ WASM Zoo v0.18.0 is a project-only operations release. It keeps all eight packag
 
 Published npm enrollment and the Cross-browser Compatibility Lab package/threaded matrices are manifest-driven. Automatic candidate registration, result routing and promotion repository-checker selection are centralized without hiding package-specific build semantics. Successful candidates may still create only review-only promotion PRs; automation does not merge them.
 
-Promotion PRs now include a generated post-merge human handoff. After a real `automation/promote-*` PR is manually merged, a comment-only workflow posts the confirmed merge SHA plus the manual package tag, GitHub Release and conditional npm follow-up. QPDF, Zstandard and ImageMagick retain their separately reviewed npm source pins.
+Promotion PRs now include a generated post-merge human handoff. After a real `automation/promote-*` PR is manually merged, a comment-only workflow posts the confirmed merge SHA plus the manual package tag, GitHub Release and conditional npm follow-up. QPDF, Zstandard, ImageMagick and libvips retain their separately reviewed npm source pins.
 
 Release Health schema 2 adds live npm Registry alignment to the existing release/Playground/freshness/supply-chain view, including exact/latest version, source Release and `dist.shasum` state. Intentional `keepNpmPinned` drift is a separate-review warning; unexpected source drift or a recorded Registry SHA mismatch is an error.
 
@@ -108,7 +108,7 @@ WASM Zoo v0.8.0 adds a distribution-level health layer instead of treating a suc
 - live npm Registry state for the reviewed package/version, including the source Release and Registry SHA-1 when available;
 - an aggregate health state.
 
-`site/release-health.json` is refreshed during Pages deployment and by the daily watcher. Its npm section distinguishes four operational states: aligned/current, Registry update pending, intentionally pinned for a separate npm review, and broken identity (for example a recorded `dist.shasum` mismatch). QPDF, Zstandard and ImageMagick may therefore show an intentional npm pin after a future package promotion without being mislabeled as a broken GitHub Release. Older package releases remain valid when they predate the v0.8.0 supply-chain contract; they are shown as waiting for metadata rather than falsely marked broken.
+`site/release-health.json` is refreshed during Pages deployment and by the daily watcher. Its npm section distinguishes four operational states: aligned/current, Registry update pending, intentionally pinned for a separate npm review, and broken identity (for example a recorded `dist.shasum` mismatch). QPDF, Zstandard, ImageMagick and libvips may therefore show an intentional npm pin after a future package promotion without being mislabeled as a broken GitHub Release. Older package releases remain valid when they predate the v0.8.0 supply-chain contract; they are shown as waiting for metadata rather than falsely marked broken.
 
 After a builder's real browser smoke test succeeds, every profile now generates:
 
