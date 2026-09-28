@@ -2,6 +2,8 @@
 
 This lab tests **published npm packages**, not just WebAssembly instantiation. A clean temporary application installs the exact reviewed public npm version, creates a production Vite bundle, verifies its emitted Wasm assets, serves the bundle with an in-process HTTP server, and runs a real package operation in a Playwright browser.
 
+For **pull requests only**, the matrix resolver preflights each exact reviewed npm version against the public Registry before creating browser jobs. An exact-version `404` is treated as a prepublication deferral so an npm-only PR can first run immutable-Release `pack`/canary checks and then use Trusted Publisher staging without carrying three expected ETARGET failures. Any other Registry error fails closed. Pushes to `main`, schedules and manual Lab runs do not use this deferral and continue to require the complete reviewed package set. After the staged npm version is approved, updating the PR with its Registry identity reruns the Lab and brings that exact version back into all applicable browser cells.
+
 ## Phase 1: jq canary
 
 The first rollout covers `@wasm-zoo/jq@0.9.1` (`browser-full`) in Chromium, Firefox, and WebKit. All three browsers use **the same** jq fixture already maintained in `scripts/smoke-npm-package.mjs` (JSON `select/map` transformation with a verified `[1,3]` result). Do not copy the fixture into a separate compatibility script.

@@ -71,6 +71,10 @@ The exact tarball is installed through `WASM_ZOO_NPM_PACKAGE_SPEC` into a clean 
 
 Package metadata now records `npm.status: published` plus that Registry SHA-1. Live Registry smoke verifies the SHA-1 before installation, then runs the real QPDF operation through Vite/Chromium. QPDF joins `publish-npm.yml` for future Trusted Publisher staged updates and joins the single-threaded Cross-browser Lab in Chromium, Firefox and WebKit, expanding the reviewed Registry-backed matrix from 21 to 24 cells. The initial local human publication does not claim npm Registry-generated build provenance; the package still preserves the immutable Release's independently verified provenance/SBOM files.
 
+### QPDF npm 0.1.1 follow-up (review in progress)
+
+`@wasm-zoo/qpdf@0.1.1` is prepared only from immutable `qpdf-v0.1.1` / `qpdf-browser-full-12.4.2-zoo-0.1.1.zip`, exact upstream commit `4eba95899886e851cc41d76886483b347612f2a8`, and Zoo builder 0.1.1. The old 0.1.0 Registry SHA-1 is intentionally not reused. The new SHA-1 is added to reviewed metadata only after Trusted Publisher staging is approved and the version is visible on the public Registry.
+
 ## Published packages
 
 | npm package | npm version | upstream | Zoo builder | source Release | state |
@@ -82,7 +86,7 @@ Package metadata now records `npm.status: published` plus that Registry SHA-1. L
 | `@wasm-zoo/libvips` | `0.5.2` | libvips 8.18.6 | `0.5.2` | `libvips-v0.5.2` / `browser-core` | published |
 | `@wasm-zoo/ffmpeg` | `0.2.8` | FFmpeg 9.0.2 | `0.2.8` | `ffmpeg-v0.2.8` / `browser-full` | published |
 | `@wasm-zoo/zstd` | `0.3.0` | Zstandard 1.5.7 | `0.3.0` | `zstd-v0.3.0` / `browser-full` | published |
-| `@wasm-zoo/qpdf` | `0.1.0` | QPDF 12.4.1 | `0.1.0` | `qpdf-v0.1.0` / `browser-full` | published |
+| `@wasm-zoo/qpdf` | `0.1.1` | QPDF 12.4.2 | `0.1.1` | `qpdf-v0.1.1` / `browser-full` | published |
 
 The original six packages completed their public Registry + Vite/Chromium gates; Zstandard is the seventh public distribution and QPDF is the eighth. Both manually bootstrapped packages bind live Registry tests to the exact SHA-1 of their reviewed three-browser tarballs. FFmpeg is intentionally pinned to the LGPL `browser-full` profile; the GPL/libx264 profile is not bundled into this package.
 

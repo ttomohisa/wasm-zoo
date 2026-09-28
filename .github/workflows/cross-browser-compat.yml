@@ -43,6 +43,7 @@ jobs:
       single: ${{ steps.packages.outputs.single }}
       threaded: ${{ steps.packages.outputs.threaded }}
       count: ${{ steps.packages.outputs.count }}
+      deferred: ${{ steps.packages.outputs.deferred }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
@@ -51,7 +52,27 @@ jobs:
           package-manager-cache: false
       - name: Derive package sets from reviewed manifests
         id: packages
-        run: node scripts/npm-package-set.mjs --github-output
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
+            node scripts/npm-package-set.mjs --github-output --registry-ready
+          else
+            node scripts/npm-package-set.mjs --github-output
+          fi
+      - name: Summarize prepublication Registry deferrals
+        if: ${{ steps.packages.outputs.deferred != '[]' }}
+        env:
+          DEFERRED: ${{ steps.packages.outputs.deferred }}
+        shell: bash
+        run: |
+          {
+            echo '### npm Registry versions deferred on this pull request'
+            echo
+            printf '%s\n' "- Exact versions not public yet: ${DEFERRED}"
+            echo '- Only exact-version 404 responses are deferred; other Registry failures fail closed.'
+            echo '- Push/main, schedule and manual runs continue to require the complete reviewed package set.'
+          } >> "$GITHUB_STEP_SUMMARY"
 
   single-threaded:
     name: ${{ matrix.slug }} / ${{ matrix.browser }}

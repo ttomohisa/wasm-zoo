@@ -62,12 +62,14 @@ jobs:
           node scripts/prepare-npm-package.mjs --slug qpdf --input npm-qpdf/input --output npm-qpdf/package
           node scripts/check-npm-distribution.mjs
           npm pack ./npm-qpdf/package --json --ignore-scripts --pack-destination npm-qpdf/artifacts | tee npm-qpdf/pack.json
-          test -s npm-qpdf/artifacts/wasm-zoo-qpdf-0.1.0.tgz
+          mapfile -t tarballs < <(find npm-qpdf/artifacts -maxdepth 1 -type f -name 'wasm-zoo-qpdf-*.tgz' -print)
+          test "${#tarballs[@]}" -eq 1
+          test -s "${tarballs[0]}"
       - uses: actions/upload-artifact@v7
         with:
-          name: reviewed-qpdf-npm-0.1.0-${{ github.sha }}
+          name: reviewed-qpdf-npm-${{ github.sha }}
           path: |
-            npm-qpdf/artifacts/wasm-zoo-qpdf-0.1.0.tgz
+            npm-qpdf/artifacts/*.tgz
             npm-qpdf/pack.json
           retention-days: 30
           if-no-files-found: error
@@ -91,7 +93,7 @@ jobs:
         run: npm install --global npm@12.0.2
       - uses: actions/download-artifact@v7
         with:
-          name: reviewed-qpdf-npm-0.1.0-${{ github.sha }}
+          name: reviewed-qpdf-npm-${{ github.sha }}
           path: npm-qpdf
       - name: Run real immutable-release QPDF through Vite production build and browser
         shell: bash
@@ -99,7 +101,9 @@ jobs:
           WASM_ZOO_PLAYWRIGHT_WITH_DEPS: '1'
         run: |
           set -euo pipefail
-          export WASM_ZOO_NPM_PACKAGE_SPEC="$PWD/npm-qpdf/artifacts/wasm-zoo-qpdf-0.1.0.tgz"
+          mapfile -t tarballs < <(find "$PWD/npm-qpdf" -type f -name 'wasm-zoo-qpdf-*.tgz' -print)
+          test "${#tarballs[@]}" -eq 1
+          export WASM_ZOO_NPM_PACKAGE_SPEC="${tarballs[0]}"
           test -s "$WASM_ZOO_NPM_PACKAGE_SPEC"
           node scripts/smoke-npm-package.mjs --slug qpdf --browser '${{ matrix.browser }}' \
             --result-json 'npm-qpdf/compat-${{ matrix.browser }}.json'

@@ -198,6 +198,15 @@ try {
     compatWorkflow.includes("upload-artifact@v4"),
     "cross-browser workflow must derive all published npm package matrices from reviewed manifests"
   );
+  const packageSetResolver = normalizeLf(await fs.readFile(path.join(root, "scripts", "npm-package-set.mjs"), "utf8"));
+  need(
+    compatWorkflow.includes("github.event_name") &&
+    compatWorkflow.includes("--registry-ready") &&
+    compatWorkflow.includes("steps.packages.outputs.deferred") &&
+    packageSetResolver.includes("response.status === 404") &&
+    packageSetResolver.includes("npm Registry preflight failed"),
+    "pull-request compatibility matrices must defer only exact-version npm Registry 404s while non-404 Registry failures fail closed"
+  );
   need(
     compatWorkflow.includes("name: Enforce observed threaded compatibility classifications") &&
     compatWorkflow.includes("node scripts/report-threaded-compatibility.mjs") &&
@@ -240,14 +249,14 @@ try {
   need(!(ffmpegMeta.npm?.packageFiles?.required || []).some((rel) => rel.endsWith("/x264-COPYING") || rel.endsWith("/FFmpeg-COPYING.GPLv2")), "FFmpeg npm browser-full package must not accidentally include GPL/x264-only release files");
   const qpdfMeta=await readJson(path.join(root,"packages/qpdf/package.json"));
   need(qpdfMeta.status==="available" && qpdfMeta.npm?.status==="published" &&
-    qpdfMeta.npm?.package==="@wasm-zoo/qpdf" && qpdfMeta.npm?.version==="0.1.0" &&
-    qpdfMeta.npm?.profile==="browser-full" && qpdfMeta.npm?.source?.upstreamVersion==="12.4.1" &&
-    qpdfMeta.npm?.source?.builderVersion==="0.1.0" &&
-    qpdfMeta.npm?.source?.commit==="c37f83ae468abb6cc741f43b2f6fdeb66e550ffb" &&
-    qpdfMeta.npm?.source?.releaseTag==="qpdf-v0.1.0" &&
-    qpdfMeta.npm?.source?.releaseAsset==="qpdf-browser-full-12.4.1-zoo-0.1.0.zip" &&
-    qpdfMeta.npm?.registryShasum==="83b2a89ec339d58ab0dcaf3c118385c3396955f1",
-    "Published QPDF npm must remain pinned to the immutable reviewed qpdf-v0.1.0 browser-full source release and exact Registry SHA-1");
+    qpdfMeta.npm?.package==="@wasm-zoo/qpdf" && qpdfMeta.npm?.version==="0.1.1" &&
+    qpdfMeta.npm?.profile==="browser-full" && qpdfMeta.npm?.source?.upstreamVersion==="12.4.2" &&
+    qpdfMeta.npm?.source?.builderVersion==="0.1.1" &&
+    qpdfMeta.npm?.source?.commit==="4eba95899886e851cc41d76886483b347612f2a8" &&
+    qpdfMeta.npm?.source?.releaseTag==="qpdf-v0.1.1" &&
+    qpdfMeta.npm?.source?.releaseAsset==="qpdf-browser-full-12.4.2-zoo-0.1.1.zip" &&
+    qpdfMeta.npm?.registryShasum == null,
+    "Prepared QPDF npm 0.1.1 must target immutable qpdf-v0.1.1 browser-full and leave Registry SHA-1 unset until staged publication is approved");
   need(qpdfMeta.npm?.packageFiles?.requiredDirs?.includes("LICENSES"),
     "Published QPDF npm must recursively preserve QPDF/zlib/libjpeg release notices");
   need(smoke.includes("npmMeta.registryShasum") && smoke.includes("dist.shasum"),
@@ -260,6 +269,11 @@ try {
     qpdfCanary.includes("WASM_ZOO_NPM_PACKAGE_SPEC") &&
     !qpdfCanary.includes("npm publish") && !qpdfCanary.includes("npm stage publish"),
     "QPDF immutable Release npm canary must verify checksums, pack only and run all three browsers without Registry writes");
+  need(qpdfCanary.includes("wasm-zoo-qpdf-*.tgz") &&
+    qpdfCanary.includes("reviewed-qpdf-npm-${{ github.sha }}") &&
+    !qpdfCanary.includes("wasm-zoo-qpdf-0.1.0.tgz") &&
+    !qpdfCanary.includes("reviewed-qpdf-npm-0.1.0-"),
+    "QPDF immutable Release npm canary must discover the reviewed tarball from manifest-driven npm versioning instead of hardcoding a historical npm version");
 
   const zstdMeta=await readJson(path.join(root,"packages/zstd/package.json"));
   need(zstdMeta.status==="available" && zstdMeta.npm?.status==="published" &&

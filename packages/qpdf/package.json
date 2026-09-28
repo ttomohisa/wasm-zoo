@@ -145,7 +145,8 @@
     "Emscripten 6.0.8 port inputs are pinned as zlib 1.3.2 and libjpeg 9f; their source hashes and distribution notices are carried into the release build.",
     "The browser smoke starts from a deterministic one-page PDF fixture and verifies check, linearize, AES-256 encryption, decryption and final validation.",
     "Stable QPDF GitHub Releases are eligible for exact source-archive candidate builds and review-only promotion PRs; merge, package tag, GitHub Release and npm publication remain human-controlled.",
-    "@wasm-zoo/qpdf@0.1.0 was manually published from the exact three-browser-verified qpdf-v0.1.0 / browser-full tarball; npm Registry dist.shasum 83b2a89ec339d58ab0dcaf3c118385c3396955f1 matches that reviewed artifact. Future npm updates use the separate Trusted Publisher staged-review flow while package promotion keeps this npm source identity pinned until a separate npm review."
+    "@wasm-zoo/qpdf@0.1.0 was manually published from the exact three-browser-verified qpdf-v0.1.0 / browser-full tarball; npm Registry dist.shasum 83b2a89ec339d58ab0dcaf3c118385c3396955f1 matches that reviewed artifact. Future npm updates use the separate Trusted Publisher staged-review flow while package promotion keeps this npm source identity pinned until a separate npm review.",
+    "@wasm-zoo/qpdf@0.1.1 is sourced from immutable qpdf-v0.1.1 / browser-full and uses the separate Trusted Publisher staged-review flow; its Registry SHA-1 is recorded only after publication."
   ],
   "integration": {
     "summary": "Self-host qpdf-core.js/qpdf-core.wasm plus the Zoo wrapper, stage PDF files in MEMFS, then execute ordinary qpdf CLI arguments locally in a Worker.",
@@ -171,7 +172,7 @@
   "npm": {
     "status": "published",
     "package": "@wasm-zoo/qpdf",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "profile": "browser-full",
     "entry": "index.mjs",
     "bundledAssets": true,
@@ -208,7 +209,7 @@
       "optionalDirs": []
     },
     "docs": {
-      "description": "Unofficial WASM Zoo distribution of the upstream QPDF 12.4.1 CLI for browsers.",
+      "description": "Unofficial WASM Zoo distribution of the upstream QPDF 12.4.2 CLI for browsers.",
       "runtimeNote": "Single-threaded upstream qpdf CLI in an isolated Web Worker with MEMFS and QPDF native crypto. No SharedArrayBuffer is required. Inputs and outputs are explicitly staged in browser memory; there is no native host filesystem access.",
       "example": "import { load } from \"@wasm-zoo/qpdf\";\n\nconst qpdf = await load();\ntry {\n  const result = await qpdf.exec([\"/input.pdf\", \"/output.pdf\", \"--linearize\"], {\n    files: [{ name: \"/input.pdf\", data: inputBytes }],\n    outputs: [\"/output.pdf\"]\n  });\n  console.log(result.files[0].data);\n} finally {\n  qpdf.dispose();\n}"
     },
@@ -221,12 +222,11 @@
       "upstream-cli"
     ],
     "source": {
-      "upstreamVersion": "12.4.1",
-      "builderVersion": "0.1.0",
-      "releaseTag": "qpdf-v0.1.0",
-      "releaseAsset": "qpdf-browser-full-12.4.1-zoo-0.1.0.zip",
-      "commit": "c37f83ae468abb6cc741f43b2f6fdeb66e550ffb"
-    },
-    "registryShasum": "83b2a89ec339d58ab0dcaf3c118385c3396955f1"
+      "upstreamVersion": "12.4.2",
+      "builderVersion": "0.1.1",
+      "releaseTag": "qpdf-v0.1.1",
+      "releaseAsset": "qpdf-browser-full-12.4.2-zoo-0.1.1.zip",
+      "commit": "4eba95899886e851cc41d76886483b347612f2a8"
+    }
   }
 }
