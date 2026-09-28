@@ -198,6 +198,15 @@ try {
     compatWorkflow.includes("upload-artifact@v4"),
     "cross-browser workflow must derive all published npm package matrices from reviewed manifests"
   );
+  const packageSetResolver = normalizeLf(await fs.readFile(path.join(root, "scripts", "npm-package-set.mjs"), "utf8"));
+  need(
+    compatWorkflow.includes("github.event_name") &&
+    compatWorkflow.includes("--registry-ready") &&
+    compatWorkflow.includes("steps.packages.outputs.deferred") &&
+    packageSetResolver.includes("response.status === 404") &&
+    packageSetResolver.includes("npm Registry preflight failed"),
+    "pull-request compatibility matrices must defer only exact-version npm Registry 404s while non-404 Registry failures fail closed"
+  );
   need(
     compatWorkflow.includes("name: Enforce observed threaded compatibility classifications") &&
     compatWorkflow.includes("node scripts/report-threaded-compatibility.mjs") &&

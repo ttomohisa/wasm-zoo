@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- make Cross-browser Lab pull-request matrices Registry-aware for separately reviewed npm-only updates: exact-version npm 404s are deferred until Trusted Publisher approval, while all other Registry failures remain fail-closed and main/scheduled/manual runs still require the complete reviewed package set;
+
 - prepare the separately reviewed `@wasm-zoo/qpdf@0.1.1` npm distribution from immutable `qpdf-v0.1.1` / QPDF 12.4.2, moving the npm source identity to builder 0.1.1 and exact commit `4eba95899886e851cc41d76886483b347612f2a8` while deliberately dropping the old 0.1.0 Registry SHA-1 until Trusted Publisher staging is approved and the new Registry identity can be recorded;
 
 - promote libvips 8.18.7 to builder 0.5.3 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `24ad4d042940e6bf99a68871ba886ca8847c9c82`;
