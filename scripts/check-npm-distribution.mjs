@@ -260,6 +260,11 @@ try {
     qpdfCanary.includes("WASM_ZOO_NPM_PACKAGE_SPEC") &&
     !qpdfCanary.includes("npm publish") && !qpdfCanary.includes("npm stage publish"),
     "QPDF immutable Release npm canary must verify checksums, pack only and run all three browsers without Registry writes");
+  need(qpdfCanary.includes("wasm-zoo-qpdf-*.tgz") &&
+    qpdfCanary.includes("reviewed-qpdf-npm-${{ github.sha }}") &&
+    !qpdfCanary.includes("wasm-zoo-qpdf-0.1.0.tgz") &&
+    !qpdfCanary.includes("reviewed-qpdf-npm-0.1.0-"),
+    "QPDF immutable Release npm canary must discover the reviewed tarball from manifest-driven npm versioning instead of hardcoding a historical npm version");
 
   const zstdMeta=await readJson(path.join(root,"packages/zstd/package.json"));
   need(zstdMeta.status==="available" && zstdMeta.npm?.status==="published" &&
