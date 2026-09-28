@@ -5,7 +5,22 @@ import { npmDistributionSets } from "./npm-package-set.mjs";
 import { assessThreadedRuntime } from "./threaded-browser-capabilities.mjs";
 
 const dir = process.argv[2] || "compat-results";
-const targets = npmDistributionSets(await loadPackages()).threaded;
+const targetsArgIndex = process.argv.indexOf("--targets-json");
+const reviewedTargets = npmDistributionSets(await loadPackages()).threaded;
+let targets = reviewedTargets;
+if (targetsArgIndex >= 0) {
+  const raw = process.argv[targetsArgIndex + 1];
+  if (!raw) throw new Error("--targets-json requires a JSON array argument");
+  const parsed = JSON.parse(raw);
+  if (!Array.isArray(parsed) || parsed.some((slug) => typeof slug !== "string")) {
+    throw new Error("--targets-json must be a JSON array of package slugs");
+  }
+  const unknown = parsed.filter((slug) => !reviewedTargets.includes(slug));
+  if (unknown.length) {
+    throw new Error(`--targets-json contains non-reviewed threaded package(s): ${unknown.join(", ")}`);
+  }
+  targets = [...new Set(parsed)];
+}
 const browsers = ["chromium", "firefox", "webkit"];
 const records = [];
 const errors = [];

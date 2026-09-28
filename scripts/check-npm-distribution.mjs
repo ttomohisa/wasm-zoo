@@ -210,10 +210,19 @@ try {
   need(
     compatWorkflow.includes("name: Enforce observed threaded compatibility classifications") &&
     compatWorkflow.includes("node scripts/report-threaded-compatibility.mjs") &&
+    compatWorkflow.includes("THREADED_TARGETS: ${{ needs.package-set.outputs.threaded }}") &&
+    compatWorkflow.includes("--targets-json \"$THREADED_TARGETS\"") &&
     compatWorkflow.includes("on-unsupported") &&
     compatWorkflow.includes("threaded-*-compatibility") &&
     compatWorkflow.includes("upload-artifact@v4"),
-    "threaded matrix must preserve independent per-browser results and enforce a reported capability policy"
+    "threaded matrix must preserve independent per-browser results and aggregate exactly the resolver-selected threaded package set"
+  );
+  const threadedReport = normalizeLf(await fs.readFile(path.join(root, "scripts", "report-threaded-compatibility.mjs"), "utf8"));
+  need(
+    threadedReport.includes('process.argv.indexOf("--targets-json")') &&
+    threadedReport.includes("non-reviewed threaded package(s)") &&
+    threadedReport.includes("new Set(parsed)"),
+    "threaded aggregate reporter must accept only a deduplicated subset of reviewed threaded packages from the current matrix"
   );
   need(smoke.includes("http.createServer") && smoke.includes("cleanup complete"), "generic npm smoke must serve dist in-process and explicitly complete cleanup");
   need(!smoke.includes('"vite", "preview"') && !smoke.includes("preview.kill("), "generic npm smoke must not use a Vite preview child process");
