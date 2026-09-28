@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-27T09:23:05.503Z",
+  "generatedAt": "2026-09-28T09:58:19.237Z",
   "hasUpdates": true,
   "packages": [
     {
@@ -37,18 +37,18 @@
       "pinned": "7.1.2-31",
       "pinnedRef": "7.1.2-31",
       "pinnedReleased": "2026-09-03",
-      "latest": "7.1.2-31",
-      "latestRef": "7.1.2-31",
-      "latestCommit": "fb965f1b54a65ddb633f8c2eac4452c782c66d7f",
-      "latestReleased": "2026-09-03T21:26:23Z",
-      "updateAvailable": false,
-      "lagDays": 0,
+      "latest": "7.1.2-32",
+      "latestRef": "7.1.2-32",
+      "latestCommit": "ad98b244c995d2e3051757fa3b7855f45b550d24",
+      "latestReleased": "2026-09-27T12:53:14Z",
+      "updateAvailable": true,
+      "lagDays": 24,
       "gap": {
-        "kind": "current",
-        "label": "Current",
-        "versionsBehind": 0
+        "kind": "behind",
+        "label": "Update available",
+        "versionsBehind": 1
       },
-      "url": "https://github.com/ImageMagick/ImageMagick/releases/tag/7.1.2-31",
+      "url": "https://github.com/ImageMagick/ImageMagick/releases/tag/7.1.2-32",
       "candidate": {
         "mode": "auto",
         "profiles": [
@@ -163,7 +163,7 @@
         "adapter": {
           "ready": true,
           "reason": "adapter and compatibility patch bundle resolved to immutable commits",
-          "adapterCommit": "dca91909178800875b575eb896d1fe4ed0a27931",
+          "adapterCommit": "e32bfc3508f3cd0d59fb0a6ae77fb17eae7306a3",
           "adapterVersion": "0.0.18",
           "emsdkVersion": "6.0.10",
           "emscriptenRef": "6.0.10",
