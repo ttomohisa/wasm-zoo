@@ -401,7 +401,7 @@
       ],
       "notes": [
         "v0.4.4 promotes ImageMagick 7.1.2-32 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
-        "@wasm-zoo/imagemagick@0.4.3 remains intentionally pinned to the immutable imagemagick-v0.4.3 / ImageMagick 7.1.2-31 source release until a separate npm-only review advances the Registry distribution.",
+        "@wasm-zoo/imagemagick@0.4.4 is prepared from immutable imagemagick-v0.4.4 / ImageMagick 7.1.2-32 through the separate Trusted Publisher staged-review flow; its Registry SHA-1 is recorded only after publication.",
         "v0.4.3 promotes ImageMagick 7.1.2-31 after the isolated upstream candidate build and real Chromium smoke test passed; the browser-full feature set and Emscripten 6.0.6 toolchain remain unchanged.",
         "v0.4.2 promotes ImageMagick 7.1.2-30 after the isolated upstream candidate build and real Chromium smoke test passed; the browser-full feature set and Emscripten 6.0.6 toolchain remain unchanged.",
         "v0.4.1 is the first metadata-enabled ImageMagick patch release for WASM Zoo v0.8.0: the WebAssembly feature set and upstream pin are unchanged while standalone SLSA provenance and CycloneDX SBOM assets are added to the release contract.",
@@ -506,7 +506,7 @@
       "npm": {
         "status": "published",
         "package": "@wasm-zoo/imagemagick",
-        "version": "0.4.3",
+        "version": "0.4.4",
         "profile": "browser-full",
         "entry": "index.mjs",
         "bundledAssets": true,
@@ -552,11 +552,11 @@
           "conversion"
         ],
         "source": {
-          "upstreamVersion": "7.1.2-31",
-          "builderVersion": "0.4.3",
-          "releaseTag": "imagemagick-v0.4.3",
-          "releaseAsset": "imagemagick-browser-full-7.1.2-31-zoo-0.4.3.zip",
-          "commit": "fb965f1b54a65ddb633f8c2eac4452c782c66d7f"
+          "upstreamVersion": "7.1.2-32",
+          "builderVersion": "0.4.4",
+          "releaseTag": "imagemagick-v0.4.4",
+          "releaseAsset": "imagemagick-browser-full-7.1.2-32-zoo-0.4.4.zip",
+          "commit": "ad98b244c995d2e3051757fa3b7855f45b550d24"
         }
       }
     },
