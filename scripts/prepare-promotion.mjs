@@ -133,6 +133,21 @@ if (config.submodule) {
 }
 await fs.writeFile(versionsFile, versionsText);
 
+if (pkg.npm && config.keepNpmPinned && !pkg.npm.source) {
+  const npmProfile = (pkg.profiles || []).find((profile) => profile.id === pkg.npm.profile);
+  const sourceCommit = oldEnv[config.commitKey];
+  if (!npmProfile?.releaseAsset || !pkg.release?.tag || !sourceCommit) {
+    throw new Error(`${values.slug} cannot snapshot the current immutable npm source identity before promotion`);
+  }
+  pkg.npm.source = {
+    upstreamVersion: oldVersion,
+    builderVersion: oldBuilder,
+    releaseTag: pkg.release.tag,
+    releaseAsset: npmProfile.releaseAsset,
+    commit: sourceCommit
+  };
+}
+
 pkg.upstream.version = values.version;
 pkg.upstream.ref = values.ref;
 pkg.upstream.released = released;

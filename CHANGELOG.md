@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- promote ImageMagick 7.1.2-32 to builder 0.4.4 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `ad98b244c995d2e3051757fa3b7855f45b550d24` while keeping `@wasm-zoo/imagemagick@0.4.3` bound to the immutable `imagemagick-v0.4.3` source release until a separate npm-only review;
+- snapshot the current immutable npm source identity when `keepNpmPinned` is enabled and opt ImageMagick promotions into that policy, so Registry-backed PR compatibility checks never target an unpublished future npm version;
+
 - promote QPDF 12.4.2 to builder 0.1.1 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `4eba95899886e851cc41d76886483b347612f2a8`;
 
 ## v0.18.0

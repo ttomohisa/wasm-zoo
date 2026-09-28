@@ -32,7 +32,7 @@ WASM Zoo v0.18.0 is a project-only operations release. It keeps all eight packag
 
 Published npm enrollment and the Cross-browser Compatibility Lab package/threaded matrices are manifest-driven. Automatic candidate registration, result routing and promotion repository-checker selection are centralized without hiding package-specific build semantics. Successful candidates may still create only review-only promotion PRs; automation does not merge them.
 
-Promotion PRs now include a generated post-merge human handoff. After a real `automation/promote-*` PR is manually merged, a comment-only workflow posts the confirmed merge SHA plus the manual package tag, GitHub Release and conditional npm follow-up. QPDF and Zstandard retain their separately reviewed npm source pins.
+Promotion PRs now include a generated post-merge human handoff. After a real `automation/promote-*` PR is manually merged, a comment-only workflow posts the confirmed merge SHA plus the manual package tag, GitHub Release and conditional npm follow-up. QPDF, Zstandard and ImageMagick retain their separately reviewed npm source pins.
 
 Release Health schema 2 adds live npm Registry alignment to the existing release/Playground/freshness/supply-chain view, including exact/latest version, source Release and `dist.shasum` state. Intentional `keepNpmPinned` drift is a separate-review warning; unexpected source drift or a recorded Registry SHA mismatch is an error.
 
@@ -58,7 +58,7 @@ All eight packages retain review-only automatic candidate contracts. libvips rem
 | --- | --- | --- | --- | --- | --- |
 | FFmpeg | 9.0.2 | 0.2.8 | `browser-full`, `browser-full-gpl` | yes | `@wasm-zoo/ffmpeg@0.2.8` |
 | libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes | `@wasm-zoo/libarchive@0.3.1` |
-| ImageMagick | 7.1.2-31 | 0.4.3 | `browser-full` | yes | `@wasm-zoo/imagemagick@0.4.3` |
+| ImageMagick | 7.1.2-32 | 0.4.4 | `browser-full` | yes | `@wasm-zoo/imagemagick@0.4.3` |
 | libvips | 8.18.6 | 0.5.2 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.2` |
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
@@ -108,7 +108,7 @@ WASM Zoo v0.8.0 adds a distribution-level health layer instead of treating a suc
 - live npm Registry state for the reviewed package/version, including the source Release and Registry SHA-1 when available;
 - an aggregate health state.
 
-`site/release-health.json` is refreshed during Pages deployment and by the daily watcher. Its npm section distinguishes four operational states: aligned/current, Registry update pending, intentionally pinned for a separate npm review, and broken identity (for example a recorded `dist.shasum` mismatch). QPDF and Zstandard may therefore show an intentional npm pin after a future package promotion without being mislabeled as a broken GitHub Release. Older package releases remain valid when they predate the v0.8.0 supply-chain contract; they are shown as waiting for metadata rather than falsely marked broken.
+`site/release-health.json` is refreshed during Pages deployment and by the daily watcher. Its npm section distinguishes four operational states: aligned/current, Registry update pending, intentionally pinned for a separate npm review, and broken identity (for example a recorded `dist.shasum` mismatch). QPDF, Zstandard and ImageMagick may therefore show an intentional npm pin after a future package promotion without being mislabeled as a broken GitHub Release. Older package releases remain valid when they predate the v0.8.0 supply-chain contract; they are shown as waiting for metadata rather than falsely marked broken.
 
 After a builder's real browser smoke test succeeds, every profile now generates:
 
@@ -329,7 +329,7 @@ SHA256SUMS.txt
 
 Its binary ZIP contains four `*-core.js` / `*-core.wasm` pairs, gzip copies, `browser-libarchive.js`, `manifest.json`, `features.json`, `libarchive-config.txt`, build information, libarchive/zlib/bzip2 license notices and toolchain attribution.
 
-## ImageMagick 7.1.2-31
+## ImageMagick 7.1.2-32
 
 WASM Zoo v0.4.0 adds ImageMagick as the third available package.
 
@@ -361,8 +361,8 @@ Linux/macOS:
 Release tag after the real build passes:
 
 ```text
-git tag -a imagemagick-v0.4.3 -m "WASM Zoo ImageMagick v0.4.3"
-git push origin imagemagick-v0.4.3
+git tag -a imagemagick-v0.4.4 -m "WASM Zoo ImageMagick v0.4.4"
+git push origin imagemagick-v0.4.4
 ```
 
 The release workflow rebuilds from the exact pin, runs the Chromium smoke test, publishes binary/source/checksum assets, then asks the Pages workflow to refresh the ImageMagick Playground.
@@ -371,7 +371,7 @@ The release workflow rebuilds from the exact pin, runs the Chromium smoke test, 
 
 ```js
 const image = WasmZooImageMagick.loadHosted({
-  baseUrl: "/assets/imagemagick/7.1.2-31/browser-full/"
+  baseUrl: "/assets/imagemagick/7.1.2-32/browser-full/"
 });
 
 const result = await image.exec([
