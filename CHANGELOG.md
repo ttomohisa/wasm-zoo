@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- repair upstream candidate/promotion Issue reporting by granting the candidate `report` job `issues: write` and escaping Markdown backticks inside unquoted shell heredocs, preventing `auto: command not found`, `Resource not accessible by integration`, and stripped workflow names in watcher comments; add static automation-contract guards for both failure modes;
+
 - make the threaded Cross-browser aggregate consume the exact resolver-selected threaded matrix for each run, preventing prepublication npm PR deferrals from being misreported as missing libvips browser artifacts while keeping main/scheduled/manual runs complete and fail-closed;
 
 - publish the separately reviewed `@wasm-zoo/libvips@0.5.3` npm distribution from immutable `libvips-v0.5.3` / libvips 8.18.7 through Trusted Publisher staged review, keeping the Registry package on `browser-core`, binding its source identity to builder 0.5.3 and exact upstream commit `24ad4d042940e6bf99a68871ba886ca8847c9c82`, and recording Registry `dist.shasum` `f1561fbfae5c7b5d75aba19881bd2d5f4706111a`;
@@ -12,7 +14,7 @@
 
 - make Cross-browser Lab pull-request matrices Registry-aware for separately reviewed npm-only updates: exact-version npm 404s are deferred until Trusted Publisher approval, while all other Registry failures remain fail-closed and main/scheduled/manual runs still require the complete reviewed package set;
 
-- prepare the separately reviewed `@wasm-zoo/qpdf@0.1.1` npm distribution from immutable `qpdf-v0.1.1` / QPDF 12.4.2, moving the npm source identity to builder 0.1.1 and exact commit `4eba95899886e851cc41d76886483b347612f2a8` while deliberately dropping the old 0.1.0 Registry SHA-1 until Trusted Publisher staging is approved and the new Registry identity can be recorded;
+- publish the separately reviewed `@wasm-zoo/qpdf@0.1.1` npm distribution from immutable `qpdf-v0.1.1` / QPDF 12.4.2 through Trusted Publisher staged review, binding builder 0.1.1 and exact commit `4eba95899886e851cc41d76886483b347612f2a8` and recording Registry `dist.shasum` `53714e9a98edca7fbe775b5028adde7719e86625`;
 
 - promote libvips 8.18.7 to builder 0.5.3 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `24ad4d042940e6bf99a68871ba886ca8847c9c82`;
 
