@@ -191,9 +191,9 @@ try {
 
 Ghostscript's WebAssembly binary is AGPL-3.0-or-later. The npm package preserves `LICENSE-Ghostscript.txt` and the complete reviewed `THIRD-PARTY-LICENSES/` directory from the immutable Release; consumers should review those notices before redistribution.
 
-### libvips npm 0.5.3 follow-up (review in progress)
+### libvips npm 0.5.3 follow-up
 
-`@wasm-zoo/libvips@0.5.3` is prepared only from immutable `libvips-v0.5.3` / `libvips-browser-core-8.18.7-zoo-0.5.3.zip`, exact upstream commit `24ad4d042940e6bf99a68871ba886ca8847c9c82`, and Zoo builder 0.5.3. The npm profile remains `browser-core`; `browser-full` is not silently substituted into the Registry package. The new Registry SHA-1 is added to reviewed metadata only after Trusted Publisher staging is approved and the version is visible on the public Registry.
+`@wasm-zoo/libvips@0.5.3` is published from immutable `libvips-v0.5.3` / `libvips-browser-core-8.18.7-zoo-0.5.3.zip`, exact upstream commit `24ad4d042940e6bf99a68871ba886ca8847c9c82`, and Zoo builder 0.5.3. The npm profile remains `browser-core`; `browser-full` is not silently substituted into the Registry package. Trusted Publisher staged publication completed with reviewed Registry `dist.shasum` `f1561fbfae5c7b5d75aba19881bd2d5f4706111a`.
 
 ### libvips
 

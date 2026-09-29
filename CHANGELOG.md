@@ -4,7 +4,7 @@
 
 - make the threaded Cross-browser aggregate consume the exact resolver-selected threaded matrix for each run, preventing prepublication npm PR deferrals from being misreported as missing libvips browser artifacts while keeping main/scheduled/manual runs complete and fail-closed;
 
-- prepare the separately reviewed `@wasm-zoo/libvips@0.5.3` npm distribution from immutable `libvips-v0.5.3` / libvips 8.18.7, keeping the Registry package on `browser-core`, binding its source identity to builder 0.5.3 and exact upstream commit `24ad4d042940e6bf99a68871ba886ca8847c9c82`, and leaving Registry SHA-1 unset until Trusted Publisher staging is approved;
+- publish the separately reviewed `@wasm-zoo/libvips@0.5.3` npm distribution from immutable `libvips-v0.5.3` / libvips 8.18.7 through Trusted Publisher staged review, keeping the Registry package on `browser-core`, binding its source identity to builder 0.5.3 and exact upstream commit `24ad4d042940e6bf99a68871ba886ca8847c9c82`, and recording Registry `dist.shasum` `f1561fbfae5c7b5d75aba19881bd2d5f4706111a`;
 
 - align the generic Registry/Vite smoke with npm-only pull-request staging: PR runs choose their deterministic baseline only from exact Registry-ready versions, while scheduled and manual Registry smokes keep the reviewed published-version requirement without prepublication deferral;
 
