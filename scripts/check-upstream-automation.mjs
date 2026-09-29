@@ -97,6 +97,12 @@ for (const marker of [
   need(watcherWorkflow.includes(marker), `upstream watcher workflow must preserve/reuse existing issues safely: ${marker}`);
 }
 need(!watcherWorkflow.includes('echo "[skip] existing issue #${issue}: ${title}"\n              continue'), 'upstream watcher must not skip an existing issue before checking candidate activity');
+const markdownTick = String.fromCharCode(96);
+need(!watcherWorkflow.includes('For ' + markdownTick + 'auto' + markdownTick + ' candidates'),
+  'upstream watcher Issue heredoc must not expose Markdown backticks to shell command substitution');
+need(!watcherWorkflow.includes(markdownTick + 'adapter-gated' + markdownTick + ' / ' + markdownTick + 'none' + markdownTick + ' candidates'),
+  'upstream watcher Issue heredoc must keep candidate-mode Markdown shell-safe');
+
 
 const candidate = await read('scripts/prepare-candidate.mjs');
 need(candidate.includes('config.extraEnv'), 'candidate preparer must support extraEnv pins');
@@ -192,6 +198,23 @@ need(!workflow.includes("case \"$slug\" in") && !workflow.includes('case "${{ in
   'candidate result routing and promotion checker selection must not retain package-name case mappings');
 need((workflow.match(/^      [a-z0-9_]+:\n        description:/gm) || []).length <= 10, 'candidate workflow_dispatch must stay within GitHub\'s 10-input limit');
 need(workflow.includes("  promotion-pr:") && workflow.includes("    if: ${{ always() && needs.report.outputs.result == 'success' }}") && workflow.includes("    needs: [report]"), "promotion PR job must use always() so skipped non-selected candidate jobs cannot suppress a successful promotion");
+const reportStart = workflow.indexOf('  report:');
+const promotionStart = workflow.indexOf('  promotion-pr:');
+const reportJob = reportStart >= 0 && promotionStart > reportStart ? workflow.slice(reportStart, promotionStart) : '';
+need(reportJob.includes('permissions:\n      contents: read\n      issues: write'),
+  'candidate report job must have issues: write so watcher result comments can be posted');
+need(reportJob.includes('gh issue comment'),
+  'candidate report job must retain its watcher Issue comment');
+need(!reportJob.includes('For ' + markdownTick + 'auto' + markdownTick + ' packages'),
+  'candidate report Issue heredoc must not expose Markdown backticks to shell command substitution');
+const promotionJob = promotionStart >= 0 ? workflow.slice(promotionStart) : '';
+need(promotionJob.includes('gh issue comment'),
+  'promotion job must retain its watcher Issue comment');
+need(!promotionJob.includes('- validation: ' + markdownTick + 'Verify catalog' + markdownTick),
+  'promotion watcher comment must not expose Verify catalog Markdown backticks to shell command substitution');
+need(!promotionJob.includes(markdownTick + 'promotion-handoff.yml' + markdownTick + ' posts'),
+  'promotion watcher comment must not expose promotion-handoff.yml Markdown backticks to shell command substitution');
+
 
 const env = await read('builders/ghostscript/versions.env');
 const pins = Object.fromEntries(env.split(/\r?\n/).filter((line) => /^[A-Z0-9_]+=/.test(line)).map((line) => { const i = line.indexOf('='); return [line.slice(0, i), line.slice(i + 1)]; }));
