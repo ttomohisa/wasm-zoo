@@ -267,8 +267,8 @@ try {
     qpdfMeta.npm?.source?.commit==="4eba95899886e851cc41d76886483b347612f2a8" &&
     qpdfMeta.npm?.source?.releaseTag==="qpdf-v0.1.1" &&
     qpdfMeta.npm?.source?.releaseAsset==="qpdf-browser-full-12.4.2-zoo-0.1.1.zip" &&
-    qpdfMeta.npm?.registryShasum == null,
-    "Prepared QPDF npm 0.1.1 must target immutable qpdf-v0.1.1 browser-full and leave Registry SHA-1 unset until staged publication is approved");
+    qpdfMeta.npm?.registryShasum==="53714e9a98edca7fbe775b5028adde7719e86625",
+    "Published QPDF npm 0.1.1 must target immutable qpdf-v0.1.1 browser-full and retain the exact reviewed Registry SHA-1");
   need(qpdfMeta.npm?.packageFiles?.requiredDirs?.includes("LICENSES"),
     "Published QPDF npm must recursively preserve QPDF/zlib/libjpeg release notices");
   need(smoke.includes("npmMeta.registryShasum") && smoke.includes("dist.shasum"),
