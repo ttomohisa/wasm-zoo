@@ -111,7 +111,7 @@ jobs:
 
           Upstream: ${url}
 
-          The watcher never changes the reviewed Zoo pin on main automatically. For `auto` candidates, a successful isolated candidate build opens a review-only promotion PR and dispatches the normal repository/build checks; merge, release tag and publication remain manual. `adapter-gated` / `none` candidates still require their existing manual gate.
+          The watcher never changes the reviewed Zoo pin on main automatically. For \`auto\` candidates, a successful isolated candidate build opens a review-only promotion PR and dispatches the normal repository/build checks; merge, release tag and publication remain manual. \`adapter-gated\` / \`none\` candidates still require their existing manual gate.
           EOF_BODY
             if [ -n "$existing_issue" ]; then
               issue="$existing_issue"
