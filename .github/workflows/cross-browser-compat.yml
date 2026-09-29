@@ -172,7 +172,9 @@ jobs:
           path: compat-results
           merge-multiple: true
       - name: Verify every threaded result and summarize observed support
-        run: node scripts/report-threaded-compatibility.mjs compat-results
+        env:
+          THREADED_TARGETS: ${{ needs.package-set.outputs.threaded }}
+        run: node scripts/report-threaded-compatibility.mjs compat-results --targets-json "$THREADED_TARGETS"
       - name: Upload aggregate compatibility record
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
