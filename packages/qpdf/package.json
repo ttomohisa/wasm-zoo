@@ -146,7 +146,7 @@
     "The browser smoke starts from a deterministic one-page PDF fixture and verifies check, linearize, AES-256 encryption, decryption and final validation.",
     "Stable QPDF GitHub Releases are eligible for exact source-archive candidate builds and review-only promotion PRs; merge, package tag, GitHub Release and npm publication remain human-controlled.",
     "@wasm-zoo/qpdf@0.1.0 was manually published from the exact three-browser-verified qpdf-v0.1.0 / browser-full tarball; npm Registry dist.shasum 83b2a89ec339d58ab0dcaf3c118385c3396955f1 matches that reviewed artifact. Future npm updates use the separate Trusted Publisher staged-review flow while package promotion keeps this npm source identity pinned until a separate npm review.",
-    "@wasm-zoo/qpdf@0.1.1 is sourced from immutable qpdf-v0.1.1 / browser-full and uses the separate Trusted Publisher staged-review flow; its Registry SHA-1 is recorded only after publication."
+    "@wasm-zoo/qpdf@0.1.1 was published through the Trusted Publisher staged-review flow from immutable qpdf-v0.1.1 / browser-full; npm Registry dist.shasum 53714e9a98edca7fbe775b5028adde7719e86625 records the reviewed public tarball identity."
   ],
   "integration": {
     "summary": "Self-host qpdf-core.js/qpdf-core.wasm plus the Zoo wrapper, stage PDF files in MEMFS, then execute ordinary qpdf CLI arguments locally in a Worker.",
@@ -227,6 +227,7 @@
       "releaseTag": "qpdf-v0.1.1",
       "releaseAsset": "qpdf-browser-full-12.4.2-zoo-0.1.1.zip",
       "commit": "4eba95899886e851cc41d76886483b347612f2a8"
-    }
+    },
+    "registryShasum": "53714e9a98edca7fbe775b5028adde7719e86625"
   }
 }
