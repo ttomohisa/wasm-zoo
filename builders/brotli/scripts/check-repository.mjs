@@ -25,5 +25,5 @@ for(const token of ["brotli 1.2.0","['-q','11'","['-t','/payload.br']","['-d','-
 const runtime=read("runtime/browser-brotli.js"); for(const token of ["createBrotliCore","brotli-core.js","brotli-core.wasm","core.FS.writeFile","core.callMain","typeof Worker"]) need(runtime.includes(token),`runtime contract missing: ${token}`);
 need(!runtime.includes("SharedArrayBuffer"),"Brotli runtime must not require SharedArrayBuffer");
 const release=read("scripts/prepare-release.sh");
-for(const token of ["provenance.json","sbom.cdx.json","wasm-zoo.mjs","brotli-browser-full-","brotli-sources-","SHA256SUMS.txt"]) need(release.includes(token),`release contract missing: ${token}`);
+for(const token of ["provenance.json","sbom.cdx.json","wasm-zoo.mjs",'binary="brotli-${PROFILE}-${BROTLI_VERSION}-zoo-${BUILDER_VERSION}.zip"','source_asset="brotli-sources-${BROTLI_VERSION}-zoo-${BUILDER_VERSION}.tar.gz"',"SHA256SUMS.txt"]) need(release.includes(token),`release contract missing: ${token}`);
 if(errors.length){console.error(`[NG] ${errors.length} Brotli builder check(s)`);for(const e of errors)console.error(` - ${e}`);process.exit(1);}console.log("[OK] Brotli available patch-zero repository checks passed");
