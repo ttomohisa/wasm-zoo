@@ -1,0 +1,69 @@
+name: Build Brotli experimental browser WASM
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "builders/brotli/**"
+      - "packages/brotli/**"
+      - "site/catalog.json"
+      - "site/upstream-status.json"
+      - ".github/workflows/build-brotli.yml"
+  pull_request:
+    paths:
+      - "builders/brotli/**"
+      - "packages/brotli/**"
+      - "site/catalog.json"
+      - "site/upstream-status.json"
+      - ".github/workflows/build-brotli.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Static builder checks
+        shell: bash
+        run: |
+          bash -n builders/brotli/build.sh builders/brotli/scripts/*.sh
+          node --check builders/brotli/runtime/browser-brotli.js
+          node --check builders/brotli/runtime/wasm-zoo.mjs
+          node --check builders/brotli/scripts/smoke-test.mjs
+          node builders/brotli/scripts/check-repository.mjs
+      - name: Build exact upstream Brotli CLI and run real Chromium round trip
+        shell: bash
+        working-directory: builders/brotli
+        env:
+          BROTLI_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - name: Show generated manifest
+        run: cat builders/brotli/dist/browser-full/manifest.json
+      - name: Upload feasibility artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-zoo-brotli-experimental-browser-full-${{ github.sha }}
+          path: |
+            builders/brotli/dist/browser-full/brotli-core.js
+            builders/brotli/dist/browser-full/brotli-core.wasm
+            builders/brotli/dist/browser-full/browser-brotli.js
+            builders/brotli/dist/browser-full/wasm-zoo.mjs
+            builders/brotli/dist/browser-full/manifest.json
+            builders/brotli/dist/browser-full/features.json
+            builders/brotli/dist/browser-full/provenance.json
+            builders/brotli/dist/browser-full/sbom.cdx.json
+            builders/brotli/dist/browser-full/brotli-config.txt
+            builders/brotli/dist/browser-full/BUILDINFO.txt
+            builders/brotli/dist/browser-full/LICENSE-Brotli.txt
+          if-no-files-found: error
+          retention-days: 14

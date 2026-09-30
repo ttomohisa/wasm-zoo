@@ -1,0 +1,28 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>WASM Zoo Brotli smoke test</title>
+<pre id="log">boot</pre>
+<script type="module">
+import { load } from "./wasm-zoo.mjs";
+const logEl=document.querySelector('#log'); const lines=[];
+const onLog=({stream,message})=>{lines.push(`${stream}: ${message}`);logEl.textContent=lines.slice(-100).join('\n');};
+const fail=(error)=>{console.error(error);location.hash=`#SMOKE_TEST_FAIL_${encodeURIComponent(error?.message||String(error))}`;};
+const text='WASM Zoo Brotli upstream CLI feasibility round trip. '.repeat(256);
+const input=new TextEncoder().encode(text);
+(async()=>{try{
+  const brotli=await load({baseUrl:'./'});
+  const version=await brotli.exec(['--version'],{timeoutMs:30000,onLog});
+  if(!version.stdout.includes('brotli 1.2.0')) throw new Error(`brotli --version mismatch: ${version.stdout}`);
+  const compressed=await brotli.exec(['-q','11','-o','/payload.br','/payload.txt'],{files:[{name:'/payload.txt',data:input}],outputs:['/payload.br'],timeoutMs:60000,onLog});
+  const br=compressed.files.find((file)=>file.name==='/payload.br');
+  if(!br?.data?.length) throw new Error('compression did not produce /payload.br');
+  await brotli.exec(['-t','/payload.br'],{files:[{name:'/payload.br',data:br.data}],timeoutMs:30000,onLog});
+  const decoded=await brotli.exec(['-d','-o','/roundtrip.txt','/payload.br'],{files:[{name:'/payload.br',data:br.data}],outputs:['/roundtrip.txt'],timeoutMs:60000,onLog});
+  const roundtrip=decoded.files.find((file)=>file.name==='/roundtrip.txt');
+  if(!roundtrip) throw new Error('decompression did not produce /roundtrip.txt');
+  const actual=new TextDecoder().decode(roundtrip.data);
+  if(actual!==text) throw new Error(`round-trip mismatch: expected ${input.length} bytes got ${roundtrip.data.length}`);
+  brotli.dispose();
+  location.hash=`#SMOKE_TEST_PASS_brotli_1.2.0_q11_roundtrip_${input.length}_to_${br.data.length}`;
+}catch(error){fail(error);}})();
+</script>

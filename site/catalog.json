@@ -7,12 +7,12 @@
     "unofficial": true
   },
   "stats": {
-    "packages": 8,
+    "packages": 9,
     "available": 8,
     "profiles": 11,
-    "featureMatrices": 8,
+    "featureMatrices": 9,
     "referenceBuilds": 7,
-    "supplyChainProfiles": 11
+    "supplyChainProfiles": 12
   },
   "packages": [
     {
@@ -2125,6 +2125,123 @@
         },
         "registryShasum": "53714e9a98edca7fbe775b5028adde7719e86625"
       }
+    },
+    {
+      "schemaVersion": 2,
+      "slug": "brotli",
+      "name": "Brotli",
+      "summary": "Experimental feasibility build of the upstream Google Brotli 1.2.0 CLI for browser WebAssembly, preserving the official C sources and CLI without source patches.",
+      "category": "compression",
+      "status": "experimental",
+      "order": 35,
+      "upstream": {
+        "version": "1.2.0",
+        "ref": "v1.2.0",
+        "released": "2025-10-27",
+        "homepage": "https://github.com/google/brotli",
+        "repository": "https://github.com/google/brotli",
+        "license": "MIT"
+      },
+      "tracker": {
+        "type": "github-releases",
+        "repository": "google/brotli",
+        "versionPattern": "v?(\\d+\\.\\d+\\.\\d+)",
+        "candidateMode": "none",
+        "candidateProfiles": []
+      },
+      "zoo": {
+        "builderVersion": "0.1.0",
+        "toolchain": "Emscripten 6.0.8",
+        "buildModel": "upstream-cmake-cli-patch-zero-feasibility",
+        "reproducible": true,
+        "sourceBundle": true,
+        "checksums": true,
+        "browserSmokeTest": true,
+        "featureInventory": true,
+        "provenance": "in-toto Statement + SLSA Provenance v1",
+        "sbom": "CycloneDX 1.6 JSON",
+        "supplyChainMetadata": true
+      },
+      "profiles": [
+        {
+          "id": "browser-full",
+          "label": "Browser Full",
+          "target": "browser",
+          "threads": false,
+          "simd": false,
+          "sharedArrayBuffer": false,
+          "worker": true,
+          "workerFs": false,
+          "arbitraryCli": true,
+          "network": false,
+          "features": [
+            "upstream brotli CLI",
+            "Brotli compression",
+            "Brotli decompression",
+            "integrity test mode",
+            "quality/window CLI options",
+            "Emscripten MEMFS"
+          ],
+          "externalLibraries": [],
+          "output": "Generic upstream brotli CLI; input and output files are staged in browser MEMFS",
+          "binaryLicense": "MIT",
+          "size": "Experimental build artifact only; no published release size is claimed",
+          "releaseAsset": "brotli-browser-full-1.2.0-zoo-0.1.0.zip",
+          "playground": false
+        }
+      ],
+      "capabilityMatrix": [
+        {
+          "feature": "Upstream brotli CLI",
+          "native": "included",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "The feasibility build links the upstream c/tools/brotli.c target through the upstream CMake project; no replacement compressor CLI is introduced."
+        },
+        {
+          "feature": "Compress/decompress Brotli streams",
+          "native": "included",
+          "profiles": {
+            "browser-full": "included"
+          },
+          "note": "The browser smoke performs a real quality-11 compression, integrity check and decompression round trip."
+        },
+        {
+          "feature": "Host filesystem metadata preservation",
+          "native": "platform",
+          "profiles": {
+            "browser-full": "na"
+          },
+          "note": "Browser execution uses Emscripten MEMFS, so host ownership/permission/time metadata semantics are not exposed as native filesystem behavior."
+        },
+        {
+          "feature": "Threads / SharedArrayBuffer",
+          "native": "optional",
+          "profiles": {
+            "browser-full": "excluded"
+          },
+          "note": "The first feasibility profile is single-threaded and does not require cross-origin isolation."
+        }
+      ],
+      "comparison": [
+        {
+          "name": "Upstream native",
+          "version": "1.2.0",
+          "note": "Official Google Brotli C libraries and brotli CLI on the host filesystem."
+        },
+        {
+          "name": "WASM Zoo experimental",
+          "version": "1.2.0",
+          "note": "Same reviewed upstream tag/commit and upstream CMake brotli CLI target compiled with Emscripten; filesystem I/O is isolated to MEMFS."
+        }
+      ],
+      "notes": [
+        "This is an experimental feasibility package. It deliberately has no package GitHub Release, npm distribution, Playground enrollment or automatic candidate promotion yet.",
+        "The reviewed v1.2.0 tag resolves directly to commit 028fb5a23661f123017c060daa546b55cf4bde29.",
+        "The builder is designed to fail closed unless the exact upstream tag resolves to the reviewed commit and the build uses the upstream CMake brotli executable target.",
+        "The feasibility goal is patch zero: no Brotli source patch, fork or reduced JavaScript codec implementation is introduced."
+      ]
     }
   ]
 }
