@@ -108,6 +108,36 @@ async function stageJq() {
   return 1;
 }
 
+async function stageBrotli() {
+  const env = await readEnv(path.join(root, 'builders', 'brotli', 'versions.env'));
+  const version = env.BROTLI_VERSION;
+  const profile = 'browser-full';
+  const source = path.join(root, 'builders', 'brotli', 'dist', profile);
+  const dest = path.join(root, 'site', 'assets', 'brotli', version, profile);
+  let manifest;
+  try {
+    manifest = JSON.parse(await fs.readFile(path.join(source, 'manifest.json'), 'utf8'));
+  } catch {
+    console.log('[skip] Brotli browser-full: build it first for local Playground');
+    return 0;
+  }
+  if (manifest.package !== 'brotli' ||
+      manifest.profile !== profile ||
+      manifest.upstream?.version !== version ||
+      manifest.upstream?.commit !== env.BROTLI_COMMIT ||
+      manifest.build?.builderVersion !== env.BUILDER_VERSION) {
+    throw new Error('Refusing a stale Brotli local build: browser-full');
+  }
+  await fs.mkdir(dest, { recursive: true });
+  for (const name of ['brotli-core.js', 'brotli-core.wasm', 'manifest.json', 'features.json']) {
+    await fs.copyFile(path.join(source, name), path.join(dest, name));
+  }
+  await fs.copyFile(path.join(root, 'builders', 'brotli', 'runtime', 'browser-brotli.js'), path.join(dest, 'browser-brotli.js'));
+  await fs.copyFile(path.join(root, 'builders', 'brotli', 'runtime', 'wasm-zoo.mjs'), path.join(dest, 'wasm-zoo.mjs'));
+  console.log('[OK] staged Brotli browser-full');
+  return 1;
+}
+
 async function stageQpdf() {
   const env = await readEnv(path.join(root, 'builders', 'qpdf', 'versions.env'));
   const version = env.QPDF_VERSION;
@@ -178,6 +208,7 @@ const localStagers = new Map([
   ['ghostscript', stageGhostscript],
   ['jq', stageJq],
   ['zstd', stageZstd],
+  ['brotli', stageBrotli],
   ['qpdf', stageQpdf]
 ]);
 

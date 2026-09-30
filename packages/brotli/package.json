@@ -2,9 +2,9 @@
   "schemaVersion": 2,
   "slug": "brotli",
   "name": "Brotli",
-  "summary": "Experimental feasibility build of the upstream Google Brotli 1.2.0 CLI for browser WebAssembly, preserving the official C sources and CLI without source patches.",
+  "summary": "Current upstream Google Brotli 1.2.0 CLI compiled for browser WebAssembly from the exact official tag/commit without source patches.",
   "category": "compression",
-  "status": "experimental",
+  "status": "available",
   "order": 35,
   "upstream": {
     "version": "1.2.0",
@@ -24,7 +24,7 @@
   "zoo": {
     "builderVersion": "0.1.0",
     "toolchain": "Emscripten 6.0.8",
-    "buildModel": "upstream-cmake-cli-patch-zero-feasibility",
+    "buildModel": "upstream-cmake-cli-patch-zero",
     "reproducible": true,
     "sourceBundle": true,
     "checksums": true,
@@ -57,9 +57,10 @@
       "externalLibraries": [],
       "output": "Generic upstream brotli CLI; input and output files are staged in browser MEMFS",
       "binaryLicense": "MIT",
-      "size": "Experimental build artifact only; no published release size is claimed",
+      "size": "Loaded from the published release manifest",
       "releaseAsset": "brotli-browser-full-1.2.0-zoo-0.1.0.zip",
-      "playground": false
+      "playground": true,
+      "playgroundPath": "./brotli-playground/"
     }
   ],
   "capabilityMatrix": [
@@ -103,15 +104,37 @@
       "note": "Official Google Brotli C libraries and brotli CLI on the host filesystem."
     },
     {
-      "name": "WASM Zoo experimental",
+      "name": "WASM Zoo",
       "version": "1.2.0",
       "note": "Same reviewed upstream tag/commit and upstream CMake brotli CLI target compiled with Emscripten; filesystem I/O is isolated to MEMFS."
     }
   ],
   "notes": [
-    "This is an experimental feasibility package. It deliberately has no package GitHub Release, npm distribution, Playground enrollment or automatic candidate promotion yet.",
-    "The reviewed v1.2.0 tag resolves directly to commit 028fb5a23661f123017c060daa546b55cf4bde29.",
-    "The builder is designed to fail closed unless the exact upstream tag resolves to the reviewed commit and the build uses the upstream CMake brotli executable target.",
-    "The feasibility goal is patch zero: no Brotli source patch, fork or reduced JavaScript codec implementation is introduced."
-  ]
+    "Brotli 1.2.0 is built from the exact upstream v1.2.0 tag at commit 028fb5a23661f123017c060daa546b55cf4bde29 using the upstream CMake brotli executable target.",
+    "The reviewed browser-full build preserves the upstream CLI and has zero Brotli source patches; the browser-specific boundary is limited to Worker execution and Emscripten MEMFS file staging.",
+    "The initial package release is brotli-v0.1.0. A human maintainer creates the reviewed package tag; the tag-triggered workflow rebuilds, smoke-tests and publishes immutable binary/source/checksum/provenance/SBOM assets.",
+    "Automatic upstream candidates and npm distribution remain disabled for this stage and require separate reviewed follow-up changes."
+  ],
+  "integration": {
+    "summary": "Self-host browser-brotli.js, wasm-zoo.mjs and the reviewed Brotli core files, stage input/output files in MEMFS, then execute ordinary upstream brotli CLI arguments locally in a Worker.",
+    "files": [
+      "browser-brotli.js",
+      "wasm-zoo.mjs",
+      "brotli-core.js",
+      "brotli-core.wasm"
+    ],
+    "example": "<script src=\"/vendor/brotli/browser-brotli.js\"></script>\n<script>\nconst brotli = WasmZooBrotli.loadHosted({ baseUrl: \"/vendor/brotli/\" });\nawait brotli.load();\nconst result = await brotli.exec([\"-q\", \"11\", \"-o\", \"/output.br\", \"/input.bin\"], {\n  files: [{ name: \"/input.bin\", data: inputBytes }],\n  outputs: [\"/output.br\"]\n});\nconsole.log(result.files[0].data);\nbrotli.dispose();\n</script>",
+    "notes": [
+      "No SharedArrayBuffer or cross-origin isolation is required for browser-full.",
+      "The wrapper preserves the upstream CLI argument model and adds only Worker isolation, MEMFS staging and stdout/stderr capture.",
+      "Native host filesystem metadata semantics are not available; files must be staged explicitly into MEMFS."
+    ]
+  },
+  "release": {
+    "tag": "brotli-v0.1.0",
+    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/brotli-v0.1.0",
+    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/brotli-v0.1.0/",
+    "sourceAsset": "brotli-sources-1.2.0-zoo-0.1.0.tar.gz",
+    "checksumsAsset": "SHA256SUMS.txt"
+  }
 }

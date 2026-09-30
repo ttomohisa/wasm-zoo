@@ -8,6 +8,7 @@
 [![libvips build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libvips.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-libvips.yml)
 [![Ghostscript build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-ghostscript.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-ghostscript.yml)
 [![jq build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-jq.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-jq.yml)
+[![Brotli build](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-brotli.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/build-brotli.yml)
 [![Upstream watcher](https://github.com/ttomohisa/wasm-zoo/actions/workflows/check-upstream.yml/badge.svg)](https://github.com/ttomohisa/wasm-zoo/actions/workflows/check-upstream.yml)
 
 **Current upstream software, compiled for WebAssembly.**
@@ -23,6 +24,7 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 - jq Playground: https://ttomohisa.github.io/wasm-zoo/jq-playground/
 - Zstandard Playground: https://ttomohisa.github.io/wasm-zoo/zstd-playground/
 - QPDF Playground: https://ttomohisa.github.io/wasm-zoo/qpdf-playground/
+- Brotli Playground: https://ttomohisa.github.io/wasm-zoo/brotli-playground/
 
 
 
@@ -64,6 +66,9 @@ All eight packages retain review-only automatic candidate contracts. libvips rem
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 | Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
 | QPDF | 12.4.2 | 0.1.1 | `browser-full` | yes | `@wasm-zoo/qpdf@0.1.1` |
+| Brotli | 1.2.0 | 0.1.0 | `browser-full` | yes | — |
+
+Brotli 1.2.0 is the ninth available package after its patch-zero upstream-CMake feasibility build passed a real Chromium compression/integrity/decompression round trip. Its initial `brotli-v0.1.0` package Release and Playground are reviewed separately from future automatic-candidate and npm rollout work.
 
 WASM Zoo v0.17.0 was the project release that completed the QPDF rollout. Individual package builders, npm distribution versions and immutable package release tags keep their own versions, so later project-only releases do not require package republishing.
 
@@ -298,7 +303,7 @@ In the libarchive Playground, List/Extract expects an archive input, while Creat
 start-local.bat
 ```
 
-This regenerates the catalog, stages any locally built FFmpeg/libarchive/ImageMagick/libvips/Ghostscript/jq/Zstandard/QPDF artifacts under ignored `site/assets/`, and serves:
+This regenerates the catalog, stages any locally built FFmpeg/libarchive/ImageMagick/libvips/Ghostscript/jq/Zstandard/QPDF/Brotli artifacts under ignored `site/assets/`, and serves:
 
 ```text
 http://localhost:4173/
@@ -310,6 +315,7 @@ http://localhost:4173/ghostscript-playground/
 http://localhost:4173/jq-playground/
 http://localhost:4173/zstd-playground/
 http://localhost:4173/qpdf-playground/
+http://localhost:4173/brotli-playground/
 ```
 
 The catalog still works when no local Wasm build has been staged.

@@ -1,0 +1,64 @@
+name: Release Brotli WASM
+
+on:
+  push:
+    tags:
+      - "brotli-v*.*.*"
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout tagged source
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Verify release tag
+        shell: bash
+        working-directory: builders/brotli
+        run: |
+          set -euo pipefail
+          source ./versions.env
+          test "${GITHUB_REF_NAME}" = "brotli-v${BUILDER_VERSION}"
+      - name: Static builder and reviewed-pin checks
+        shell: bash
+        run: |
+          bash -n builders/brotli/build.sh builders/brotli/scripts/*.sh
+          node builders/brotli/scripts/check-repository.mjs
+      - name: Build and smoke-test browser-full
+        shell: bash
+        working-directory: builders/brotli
+        env:
+          BROTLI_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - name: Prepare binary, corresponding source and checksum assets
+        shell: bash
+        working-directory: builders/brotli
+        run: ./scripts/prepare-release.sh
+      - name: Publish GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/brotli/versions.env
+          gh release create "${GITHUB_REF_NAME}" builders/brotli/release/* \
+            --verify-tag \
+            --title "WASM Zoo · Brotli ${BROTLI_VERSION} · browser build" \
+            --notes "Unofficial current-upstream Google Brotli CLI build for browser WebAssembly. Built from exact v${BROTLI_VERSION} / ${BROTLI_COMMIT} with Emscripten ${EMSDK_VERSION}, the upstream CMake brotli executable target and zero Brotli source patches. The release includes corresponding source/build recipe, in-toto/SLSA provenance, CycloneDX 1.6 SBOM and SHA-256 checksums. Chromium smoke testing verifies the upstream version, quality-11 compression, integrity-test mode and a byte-identical decompression round trip before publication."
+      - name: Refresh Pages so the Playground stages this release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main
