@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-30T09:50:14.884Z",
+  "generatedAt": "2026-10-01T10:17:36.407Z",
   "hasUpdates": false,
   "packages": [
     {
@@ -163,6 +163,30 @@
       }
     },
     {
+      "slug": "brotli",
+      "name": "Brotli",
+      "status": "ok",
+      "pinned": "1.2.0",
+      "pinnedRef": "v1.2.0",
+      "pinnedReleased": "2025-10-27",
+      "latest": "1.2.0",
+      "latestRef": "v1.2.0",
+      "latestCommit": "028fb5a23661f123017c060daa546b55cf4bde29",
+      "latestReleased": "2025-10-27T16:03:32Z",
+      "updateAvailable": false,
+      "lagDays": 0,
+      "gap": {
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
+      },
+      "url": "https://github.com/google/brotli/releases/tag/v1.2.0",
+      "candidate": {
+        "mode": "none",
+        "profiles": []
+      }
+    },
+    {
       "slug": "ghostscript",
       "name": "Ghostscript",
       "status": "ok",
@@ -224,30 +248,6 @@
           "sourceUrl": "https://github.com/qpdf/qpdf/releases/download/v12.4.2/qpdf-12.4.2.tar.gz",
           "sourceSha256": "8a58af5b6141319287c1883bec8bd1bd545b7567b7fc5e6ce5d25a1c85f36397"
         }
-      }
-    },
-    {
-      "slug": "brotli",
-      "name": "Brotli",
-      "status": "ok",
-      "pinned": "1.2.0",
-      "pinnedRef": "v1.2.0",
-      "pinnedReleased": "2025-10-27",
-      "latest": "1.2.0",
-      "latestRef": "v1.2.0",
-      "latestCommit": "028fb5a23661f123017c060daa546b55cf4bde29",
-      "latestReleased": "2025-10-27T16:03:32Z",
-      "updateAvailable": false,
-      "lagDays": 0,
-      "gap": {
-        "kind": "current",
-        "label": "Current",
-        "versionsBehind": 0
-      },
-      "url": "https://github.com/google/brotli/releases/tag/v1.2.0",
-      "candidate": {
-        "mode": "none",
-        "profiles": []
       }
     }
   ]

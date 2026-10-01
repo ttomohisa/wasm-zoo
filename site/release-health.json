@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-30T09:50:27.368Z",
+  "generatedAt": "2026-10-01T10:17:50.319Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -359,6 +359,57 @@
       }
     },
     {
+      "slug": "brotli",
+      "name": "Brotli",
+      "tag": "brotli-v0.1.0",
+      "release": {
+        "state": "pending",
+        "label": "Reviewed tag pending",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/brotli-v0.1.0",
+        "publishedAt": null,
+        "assetCount": 0,
+        "missingAssets": [
+          "brotli-browser-full-1.2.0-zoo-0.1.0.zip",
+          "brotli-sources-1.2.0-zoo-0.1.0.tar.gz",
+          "SHA256SUMS.txt"
+        ]
+      },
+      "supplyChain": {
+        "state": "pending",
+        "label": "Publishes with reviewed package release",
+        "expected": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ],
+        "missing": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ]
+      },
+      "buildGate": {
+        "state": "pending",
+        "label": "Reviewed tag not created"
+      },
+      "playground": {
+        "state": "ok",
+        "label": "HTTP 200",
+        "url": "https://ttomohisa.github.io/wasm-zoo/brotli-playground/"
+      },
+      "freshness": {
+        "state": "ok",
+        "label": "Current"
+      },
+      "npm": {
+        "state": "na",
+        "label": "No npm distribution",
+        "updatePending": false
+      },
+      "overall": {
+        "state": "pending",
+        "label": "In progress"
+      }
+    },
+    {
       "slug": "ghostscript",
       "name": "Ghostscript",
       "tag": "ghostscript-v0.7.2",
@@ -472,57 +523,6 @@
       "overall": {
         "state": "ok",
         "label": "Healthy"
-      }
-    },
-    {
-      "slug": "brotli",
-      "name": "Brotli",
-      "tag": "brotli-v0.1.0",
-      "release": {
-        "state": "pending",
-        "label": "Reviewed tag pending",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/brotli-v0.1.0",
-        "publishedAt": null,
-        "assetCount": 0,
-        "missingAssets": [
-          "brotli-browser-full-1.2.0-zoo-0.1.0.zip",
-          "brotli-sources-1.2.0-zoo-0.1.0.tar.gz",
-          "SHA256SUMS.txt"
-        ]
-      },
-      "supplyChain": {
-        "state": "pending",
-        "label": "Publishes with reviewed package release",
-        "expected": [
-          "provenance-browser-full.json",
-          "sbom-browser-full.cdx.json"
-        ],
-        "missing": [
-          "provenance-browser-full.json",
-          "sbom-browser-full.cdx.json"
-        ]
-      },
-      "buildGate": {
-        "state": "pending",
-        "label": "Reviewed tag not created"
-      },
-      "playground": {
-        "state": "pending",
-        "label": "Publishes after reviewed package release",
-        "url": "https://ttomohisa.github.io/wasm-zoo/brotli-playground/"
-      },
-      "freshness": {
-        "state": "ok",
-        "label": "Current"
-      },
-      "npm": {
-        "state": "na",
-        "label": "No npm distribution",
-        "updatePending": false
-      },
-      "overall": {
-        "state": "pending",
-        "label": "In progress"
       }
     }
   ],
