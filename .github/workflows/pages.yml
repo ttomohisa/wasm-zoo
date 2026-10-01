@@ -24,6 +24,8 @@ on:
       - "builders/ghostscript/runtime/wasm-zoo.mjs"
       - "builders/jq/runtime/browser-jq.js"
       - "builders/jq/runtime/wasm-zoo.mjs"
+      - "builders/brotli/runtime/browser-brotli.js"
+      - "builders/brotli/runtime/wasm-zoo.mjs"
       - "builders/qpdf/runtime/browser-qpdf.js"
       - "builders/qpdf/runtime/wasm-zoo.mjs"
       - "builders/zstd/runtime/**"
@@ -220,6 +222,34 @@ jobs:
           cp builders/jq/runtime/wasm-zoo.mjs "$dest/wasm-zoo.mjs"
           echo "[OK] staged jq ${version} ${tag}"
 
+
+      - name: Stage checksum-verified published Brotli release for Playground
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source builders/brotli/versions.env
+          tag="brotli-v${BUILDER_VERSION}"
+          version="${BROTLI_VERSION}"
+          if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "[WARN] ${tag} is not published yet; Brotli Playground assets will be staged after the reviewed release workflow completes."
+            exit 0
+          fi
+          work="${RUNNER_TEMP}/wasm-zoo-pages-brotli"
+          rm -rf "$work" && mkdir -p "$work"
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir "$work"
+          (
+            cd "$work"
+            sha256sum -c SHA256SUMS.txt
+          )
+          asset="brotli-browser-full-${version}-zoo-${BUILDER_VERSION}.zip"
+          dest="site/assets/brotli/${version}/browser-full"
+          mkdir -p "$dest"
+          unzip -q -j "$work/$asset" brotli-core.js brotli-core.wasm manifest.json features.json -d "$dest"
+          cp builders/brotli/runtime/browser-brotli.js "$dest/browser-brotli.js"
+          cp builders/brotli/runtime/wasm-zoo.mjs "$dest/wasm-zoo.mjs"
+          echo "[OK] staged checksum-verified Brotli ${version} ${tag}"
 
       - name: Stage checksum-verified published QPDF release for Playground
         shell: bash

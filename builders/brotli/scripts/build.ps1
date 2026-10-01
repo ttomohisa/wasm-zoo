@@ -29,7 +29,7 @@ $args=@(
   '--build-arg',"PROFILE=$Profile",
   '--output',"type=local,dest=$out",$Root
 )
-Write-Host "WASM Zoo / Brotli $Profile experimental feasibility" -ForegroundColor Cyan
+Write-Host "WASM Zoo / Brotli $Profile" -ForegroundColor Cyan
 & docker @args
 if($LASTEXITCODE -ne 0){throw "Docker build failed with exit code $LASTEXITCODE"}
 & node (Join-Path $Root 'scripts\smoke-test.mjs') $Profile
@@ -37,4 +37,4 @@ if($LASTEXITCODE -ne 0){throw "Browser smoke test failed with exit code $LASTEXI
 $RepoRoot = Split-Path -Parent (Split-Path -Parent $Root)
 & node (Join-Path $RepoRoot 'scripts\generate-build-metadata.mjs') --slug brotli --profile $Profile --dist $out
 if($LASTEXITCODE -ne 0){throw "Supply-chain metadata generation failed with exit code $LASTEXITCODE"}
-Write-Host "[OK] Brotli $Profile feasibility build + round trip + provenance/SBOM passed" -ForegroundColor Green
+Write-Host "[OK] Brotli $Profile build + round trip + provenance/SBOM passed" -ForegroundColor Green

@@ -1,4 +1,4 @@
-name: Build Brotli experimental browser WASM
+name: Build Brotli browser WASM
 
 on:
   workflow_dispatch:
@@ -9,6 +9,7 @@ on:
       - "packages/brotli/**"
       - "site/catalog.json"
       - "site/upstream-status.json"
+      - "site/brotli-playground/**"
       - ".github/workflows/build-brotli.yml"
   pull_request:
     paths:
@@ -16,6 +17,7 @@ on:
       - "packages/brotli/**"
       - "site/catalog.json"
       - "site/upstream-status.json"
+      - "site/brotli-playground/**"
       - ".github/workflows/build-brotli.yml"
 
 permissions:
@@ -49,7 +51,11 @@ jobs:
           ./build.sh browser-full
       - name: Show generated manifest
         run: cat builders/brotli/dist/browser-full/manifest.json
-      - name: Upload feasibility artifact
+      - name: Prepare reviewed release handoff without publishing
+        shell: bash
+        working-directory: builders/brotli
+        run: ./scripts/prepare-release.sh
+      - name: Upload reviewed build artifact
         uses: actions/upload-artifact@v7
         with:
           name: wasm-zoo-brotli-experimental-browser-full-${{ github.sha }}
@@ -65,5 +71,12 @@ jobs:
             builders/brotli/dist/browser-full/brotli-config.txt
             builders/brotli/dist/browser-full/BUILDINFO.txt
             builders/brotli/dist/browser-full/LICENSE-Brotli.txt
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload reviewed release handoff
+        uses: actions/upload-artifact@v7
+        with:
+          name: wasm-zoo-brotli-release-handoff-${{ github.sha }}
+          path: builders/brotli/release/*
           if-no-files-found: error
           retention-days: 14

@@ -1,8 +1,8 @@
-# Brotli experimental builder
+# Brotli builder
 
-Builds the upstream Google Brotli `v1.2.0` `brotli` CLI for browser WebAssembly as a feasibility package.
+Builds the upstream Google Brotli `v1.2.0` `brotli` CLI for browser WebAssembly.
 
-The key constraint is **patch zero**: the builder checks out the reviewed upstream tag/commit and builds the upstream CMake `brotli` executable target. It does not fork or patch Brotli source code.
+The reviewed build remains **patch zero**: the builder checks out the exact upstream tag/commit and builds the upstream CMake `brotli` executable target without forking or patching Brotli source code.
 
 ## Profile
 
@@ -22,4 +22,4 @@ builders\\brotli\\build.bat browser-full
 
 The real Chromium smoke test verifies `brotli --version`, quality-11 compression, integrity-test mode and decompression back to byte-identical input.
 
-This package is intentionally `experimental`: no package Release, npm package, Playground or automatic promotion is claimed until the feasibility build is proven in CI.
+The reviewed package release is `brotli-v0.1.0`. A human creates the package tag; the tag-triggered release workflow rebuilds from the exact pins, reruns the browser smoke, publishes binary/corresponding-source/checksum/provenance/SBOM assets, then refreshes Pages. npm distribution and automatic upstream promotion remain separate review stages.

@@ -31,4 +31,4 @@ for file in browser-brotli.js brotli-core.js brotli-core.wasm manifest.json feat
 done
 node "$ROOT/scripts/smoke-test.mjs" "$PROFILE"
 node "$ROOT/../../scripts/generate-build-metadata.mjs" --slug brotli --profile "$PROFILE" --dist "$OUT"
-printf '\n[OK] Brotli %s feasibility build + real Chromium round trip + provenance/SBOM passed\n' "$PROFILE"
+printf '\n[OK] Brotli %s build + real Chromium round trip + provenance/SBOM passed\n' "$PROFILE"

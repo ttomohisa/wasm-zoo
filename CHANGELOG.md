@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- promote Brotli 1.2.0 from the patch-zero experimental feasibility gate to the ninth available package, adding a human-tag-triggered `brotli-v0.1.0` GitHub Release workflow, checksum-verified published-only Playground, local preview stager and Release Health pending state while keeping npm and automatic upstream candidates as separate reviews;
+
+- add Google Brotli 1.2.0 as the ninth package feasibility builder, compiling the exact upstream CMake `brotli` executable target at commit `028fb5a23661f123017c060daa546b55cf4bde29` with zero Brotli source patches and gating it on a real Chromium quality-11 compression, integrity-test and byte-identical decompression round trip;
+
 - repair upstream candidate/promotion Issue reporting by granting the candidate `report` job `issues: write` and escaping Markdown backticks inside unquoted shell heredocs, preventing `auto: command not found`, `Resource not accessible by integration`, and stripped workflow names in watcher comments; add static automation-contract guards for both failure modes;
 
 - make the threaded Cross-browser aggregate consume the exact resolver-selected threaded matrix for each run, preventing prepublication npm PR deferrals from being misreported as missing libvips browser artifacts while keeping main/scheduled/manual runs complete and fail-closed;
