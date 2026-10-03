@@ -1758,7 +1758,7 @@
         "The reviewed browser-full build preserves the upstream CLI and has zero Brotli source patches; the browser-specific boundary is limited to Worker execution and Emscripten MEMFS file staging.",
         "The initial package release is brotli-v0.1.0. A human maintainer creates the reviewed package tag; the tag-triggered workflow rebuilds, smoke-tests and publishes immutable binary/source/checksum/provenance/SBOM assets.",
         "Stable Google Brotli GitHub Releases are eligible for exact-tag/commit browser-full candidate builds and review-only promotion PRs. Automation may prepare the reviewed pin change after the real Chromium gate passes, but merge, package tag, GitHub Release and any future npm publication remain human-controlled.",
-        "@wasm-zoo/brotli@0.1.0 is in prepublication canary review from the immutable brotli-v0.1.0 / browser-full Release asset. The canary tarball must pass real Vite Chromium, Firefox and WebKit CLI operations before any first Registry publication; canary metadata alone does not enroll Brotli in the Registry-backed Cross-browser Lab."
+        "@wasm-zoo/brotli@0.1.0 was manually published from the exact three-browser-verified brotli-v0.1.0 / browser-full canary tarball; npm Registry dist.shasum 6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7 records the reviewed public tarball identity. The initial local publish disabled npm Registry-generated provenance; the package still includes the reviewed CI provenance.json and CycloneDX SBOM. Future npm updates remain a separate reviewed action."
       ],
       "integration": {
         "summary": "Self-host browser-brotli.js, wasm-zoo.mjs and the reviewed Brotli core files, stage input/output files in MEMFS, then execute ordinary upstream brotli CLI arguments locally in a Worker.",
@@ -1783,7 +1783,7 @@
         "checksumsAsset": "SHA256SUMS.txt"
       },
       "npm": {
-        "status": "canary",
+        "status": "published",
         "package": "@wasm-zoo/brotli",
         "version": "0.1.0",
         "profile": "browser-full",
@@ -1831,7 +1831,15 @@
           "compression",
           "decompression",
           "upstream-cli"
-        ]
+        ],
+        "source": {
+          "upstreamVersion": "1.2.0",
+          "builderVersion": "0.1.0",
+          "releaseTag": "brotli-v0.1.0",
+          "releaseAsset": "brotli-browser-full-1.2.0-zoo-0.1.0.zip",
+          "commit": "028fb5a23661f123017c060daa546b55cf4bde29"
+        },
+        "registryShasum": "6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7"
       }
     },
     {

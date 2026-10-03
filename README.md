@@ -66,15 +66,15 @@ All eight packages retain review-only automatic candidate contracts. libvips rem
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 | Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
 | QPDF | 12.4.2 | 0.1.1 | `browser-full` | yes | `@wasm-zoo/qpdf@0.1.1` |
-| Brotli | 1.2.0 | 0.1.0 | `browser-full` | yes | `@wasm-zoo/brotli@0.1.0` (canary) |
+| Brotli | 1.2.0 | 0.1.0 | `browser-full` | yes | `@wasm-zoo/brotli@0.1.0` |
 
-Brotli 1.2.0 is the ninth available package after its patch-zero upstream-CMake feasibility build passed a real Chromium compression/integrity/decompression round trip. `brotli-v0.1.0` is now the immutable source for the `@wasm-zoo/brotli@0.1.0` prepublication npm canary; Registry publication and Lab enrollment still require the separate post-canary human/follow-up steps.
+Brotli 1.2.0 is the ninth available package after its patch-zero upstream-CMake feasibility build passed a real Chromium compression/integrity/decompression round trip. `@wasm-zoo/brotli@0.1.0` is now public from the exact three-browser-verified `brotli-v0.1.0` canary tarball, with Registry SHA-1 `6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7`.
 
 WASM Zoo v0.17.0 was the project release that completed the QPDF rollout. Individual package builders, npm distribution versions and immutable package release tags keep their own versions, so later project-only releases do not require package republishing.
 
 ### npm distribution
 
-WASM Zoo v0.13.0 completed npm rollout for the original six packages. Zstandard became the seventh npm distribution after a reviewed tarball passed Chromium, Firefox and WebKit prepublication tests and the maintainer manually published it. QPDF is now the eighth npm distribution, published from its independently reviewed three-browser canary tarball with the Registry SHA-1 bound to that exact artifact.
+WASM Zoo v0.13.0 completed npm rollout for the original six packages. Zstandard became the seventh npm distribution after a reviewed tarball passed Chromium, Firefox and WebKit prepublication tests and the maintainer manually published it. QPDF became the eighth npm distribution. Brotli is now the ninth, published from its independently reviewed three-browser canary tarball with the Registry SHA-1 bound to that exact artifact.
 
 ```text
 npm install @wasm-zoo/jq
@@ -85,9 +85,10 @@ npm install @wasm-zoo/libvips
 npm install @wasm-zoo/ffmpeg
 npm install @wasm-zoo/zstd
 npm install @wasm-zoo/qpdf
+npm install @wasm-zoo/brotli
 ```
 
-Brotli is intentionally absent from the install list until the reviewed `@wasm-zoo/brotli@0.1.0` canary tarball has passed Chromium/Firefox/WebKit and the first Registry publication is completed manually.
+`@wasm-zoo/brotli@0.1.0` is public from the exact canary tarball that passed Chromium, Firefox and WebKit; Registry `dist.shasum` `6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7` binds live tests to that reviewed artifact.
 
 `@wasm-zoo/qpdf@0.1.0` is public. Its initial human publication used the exact immutable `qpdf-v0.1.0` Release-derived tarball that passed Vite + Chromium/Firefox/WebKit real PDF operations; Registry `dist.shasum` `83b2a89ec339d58ab0dcaf3c118385c3396955f1` matches that reviewed tarball. Future QPDF npm versions use the normal Trusted Publisher staged-review flow.
 
@@ -97,13 +98,13 @@ The FFmpeg npm package intentionally pins the LGPL `browser-full` profile; the s
 
 Future npm versions use Trusted Publisher OIDC with `npm stage publish`; the temporary rollout bootstrap/direct-publish path has been removed.
 
-### Cross-browser Compatibility Lab (current target: 24 verified main-branch operations)
+### Cross-browser Compatibility Lab (current target: 27 verified main-branch operations)
 
-The browser lab executes **every available manifest with `npm.status: published`** in Chromium, Firefox and WebKit, using real package operations after a production Vite build—not an instantiate-only test. The selected `npm.profile` determines whether the package enters the ordinary or threaded matrix from its declared runtime requirements. The current v0.17 set is eight packages / 24 cells. FFmpeg and libvips also verify COOP/COEP/CORP and measured threaded-runtime capabilities before execution. A genuinely missing browser capability is labeled `unsupported` only with explicit evidence; an unexpected error is `fail`.
+The browser lab executes **every available manifest with `npm.status: published`** in Chromium, Firefox and WebKit, using real package operations after a production Vite build—not an instantiate-only test. The selected `npm.profile` determines whether the package enters the ordinary or threaded matrix from its declared runtime requirements. The current manifest-selected set is nine packages / 27 cells. FFmpeg and libvips also verify COOP/COEP/CORP and measured threaded-runtime capabilities before execution. A genuinely missing browser capability is labeled `unsupported` only with explicit evidence; an unexpected error is `fail`.
 
 The [public browser compatibility dashboard](https://ttomohisa.github.io/wasm-zoo/#compatibility) reads the **latest eligible main-branch GitHub Actions run**, including unsuccessful or still-running attempts, so it never falls back to an older passing result. It displays tested package versions, browser engines, test time and a link to the source run. If the current latest run is failing, pending, stale, mismatched or missing artifacts, the site reports **not tested** rather than copying a previous passing result. Weekly checks refresh the evidence. See [Cross-browser Lab documentation](docs/CROSS_BROWSER_LAB.md) for the status policy.
 
-WASM Zoo v0.17.0 records QPDF as the eighth public npm distribution and the Registry-backed Lab expansion from 21 to 24 cells. The final reviewed-main release evidence is Lab run #86 with 24/24 browser-operation passes and Pages run #141 publishing a verified 24-pass snapshot. This project release does not change any reviewed upstream/toolchain pin, builder version or immutable package release. The human maintainer controls PR merges and project/package release tags; CI never automatically merges, tags, releases or publishes reviewed changes. See [v0.17.0 release checklist](docs/V017_RELEASE.md).
+WASM Zoo v0.17.0 records QPDF as the eighth public npm distribution and the Registry-backed Lab expansion from 21 to 24 cells. Brotli is the ninth public npm distribution and expands the current manifest-derived target to 27 cells; this does not rewrite the historical v0.17 release evidence. The final reviewed-main release evidence is Lab run #86 with 24/24 browser-operation passes and Pages run #141 publishing a verified 24-pass snapshot. This project release does not change any reviewed upstream/toolchain pin, builder version or immutable package release. The human maintainer controls PR merges and project/package release tags; CI never automatically merges, tags, releases or publishes reviewed changes. See [v0.17.0 release checklist](docs/V017_RELEASE.md).
 
 ## Release health and supply-chain metadata
 
