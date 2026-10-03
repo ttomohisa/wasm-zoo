@@ -15,7 +15,7 @@ This project release records the reviewed **Brotli & 27-cell Registry Lab** work
 - QPDF advanced to 12.4.2 / Zoo builder 0.1.1 and `@wasm-zoo/qpdf@0.1.1`, keeping package promotion and npm publication as separately reviewed steps.
 - Candidate/promotion Issue reporting was hardened so the reporting job has the required Issue write permission and shell heredocs do not accidentally interpret Markdown backticks.
 - The threaded Lab aggregate now consumes the exact resolver-selected threaded matrix, so prepublication npm PR deferrals do not become false missing-threaded-artifact failures.
-- The reviewed-pin boundary is unchanged: automation may prepare review artifacts and promotion PRs, but it **never automatically merges, tags, creates a reviewed GitHub Release or publishes npm**.
+- The reviewed-pin boundary is unchanged: automation may prepare review artifacts and promotion PRs, but it **never automatically merges, tags, creates a GitHub Release or publishes npm**.
 
 ## Reviewed pre-finalization evidence
 
