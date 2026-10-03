@@ -1,18 +1,26 @@
 # npm distribution
 
-WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`; v0.13.0 completed the original six-package rollout. WASM Zoo v0.15.0 records the separately reviewed and manually published seventh npm distribution, `@wasm-zoo/zstd@0.3.0`. The v0.17 QPDF rollout uses a separately reviewed prepublication canary derived from immutable `qpdf-v0.1.0`; that exact tarball is now the eighth public npm distribution. Brotli is now entering the same prepublication canary stage from immutable `brotli-v0.1.0`; it is not yet a public Registry package and is not yet part of the Registry-backed Lab.
+WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`; v0.13.0 completed the original six-package rollout. WASM Zoo v0.15.0 records the separately reviewed and manually published seventh npm distribution, `@wasm-zoo/zstd@0.3.0`. The v0.17 QPDF rollout uses a separately reviewed prepublication canary derived from immutable `qpdf-v0.1.0`; that exact tarball is now the eighth public npm distribution. Brotli completed the same immutable-Release canary path and is now the ninth public npm distribution as `@wasm-zoo/brotli@0.1.0`, bound to the exact reviewed tarball by Registry SHA-1.
 
-## Brotli Phase 4A: immutable Release npm canary (prepublication)
+## Brotli Phase 4A (completed): immutable Release npm canary
 
 `@wasm-zoo/brotli@0.1.0` is prepared only from the immutable `brotli-v0.1.0` / `brotli-browser-full-1.2.0-zoo-0.1.0.zip` Release identity. The canary downloads all Release assets, verifies `SHA256SUMS.txt`, checks the exact Google Brotli 1.2.0 commit, Zoo builder 0.1.0, Emscripten 6.0.8, patch-zero upstream CMake CLI identity, provenance, CycloneDX SBOM and MIT license notice, then overlays only the reviewed npm wrapper files.
 
-The packed tarball must run the real upstream CLI through a Vite production build in Chromium, Firefox and WebKit. Each browser performs quality-11 compression, Brotli integrity-test mode and byte-identical decompression. The workflow sets `WASM_ZOO_NPM_PACKAGE_SPEC` explicitly, so the shared smoke runner permits `npm.status: canary` only for that local reviewed tarball; Registry-backed smoke remains restricted to `published` packages.
+The packed tarball passed the real upstream CLI through a Vite production build in Chromium, Firefox and WebKit. Each browser performed quality-11 compression, Brotli integrity-test mode and byte-identical decompression. The workflow sets `WASM_ZOO_NPM_PACKAGE_SPEC` explicitly, so the shared smoke runner permits `npm.status: canary` only for that local reviewed tarball; Registry-backed smoke remains restricted to `published` packages.
 
-This phase has **no Registry write**. `.github/workflows/npm-brotli-canary.yml` contains neither `npm publish` nor `npm stage publish`. Brotli remains outside the manifest-derived Registry Cross-browser Lab until a human publishes the exact reviewed tarball and a follow-up metadata PR records `npm.status: published` plus the observed Registry `dist.shasum`.
+Phase 4A itself had **no Registry write**. `.github/workflows/npm-brotli-canary.yml` contains neither `npm publish` nor `npm stage publish`; the exact reviewed tarball was published only afterward by the human maintainer.
 
 | npm package | npm version | upstream | Zoo builder | source Release | state |
 | --- | ---: | ---: | ---: | --- | --- |
-| `@wasm-zoo/brotli` | `0.1.0` | Brotli 1.2.0 | `0.1.0` | `brotli-v0.1.0` / `browser-full` | canary |
+| `@wasm-zoo/brotli` | `0.1.0` | Brotli 1.2.0 | `0.1.0` | `brotli-v0.1.0` / `browser-full` | published |
+
+## Brotli Phase 4B (completed): published npm and 27-cell Registry Lab
+
+`@wasm-zoo/brotli@0.1.0` was manually published from the exact immutable `brotli-v0.1.0` Phase 4A tarball after Chromium, Firefox and WebKit all passed the real quality-11 compression, integrity-test and byte-identical decompression operation. The reviewed Registry `dist.shasum` is `6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7`.
+
+The first publication was performed locally with npm Registry-generated provenance disabled because that provenance mode is not available from an ordinary local CLI provider. The package still bundles the independently reviewed CI `provenance.json` (in-toto/SLSA Provenance v1) and CycloneDX 1.6 SBOM from the immutable GitHub Release-derived distribution.
+
+With `npm.status: published`, Brotli is selected automatically by the manifest-driven npm package resolver as a single-threaded `browser-full` distribution. Registry-backed smoke verifies the recorded SHA-1 before installation, and the Cross-browser Lab expands from eight packages / 24 browser-operation cells to **nine packages / 27 cells** without a package-name allowlist edit.
 
 ## Zstandard Phase 4B (completed): published npm and verified Registry browser operations
 
@@ -99,6 +107,7 @@ Package metadata now records `npm.status: published` plus that Registry SHA-1. L
 | `@wasm-zoo/ffmpeg` | `0.2.8` | FFmpeg 9.0.2 | `0.2.8` | `ffmpeg-v0.2.8` / `browser-full` | published |
 | `@wasm-zoo/zstd` | `0.3.0` | Zstandard 1.5.7 | `0.3.0` | `zstd-v0.3.0` / `browser-full` | published |
 | `@wasm-zoo/qpdf` | `0.1.1` | QPDF 12.4.2 | `0.1.1` | `qpdf-v0.1.1` / `browser-full` | published |
+| `@wasm-zoo/brotli` | `0.1.0` | Brotli 1.2.0 | `0.1.0` | `brotli-v0.1.0` / `browser-full` | published |
 
 The original six packages completed their public Registry + Vite/Chromium gates; Zstandard is the seventh public distribution and QPDF is the eighth. Both manually bootstrapped packages bind live Registry tests to the exact SHA-1 of their reviewed three-browser tarballs. FFmpeg is intentionally pinned to the LGPL `browser-full` profile; the GPL/libx264 profile is not bundled into this package.
 
@@ -281,6 +290,29 @@ try {
 ```
 
 The npm package contains the reviewed single-threaded `browser-full` upstream QPDF CLI. It requires no SharedArrayBuffer. Inputs/outputs are explicitly staged through MEMFS, and the live Registry fixture verifies check, linearize, AES-256 encryption, decryption and final structural validation.
+
+### Brotli
+
+```bash
+npm install @wasm-zoo/brotli
+```
+
+```js
+import { load } from "@wasm-zoo/brotli";
+
+const brotli = await load();
+try {
+  const result = await brotli.exec(["-q", "11", "-o", "/output.br", "/input.bin"], {
+    files: [{ name: "/input.bin", data: inputBytes }],
+    outputs: ["/output.br"]
+  });
+  console.log(result.files[0].data);
+} finally {
+  brotli.dispose();
+}
+```
+
+The npm distribution is the reviewed single-threaded upstream Brotli CLI in `browser-full`; it requires no SharedArrayBuffer or cross-origin isolation. The Registry identity is pinned to `6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7`.
 
 ## Bundler asset handling
 

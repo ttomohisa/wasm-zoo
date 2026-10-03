@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- add the prepublication `@wasm-zoo/brotli@0.1.0` npm canary from immutable `brotli-v0.1.0/browser-full`, with checksum/source/provenance/SBOM/license verification and real Vite Chromium/Firefox/WebKit quality-11 compress/integrity/decompress operations; Registry writes and formal Lab enrollment remain deferred to the post-canary human publication/follow-up;
+- publish the separately reviewed `@wasm-zoo/brotli@0.1.0` npm distribution from immutable `brotli-v0.1.0/browser-full` after the exact canary tarball passed Vite Chromium/Firefox/WebKit quality-11 compress/integrity/decompress operations, recording Registry `dist.shasum` `6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7` and expanding the manifest-derived Registry Lab from 24 to 27 operation cells; the initial local publish does not claim npm Registry-generated provenance, while the bundled reviewed CI provenance/SBOM remain intact;
 
 - enable Brotli stable-release automatic candidates after the reviewed `brotli-v0.1.0` package release: resolve each Google Brotli Release tag to an exact commit, substitute version/ref/commit together, run the patch-zero upstream CLI Chromium round-trip gate, and allow success to create only a review-only promotion PR while merge/tag/Release/npm remain human-controlled;
 

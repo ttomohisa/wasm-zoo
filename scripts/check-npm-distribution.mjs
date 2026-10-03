@@ -262,14 +262,18 @@ try {
   need(ffmpegMeta.npm?.packageFiles?.required?.includes("LICENSES/FFmpeg-COPYING.LGPLv2.1"), "FFmpeg npm package must retain the LGPL license copy");
   need(!(ffmpegMeta.npm?.packageFiles?.required || []).some((rel) => rel.endsWith("/x264-COPYING") || rel.endsWith("/FFmpeg-COPYING.GPLv2")), "FFmpeg npm browser-full package must not accidentally include GPL/x264-only release files");
   const brotliMeta=await readJson(path.join(root,"packages/brotli/package.json"));
-  need(brotliMeta.status==="available" && brotliMeta.npm?.status==="canary" &&
+  need(brotliMeta.status==="available" && brotliMeta.npm?.status==="published" &&
     brotliMeta.npm?.package==="@wasm-zoo/brotli" && brotliMeta.npm?.version==="0.1.0" &&
-    brotliMeta.npm?.profile==="browser-full" && brotliMeta.release?.tag==="brotli-v0.1.0" &&
-    brotliMeta.profiles?.find((item)=>item.id==="browser-full")?.releaseAsset==="brotli-browser-full-1.2.0-zoo-0.1.0.zip" &&
-    !brotliMeta.npm?.registryShasum,
-    "Brotli Phase 4A must remain a Registry-free 0.1.0 canary over immutable brotli-v0.1.0/browser-full");
+    brotliMeta.npm?.profile==="browser-full" &&
+    brotliMeta.npm?.source?.upstreamVersion==="1.2.0" &&
+    brotliMeta.npm?.source?.builderVersion==="0.1.0" &&
+    brotliMeta.npm?.source?.releaseTag==="brotli-v0.1.0" &&
+    brotliMeta.npm?.source?.releaseAsset==="brotli-browser-full-1.2.0-zoo-0.1.0.zip" &&
+    brotliMeta.npm?.source?.commit==="028fb5a23661f123017c060daa546b55cf4bde29" &&
+    brotliMeta.npm?.registryShasum==="6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7",
+    "Published Brotli npm 0.1.0 must stay bound to the exact three-browser-verified brotli-v0.1.0 tarball and reviewed Registry SHA-1");
   need(brotliMeta.npm?.packageFiles?.requiredDirs?.includes("LICENSES"),
-    "Brotli npm canary must recursively preserve the upstream MIT license notice");
+    "Published Brotli npm must recursively preserve the upstream MIT license notice");
   const brotliCanary=await fs.readFile(path.join(root,".github/workflows/npm-brotli-canary.yml"),"utf8");
   need(brotliCanary.includes("sha256sum -c SHA256SUMS.txt") &&
     brotliCanary.includes("scripts/verify-npm-brotli-release.mjs") &&
