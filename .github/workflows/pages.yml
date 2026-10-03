@@ -9,9 +9,17 @@ on:
   push:
     branches: [main]
     paths:
-      - "packages/**"
       - "site/**"
-      - "scripts/**"
+      - "!site/catalog.json"
+      - "!site/upstream-status.json"
+      - "!site/release-health.json"
+      - "!site/browser-compatibility.json"
+      - "scripts/generate-catalog.mjs"
+      - "scripts/check-upstream.mjs"
+      - "scripts/check-release-health.mjs"
+      - "scripts/release-health-npm.mjs"
+      - "scripts/upstream-config.mjs"
+      - "scripts/libvips-adapter.mjs"
       - "builders/ffmpeg/runtime/browser-ffmpeg.js"
       - "builders/ffmpeg/runtime/wasm-zoo.mjs"
       - "builders/libarchive/runtime/browser-libarchive.js"
@@ -29,7 +37,6 @@ on:
       - "builders/qpdf/runtime/browser-qpdf.js"
       - "builders/qpdf/runtime/wasm-zoo.mjs"
       - "builders/zstd/runtime/**"
-      - "VERSION"
       - ".github/workflows/pages.yml"
 
 permissions:

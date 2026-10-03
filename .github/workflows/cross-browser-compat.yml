@@ -6,31 +6,37 @@ on:
     branches: [main]
     paths:
       - 'packages/**'
-      - 'scripts/**'
       - 'VERSION'
-      - 'package.json'
-      - '.github/workflows/cross-browser-compat.yml'
-      - '.github/workflows/pages.yml'
-  pull_request:
-    paths:
-      - 'VERSION'
-      - 'package.json'
-      - 'README.md'
-      - 'site/**'
-      - 'packages/**'
+      - 'scripts/lib.mjs'
       - 'scripts/browser-compatibility-snapshot.mjs'
       - 'scripts/npm-package-set.mjs'
       - 'scripts/publish-browser-compatibility.mjs'
-      - 'scripts/test-browser-compatibility-snapshot.mjs'
       - 'scripts/smoke-npm-package.mjs'
       - 'scripts/threaded-browser-capabilities.mjs'
       - 'scripts/test-threaded-browser-capabilities.mjs'
       - 'scripts/report-threaded-compatibility.mjs'
       - 'scripts/check-npm-distribution.mjs'
       - '.github/workflows/cross-browser-compat.yml'
-      - 'docs/CROSS_BROWSER_LAB.md'
+      - '.github/workflows/pages.yml'
+  pull_request:
+    paths:
+      - 'packages/**'
+      - 'scripts/lib.mjs'
+      - 'scripts/browser-compatibility-snapshot.mjs'
+      - 'scripts/npm-package-set.mjs'
+      - 'scripts/publish-browser-compatibility.mjs'
+      - 'scripts/smoke-npm-package.mjs'
+      - 'scripts/threaded-browser-capabilities.mjs'
+      - 'scripts/test-threaded-browser-capabilities.mjs'
+      - 'scripts/report-threaded-compatibility.mjs'
+      - 'scripts/check-npm-distribution.mjs'
+      - '.github/workflows/cross-browser-compat.yml'
   schedule:
     - cron: '41 3 * * 1'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

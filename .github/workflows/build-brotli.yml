@@ -7,18 +7,16 @@ on:
     paths:
       - "builders/brotli/**"
       - "packages/brotli/**"
-      - "site/catalog.json"
-      - "site/upstream-status.json"
-      - "site/brotli-playground/**"
       - ".github/workflows/build-brotli.yml"
   pull_request:
     paths:
       - "builders/brotli/**"
       - "packages/brotli/**"
-      - "site/catalog.json"
-      - "site/upstream-status.json"
-      - "site/brotli-playground/**"
       - ".github/workflows/build-brotli.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

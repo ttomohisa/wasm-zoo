@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- reduce GitHub Actions waste by impact-scoping the heavyweight Registry/browser/build workflows, keeping the full 27-cell Lab as reviewed-main evidence for project `VERSION` changes while skipping it for release-documentation/project-metadata-only pull requests, preventing generated catalog/status files from rebuilding Brotli/QPDF, avoiding duplicate Pages deployment before Lab completion, and cancelling stale heavy pull-request runs when a newer commit arrives;
+
 ## v0.19.0
 
 - publish the separately reviewed `@wasm-zoo/brotli@0.1.0` npm distribution from immutable `brotli-v0.1.0/browser-full` after the exact canary tarball passed Vite Chromium/Firefox/WebKit quality-11 compress/integrity/decompress operations, recording Registry `dist.shasum` `6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7` and expanding the manifest-derived Registry Lab from 24 to 27 operation cells; the initial local publish does not claim npm Registry-generated provenance, while the bundled reviewed CI provenance/SBOM remain intact;
