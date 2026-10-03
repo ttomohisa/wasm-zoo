@@ -1,6 +1,18 @@
 # npm distribution
 
-WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`; v0.13.0 completed the original six-package rollout. WASM Zoo v0.15.0 records the separately reviewed and manually published seventh npm distribution, `@wasm-zoo/zstd@0.3.0`. The v0.17 QPDF rollout uses a separately reviewed prepublication canary derived from immutable `qpdf-v0.1.0`; that exact tarball is now the eighth public npm distribution.
+WASM Zoo v0.12.0 introduced npm distribution with `@wasm-zoo/jq`; v0.13.0 completed the original six-package rollout. WASM Zoo v0.15.0 records the separately reviewed and manually published seventh npm distribution, `@wasm-zoo/zstd@0.3.0`. The v0.17 QPDF rollout uses a separately reviewed prepublication canary derived from immutable `qpdf-v0.1.0`; that exact tarball is now the eighth public npm distribution. Brotli is now entering the same prepublication canary stage from immutable `brotli-v0.1.0`; it is not yet a public Registry package and is not yet part of the Registry-backed Lab.
+
+## Brotli Phase 4A: immutable Release npm canary (prepublication)
+
+`@wasm-zoo/brotli@0.1.0` is prepared only from the immutable `brotli-v0.1.0` / `brotli-browser-full-1.2.0-zoo-0.1.0.zip` Release identity. The canary downloads all Release assets, verifies `SHA256SUMS.txt`, checks the exact Google Brotli 1.2.0 commit, Zoo builder 0.1.0, Emscripten 6.0.8, patch-zero upstream CMake CLI identity, provenance, CycloneDX SBOM and MIT license notice, then overlays only the reviewed npm wrapper files.
+
+The packed tarball must run the real upstream CLI through a Vite production build in Chromium, Firefox and WebKit. Each browser performs quality-11 compression, Brotli integrity-test mode and byte-identical decompression. The workflow sets `WASM_ZOO_NPM_PACKAGE_SPEC` explicitly, so the shared smoke runner permits `npm.status: canary` only for that local reviewed tarball; Registry-backed smoke remains restricted to `published` packages.
+
+This phase has **no Registry write**. `.github/workflows/npm-brotli-canary.yml` contains neither `npm publish` nor `npm stage publish`. Brotli remains outside the manifest-derived Registry Cross-browser Lab until a human publishes the exact reviewed tarball and a follow-up metadata PR records `npm.status: published` plus the observed Registry `dist.shasum`.
+
+| npm package | npm version | upstream | Zoo builder | source Release | state |
+| --- | ---: | ---: | ---: | --- | --- |
+| `@wasm-zoo/brotli` | `0.1.0` | Brotli 1.2.0 | `0.1.0` | `brotli-v0.1.0` / `browser-full` | canary |
 
 ## Zstandard Phase 4B (completed): published npm and verified Registry browser operations
 

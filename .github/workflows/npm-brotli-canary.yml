@@ -1,0 +1,116 @@
+# Immutable Brotli Release-derived npm tarball canary: no Registry writes or automatic tags.
+name: Verify immutable Brotli npm canary (no publish)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "packages/brotli/**"
+      - "builders/brotli/runtime/**"
+      - "scripts/prepare-npm-package.mjs"
+      - "scripts/check-npm-distribution.mjs"
+      - "scripts/smoke-npm-package.mjs"
+      - "scripts/verify-npm-brotli-release.mjs"
+      - "package.json"
+      - ".github/workflows/npm-brotli-canary.yml"
+      - "docs/NPM_DISTRIBUTION.md"
+  push:
+    branches: [main]
+    paths:
+      - "packages/brotli/**"
+      - "builders/brotli/runtime/**"
+      - "scripts/prepare-npm-package.mjs"
+      - "scripts/check-npm-distribution.mjs"
+      - "scripts/smoke-npm-package.mjs"
+      - "scripts/verify-npm-brotli-release.mjs"
+      - ".github/workflows/npm-brotli-canary.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pack:
+    name: Repack immutable Brotli release under reviewed npm overlay (no publish)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Require reviewed npm CLI
+        run: npm install --global npm@12.0.2
+      - name: Download and verify ALL assets of the immutable release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          status="$(node -p "require('./packages/brotli/package.json').npm.status")"
+          test "$status" = canary || test "$status" = published
+          tag="$(node -p "require('./packages/brotli/package.json').npm.source?.releaseTag || require('./packages/brotli/package.json').release.tag")"
+          asset="$(node -p "const p=require('./packages/brotli/package.json'); p.npm.source?.releaseAsset || p.profiles.find(x=>x.id===p.npm.profile).releaseAsset")"
+          test -n "$tag" && test -n "$asset"
+          mkdir -p npm-brotli/download npm-brotli/input npm-brotli/artifacts
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir npm-brotli/download
+          (cd npm-brotli/download && sha256sum -c SHA256SUMS.txt)
+          unzip -q "npm-brotli/download/$asset" -d npm-brotli/input
+          node scripts/verify-npm-brotli-release.mjs --input npm-brotli/input
+      - name: Prepare reviewed npm overlay, synthetic npm contracts and tarball
+        run: |
+          node scripts/prepare-npm-package.mjs --slug brotli --input npm-brotli/input --output npm-brotli/package
+          node scripts/check-npm-distribution.mjs
+          npm pack ./npm-brotli/package --json --ignore-scripts --pack-destination npm-brotli/artifacts | tee npm-brotli/pack.json
+          mapfile -t tarballs < <(find npm-brotli/artifacts -maxdepth 1 -type f -name 'wasm-zoo-brotli-*.tgz' -print)
+          test "${#tarballs[@]}" -eq 1
+          test -s "${tarballs[0]}"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: reviewed-brotli-npm-${{ github.sha }}
+          path: |
+            npm-brotli/artifacts/*.tgz
+            npm-brotli/pack.json
+          retention-days: 30
+          if-no-files-found: error
+
+  browser:
+    name: Packed Brotli CLI / Vite / ${{ matrix.browser }} (NOT registry)
+    needs: pack
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Require reviewed npm CLI
+        run: npm install --global npm@12.0.2
+      - uses: actions/download-artifact@v7
+        with:
+          name: reviewed-brotli-npm-${{ github.sha }}
+          path: npm-brotli
+      - name: Run real immutable-release Brotli through Vite production build and browser
+        shell: bash
+        env:
+          WASM_ZOO_PLAYWRIGHT_WITH_DEPS: '1'
+        run: |
+          set -euo pipefail
+          mapfile -t tarballs < <(find "$PWD/npm-brotli" -type f -name 'wasm-zoo-brotli-*.tgz' -print)
+          test "${#tarballs[@]}" -eq 1
+          export WASM_ZOO_NPM_PACKAGE_SPEC="${tarballs[0]}"
+          test -s "$WASM_ZOO_NPM_PACKAGE_SPEC"
+          node scripts/smoke-npm-package.mjs --slug brotli --browser '${{ matrix.browser }}' \
+            --result-json 'npm-brotli/compat-${{ matrix.browser }}.json'
+      - uses: actions/upload-artifact@v7
+        if: ${{ always() }}
+        with:
+          name: brotli-packed-${{ matrix.browser }}-${{ github.sha }}
+          path: npm-brotli/compat-${{ matrix.browser }}.json
+          retention-days: 30
+          if-no-files-found: warn

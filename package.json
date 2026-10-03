@@ -37,6 +37,8 @@
     "npm:zstd:verify-release": "node scripts/verify-npm-zstd-release.mjs",
     "onboarding:check": "node scripts/check-package-onboarding.mjs",
     "npm:qpdf:verify-release": "node scripts/verify-npm-qpdf-release.mjs",
-    "npm:smoke:qpdf": "node scripts/smoke-npm-package.mjs --slug qpdf"
+    "npm:smoke:qpdf": "node scripts/smoke-npm-package.mjs --slug qpdf",
+    "npm:brotli:verify-release": "node scripts/verify-npm-brotli-release.mjs",
+    "npm:smoke:brotli": "node scripts/smoke-npm-package.mjs --slug brotli"
   }
 }

@@ -177,7 +177,8 @@ try {
   );
   need(
     !smoke.includes("crossBrowserSlugs") &&
-    smoke.includes('npmMeta?.status !== "published"') &&
+    smoke.includes('const localCanary = Boolean(localPackageSpec) && npmMeta?.status === "canary"') &&
+    smoke.includes('npmMeta?.status !== "published" && !localCanary') &&
     smoke.includes("No published npm smoke fixture for") &&
     smoke.includes('assessThreadedRuntime') &&
     smoke.includes('if (requiresIsolation)') &&
@@ -230,6 +231,7 @@ try {
   need(smoke.includes("output.png") && smoke.includes("PNG signature") && smoke.includes("readU32BE"), "ImageMagick live smoke must perform a real resize and validate emitted PNG bytes");
   need(smoke.includes("output.pdf") && smoke.includes("%PDF-") && smoke.includes("%%EOF"), "Ghostscript live smoke must convert PostScript to a PDF and validate its PDF framing");
   need(smoke.includes("qpdf:") && smoke.includes("makeQpdfOnePagePdf") && smoke.includes("--linearize") && smoke.includes("--encrypt") && smoke.includes("--decrypt"), "QPDF npm smoke must validate a real PDF through check/linearize/AES-256 encrypt/decrypt");
+  need(smoke.includes("brotli:") && smoke.includes('["-q", "11"') && smoke.includes('["-t", "/payload.br"]') && smoke.includes('["-d", "-o", "/roundtrip.txt"'), "Brotli npm smoke must validate a real quality-11 compress/integrity/decompress byte-identical round trip");
   need(smoke.includes("libvips:") && smoke.includes("Image.newFromBuffer") && smoke.includes("writeToBuffer") && smoke.includes("crossOriginIsolated"), "libvips live smoke must exercise the library API under cross-origin isolation");
   need(smoke.includes("ffmpeg:") && smoke.includes("input.pcm") && smoke.includes("/output.wav") && smoke.includes("RIFF") && smoke.includes("WAVE"), "FFmpeg live smoke must convert raw PCM to WAV and validate RIFF/WAVE framing");
   need(smoke.includes("cross-origin-opener-policy") && smoke.includes("cross-origin-embedder-policy"), "generic npm smoke server must provide COOP/COEP for pthread packages");
@@ -259,6 +261,26 @@ try {
   need(ffmpegMeta.npm?.profile === "browser-full", "FFmpeg npm distribution must pin the LGPL browser-full profile");
   need(ffmpegMeta.npm?.packageFiles?.required?.includes("LICENSES/FFmpeg-COPYING.LGPLv2.1"), "FFmpeg npm package must retain the LGPL license copy");
   need(!(ffmpegMeta.npm?.packageFiles?.required || []).some((rel) => rel.endsWith("/x264-COPYING") || rel.endsWith("/FFmpeg-COPYING.GPLv2")), "FFmpeg npm browser-full package must not accidentally include GPL/x264-only release files");
+  const brotliMeta=await readJson(path.join(root,"packages/brotli/package.json"));
+  need(brotliMeta.status==="available" && brotliMeta.npm?.status==="canary" &&
+    brotliMeta.npm?.package==="@wasm-zoo/brotli" && brotliMeta.npm?.version==="0.1.0" &&
+    brotliMeta.npm?.profile==="browser-full" && brotliMeta.release?.tag==="brotli-v0.1.0" &&
+    brotliMeta.profiles?.find((item)=>item.id==="browser-full")?.releaseAsset==="brotli-browser-full-1.2.0-zoo-0.1.0.zip" &&
+    !brotliMeta.npm?.registryShasum,
+    "Brotli Phase 4A must remain a Registry-free 0.1.0 canary over immutable brotli-v0.1.0/browser-full");
+  need(brotliMeta.npm?.packageFiles?.requiredDirs?.includes("LICENSES"),
+    "Brotli npm canary must recursively preserve the upstream MIT license notice");
+  const brotliCanary=await fs.readFile(path.join(root,".github/workflows/npm-brotli-canary.yml"),"utf8");
+  need(brotliCanary.includes("sha256sum -c SHA256SUMS.txt") &&
+    brotliCanary.includes("scripts/verify-npm-brotli-release.mjs") &&
+    brotliCanary.includes("browser: [chromium, firefox, webkit]") &&
+    brotliCanary.includes("WASM_ZOO_NPM_PACKAGE_SPEC") &&
+    !brotliCanary.includes("npm publish") && !brotliCanary.includes("npm stage publish"),
+    "Brotli immutable Release npm canary must verify checksums, pack only and run all three browsers without Registry writes");
+  need(brotliCanary.includes("wasm-zoo-brotli-*.tgz") &&
+    brotliCanary.includes("reviewed-brotli-npm-${{ github.sha }}"),
+    "Brotli immutable Release npm canary must discover the manifest-versioned reviewed tarball without hardcoding an artifact filename");
+
   const qpdfMeta=await readJson(path.join(root,"packages/qpdf/package.json"));
   need(qpdfMeta.status==="available" && qpdfMeta.npm?.status==="published" &&
     qpdfMeta.npm?.package==="@wasm-zoo/qpdf" && qpdfMeta.npm?.version==="0.1.1" &&

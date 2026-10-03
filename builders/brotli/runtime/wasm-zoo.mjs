@@ -1,4 +1,4 @@
-// WASM Zoo Consumer API v1 ESM adapter for Brotli experimental feasibility.
+// WASM Zoo Consumer API v1 ESM adapter for the reviewed Brotli browser-full CLI.
 export const API_VERSION = 1;
 export const packageInfo = Object.freeze({
   apiVersion: API_VERSION,

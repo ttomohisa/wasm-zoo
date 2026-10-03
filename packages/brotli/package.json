@@ -115,7 +115,8 @@
     "Brotli 1.2.0 is built from the exact upstream v1.2.0 tag at commit 028fb5a23661f123017c060daa546b55cf4bde29 using the upstream CMake brotli executable target.",
     "The reviewed browser-full build preserves the upstream CLI and has zero Brotli source patches; the browser-specific boundary is limited to Worker execution and Emscripten MEMFS file staging.",
     "The initial package release is brotli-v0.1.0. A human maintainer creates the reviewed package tag; the tag-triggered workflow rebuilds, smoke-tests and publishes immutable binary/source/checksum/provenance/SBOM assets.",
-    "Stable Google Brotli GitHub Releases are eligible for exact-tag/commit browser-full candidate builds and review-only promotion PRs. Automation may prepare the reviewed pin change after the real Chromium gate passes, but merge, package tag, GitHub Release and any future npm publication remain human-controlled."
+    "Stable Google Brotli GitHub Releases are eligible for exact-tag/commit browser-full candidate builds and review-only promotion PRs. Automation may prepare the reviewed pin change after the real Chromium gate passes, but merge, package tag, GitHub Release and any future npm publication remain human-controlled.",
+    "@wasm-zoo/brotli@0.1.0 is in prepublication canary review from the immutable brotli-v0.1.0 / browser-full Release asset. The canary tarball must pass real Vite Chromium, Firefox and WebKit CLI operations before any first Registry publication; canary metadata alone does not enroll Brotli in the Registry-backed Cross-browser Lab."
   ],
   "integration": {
     "summary": "Self-host browser-brotli.js, wasm-zoo.mjs and the reviewed Brotli core files, stage input/output files in MEMFS, then execute ordinary upstream brotli CLI arguments locally in a Worker.",
@@ -138,5 +139,56 @@
     "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/brotli-v0.1.0/",
     "sourceAsset": "brotli-sources-1.2.0-zoo-0.1.0.tar.gz",
     "checksumsAsset": "SHA256SUMS.txt"
+  },
+  "npm": {
+    "status": "canary",
+    "package": "@wasm-zoo/brotli",
+    "version": "0.1.0",
+    "profile": "browser-full",
+    "entry": "index.mjs",
+    "bundledAssets": true,
+    "publishWorkflow": "publish-npm.yml",
+    "runtime": {
+      "classicScript": "browser-brotli.js",
+      "consumerScript": "wasm-zoo.mjs",
+      "assetMode": "single",
+      "assets": [
+        {
+          "id": "brotli",
+          "coreJs": "brotli-core.js",
+          "wasm": "brotli-core.wasm"
+        }
+      ]
+    },
+    "packageFiles": {
+      "required": [
+        "browser-brotli.js",
+        "wasm-zoo.mjs",
+        "brotli-core.js",
+        "brotli-core.wasm",
+        "manifest.json",
+        "features.json",
+        "provenance.json",
+        "sbom.cdx.json",
+        "brotli-config.txt",
+        "BUILDINFO.txt"
+      ],
+      "optional": [],
+      "requiredDirs": [
+        "LICENSES"
+      ],
+      "optionalDirs": []
+    },
+    "docs": {
+      "description": "Unofficial WASM Zoo distribution of the upstream Google Brotli 1.2.0 CLI for browsers.",
+      "runtimeNote": "Single-threaded upstream brotli CLI in an isolated Web Worker with Emscripten MEMFS. No SharedArrayBuffer or cross-origin isolation is required. Inputs and outputs are explicitly staged in browser memory; the package preserves ordinary upstream CLI arguments rather than replacing Brotli with a JavaScript codec API.",
+      "example": "import { load } from \"@wasm-zoo/brotli\";\n\nconst brotli = await load();\ntry {\n  const compressed = await brotli.exec([\"-q\", \"11\", \"-o\", \"/output.br\", \"/input.bin\"], {\n    files: [{ name: \"/input.bin\", data: inputBytes }],\n    outputs: [\"/output.br\"]\n  });\n  console.log(compressed.files[0].data);\n} finally {\n  brotli.dispose();\n}"
+    },
+    "keywords": [
+      "brotli",
+      "compression",
+      "decompression",
+      "upstream-cli"
+    ]
   }
 }

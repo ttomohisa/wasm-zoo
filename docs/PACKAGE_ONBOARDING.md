@@ -58,6 +58,8 @@ Automation remains review-only: it never automatically merges, creates release t
 
 ## npm and the Cross-browser Lab
 
+A new Registry package may first use `npm.status: canary` while its immutable GitHub Release-derived tarball is reviewed. A canary is **not** enrolled in Registry-backed workflows. The shared Vite/Playwright smoke runner accepts canary metadata only when `WASM_ZOO_NPM_PACKAGE_SPEC` explicitly points at a local reviewed tarball; without that override the runner still requires `published`.
+
 A manifest with `npm.status: published` must also satisfy the shared npm package generator/runtime contract and provide a real package-specific operation in `scripts/smoke-npm-package.mjs`.
 
 The generic npm distribution workflow accepts a manifest-validated slug rather than maintaining a package choice allowlist. The Cross-browser Lab resolves every available `npm.status: published` package from the manifests, looks up its selected `npm.profile`, and automatically places it in the single-threaded or threaded Chromium / Firefox / WebKit matrix from that profile's runtime requirements.

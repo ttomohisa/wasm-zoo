@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- add the prepublication `@wasm-zoo/brotli@0.1.0` npm canary from immutable `brotli-v0.1.0/browser-full`, with checksum/source/provenance/SBOM/license verification and real Vite Chromium/Firefox/WebKit quality-11 compress/integrity/decompress operations; Registry writes and formal Lab enrollment remain deferred to the post-canary human publication/follow-up;
+
 - enable Brotli stable-release automatic candidates after the reviewed `brotli-v0.1.0` package release: resolve each Google Brotli Release tag to an exact commit, substitute version/ref/commit together, run the patch-zero upstream CLI Chromium round-trip gate, and allow success to create only a review-only promotion PR while merge/tag/Release/npm remain human-controlled;
 
 - promote Brotli 1.2.0 from the patch-zero experimental feasibility gate to the ninth available package, adding a human-tag-triggered `brotli-v0.1.0` GitHub Release workflow, checksum-verified published-only Playground, local preview stager and Release Health pending state while keeping npm and automatic upstream candidates as separate reviews;
