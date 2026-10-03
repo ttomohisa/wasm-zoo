@@ -11,9 +11,7 @@ on:
       - "scripts/check-npm-distribution.mjs"
       - "scripts/smoke-npm-package.mjs"
       - "scripts/verify-npm-qpdf-release.mjs"
-      - "package.json"
       - ".github/workflows/npm-qpdf-canary.yml"
-      - "docs/NPM_DISTRIBUTION.md"
   push:
     branches: [main]
     paths:
@@ -24,6 +22,10 @@ on:
       - "scripts/smoke-npm-package.mjs"
       - "scripts/verify-npm-qpdf-release.mjs"
       - ".github/workflows/npm-qpdf-canary.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

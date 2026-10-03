@@ -25,6 +25,8 @@ jobs:
       - uses: actions/checkout@v7
       - name: Generate catalog
         run: npm run catalog
+      - name: Check GitHub Actions trigger efficiency
+        run: node scripts/check-actions-efficiency.mjs
       - name: Validate repository and package onboarding
         run: |
           npm run check

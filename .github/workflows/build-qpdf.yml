@@ -12,9 +12,11 @@ on:
     paths:
       - "builders/qpdf/**"
       - "packages/qpdf/**"
-      - "site/catalog.json"
-      - "site/upstream-status.json"
       - ".github/workflows/build-qpdf.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
