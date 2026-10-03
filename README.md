@@ -66,9 +66,9 @@ All eight packages retain review-only automatic candidate contracts. libvips rem
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 | Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
 | QPDF | 12.4.2 | 0.1.1 | `browser-full` | yes | `@wasm-zoo/qpdf@0.1.1` |
-| Brotli | 1.2.0 | 0.1.0 | `browser-full` | yes | — |
+| Brotli | 1.2.0 | 0.1.0 | `browser-full` | yes | `@wasm-zoo/brotli@0.1.0` (canary) |
 
-Brotli 1.2.0 is the ninth available package after its patch-zero upstream-CMake feasibility build passed a real Chromium compression/integrity/decompression round trip. Its initial `brotli-v0.1.0` package Release and Playground are reviewed separately from future automatic-candidate and npm rollout work.
+Brotli 1.2.0 is the ninth available package after its patch-zero upstream-CMake feasibility build passed a real Chromium compression/integrity/decompression round trip. `brotli-v0.1.0` is now the immutable source for the `@wasm-zoo/brotli@0.1.0` prepublication npm canary; Registry publication and Lab enrollment still require the separate post-canary human/follow-up steps.
 
 WASM Zoo v0.17.0 was the project release that completed the QPDF rollout. Individual package builders, npm distribution versions and immutable package release tags keep their own versions, so later project-only releases do not require package republishing.
 
@@ -86,6 +86,8 @@ npm install @wasm-zoo/ffmpeg
 npm install @wasm-zoo/zstd
 npm install @wasm-zoo/qpdf
 ```
+
+Brotli is intentionally absent from the install list until the reviewed `@wasm-zoo/brotli@0.1.0` canary tarball has passed Chromium/Firefox/WebKit and the first Registry publication is completed manually.
 
 `@wasm-zoo/qpdf@0.1.0` is public. Its initial human publication used the exact immutable `qpdf-v0.1.0` Release-derived tarball that passed Vite + Chromium/Firefox/WebKit real PDF operations; Registry `dist.shasum` `83b2a89ec339d58ab0dcaf3c118385c3396955f1` matches that reviewed tarball. Future QPDF npm versions use the normal Trusted Publisher staged-review flow.
 
@@ -148,7 +150,7 @@ WASM Zoo v0.6.0 makes freshness and target differences first-class catalog data 
 - **Feature Matrix** — Native vs every published browser profile using a shared state vocabulary: Included, Intentionally excluded, Browser N/A, Optional/platform-dependent and Unknown/not tested;
 - **Upstream Watcher** — daily stable-release discovery with a committed `site/upstream-status.json` snapshot, one issue per newly detected release and an isolated candidate workflow where automatic testing is safe.
 
-The watcher deliberately does **not** change `main`, merge pull requests, create release tags or publish releases. For FFmpeg, libarchive, ImageMagick, libvips, Ghostscript, jq, Zstandard and QPDF, a newly detected stable release is substituted only inside the isolated candidate workflow and must pass the package's real browser smoke test. When an `auto` candidate succeeds, WASM Zoo prepares the reviewed pin/package/release metadata update on a bot branch, opens a **review-only promotion PR**, and explicitly dispatches `Verify catalog` plus the package build workflow on that branch. A human still reviews and merges the PR. The PR already contains a generated post-merge operator checklist, and after merge a comment-only workflow refreshes that handoff with the exact merge SHA and package/npm-specific manual commands.
+The watcher deliberately does **not** change `main`, merge pull requests, create release tags or publish releases. For FFmpeg, libarchive, ImageMagick, libvips, Ghostscript, jq, Zstandard, QPDF and Brotli, a newly detected stable release is substituted only inside the isolated candidate workflow and must pass the package's real browser smoke test. When an `auto` candidate succeeds, WASM Zoo prepares the reviewed pin/package/release metadata update on a bot branch, opens a **review-only promotion PR**, and explicitly dispatches `Verify catalog` plus the package build workflow on that branch. A human still reviews and merges the PR. The PR already contains a generated post-merge operator checklist, and after merge a comment-only workflow refreshes that handoff with the exact merge SHA and package/npm-specific manual commands.
 
 Zstandard uses `auto`: both browser profiles must pass exact-tag/commit candidate builds, and `browser-full` must also pass bidirectional native-zstd frame interoperability before a review-only promotion PR can be created. Its existing npm distribution remains independently pinned until a later npm review. libvips now also uses `auto`, but fails closed before dispatch: the watcher requires an exact wasm-vips commit that already targets the detected libvips release, derives its Emscripten version, and freezes both libvips/Emscripten compatibility branch heads to immutable commits before building `browser-core` and `browser-full`. Ghostscript uses `auto`: the watcher resolves the exact official source archive and its GitHub-published SHA-256 digest plus the matching GhostPDL source commit before dispatching a candidate build. See `docs/AUTOMATED_PROMOTIONS.md` for the exact flow, permissions and fallback procedure.
 

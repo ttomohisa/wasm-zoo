@@ -32,6 +32,64 @@ if (selectedBrowser === "chromium" && onUnsupported === "record") {
 const resultPath = args["result-json"] ? path.resolve(args["result-json"]) : null;
 
 const fixtures = {
+  brotli: {
+    expectedWasmCount: 1,
+    resultKey: "__WASM_ZOO_NPM_SMOKE__",
+    browserTimeoutMs: 90000,
+    main(packageName) {
+      return `import { load, assets } from ${JSON.stringify(packageName)};
+
+const status = document.querySelector("#status");
+window.__WASM_ZOO_NPM_SMOKE__ = { phase: "loading", assets };
+let brotli = null;
+try {
+  brotli = await load();
+  if (brotli.profile !== "browser-full" || brotli.kind !== "cli" ||
+      !assets.coreJsUrl || !assets.wasmUrl) {
+    throw new Error("Brotli npm did not expose its reviewed browser-full CLI and emitted assets");
+  }
+  const original = new TextEncoder().encode("WASM Zoo Brotli immutable-release npm round trip. ".repeat(512));
+  const compressed = await brotli.exec(["-q", "11", "-o", "/payload.br", "/payload.txt"], {
+    files: [{ name: "/payload.txt", data: original }],
+    outputs: ["/payload.br"],
+    timeoutMs: 60000
+  });
+  const frame = compressed.files.find((file) => file.name === "/payload.br")?.data;
+  if (compressed.exitCode !== 0 || !frame?.length || frame.length >= original.length) {
+    throw new Error("Upstream Brotli CLI did not produce a smaller compressed stream");
+  }
+  await brotli.exec(["-t", "/payload.br"], {
+    files: [{ name: "/payload.br", data: frame }],
+    timeoutMs: 30000
+  });
+  const decompressed = await brotli.exec(["-d", "-o", "/roundtrip.txt", "/payload.br"], {
+    files: [{ name: "/payload.br", data: frame }],
+    outputs: ["/roundtrip.txt"],
+    timeoutMs: 60000
+  });
+  const restored = decompressed.files.find((file) => file.name === "/roundtrip.txt")?.data;
+  if (!restored || restored.length !== original.length ||
+      restored.some((byte, index) => byte !== original[index])) {
+    throw new Error("Brotli Vite/npm CLI round trip did not reproduce every byte");
+  }
+  window.__WASM_ZOO_NPM_SMOKE__ = {
+    ok: true,
+    detail: "upstream brotli CLI q11 compress/integrity/decompress " + original.length + " -> " + frame.length + " bytes",
+    assets
+  };
+  status.textContent = "PASS";
+} catch (error) {
+  window.__WASM_ZOO_NPM_SMOKE__ = {
+    ok: false, message: error?.message || String(error), stack: error?.stack || "", assets
+  };
+  status.textContent = "FAIL: " + (error?.message || error);
+  throw error;
+} finally {
+  brotli?.dispose();
+}
+`;
+    }
+  },
   qpdf: {
     expectedWasmCount: 1,
     resultKey: "__WASM_ZOO_NPM_SMOKE__",
@@ -337,13 +395,15 @@ async function closeStaticServer(server) {
 
 const zoo = await readJson(path.join(root, "packages", slug, "package.json"));
 const npmMeta = zoo.npm;
-if (zoo.status !== "available" || npmMeta?.status !== "published") {
-  throw new Error(`${slug} is not an available published npm distribution`);
+const localPackageSpec = process.env.WASM_ZOO_NPM_PACKAGE_SPEC || null;
+const localCanary = Boolean(localPackageSpec) && npmMeta?.status === "canary";
+if (zoo.status !== "available" || (npmMeta?.status !== "published" && !localCanary)) {
+  throw new Error(`${slug} is not an available published distribution or explicit local canary tarball`);
 }
 const version = npmMeta?.version;
 const packageName = npmMeta?.package;
 if (!version || !packageName) throw new Error(`packages/${slug}/package.json is missing npm package/version`);
-const packageSpec = process.env.WASM_ZOO_NPM_PACKAGE_SPEC || `${packageName}@${version}`;
+const packageSpec = localPackageSpec || `${packageName}@${version}`;
 const temp = await fs.mkdtemp(path.join(os.tmpdir(), `wasm-zoo-npm-${slug}-vite-`));
 let staticServer = null;
 let browser = null;
