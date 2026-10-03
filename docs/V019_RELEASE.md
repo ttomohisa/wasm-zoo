@@ -86,7 +86,7 @@ gh run list --workflow npm-qpdf-canary.yml --branch main --limit 3
 gh run list --workflow npm-zstd-canary.yml --branch main --limit 3
 ```
 
-Expected project version output is `0.19.0` in all three locations. `npm run catalog` must leave the working tree clean. The newest eligible main-branch Lab must contain the complete current **27-cell** exact-version browser evidence; with the current workflow topology that is **29 successful jobs** including resolver and threaded aggregate. If a newer main run is pending or failed, do not reuse an older green snapshot.
+Expected project version output is `0.19.0` in all three locations. `npm run catalog` must leave the working tree clean. The newest eligible main-branch Lab must contain the complete current **27-cell** exact-version browser evidence. At v0.19.0 finalization, the workflow topology used **29 successful jobs** including resolver and threaded aggregate. If a newer main run is pending or failed, do not reuse an older green snapshot.
 
 ## Project tag
 
@@ -125,7 +125,7 @@ Suggested release notes:
 - Manifest-driven enrollment now covers nine public npm distributions.
 - The production target is 27 real package/browser operations across Chromium, Firefox and WebKit.
 - FFmpeg and libvips remain the two threaded distributions; the other seven packages are single-threaded.
-- A complete run therefore contains 29 workflow jobs: resolver + 27 operation cells + threaded aggregate.
+- At v0.19.0 finalization, a complete run contained 29 workflow jobs: resolver + 27 operation cells + threaded aggregate. Later CI batching may reduce runner jobs without reducing the 27-cell evidence contract.
 
 ### Reviewed package updates since v0.18.0
 

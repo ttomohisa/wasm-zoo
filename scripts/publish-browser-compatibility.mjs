@@ -64,14 +64,24 @@ try {
     if (result.error || result.status !== 0) {
       throw new Error(`GitHub artifact download failed: ${result.stderr || result.error?.message || result.status}`);
     }
+    const downloaded = [];
+    async function walk(dir) {
+      for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) await walk(full);
+        else if (entry.isFile() && entry.name.endsWith(".json")) downloaded.push(full);
+      }
+    }
+    await walk(work);
     const records = [];
     for (const slug of packageSlugs) {
       for (const browser of browsers) {
-        const artifact = threadedSlugs.has(slug)
-          ? `threaded-${slug}-${browser}-compatibility`
-          : `${slug}-${browser}-compatibility`;
-        const filename = path.join(work, artifact, `${slug}-${browser}.json`);
-        records.push(JSON.parse(await fs.readFile(filename, "utf8")));
+        const basename = `${slug}-${browser}.json`;
+        const matches = downloaded.filter((filename) => path.basename(filename) === basename);
+        if (matches.length !== 1) {
+          throw new Error(`Expected exactly one compatibility record ${basename}, found ${matches.length}`);
+        }
+        records.push(JSON.parse(await fs.readFile(matches[0], "utf8")));
       }
     }
     snapshot = buildVerifiedSnapshot({ packages, run, records, generatedAt });

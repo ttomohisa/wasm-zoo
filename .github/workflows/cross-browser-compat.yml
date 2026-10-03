@@ -46,6 +46,7 @@ jobs:
     name: Resolve published npm package matrix
     runs-on: ubuntu-24.04
     outputs:
+      all: ${{ steps.packages.outputs.all }}
       single: ${{ steps.packages.outputs.single }}
       threaded: ${{ steps.packages.outputs.threaded }}
       count: ${{ steps.packages.outputs.count }}
@@ -66,6 +67,12 @@ jobs:
           else
             node scripts/npm-package-set.mjs --github-output
           fi
+      - name: Validate shared browser batch and threaded policy
+        run: |
+          node --check scripts/smoke-npm-package.mjs
+          node --check scripts/run-browser-compatibility-batch.mjs
+          node --test scripts/test-browser-compatibility-batch.mjs
+          node --test scripts/test-threaded-browser-capabilities.mjs
       - name: Summarize prepublication Registry deferrals
         if: ${{ steps.packages.outputs.deferred != '[]' }}
         env:
@@ -80,17 +87,16 @@ jobs:
             echo '- Push/main, schedule and manual runs continue to require the complete reviewed package set.'
           } >> "$GITHUB_STEP_SUMMARY"
 
-  single-threaded:
-    name: ${{ matrix.slug }} / ${{ matrix.browser }}
+  browser:
+    name: All reviewed packages / ${{ matrix.browser }}
     needs: [package-set]
-    if: ${{ needs.package-set.outputs.single != '[]' }}
+    if: ${{ needs.package-set.outputs.all != '[]' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 90
     strategy:
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 3
       matrix:
-        slug: ${{ fromJSON(needs.package-set.outputs.single) }}
         browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@v7
@@ -100,71 +106,30 @@ jobs:
           package-manager-cache: false
       - name: Require current npm CLI
         run: npm install --global npm@12.0.2
-      - name: Check shared smoke runner syntax
-        run: node --check scripts/smoke-npm-package.mjs
-      - name: Test published package in Vite production build
+      - name: Install Playwright browser once for this job
+        run: npx -y playwright@1.63.0 install --with-deps '${{ matrix.browser }}'
+      - name: Run every reviewed package operation with the shared browser install
         env:
-          WASM_ZOO_PLAYWRIGHT_WITH_DEPS: '1'
-        run: >
-          node scripts/smoke-npm-package.mjs
-          --slug '${{ matrix.slug }}'
-          --browser '${{ matrix.browser }}'
-          --result-json 'compat-results/${{ matrix.slug }}-${{ matrix.browser }}.json'
-      - name: Upload per-browser compatibility result
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.slug }}-${{ matrix.browser }}-compatibility
-          path: compat-results/${{ matrix.slug }}-${{ matrix.browser }}.json
-          if-no-files-found: warn
-          retention-days: 30
-
-  threaded:
-    name: ${{ matrix.slug }} / ${{ matrix.browser }} (threaded)
-    needs: [package-set]
-    if: ${{ needs.package-set.outputs.threaded != '[]' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 50
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix:
-        slug: ${{ fromJSON(needs.package-set.outputs.threaded) }}
-        browser: [chromium, firefox, webkit]
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          package-manager-cache: false
-      - name: Require current npm CLI
-        run: npm install --global npm@12.0.2
-      - name: Check shared smoke runner and preflight tests
+          PACKAGE_SLUGS: ${{ needs.package-set.outputs.all }}
+        shell: bash
         run: |
-          node --check scripts/smoke-npm-package.mjs
-          node --test scripts/test-threaded-browser-capabilities.mjs
-      - name: Test published threaded package with runtime preflight
-        env:
-          WASM_ZOO_PLAYWRIGHT_WITH_DEPS: '1'
-        run: >
-          node scripts/smoke-npm-package.mjs
-          --slug '${{ matrix.slug }}'
-          --browser '${{ matrix.browser }}'
-          --on-unsupported '${{ matrix.browser == 'chromium' && 'error' || 'record' }}'
-          --result-json 'compat-results/${{ matrix.slug }}-${{ matrix.browser }}.json'
-      - name: Upload per-browser threaded compatibility result
+          node scripts/run-browser-compatibility-batch.mjs \
+            --slugs-json "$PACKAGE_SLUGS" \
+            --browser '${{ matrix.browser }}' \
+            --result-dir compat-results
+      - name: Upload all per-package compatibility records for this browser
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: threaded-${{ matrix.slug }}-${{ matrix.browser }}-compatibility
-          path: compat-results/${{ matrix.slug }}-${{ matrix.browser }}.json
+          name: browser-${{ matrix.browser }}-compatibility
+          path: compat-results/*.json
           if-no-files-found: warn
           retention-days: 30
 
   threaded-report:
     name: Enforce observed threaded compatibility classifications
     runs-on: ubuntu-24.04
-    needs: [package-set, threaded]
+    needs: [package-set, browser]
     if: ${{ always() && needs.package-set.outputs.threaded != '[]' }}
     steps:
       - uses: actions/checkout@v7
@@ -174,7 +139,7 @@ jobs:
           package-manager-cache: false
       - uses: actions/download-artifact@v4
         with:
-          pattern: threaded-*-compatibility
+          pattern: browser-*-compatibility
           path: compat-results
           merge-multiple: true
       - name: Verify every threaded result and summarize observed support

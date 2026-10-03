@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- batch the Registry-backed Cross-browser Lab by browser instead of by package/browser cell: install Chromium/Firefox/WebKit once each, execute all reviewed npm packages sequentially while continuing after individual failures, preserve all 27 per-cell JSON records and threaded capability evidence, and reduce a complete nine-package Lab from 29 runner jobs to 5 without weakening reviewed-main fail-closed publication rules;
+
 - reduce GitHub Actions waste by impact-scoping the heavyweight Registry/browser/build workflows, keeping the full 27-cell Lab as reviewed-main evidence for project `VERSION` changes while skipping it for release-documentation/project-metadata-only pull requests, preventing generated catalog/status files from rebuilding Brotli/QPDF, avoiding duplicate Pages deployment before Lab completion, and cancelling stale heavy pull-request runs when a newer commit arrives;
 
 ## v0.19.0
