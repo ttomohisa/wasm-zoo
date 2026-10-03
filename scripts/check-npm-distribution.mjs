@@ -190,14 +190,15 @@ try {
   const compatWorkflow = normalizeLf(await fs.readFile(path.join(root, ".github", "workflows", "cross-browser-compat.yml"), "utf8"));
   need(
     compatWorkflow.includes("node scripts/npm-package-set.mjs --github-output") &&
-    compatWorkflow.includes("fromJSON(needs.package-set.outputs.single)") &&
-    compatWorkflow.includes("fromJSON(needs.package-set.outputs.threaded)") &&
+    compatWorkflow.includes("all: ${{ steps.packages.outputs.all }}") &&
+    compatWorkflow.includes("needs.package-set.outputs.all") &&
     compatWorkflow.includes("browser: [chromium, firefox, webkit]") &&
-    compatWorkflow.includes("scripts/smoke-npm-package.mjs") &&
-    compatWorkflow.includes("matrix.slug") &&
+    compatWorkflow.includes("scripts/run-browser-compatibility-batch.mjs") &&
+    compatWorkflow.includes("Install Playwright browser once for this job") &&
+    !compatWorkflow.includes("matrix.slug") &&
     compatWorkflow.includes("matrix.browser") &&
     compatWorkflow.includes("upload-artifact@v4"),
-    "cross-browser workflow must derive all published npm package matrices from reviewed manifests"
+    "cross-browser workflow must derive all published npm packages from reviewed manifests and batch them by browser"
   );
   const packageSetResolver = normalizeLf(await fs.readFile(path.join(root, "scripts", "npm-package-set.mjs"), "utf8"));
   need(
@@ -208,15 +209,18 @@ try {
     packageSetResolver.includes("npm Registry preflight failed"),
     "pull-request compatibility matrices must defer only exact-version npm Registry 404s while non-404 Registry failures fail closed"
   );
+  const compatBatch = normalizeLf(await fs.readFile(path.join(root, "scripts", "run-browser-compatibility-batch.mjs"), "utf8"));
   need(
     compatWorkflow.includes("name: Enforce observed threaded compatibility classifications") &&
     compatWorkflow.includes("node scripts/report-threaded-compatibility.mjs") &&
     compatWorkflow.includes("THREADED_TARGETS: ${{ needs.package-set.outputs.threaded }}") &&
     compatWorkflow.includes("--targets-json \"$THREADED_TARGETS\"") &&
-    compatWorkflow.includes("on-unsupported") &&
-    compatWorkflow.includes("threaded-*-compatibility") &&
+    compatWorkflow.includes("pattern: browser-*-compatibility") &&
+    compatWorkflow.includes("needs: [package-set, browser]") &&
+    compatBatch.includes("--on-unsupported") &&
+    compatBatch.includes('browser === "chromium" ? "error" : "record"') &&
     compatWorkflow.includes("upload-artifact@v4"),
-    "threaded matrix must preserve independent per-browser results and aggregate exactly the resolver-selected threaded package set"
+    "browser-batched Lab must preserve independent threaded per-browser records and aggregate exactly the resolver-selected threaded package set"
   );
   const threadedReport = normalizeLf(await fs.readFile(path.join(root, "scripts", "report-threaded-compatibility.mjs"), "utf8"));
   need(
