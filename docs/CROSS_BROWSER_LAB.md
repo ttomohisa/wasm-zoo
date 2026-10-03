@@ -147,7 +147,7 @@ A passing run includes `browserVersion`, the operation's `detail`, `phase: "comp
 2. Require review of the measured Phase 3 threaded-platform statuses (not merely green workflow labels). Revisit browsers recorded unsupported when their relevant platform capabilities change.
 3. Publish a versioned catalog compatibility matrix / Pages presentation only after the per-browser results have been reviewed. Do not edit reviewed upstream pins or package builder/npm versions for lab-only changes.
 
-The reviewed-pin model is unchanged: automation may prepare review-only promotion PRs but must never merge, tag, release, or publish on its own. QPDF brings the current automatic-candidate set to 8/8; libvips remains fail-closed by resolving its adapter and compatibility inputs to immutable commits before candidate testing rather than using the former adapter-gated manual mode.
+The reviewed-pin model is unchanged: automation may prepare review-only promotion PRs but must never merge, tag, release, or publish on its own. Brotli brings the current automatic-candidate set to 9/9; libvips remains fail-closed by resolving its adapter and compatibility inputs to immutable commits before candidate testing rather than using the former manual mode.
 
 
 ## Phase 7: Brotli published Registry / 27-cell expansion
@@ -155,3 +155,12 @@ The reviewed-pin model is unchanged: automation may prepare review-only promotio
 `@wasm-zoo/brotli@0.1.0` is the ninth reviewed public npm distribution. Its exact immutable Release-derived tarball passed Vite Chromium, Firefox and WebKit quality-11 compression, integrity testing and byte-identical decompression before the human first publication. Registry-backed runs verify `dist.shasum` `6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7` before installation.
 
 The full operation matrix is now **7 single-threaded packages × 3 browsers + 2 threaded packages × 3 browsers = 27 real browser-operation cells**. The workflow topology remains manifest-driven: the resolver and threaded aggregate are additional jobs, not operation cells.
+
+## Phase 8: browser-batched execution without reducing evidence
+
+The 27-cell evidence contract is unchanged, but GitHub Actions no longer pays browser installation and runner startup once per package/browser cell. The Lab resolves the reviewed manifest set once, then runs **three browser jobs** (Chromium, Firefox and WebKit). Each browser job installs that Playwright browser once and executes every reviewed npm package sequentially through the existing package-specific Vite smoke fixture.
+
+A package failure does **not** stop the browser batch. The batch runner continues through the remaining reviewed packages, writes each per-cell JSON record independently, then fails the browser job after all requested operations have been attempted. Threaded FFmpeg/libvips still use the same runtime preflight and non-Chromium `unsupported` evidence policy; Chromium remains mandatory.
+
+The current workflow therefore has **5 jobs** for a complete run: manifest resolver + 3 browser batches + threaded aggregate. It still produces exactly **27 independently versioned package/browser JSON records**, and Pages still refuses to publish a verified snapshot unless the latest eligible reviewed-main run is successful and all 27 exact records validate.
+

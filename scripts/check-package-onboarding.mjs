@@ -49,9 +49,12 @@ const [upstreamWorkflow, crossBrowserWorkflow, publishNpmWorkflow, pagesWorkflow
 ]);
 
 need(crossBrowserWorkflow.includes("node scripts/npm-package-set.mjs --github-output") &&
-  crossBrowserWorkflow.includes("fromJSON(needs.package-set.outputs.single)") &&
-  crossBrowserWorkflow.includes("fromJSON(needs.package-set.outputs.threaded)"),
-  "Cross-browser Lab must derive published npm package matrices from manifests");
+  crossBrowserWorkflow.includes("all: ${{ steps.packages.outputs.all }}") &&
+  crossBrowserWorkflow.includes("needs.package-set.outputs.all") &&
+  crossBrowserWorkflow.includes("scripts/run-browser-compatibility-batch.mjs") &&
+  crossBrowserWorkflow.includes("browser: [chromium, firefox, webkit]") &&
+  !crossBrowserWorkflow.includes("matrix.slug"),
+  "Cross-browser Lab must derive published npm packages from manifests and batch them by browser");
 need(publishNpmWorkflow.includes("slug:\n        description: npm distribution package\n        required: true\n        type: string"),
   "publish-npm.yml slug input must accept manifest-validated package names without a static choice allowlist");
 need(upstreamWorkflow.includes("node scripts/candidate-orchestration.mjs validate --slug") &&

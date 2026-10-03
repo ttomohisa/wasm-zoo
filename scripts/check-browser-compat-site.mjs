@@ -24,15 +24,19 @@ need(files["site/app.js"].includes("renderBrowserCompatibility") &&
      files["site/app.js"].includes("source?.headBranch === 'main'") &&
      files["site/app.js"].includes("14 * 24 * 60 * 60 * 1000"), "Pages client must render proven, recent main-run evidence only");
 need(files[".github/workflows/cross-browser-compat.yml"].includes("node scripts/npm-package-set.mjs --github-output") &&
-     files[".github/workflows/cross-browser-compat.yml"].includes("fromJSON(needs.package-set.outputs.single)") &&
-     files[".github/workflows/cross-browser-compat.yml"].includes("fromJSON(needs.package-set.outputs.threaded)") &&
+     files[".github/workflows/cross-browser-compat.yml"].includes("needs.package-set.outputs.all") &&
+     files[".github/workflows/cross-browser-compat.yml"].includes("scripts/run-browser-compatibility-batch.mjs") &&
+     files[".github/workflows/cross-browser-compat.yml"].includes("browser: [chromium, firefox, webkit]") &&
+     !files[".github/workflows/cross-browser-compat.yml"].includes("matrix.slug") &&
      !files[".github/workflows/cross-browser-compat.yml"].includes("slug: [jq, libarchive") &&
      !files[".github/workflows/cross-browser-compat.yml"].includes("slug: [ffmpeg, libvips]"),
-     "Cross-browser Lab package membership must be derived from published npm manifests rather than a package allowlist");
+     "Cross-browser Lab must derive package membership from manifests and batch all reviewed package operations by browser");
 need(files["site/app.js"].includes("packages.length * compatBrowsers.length"),
      "Public compatibility summary must derive its total from the current published package count");
 need(files[".github/workflows/cross-browser-compat.yml"].includes("branches: [main]") &&
-     files[".github/workflows/cross-browser-compat.yml"].includes("name: Enforce observed threaded compatibility classifications"), "Lab must test reviewed main and still enforce threaded policy");
+     files[".github/workflows/cross-browser-compat.yml"].includes("name: Enforce observed threaded compatibility classifications") &&
+     files[".github/workflows/cross-browser-compat.yml"].includes("Install Playwright browser once for this job"),
+     "Lab must test reviewed main, batch browser setup and still enforce threaded policy");
 need(files[".github/workflows/pages.yml"].includes("workflow_run:") &&
      files[".github/workflows/pages.yml"].includes("node scripts/publish-browser-compatibility.mjs") &&
      files[".github/workflows/pages.yml"].includes("github.event.workflow_run.head_branch == 'main'"), "Pages must redeploy only on reviewed main workflow completion");

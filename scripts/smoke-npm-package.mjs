@@ -480,11 +480,15 @@ try {
   }
 
   phase = "browser-install";
-  console.log(`[npm-smoke:${slug}] installing Playwright ${selectedBrowser}`);
-  const installArgs = ["exec", "--", "playwright", "install"];
-  if (process.env.WASM_ZOO_PLAYWRIGHT_WITH_DEPS === "1") installArgs.push("--with-deps");
-  installArgs.push(selectedBrowser);
-  run(installArgs, { cwd: temp });
+  if (process.env.WASM_ZOO_PLAYWRIGHT_PREINSTALLED === "1") {
+    console.log(`[npm-smoke:${slug}] using preinstalled Playwright ${selectedBrowser}`);
+  } else {
+    console.log(`[npm-smoke:${slug}] installing Playwright ${selectedBrowser}`);
+    const installArgs = ["exec", "--", "playwright", "install"];
+    if (process.env.WASM_ZOO_PLAYWRIGHT_WITH_DEPS === "1") installArgs.push("--with-deps");
+    installArgs.push(selectedBrowser);
+    run(installArgs, { cwd: temp });
+  }
 
   phase = "serve";
   console.log(`[npm-smoke:${slug}] serving production dist with in-process Node HTTP server`);
