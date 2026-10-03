@@ -1660,8 +1660,10 @@
         "type": "github-releases",
         "repository": "google/brotli",
         "versionPattern": "v?(\\d+\\.\\d+\\.\\d+)",
-        "candidateMode": "none",
-        "candidateProfiles": []
+        "candidateMode": "auto",
+        "candidateProfiles": [
+          "browser-full"
+        ]
       },
       "zoo": {
         "builderVersion": "0.1.0",
@@ -1755,7 +1757,7 @@
         "Brotli 1.2.0 is built from the exact upstream v1.2.0 tag at commit 028fb5a23661f123017c060daa546b55cf4bde29 using the upstream CMake brotli executable target.",
         "The reviewed browser-full build preserves the upstream CLI and has zero Brotli source patches; the browser-specific boundary is limited to Worker execution and Emscripten MEMFS file staging.",
         "The initial package release is brotli-v0.1.0. A human maintainer creates the reviewed package tag; the tag-triggered workflow rebuilds, smoke-tests and publishes immutable binary/source/checksum/provenance/SBOM assets.",
-        "Automatic upstream candidates and npm distribution remain disabled for this stage and require separate reviewed follow-up changes."
+        "Stable Google Brotli GitHub Releases are eligible for exact-tag/commit browser-full candidate builds and review-only promotion PRs. Automation may prepare the reviewed pin change after the real Chromium gate passes, but merge, package tag, GitHub Release and any future npm publication remain human-controlled."
       ],
       "integration": {
         "summary": "Self-host browser-brotli.js, wasm-zoo.mjs and the reviewed Brotli core files, stage input/output files in MEMFS, then execute ordinary upstream brotli CLI arguments locally in a Worker.",

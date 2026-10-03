@@ -33,11 +33,14 @@ The current automatic promotion set is the exact intersection of package manifes
 - Ghostscript
 - jq
 - QPDF
+- Brotli
 - Zstandard
 
 Ghostscript is source-archive-backed: the watcher requires the exact official `ghostscript-<version>.tar.xz` Release asset, consumes GitHub's published SHA-256 asset digest, resolves the matching `gs<version>` commit from `ArtifexSoftware/ghostpdl`, and passes all of those immutable values through candidate build and promotion preparation. For jq, candidate/promotion preparation also resolves the exact Oniguruma submodule commit from the candidate jq commit.
 
 QPDF is also source-archive-backed. The watcher accepts only the stable `v<version>` GitHub Release, requires the official `qpdf-<version>.tar.gz` Release asset and GitHub-published SHA-256 digest, resolves the same `v<version>` tag to an exact `qpdf/qpdf` commit, and carries those values through the isolated `browser-full` Chromium PDF smoke and review-only promotion PR. The reviewed Emscripten 6.0.8, zlib 1.3.2 and libjpeg 9f pins remain fixed unless they are changed by a separate human-reviewed patch.
+
+Brotli uses the stable Google Brotli GitHub Release tag itself as the reviewed source identity. The watcher resolves `v<version>` to an exact `google/brotli` commit, and the isolated candidate updates `BROTLI_VERSION`, `BROTLI_REF` and `BROTLI_COMMIT` together before building the upstream CMake `brotli` executable target with **patch-zero** Brotli source. The `browser-full` gate runs the real Chromium CLI smoke with quality-11 compression, integrity-test mode and byte-identical decompression. A success may create only a review-only promotion PR; Emscripten stays on its separately reviewed fixed pin unless a human-reviewed change updates it.
 
 libvips uses a **fail-closed adapter bundle resolver**. A newly detected stable libvips release is not dispatched until the exact `kleisauke/wasm-vips` master commit itself declares that same `VERSION_VIPS`. The watcher then reads the adapter's pinned Emscripten version and wasm-vips package version, resolves the official Emscripten ref plus `kleisauke/libvips:wasm-vips-<libvips>` and `kleisauke/emscripten:wasm-vips-<emscripten>` branch heads, and freezes every moving input to a 40-character commit before building both browser profiles. If any piece is missing or the adapter still targets the previous libvips release, the issue is refreshed but no candidate is dispatched; the daily watcher can retry later.
 
@@ -47,7 +50,7 @@ Zstandard uses the stable GitHub Release tag resolved to an exact upstream commi
 
 `scripts/candidate-orchestration.mjs` owns the generic registration/routing layer around the explicit package build jobs. It validates manual/watcher input without a workflow-dispatch choice allowlist, selects the chosen job result from the GitHub Actions `needs` object, and returns the conventional `builders/<slug>/scripts/check-repository.mjs` path for promotion validation.
 
-Package-specific candidate jobs intentionally remain explicit. FFmpeg, libvips and Zstandard require different profile matrices; Ghostscript and QPDF require official source archive identity; libvips additionally requires the immutable adapter bundle. A future animal therefore adds one explicit build job and one report `needs` entry, but it does not add another result-routing case or repository-checker case.
+Package-specific candidate jobs intentionally remain explicit. FFmpeg, libvips and Zstandard require different profile matrices; Ghostscript and QPDF require official source archive identity; Brotli preserves its exact-version upstream CLI round-trip gate; libvips additionally requires the immutable adapter bundle. A future animal therefore adds one explicit build job and one report `needs` entry, but it does not add another result-routing case or repository-checker case.
 
 ## Post-merge human handoff
 

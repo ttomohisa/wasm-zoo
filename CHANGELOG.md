@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- enable Brotli stable-release automatic candidates after the reviewed `brotli-v0.1.0` package release: resolve each Google Brotli Release tag to an exact commit, substitute version/ref/commit together, run the patch-zero upstream CLI Chromium round-trip gate, and allow success to create only a review-only promotion PR while merge/tag/Release/npm remain human-controlled;
+
 - promote Brotli 1.2.0 from the patch-zero experimental feasibility gate to the ninth available package, adding a human-tag-triggered `brotli-v0.1.0` GitHub Release workflow, checksum-verified published-only Playground, local preview stager and Release Health pending state while keeping npm and automatic upstream candidates as separate reviews;
 
 - add Google Brotli 1.2.0 as the ninth package feasibility builder, compiling the exact upstream CMake `brotli` executable target at commit `028fb5a23661f123017c060daa546b55cf4bde29` with zero Brotli source patches and gating it on a real Chromium quality-11 compression, integrity-test and byte-identical decompression round trip;

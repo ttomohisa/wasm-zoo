@@ -136,6 +136,21 @@ if (values.slug === "qpdf") {
   await fs.writeFile(smokeFile, smoke);
 }
 
+// Brotli's browser smoke test verifies the exact upstream CLI version. Candidate
+// preparation updates only the isolated candidate workspace, never the reviewed pin.
+if (values.slug === "brotli") {
+  const smokeFile = path.join(root, "builders", "brotli", "tests", "smoke-test.html");
+  let smoke = await fs.readFile(smokeFile, "utf8");
+  const oldVersion = packageMeta.upstream.version;
+  if (!smoke.includes(`brotli ${oldVersion}`)) throw new Error(`Could not locate Brotli ${oldVersion} version expectation in smoke-test.html`);
+  smoke = smoke.replaceAll(`brotli ${oldVersion}`, `brotli ${values.version}`);
+  smoke = smoke.replaceAll(
+    `SMOKE_TEST_PASS_brotli_${oldVersion}`,
+    `SMOKE_TEST_PASS_brotli_${values.version}`
+  );
+  await fs.writeFile(smokeFile, smoke);
+}
+
 // jq's browser smoke test intentionally verifies the exact `jq --version` output.
 // Candidate preparation updates only the isolated candidate workspace, never the reviewed pin.
 if (values.slug === "jq") {

@@ -194,6 +194,19 @@ async function validateRehearsal(worktree, slug, before, config, expected, nextV
     }
   }
 
+  if (slug === "brotli") {
+    if (env.BROTLI_VERSION !== nextVersion || env.BROTLI_REF !== nextRef || env.BROTLI_COMMIT !== commit) {
+      throw new Error("brotli: exact version/ref/commit did not move together");
+    }
+    if (env.EMSDK_VERSION !== "6.0.8" || env.EMSCRIPTEN_COMMIT !== "aeb67926e7de656da38bc807d83050af93578758") {
+      throw new Error("brotli: fixed reviewed Emscripten pin drifted during upstream promotion rehearsal");
+    }
+    const smoke = await fs.readFile(path.join(worktree, "builders/brotli/tests/smoke-test.html"), "utf8");
+    if (!smoke.includes(`brotli ${nextVersion}`) || !smoke.includes(`SMOKE_TEST_PASS_brotli_${nextVersion}`)) {
+      throw new Error("brotli: browser smoke exact-version gate was not refreshed");
+    }
+  }
+
   if (slug === "qpdf") {
     if (after.release?.sourceAsset !== `qpdf-sources-${nextVersion}-zoo-${expectedBuilder}.tar.gz`) {
       throw new Error("qpdf: corresponding-source asset did not follow the promoted version/builder");

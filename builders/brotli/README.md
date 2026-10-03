@@ -22,4 +22,4 @@ builders\\brotli\\build.bat browser-full
 
 The real Chromium smoke test verifies `brotli --version`, quality-11 compression, integrity-test mode and decompression back to byte-identical input.
 
-The reviewed package release is `brotli-v0.1.0`. A human creates the package tag; the tag-triggered release workflow rebuilds from the exact pins, reruns the browser smoke, publishes binary/corresponding-source/checksum/provenance/SBOM assets, then refreshes Pages. npm distribution and automatic upstream promotion remain separate review stages.
+The reviewed package release is `brotli-v0.1.0`. Stable Google Brotli releases now use the shared review-only automatic candidate path: the watcher resolves the exact release tag/commit, the isolated `browser-full` build reruns the real Chromium round trip, and only a successful candidate may open a promotion PR. A human still merges the PR and creates the package tag; the tag-triggered release workflow rebuilds from the reviewed pins and publishes the immutable release assets. npm distribution remains a separate future review.
