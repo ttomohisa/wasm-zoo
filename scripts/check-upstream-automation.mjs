@@ -23,6 +23,7 @@ need(
 );
 
 const ghost = await readJson(path.join(root, 'packages', 'ghostscript', 'package.json'));
+const brotli = await readJson(path.join(root, 'packages', 'brotli', 'package.json'));
 const qpdf = await readJson(path.join(root, 'packages', 'qpdf', 'package.json'));
 const zstd = await readJson(path.join(root, 'packages', 'zstd', 'package.json'));
 need(ghost.tracker?.candidateMode === 'auto', 'Ghostscript must be candidateMode=auto');
@@ -32,6 +33,11 @@ need(ghost.tracker?.candidateSource?.releaseTagTemplate === 'gs{versionCompact}'
 need(ghost.tracker?.candidateSource?.assetNameTemplate === 'ghostscript-{version}.tar.xz', 'Ghostscript candidate source archive must be ghostscript-{version}.tar.xz');
 need(ghost.tracker?.candidateSource?.digestAlgorithm === 'sha256', 'Ghostscript candidate source digest must be SHA-256');
 need(!(ghost.notes || []).some((note) => note.includes('Automatic upstream candidate substitution is intentionally disabled for Ghostscript')), 'Ghostscript notes must not claim automatic candidates are disabled');
+need(brotli.tracker?.candidateMode === 'auto', 'Brotli must be candidateMode=auto');
+need(JSON.stringify(brotli.tracker?.candidateProfiles) === JSON.stringify(['browser-full']), 'Brotli automatic candidate must test browser-full');
+const brotliConfig = automaticCandidateConfig('brotli');
+need(brotliConfig?.extraEnv?.version === 'BROTLI_VERSION', 'Brotli candidate config must update BROTLI_VERSION');
+need(!(brotli.notes || []).some((note) => note.includes('Automatic upstream candidates and npm distribution remain disabled')), 'Brotli notes must not claim automatic candidates are disabled');
 need(qpdf.tracker?.candidateMode === 'auto', 'QPDF must be candidateMode=auto');
 need(JSON.stringify(qpdf.tracker?.candidateProfiles) === JSON.stringify(['browser-full']), 'QPDF automatic candidate must test browser-full');
 need(qpdf.tracker?.candidateSource?.repository === 'qpdf/qpdf', 'QPDF candidate source repository must be qpdf/qpdf');
@@ -106,6 +112,7 @@ need(!watcherWorkflow.includes(markdownTick + 'adapter-gated' + markdownTick + '
 
 const candidate = await read('scripts/prepare-candidate.mjs');
 need(candidate.includes('config.extraEnv'), 'candidate preparer must support extraEnv pins');
+need(candidate.includes('values.slug === "brotli"') && candidate.includes('SMOKE_TEST_PASS_brotli_'), 'Brotli candidate preparation must refresh exact-version smoke assertions');
 need(candidate.includes('--source-sha256') || candidate.includes('source-sha256'), 'candidate preparer must validate source SHA-256');
 const metadataGenerator = await read('scripts/generate-build-metadata.mjs');
 need(metadataGenerator.includes('builtUpstreamVersion = manifest.upstream?.version') &&
@@ -125,6 +132,7 @@ need(promotion.includes('note.includes("@wasm-zoo/zstd") ? note : rewrite(note)'
   'Zstandard promotion must not rewrite historical published npm source notes to the new package upstream version');
 need(promotion.includes('docs/NPM_DISTRIBUTION.md') && promotion.includes('npm distribution release tag'), 'promotion preparer must update npm distribution documentation');
 need(promotion.includes('values.slug === "ghostscript"') && promotion.includes('profile.externalLibraries') && promotion.includes('note.startsWith(`Official Ghostscript ${oldVersion} release source archive is pinned by SHA-256`)'), 'Ghostscript promotion must refresh current-version source-archive metadata');
+need(promotion.includes('values.slug === "brotli"') && promotion.includes('builders/brotli/tests/smoke-test.html') && promotion.includes('builders/brotli/README.md'), 'Brotli promotion must refresh current-version docs and exact-version smoke assertions');
 
 const verifyWorkflow = await read('.github/workflows/verify.yml');
 need(verifyWorkflow.includes('npm run promotion:rehearse'), 'Verify catalog must run the shared automatic promotion rehearsal');
@@ -185,6 +193,7 @@ for (const marker of [
   '--wasm-vips-commit "$(jq -r',
   '--libvips-patch-commit "$(jq -r',
   "qpdf:\n    needs: [registration]\n    if: inputs.slug == 'qpdf'",
+  "brotli:\n    needs: [registration]\n    if: inputs.slug == 'brotli'",
   "zstd:\n    needs: [registration]\n    if: inputs.slug == 'zstd'",
   "profile: [browser-core, browser-full]",
   "ZSTD_NATIVE_INTEROP: ${{ matrix.profile == 'browser-full' && 'required' || '' }}",
@@ -239,6 +248,7 @@ need(zstdReleaseWorkflow.includes('source builders/zstd/versions.env') &&
 const docs = await read('docs/AUTOMATED_PROMOTIONS.md');
 need(docs.includes('- Ghostscript') && docs.includes('GitHub\'s published SHA-256 asset digest'), 'automation docs must describe Ghostscript digest-pinned auto promotion');
 need(docs.includes('- QPDF') && docs.includes('QPDF is also source-archive-backed') && docs.includes('qpdf-<version>.tar.gz'), 'automation docs must describe QPDF digest-pinned auto promotion');
+need(docs.includes('- Brotli') && docs.includes('patch-zero') && docs.includes('quality-11 compression'), 'automation docs must describe Brotli patch-zero exact-tag auto promotion');
 need(docs.includes('- Zstandard') && docs.includes('bidirectional native zstd interoperability'), 'automation docs must describe Zstandard native-interoperability candidate gate');
 need(docs.includes('- libvips') && docs.includes('fail-closed adapter bundle resolver'), 'automation docs must describe libvips immutable adapter-bundle candidates');
 need(docs.includes('Post-merge human handoff') && docs.includes('promotion-handoff.yml') && docs.includes('npm 2FA'), 'automation docs must describe the post-merge human handoff and retained npm approval boundary');

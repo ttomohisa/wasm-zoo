@@ -226,6 +226,18 @@ if (values.slug === "qpdf") {
   });
 }
 
+if (values.slug === "brotli") {
+  pkg.summary = String(pkg.summary || "").replaceAll(oldVersion, values.version);
+  pkg.notes = (pkg.notes || []).map((note) => {
+    if (note.startsWith(`Brotli ${oldVersion} is built from the exact upstream`)) {
+      let next = note.replaceAll(oldVersion, values.version);
+      if (oldEnv.BROTLI_COMMIT) next = next.replaceAll(oldEnv.BROTLI_COMMIT, values.commit);
+      return next;
+    }
+    return note;
+  });
+}
+
 if (values.slug === "jq") {
   pkg.notes = (pkg.notes || []).map((note) => {
     let next = note.replaceAll(oldVersion, values.version).replaceAll(pkg.upstream?.commit || "__never__", values.commit);
@@ -267,7 +279,7 @@ await replaceFile("README.md", (input) => {
   if (pkg.npm && oldNpmVersion && newNpmVersion) {
     text = requireReplace(text, "`" + pkg.npm.package + "@" + oldNpmVersion + "`", "`" + pkg.npm.package + "@" + newNpmVersion + "`", "README npm version");
   }
-  if (["zstd", "qpdf"].includes(values.slug) && !text.includes(`## ${pkg.name} ${oldVersion}`)) {
+  if (["zstd", "qpdf", "brotli"].includes(values.slug) && !text.includes(`## ${pkg.name} ${oldVersion}`)) {
     // Zstandard and QPDF are documented through the package table / dedicated builder docs,
     // not a legacy per-package README heading.
   } else {
@@ -303,6 +315,9 @@ await replaceFile("README.md", (input) => {
       const stop = end >= 0 ? end : text.length;
       text = text.slice(0, start) + text.slice(start, stop).replaceAll(oldVersion, values.version) + text.slice(stop);
     }
+  }
+  if (values.slug === "brotli") {
+    text = text.replaceAll(`Brotli ${oldVersion} is the ninth available package`, `Brotli ${values.version} is the ninth available package`);
   }
   if (values.slug === "jq") {
     const start = text.indexOf(`## jq ${values.version}`);
@@ -402,6 +417,15 @@ if (values.slug === "qpdf") {
     text.replaceAll(`qpdf version ${oldVersion}`, `qpdf version ${values.version}`)
       .replaceAll(`SMOKE_TEST_PASS_QPDF_${oldVersion.replaceAll(".", "_")}`, `SMOKE_TEST_PASS_QPDF_${values.version.replaceAll(".", "_")}`)
   );
+}
+
+if (values.slug === "brotli") {
+  await replaceFile("builders/brotli/README.md", (text) => text
+    .replaceAll(oldVersion, values.version)
+    .replaceAll(`brotli-v${oldBuilder}`, `brotli-v${newBuilder}`));
+  await replaceFile("builders/brotli/tests/smoke-test.html", (text) => text
+    .replaceAll(`brotli ${oldVersion}`, `brotli ${values.version}`)
+    .replaceAll(`SMOKE_TEST_PASS_brotli_${oldVersion}`, `SMOKE_TEST_PASS_brotli_${values.version}`));
 }
 
 if (values.slug === "jq") {

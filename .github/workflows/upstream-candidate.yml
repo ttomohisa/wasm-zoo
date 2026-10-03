@@ -259,6 +259,37 @@ jobs:
           path: builders/qpdf/dist/browser-full/
           retention-days: 14
 
+  brotli:
+    needs: [registration]
+    if: inputs.slug == 'brotli'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Set up Chrome
+        id: chrome
+        uses: browser-actions/setup-chrome@v2.2.0
+      - name: Check Brotli shell syntax
+        shell: bash
+        run: bash -n builders/brotli/build.sh builders/brotli/scripts/*.sh
+      - name: Prepare exact-tag candidate and exact-version smoke assertions
+        run: node scripts/prepare-candidate.mjs --slug brotli --version "${{ inputs.version }}" --ref "${{ inputs.ref }}" --commit "${{ inputs.commit }}"
+      - name: Build exact upstream Brotli CLI and run real Chromium round trip
+        shell: bash
+        working-directory: builders/brotli
+        env:
+          BROTLI_WASM_BROWSER: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          chmod +x ./build.sh ./scripts/*.sh
+          ./build.sh browser-full
+      - uses: actions/upload-artifact@v7
+        with:
+          name: candidate-brotli-${{ inputs.version }}-browser-full
+          path: builders/brotli/dist/browser-full/
+          retention-days: 14
+
+
   zstd:
     needs: [registration]
     if: inputs.slug == 'zstd'
@@ -351,7 +382,7 @@ jobs:
 
   report:
     if: always()
-    needs: [registration, ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, qpdf, zstd]
+    needs: [registration, ffmpeg, libarchive, imagemagick, ghostscript, libvips, jq, qpdf, brotli, zstd]
     runs-on: ubuntu-latest
     permissions:
       contents: read

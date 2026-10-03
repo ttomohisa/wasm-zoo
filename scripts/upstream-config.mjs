@@ -38,6 +38,16 @@ export const automaticCandidateConfigs = {
       "emscripten-patch-commit": "WASM_VIPS_EMSCRIPTEN_PATCH_COMMIT"
     }
   },
+  brotli: {
+    dir: "brotli",
+    refKey: "BROTLI_REF",
+    commitKey: "BROTLI_COMMIT",
+    buildWorkflow: "build-brotli.yml",
+    displayName: "Brotli",
+    extraEnv: {
+      version: "BROTLI_VERSION"
+    }
+  },
   ghostscript: {
     dir: "ghostscript",
     refKey: "GHOSTSCRIPT_REF",
