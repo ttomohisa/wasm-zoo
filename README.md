@@ -28,6 +28,22 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 
 
 
+## v0.19.0: Brotli & 27-cell Registry Lab
+
+WASM Zoo v0.19.0 records Brotli 1.2.0 as the ninth available package and ninth public npm distribution. The finalization PR itself is project-only: it updates the project version and release documentation without changing any reviewed package pin, builder version, package Release tag or npm Registry identity.
+
+Brotli is built from the exact upstream `v1.2.0` commit `028fb5a23661f123017c060daa546b55cf4bde29` through the upstream CMake `brotli` CLI target with zero Brotli source patches. The immutable `brotli-v0.1.0` Release became the source for the separately reviewed `@wasm-zoo/brotli@0.1.0` tarball, which passed Vite Chromium, Firefox and WebKit quality-11 compression, integrity testing and byte-identical decompression before human publication. Registry `dist.shasum` `6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7` binds the live package to that reviewed artifact.
+
+The manifest-driven Cross-browser Compatibility Lab now requires **27 exact-version browser operations** across all nine public npm distributions: seven single-threaded packages plus FFmpeg and libvips across Chromium, Firefox and WebKit. The reviewed main run for this release completed all 29 workflow jobs successfully: resolver + 27 operation cells + threaded aggregate.
+
+Since v0.18.0, the reviewed package set also advanced ImageMagick to 7.1.2-32 / builder 0.4.4, libvips to 8.18.7 / builder 0.5.3 and QPDF to 12.4.2 / builder 0.1.1, with their separately reviewed npm distributions published and bound to exact Registry identities.
+
+All nine packages now retain review-only automatic candidate contracts. libvips remains fail-closed: candidate testing starts only after the wasm-vips adapter, Emscripten input and compatibility inputs resolve to immutable commits. Automation may create a review-only promotion PR, but it never automatically merges, tags, creates a reviewed GitHub Release or publishes npm.
+
+The project version is **WASM Zoo v0.19.0**. Individual package builders, npm distributions and immutable package release tags remain independently versioned.
+
+See [v0.19.0 project release review](docs/V019_RELEASE.md).
+
 ## v0.18.0: Manifest-driven Operations
 
 WASM Zoo v0.18.0 is a project-only operations release. It keeps all eight package upstream pins, Zoo builder versions, immutable package Release tags and npm versions unchanged while making routine package operations derive more of their behavior from reviewed manifests.
