@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-14T08:51:44.469Z",
+  "generatedAt": "2026-10-15T08:26:57.704Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -67,12 +67,12 @@
     {
       "slug": "imagemagick",
       "name": "ImageMagick",
-      "tag": "imagemagick-v0.4.4",
+      "tag": "imagemagick-v0.4.5",
       "release": {
         "state": "ok",
         "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.4",
-        "publishedAt": "2026-09-28T16:27:40Z",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.5",
+        "publishedAt": "2026-10-15T01:53:06Z",
         "assetCount": 6,
         "missingAssets": []
       },
@@ -88,8 +88,8 @@
       "buildGate": {
         "state": "ok",
         "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/36450690265",
-        "runId": 36450690265
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/38667682850",
+        "runId": 38667682850
       },
       "playground": {
         "state": "ok",
@@ -102,20 +102,20 @@
       },
       "npm": {
         "package": "@wasm-zoo/imagemagick",
-        "expectedVersion": "0.4.4",
-        "registryVersion": "0.4.4",
-        "registryLatest": "0.4.4",
-        "registryShasum": "a4dcbc9948eecf9e409d0e0c9fbd4a10463cd3e4",
-        "recordedShasum": "a4dcbc9948eecf9e409d0e0c9fbd4a10463cd3e4",
+        "expectedVersion": "0.4.5",
+        "registryVersion": "0.4.5",
+        "registryLatest": "0.4.5",
+        "registryShasum": "1a5433d9416441772d4ac6230466b90440111dfa",
+        "recordedShasum": "1a5433d9416441772d4ac6230466b90440111dfa",
         "shasumMatch": true,
-        "sourceReleaseTag": "imagemagick-v0.4.4",
-        "sourceReleaseAsset": "imagemagick-browser-full-7.1.2-32-zoo-0.4.4.zip",
-        "packageReleaseTag": "imagemagick-v0.4.4",
+        "sourceReleaseTag": "imagemagick-v0.4.5",
+        "sourceReleaseAsset": "imagemagick-browser-full-7.1.2-33-zoo-0.4.5.zip",
+        "packageReleaseTag": "imagemagick-v0.4.5",
         "sourceCurrent": true,
         "intentionalPin": false,
         "updatePending": false,
         "state": "ok",
-        "label": "Published 0.4.4"
+        "label": "Published 0.4.5"
       },
       "overall": {
         "state": "warn",
@@ -155,8 +155,8 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/libarchive-playground/"
       },
       "freshness": {
-        "state": "ok",
-        "label": "Current"
+        "state": "warn",
+        "label": "Update available"
       },
       "npm": {
         "package": "@wasm-zoo/libarchive",
@@ -176,8 +176,8 @@
         "label": "Published 0.3.1"
       },
       "overall": {
-        "state": "ok",
-        "label": "Healthy"
+        "state": "warn",
+        "label": "Upstream review"
       }
     },
     {
@@ -534,8 +534,8 @@
     }
   ],
   "summary": {
-    "healthy": 8,
-    "warning": 1,
+    "healthy": 7,
+    "warning": 2,
     "pending": 0,
     "error": 0,
     "supplyChainPublished": 9,

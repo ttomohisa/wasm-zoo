@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-14T08:51:31.331Z",
+  "generatedAt": "2026-10-15T08:26:42.379Z",
   "hasUpdates": true,
   "packages": [
     {
@@ -34,21 +34,21 @@
       "slug": "imagemagick",
       "name": "ImageMagick",
       "status": "ok",
-      "pinned": "7.1.2-32",
-      "pinnedRef": "7.1.2-32",
-      "pinnedReleased": "2026-09-27",
-      "latest": "7.1.2-33",
-      "latestRef": "7.1.2-33",
-      "latestCommit": "211e5b975a0019a88dcef5f84c1193f46738d815",
-      "latestReleased": "2026-10-10T13:49:53Z",
+      "pinned": "7.1.2-33",
+      "pinnedRef": "7.1.2-33",
+      "pinnedReleased": "2026-10-10",
+      "latest": "7.1.2-34",
+      "latestRef": "7.1.2-34",
+      "latestCommit": "a0c4bf729a26a5c2feb28b0365b47a8db736078a",
+      "latestReleased": "2026-10-14T20:45:10Z",
       "updateAvailable": true,
-      "lagDays": 13,
+      "lagDays": 4,
       "gap": {
         "kind": "behind",
         "label": "Update available",
         "versionsBehind": 1
       },
-      "url": "https://github.com/ImageMagick/ImageMagick/releases/tag/7.1.2-33",
+      "url": "https://github.com/ImageMagick/ImageMagick/releases/tag/7.1.2-34",
       "candidate": {
         "mode": "auto",
         "profiles": [
@@ -63,18 +63,18 @@
       "pinned": "3.8.9",
       "pinnedRef": "v3.8.9",
       "pinnedReleased": "2026-07-28",
-      "latest": "3.8.9",
-      "latestRef": "v3.8.9",
-      "latestCommit": "27cbc7827172698143e440801fc0ba39ccb4f1f5",
-      "latestReleased": "2026-07-28T10:13:39Z",
-      "updateAvailable": false,
-      "lagDays": 0,
+      "latest": "3.8.10",
+      "latestRef": "v3.8.10",
+      "latestCommit": "0c48412be2d94afe1859a807ea7896a18d8900bd",
+      "latestReleased": "2026-10-14T09:31:07Z",
+      "updateAvailable": true,
+      "lagDays": 78,
       "gap": {
-        "kind": "current",
-        "label": "Current",
-        "versionsBehind": 0
+        "kind": "behind",
+        "label": "Update available",
+        "versionsBehind": 1
       },
-      "url": "https://github.com/libarchive/libarchive/releases/tag/v3.8.9",
+      "url": "https://github.com/libarchive/libarchive/releases/tag/v3.8.10",
       "candidate": {
         "mode": "auto",
         "profiles": [
