@@ -76,7 +76,7 @@ All eight packages retain review-only automatic candidate contracts. libvips rem
 | --- | --- | --- | --- | --- | --- |
 | FFmpeg | 9.0.2 | 0.2.8 | `browser-full`, `browser-full-gpl` | yes | `@wasm-zoo/ffmpeg@0.2.8` |
 | libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes | `@wasm-zoo/libarchive@0.3.1` |
-| ImageMagick | 7.1.2-33 | 0.4.5 | `browser-full` | yes | `@wasm-zoo/imagemagick@0.4.5` |
+| ImageMagick | 7.1.2-34 | 0.4.6 | `browser-full` | yes | `@wasm-zoo/imagemagick@0.4.5` |
 | libvips | 8.18.7 | 0.5.3 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.3` |
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
@@ -356,7 +356,7 @@ SHA256SUMS.txt
 
 Its binary ZIP contains four `*-core.js` / `*-core.wasm` pairs, gzip copies, `browser-libarchive.js`, `manifest.json`, `features.json`, `libarchive-config.txt`, build information, libarchive/zlib/bzip2 license notices and toolchain attribution.
 
-## ImageMagick 7.1.2-33
+## ImageMagick 7.1.2-34
 
 WASM Zoo v0.4.0 adds ImageMagick as the third available package.
 
@@ -388,8 +388,8 @@ Linux/macOS:
 Release tag after the real build passes:
 
 ```text
-git tag -a imagemagick-v0.4.5 -m "WASM Zoo ImageMagick v0.4.5"
-git push origin imagemagick-v0.4.5
+git tag -a imagemagick-v0.4.6 -m "WASM Zoo ImageMagick v0.4.6"
+git push origin imagemagick-v0.4.6
 ```
 
 The release workflow rebuilds from the exact pin, runs the Chromium smoke test, publishes binary/source/checksum assets, then asks the Pages workflow to refresh the ImageMagick Playground.
@@ -398,7 +398,7 @@ The release workflow rebuilds from the exact pin, runs the Chromium smoke test, 
 
 ```js
 const image = WasmZooImageMagick.loadHosted({
-  baseUrl: "/assets/imagemagick/7.1.2-33/browser-full/"
+  baseUrl: "/assets/imagemagick/7.1.2-34/browser-full/"
 });
 
 const result = await image.exec([
