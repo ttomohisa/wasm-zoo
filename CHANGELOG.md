@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- prepare the separately reviewed `@wasm-zoo/imagemagick@0.4.5` npm distribution from immutable `imagemagick-v0.4.5` / ImageMagick 7.1.2-33, clearing the previous Registry SHA-1 while Trusted Publisher staging, maintainer approval, Registry-backed smoke, and human merge remain pending;
+
 - promote ImageMagick 7.1.2-33 to builder 0.4.5 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `211e5b975a0019a88dcef5f84c1193f46738d815`;
 
 - batch the Registry-backed Cross-browser Lab by browser instead of by package/browser cell: install Chromium/Firefox/WebKit once each, execute all reviewed npm packages sequentially while continuing after individual failures, preserve all 27 per-cell JSON records and threaded capability evidence, and reduce a complete nine-package Lab from 29 runner jobs to 5 without weakening reviewed-main fail-closed publication rules;
