@@ -100,7 +100,7 @@ Package metadata now records `npm.status: published` plus that Registry SHA-1. L
 | npm package | npm version | upstream | Zoo builder | source Release | state |
 | --- | ---: | ---: | ---: | --- | --- |
 | `@wasm-zoo/jq` | `0.9.1` | jq 1.8.2 | `0.9.0` | `jq-v0.9.0` | published |
-| `@wasm-zoo/libarchive` | `0.3.1` | libarchive 3.8.9 | `0.3.1` | `libarchive-v0.3.1` | published |
+| `@wasm-zoo/libarchive` | `0.3.2` | libarchive 3.8.10 | `0.3.2` | `libarchive-v0.3.2` | published |
 | `@wasm-zoo/imagemagick` | `0.4.5` | ImageMagick 7.1.2-33 | `0.4.5` | `imagemagick-v0.4.5` | published |
 | `@wasm-zoo/ghostscript` | `0.7.2` | Ghostscript 10.08.0 | `0.7.2` | `ghostscript-v0.7.2` | published |
 | `@wasm-zoo/libvips` | `0.5.3` | libvips 8.18.7 | `0.5.3` | `libvips-v0.5.3` / `browser-core` | published |

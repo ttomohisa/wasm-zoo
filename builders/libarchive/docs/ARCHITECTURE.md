@@ -3,7 +3,7 @@
 `browser-full` keeps the upstream command-line programs rather than replacing them with a custom archive API. Each CLI is linked as its own modular Emscripten executable and shares a small JavaScript runner contract.
 
 ```text
-libarchive 3.8.9
+libarchive 3.8.10
   ├─ bsdtar   -> bsdtar-core.js + bsdtar-core.wasm
   ├─ bsdcpio  -> bsdcpio-core.js + bsdcpio-core.wasm
   ├─ bsdcat   -> bsdcat-core.js + bsdcat-core.wasm
