@@ -401,7 +401,7 @@
       ],
       "notes": [
         "v0.4.5 promotes ImageMagick 7.1.2-33 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
-        "@wasm-zoo/imagemagick@0.4.5 is prepared for a separate npm-only review from immutable imagemagick-v0.4.5 / ImageMagick 7.1.2-33; Trusted Publisher staging, maintainer 2FA approval, and new Registry SHA-1 recording remain pending.",
+        "@wasm-zoo/imagemagick@0.4.5 was published after Trusted Publisher staging and maintainer 2FA approval from immutable imagemagick-v0.4.5 / ImageMagick 7.1.2-33; npm Registry dist.shasum 1a5433d9416441772d4ac6230466b90440111dfa records the reviewed public tarball identity.",
         "v0.4.4 promotes ImageMagick 7.1.2-32 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
         "@wasm-zoo/imagemagick@0.4.4 was published through the Trusted Publisher staged-review flow from immutable imagemagick-v0.4.4 / ImageMagick 7.1.2-32; npm Registry dist.shasum a4dcbc9948eecf9e409d0e0c9fbd4a10463cd3e4 records the reviewed public tarball identity.",
         "v0.4.3 promotes ImageMagick 7.1.2-31 after the isolated upstream candidate build and real Chromium smoke test passed; the browser-full feature set and Emscripten 6.0.6 toolchain remain unchanged.",
@@ -559,7 +559,8 @@
           "releaseTag": "imagemagick-v0.4.5",
           "releaseAsset": "imagemagick-browser-full-7.1.2-33-zoo-0.4.5.zip",
           "commit": "211e5b975a0019a88dcef5f84c1193f46738d815"
-        }
+        },
+        "registryShasum": "1a5433d9416441772d4ac6230466b90440111dfa"
       }
     },
     {
