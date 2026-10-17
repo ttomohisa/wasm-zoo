@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-16T08:19:27.822Z",
+  "generatedAt": "2026-10-17T07:55:06.486Z",
   "hasUpdates": true,
   "packages": [
     {
@@ -34,19 +34,19 @@
       "slug": "imagemagick",
       "name": "ImageMagick",
       "status": "ok",
-      "pinned": "7.1.2-33",
-      "pinnedRef": "7.1.2-33",
-      "pinnedReleased": "2026-10-10",
+      "pinned": "7.1.2-34",
+      "pinnedRef": "7.1.2-34",
+      "pinnedReleased": "2026-10-14",
       "latest": "7.1.2-34",
       "latestRef": "7.1.2-34",
       "latestCommit": "a0c4bf729a26a5c2feb28b0365b47a8db736078a",
       "latestReleased": "2026-10-14T20:45:10Z",
-      "updateAvailable": true,
-      "lagDays": 4,
+      "updateAvailable": false,
+      "lagDays": 0,
       "gap": {
-        "kind": "behind",
-        "label": "Update available",
-        "versionsBehind": 1
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
       },
       "url": "https://github.com/ImageMagick/ImageMagick/releases/tag/7.1.2-34",
       "candidate": {
