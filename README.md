@@ -75,7 +75,7 @@ All eight packages retain review-only automatic candidate contracts. libvips rem
 | Package | Upstream | Zoo builder | Browser profile | Playground | npm rollout |
 | --- | --- | --- | --- | --- | --- |
 | FFmpeg | 9.0.2 | 0.2.8 | `browser-full`, `browser-full-gpl` | yes | `@wasm-zoo/ffmpeg@0.2.8` |
-| libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes | `@wasm-zoo/libarchive@0.3.1` |
+| libarchive | 3.8.10 | 0.3.2 | `browser-full` | yes | `@wasm-zoo/libarchive@0.3.2` |
 | ImageMagick | 7.1.2-33 | 0.4.5 | `browser-full` | yes | `@wasm-zoo/imagemagick@0.4.5` |
 | libvips | 8.18.7 | 0.5.3 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.3` |
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
@@ -240,7 +240,7 @@ Release tag:
 ffmpeg-v0.2.8
 ```
 
-## libarchive 3.8.9
+## libarchive 3.8.10
 
 WASM Zoo v0.3.0 adds upstream libarchive command-line tools as the second available package:
 
@@ -278,8 +278,8 @@ Linux/macOS:
 Release tag after the real build passes:
 
 ```text
-git tag -a libarchive-v0.3.1 -m "WASM Zoo libarchive v0.3.1"
-git push origin libarchive-v0.3.1
+git tag -a libarchive-v0.3.2 -m "WASM Zoo libarchive v0.3.2"
+git push origin libarchive-v0.3.2
 ```
 
 The release workflow rebuilds from the exact pin, runs the Chromium smoke test, publishes binary/source/checksum assets, then asks the Pages workflow to refresh the libarchive Playground.
@@ -292,7 +292,7 @@ The thin wrapper keeps the CLI surface generic:
 
 ```js
 const archive = WasmZooLibarchive.loadHosted({
-  baseUrl: "/assets/libarchive/3.8.9/browser-full/"
+  baseUrl: "/assets/libarchive/3.8.10/browser-full/"
 });
 
 const result = await archive.exec("bsdtar", [
@@ -346,8 +346,8 @@ Every metadata-enabled package release includes a binary ZIP, corresponding sour
 libarchive v0.3.1 uses:
 
 ```text
-libarchive-browser-full-3.8.9-zoo-0.3.1.zip
-libarchive-sources-3.8.9-zoo-0.3.1.tar.gz
+libarchive-browser-full-3.8.10-zoo-0.3.2.zip
+libarchive-sources-3.8.10-zoo-0.3.2.tar.gz
 BUILDINFO-browser-full.txt
 provenance-browser-full.json
 sbom-browser-full.cdx.json
