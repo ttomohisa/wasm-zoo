@@ -763,7 +763,7 @@
       "npm": {
         "status": "published",
         "package": "@wasm-zoo/libarchive",
-        "version": "0.3.2",
+        "version": "0.3.1",
         "profile": "browser-full",
         "entry": "index.mjs",
         "bundledAssets": true,
@@ -830,7 +830,15 @@
           "archive",
           "tar",
           "zip"
-        ]
+        ],
+        "source": {
+          "upstreamVersion": "3.8.9",
+          "builderVersion": "0.3.1",
+          "releaseTag": "libarchive-v0.3.1",
+          "releaseAsset": "libarchive-browser-full-3.8.9-zoo-0.3.1.zip",
+          "commit": "27cbc7827172698143e440801fc0ba39ccb4f1f5"
+        },
+        "registryShasum": "6910ea4a7fd2de4913fd9d598249a0025ef96d0c"
       }
     },
     {
