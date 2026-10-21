@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-20T08:42:47.302Z",
+  "generatedAt": "2026-10-21T08:43:26.884Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -102,36 +102,35 @@
       },
       "npm": {
         "package": "@wasm-zoo/imagemagick",
-        "expectedVersion": "0.4.5",
-        "registryVersion": "0.4.5",
-        "registryLatest": "0.4.5",
-        "registryShasum": "1a5433d9416441772d4ac6230466b90440111dfa",
-        "recordedShasum": "1a5433d9416441772d4ac6230466b90440111dfa",
+        "expectedVersion": "0.4.6",
+        "registryVersion": "0.4.6",
+        "registryLatest": "0.4.6",
+        "registryShasum": "2a089ce9953871c243742099f51920c68782db1a",
+        "recordedShasum": "2a089ce9953871c243742099f51920c68782db1a",
         "shasumMatch": true,
-        "sourceReleaseTag": "imagemagick-v0.4.5",
-        "sourceReleaseAsset": "imagemagick-browser-full-7.1.2-33-zoo-0.4.5.zip",
+        "sourceReleaseTag": "imagemagick-v0.4.6",
+        "sourceReleaseAsset": "imagemagick-browser-full-7.1.2-34-zoo-0.4.6.zip",
         "packageReleaseTag": "imagemagick-v0.4.6",
-        "sourceCurrent": false,
-        "intentionalPin": true,
-        "updatePending": true,
-        "state": "warn",
-        "label": "Pinned to imagemagick-v0.4.5",
-        "review": "separate-npm-review"
+        "sourceCurrent": true,
+        "intentionalPin": false,
+        "updatePending": false,
+        "state": "ok",
+        "label": "Published 0.4.6"
       },
       "overall": {
-        "state": "warn",
-        "label": "npm separate review"
+        "state": "ok",
+        "label": "Healthy"
       }
     },
     {
       "slug": "libarchive",
       "name": "libarchive",
-      "tag": "libarchive-v0.3.1",
+      "tag": "libarchive-v0.3.2",
       "release": {
         "state": "ok",
         "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libarchive-v0.3.1",
-        "publishedAt": "2026-08-21T06:16:27Z",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/libarchive-v0.3.2",
+        "publishedAt": "2026-10-21T02:22:58Z",
         "assetCount": 6,
         "missingAssets": []
       },
@@ -147,8 +146,8 @@
       "buildGate": {
         "state": "ok",
         "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/32453231076",
-        "runId": 32453231076
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/39532120305",
+        "runId": 39532120305
       },
       "playground": {
         "state": "ok",
@@ -156,8 +155,8 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/libarchive-playground/"
       },
       "freshness": {
-        "state": "warn",
-        "label": "Update available"
+        "state": "ok",
+        "label": "Current"
       },
       "npm": {
         "package": "@wasm-zoo/libarchive",
@@ -165,20 +164,21 @@
         "registryVersion": "0.3.1",
         "registryLatest": "0.3.1",
         "registryShasum": "6910ea4a7fd2de4913fd9d598249a0025ef96d0c",
-        "recordedShasum": null,
-        "shasumMatch": null,
+        "recordedShasum": "6910ea4a7fd2de4913fd9d598249a0025ef96d0c",
+        "shasumMatch": true,
         "sourceReleaseTag": "libarchive-v0.3.1",
         "sourceReleaseAsset": "libarchive-browser-full-3.8.9-zoo-0.3.1.zip",
-        "packageReleaseTag": "libarchive-v0.3.1",
-        "sourceCurrent": true,
-        "intentionalPin": false,
-        "updatePending": false,
-        "state": "ok",
-        "label": "Published 0.3.1"
+        "packageReleaseTag": "libarchive-v0.3.2",
+        "sourceCurrent": false,
+        "intentionalPin": true,
+        "updatePending": true,
+        "state": "warn",
+        "label": "Pinned to libarchive-v0.3.1",
+        "review": "separate-npm-review"
       },
       "overall": {
         "state": "warn",
-        "label": "Upstream review"
+        "label": "npm separate review"
       }
     },
     {
@@ -535,8 +535,8 @@
     }
   ],
   "summary": {
-    "healthy": 7,
-    "warning": 2,
+    "healthy": 8,
+    "warning": 1,
     "pending": 0,
     "error": 0,
     "supplyChainPublished": 9,

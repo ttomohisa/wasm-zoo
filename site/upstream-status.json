@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-20T08:42:30.199Z",
-  "hasUpdates": true,
+  "generatedAt": "2026-10-21T08:43:13.411Z",
+  "hasUpdates": false,
   "packages": [
     {
       "slug": "ffmpeg",
@@ -60,19 +60,19 @@
       "slug": "libarchive",
       "name": "libarchive",
       "status": "ok",
-      "pinned": "3.8.9",
-      "pinnedRef": "v3.8.9",
-      "pinnedReleased": "2026-07-28",
+      "pinned": "3.8.10",
+      "pinnedRef": "v3.8.10",
+      "pinnedReleased": "2026-10-14",
       "latest": "3.8.10",
       "latestRef": "v3.8.10",
       "latestCommit": "0c48412be2d94afe1859a807ea7896a18d8900bd",
       "latestReleased": "2026-10-14T09:31:07Z",
-      "updateAvailable": true,
-      "lagDays": 78,
+      "updateAvailable": false,
+      "lagDays": 0,
       "gap": {
-        "kind": "behind",
-        "label": "Update available",
-        "versionsBehind": 1
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
       },
       "url": "https://github.com/libarchive/libarchive/releases/tag/v3.8.10",
       "candidate": {
