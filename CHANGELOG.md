@@ -3,6 +3,9 @@
 ## Unreleased
 
 - promote libarchive 3.8.10 to builder 0.3.2 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `0c48412be2d94afe1859a807ea7896a18d8900bd`;
+- record the separately reviewed `@wasm-zoo/imagemagick@0.4.6` npm publication from immutable `imagemagick-v0.4.6` / ImageMagick 7.1.2-34 after Trusted Publisher staging and maintainer 2FA approval, retaining `browser-full` and exact upstream commit `a0c4bf729a26a5c2feb28b0365b47a8db736078a` and binding the public tarball to reviewed Registry SHA-1 `2a089ce9953871c243742099f51920c68782db1a`;
+
+- promote ImageMagick 7.1.2-34 to builder 0.4.6 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `a0c4bf729a26a5c2feb28b0365b47a8db736078a`;
 
 - publish the separately reviewed `@wasm-zoo/imagemagick@0.4.5` npm distribution from immutable `imagemagick-v0.4.5` / ImageMagick 7.1.2-33 through Trusted Publisher staging and maintainer 2FA approval, recording reviewed Registry `dist.shasum` `1a5433d9416441772d4ac6230466b90440111dfa` and requiring Registry-backed smoke before human merge;
 

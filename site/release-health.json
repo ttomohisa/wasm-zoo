@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-15T08:26:57.704Z",
+  "generatedAt": "2026-10-20T08:42:47.302Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -67,12 +67,12 @@
     {
       "slug": "imagemagick",
       "name": "ImageMagick",
-      "tag": "imagemagick-v0.4.5",
+      "tag": "imagemagick-v0.4.6",
       "release": {
         "state": "ok",
         "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.5",
-        "publishedAt": "2026-10-15T01:53:06Z",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.6",
+        "publishedAt": "2026-10-17T05:17:42Z",
         "assetCount": 6,
         "missingAssets": []
       },
@@ -88,8 +88,8 @@
       "buildGate": {
         "state": "ok",
         "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/38667682850",
-        "runId": 38667682850
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/39005481972",
+        "runId": 39005481972
       },
       "playground": {
         "state": "ok",
@@ -97,8 +97,8 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/imagemagick-playground/"
       },
       "freshness": {
-        "state": "warn",
-        "label": "Update available"
+        "state": "ok",
+        "label": "Current"
       },
       "npm": {
         "package": "@wasm-zoo/imagemagick",
@@ -110,16 +110,17 @@
         "shasumMatch": true,
         "sourceReleaseTag": "imagemagick-v0.4.5",
         "sourceReleaseAsset": "imagemagick-browser-full-7.1.2-33-zoo-0.4.5.zip",
-        "packageReleaseTag": "imagemagick-v0.4.5",
-        "sourceCurrent": true,
-        "intentionalPin": false,
-        "updatePending": false,
-        "state": "ok",
-        "label": "Published 0.4.5"
+        "packageReleaseTag": "imagemagick-v0.4.6",
+        "sourceCurrent": false,
+        "intentionalPin": true,
+        "updatePending": true,
+        "state": "warn",
+        "label": "Pinned to imagemagick-v0.4.5",
+        "review": "separate-npm-review"
       },
       "overall": {
         "state": "warn",
-        "label": "Upstream review"
+        "label": "npm separate review"
       }
     },
     {
@@ -540,9 +541,9 @@
     "error": 0,
     "supplyChainPublished": 9,
     "npmTotal": 9,
-    "npmAligned": 9,
-    "npmFollowUp": 0,
-    "npmPinned": 0,
+    "npmAligned": 8,
+    "npmFollowUp": 1,
+    "npmPinned": 1,
     "npmErrors": 0,
     "total": 9
   }

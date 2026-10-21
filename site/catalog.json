@@ -309,9 +309,9 @@
       "status": "available",
       "order": 15,
       "upstream": {
-        "version": "7.1.2-33",
-        "ref": "7.1.2-33",
-        "released": "2026-10-10",
+        "version": "7.1.2-34",
+        "ref": "7.1.2-34",
+        "released": "2026-10-14",
         "homepage": "https://imagemagick.org/",
         "repository": "https://github.com/ImageMagick/ImageMagick",
         "license": "ImageMagick License"
@@ -325,7 +325,7 @@
         ]
       },
       "zoo": {
-        "builderVersion": "0.4.5",
+        "builderVersion": "0.4.6",
         "toolchain": "Emscripten 6.0.6",
         "buildModel": "upstream-cli-full",
         "reproducible": true,
@@ -368,7 +368,7 @@
           "output": "Generic upstream magick CLI; input and output paths are chosen by CLI arguments",
           "binaryLicense": "ImageMagick License",
           "size": "Loaded from the published release manifest",
-          "releaseAsset": "imagemagick-browser-full-7.1.2-33-zoo-0.4.5.zip",
+          "releaseAsset": "imagemagick-browser-full-7.1.2-34-zoo-0.4.6.zip",
           "playground": true,
           "playgroundPath": "./imagemagick-playground/"
         }
@@ -390,16 +390,18 @@
       "comparison": [
         {
           "name": "Upstream native",
-          "version": "7.1.2-33",
+          "version": "7.1.2-34",
           "note": "Feature set depends on optional delegate libraries and platform integration available in the native build."
         },
         {
           "name": "WASM Zoo",
-          "version": "7.1.2-33",
+          "version": "7.1.2-34",
           "note": "Upstream magick CLI with browser filesystem constraints and PNG/JPEG-focused delegate set."
         }
       ],
       "notes": [
+        "@wasm-zoo/imagemagick@0.4.6 was published after Trusted Publisher staging and maintainer 2FA approval from immutable imagemagick-v0.4.6 / ImageMagick 7.1.2-34; npm Registry dist.shasum 2a089ce9953871c243742099f51920c68782db1a matches the reviewed tarball identity.",
+        "v0.4.6 promotes ImageMagick 7.1.2-34 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
         "v0.4.5 promotes ImageMagick 7.1.2-33 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
         "@wasm-zoo/imagemagick@0.4.5 was published after Trusted Publisher staging and maintainer 2FA approval from immutable imagemagick-v0.4.5 / ImageMagick 7.1.2-33; npm Registry dist.shasum 1a5433d9416441772d4ac6230466b90440111dfa records the reviewed public tarball identity.",
         "v0.4.4 promotes ImageMagick 7.1.2-32 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
@@ -417,10 +419,10 @@
         "The browser-full builder applies a narrowly scoped source patch for zero-configuration mode: the one-time anonymous pixel-cache mmap decision is initialized to disabled. With an empty built-in policy and no working Emscripten mmap this preserves the effective behavior while avoiding ImageMagick's policy/semaphore initialization cycle during first pixel-cache open."
       ],
       "release": {
-        "tag": "imagemagick-v0.4.5",
-        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.5",
-        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/imagemagick-v0.4.5/",
-        "sourceAsset": "imagemagick-sources-7.1.2-33-zoo-0.4.5.tar.gz",
+        "tag": "imagemagick-v0.4.6",
+        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.6",
+        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/imagemagick-v0.4.6/",
+        "sourceAsset": "imagemagick-sources-7.1.2-34-zoo-0.4.6.tar.gz",
         "checksumsAsset": "SHA256SUMS.txt"
       },
       "referenceWasm": {
@@ -508,7 +510,7 @@
       "npm": {
         "status": "published",
         "package": "@wasm-zoo/imagemagick",
-        "version": "0.4.5",
+        "version": "0.4.6",
         "profile": "browser-full",
         "entry": "index.mjs",
         "bundledAssets": true,
@@ -554,13 +556,13 @@
           "conversion"
         ],
         "source": {
-          "upstreamVersion": "7.1.2-33",
-          "builderVersion": "0.4.5",
-          "releaseTag": "imagemagick-v0.4.5",
-          "releaseAsset": "imagemagick-browser-full-7.1.2-33-zoo-0.4.5.zip",
-          "commit": "211e5b975a0019a88dcef5f84c1193f46738d815"
+          "upstreamVersion": "7.1.2-34",
+          "builderVersion": "0.4.6",
+          "releaseTag": "imagemagick-v0.4.6",
+          "releaseAsset": "imagemagick-browser-full-7.1.2-34-zoo-0.4.6.zip",
+          "commit": "a0c4bf729a26a5c2feb28b0365b47a8db736078a"
         },
-        "registryShasum": "1a5433d9416441772d4ac6230466b90440111dfa"
+        "registryShasum": "2a089ce9953871c243742099f51920c68782db1a"
       }
     },
     {
