@@ -96,6 +96,7 @@
     }
   ],
   "notes": [
+    "npm 0.3.2 is published from libarchive-v0.3.2 / libarchive 3.8.10 / builder 0.3.2 after Trusted Publisher staging and maintainer approval; the public tarball matches reviewed Registry SHA-1 b8071be3b8d71b320004171a56498b67b49e3084.",
     "v0.3.2 promotes libarchive 3.8.10 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
     "v0.3.1 is the first metadata-enabled libarchive release: the WebAssembly feature set is unchanged from v0.3.0, while standalone SLSA provenance and CycloneDX SBOM assets are added to the release contract.",
     "The browser profile is single-threaded and does not require SharedArrayBuffer or cross-origin isolation.",
@@ -196,7 +197,7 @@
   "npm": {
     "status": "published",
     "package": "@wasm-zoo/libarchive",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "profile": "browser-full",
     "entry": "index.mjs",
     "bundledAssets": true,
@@ -265,12 +266,12 @@
       "zip"
     ],
     "source": {
-      "upstreamVersion": "3.8.9",
-      "builderVersion": "0.3.1",
-      "releaseTag": "libarchive-v0.3.1",
-      "releaseAsset": "libarchive-browser-full-3.8.9-zoo-0.3.1.zip",
-      "commit": "27cbc7827172698143e440801fc0ba39ccb4f1f5"
+      "upstreamVersion": "3.8.10",
+      "builderVersion": "0.3.2",
+      "releaseTag": "libarchive-v0.3.2",
+      "releaseAsset": "libarchive-browser-full-3.8.10-zoo-0.3.2.zip",
+      "commit": "0c48412be2d94afe1859a807ea7896a18d8900bd"
     },
-    "registryShasum": "6910ea4a7fd2de4913fd9d598249a0025ef96d0c"
+    "registryShasum": "b8071be3b8d71b320004171a56498b67b49e3084"
   }
 }
