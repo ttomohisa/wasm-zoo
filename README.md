@@ -75,7 +75,7 @@ All eight packages retain review-only automatic candidate contracts. libvips rem
 | Package | Upstream | Zoo builder | Browser profile | Playground | npm rollout |
 | --- | --- | --- | --- | --- | --- |
 | FFmpeg | 9.0.2 | 0.2.8 | `browser-full`, `browser-full-gpl` | yes | `@wasm-zoo/ffmpeg@0.2.8` |
-| libarchive | 3.8.10 | 0.3.2 | `browser-full` | yes | `@wasm-zoo/libarchive@0.3.1` |
+| libarchive | 3.8.10 | 0.3.2 | `browser-full` | yes | `@wasm-zoo/libarchive@0.3.2` |
 | ImageMagick | 7.1.2-34 | 0.4.6 | `browser-full` | yes | `@wasm-zoo/imagemagick@0.4.6` |
 | libvips | 8.18.7 | 0.5.3 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.3` |
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
@@ -85,6 +85,8 @@ All eight packages retain review-only automatic candidate contracts. libvips rem
 | Brotli | 1.2.0 | 0.1.0 | `browser-full` | yes | `@wasm-zoo/brotli@0.1.0` |
 
 ImageMagick npm 0.4.6 is published after separate Trusted Publisher staging and maintainer 2FA approval. Its Registry SHA-1 matches the reviewed immutable-Release-derived tarball.
+
+libarchive npm 0.3.2 is prepared but not yet published. The public npm version remains 0.3.1 until separate Trusted Publisher staging and maintainer 2FA approval complete.
 
 Brotli 1.2.0 is the ninth available package after its patch-zero upstream-CMake feasibility build passed a real Chromium compression/integrity/decompression round trip. `@wasm-zoo/brotli@0.1.0` is now public from the exact three-browser-verified `brotli-v0.1.0` canary tarball, with Registry SHA-1 `6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7`.
 

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- prepare the separately reviewed `@wasm-zoo/libarchive@0.3.2` npm distribution from `libarchive-v0.3.2` / libarchive 3.8.10 / builder 0.3.2, retaining `browser-full` and exact upstream commit `0c48412be2d94afe1859a807ea7896a18d8900bd`; remove the old Registry SHA-1 while publication and published-version verification remain pending;
+
 - promote libarchive 3.8.10 to builder 0.3.2 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `0c48412be2d94afe1859a807ea7896a18d8900bd`;
 - record the separately reviewed `@wasm-zoo/imagemagick@0.4.6` npm publication from immutable `imagemagick-v0.4.6` / ImageMagick 7.1.2-34 after Trusted Publisher staging and maintainer 2FA approval, retaining `browser-full` and exact upstream commit `a0c4bf729a26a5c2feb28b0365b47a8db736078a` and binding the public tarball to reviewed Registry SHA-1 `2a089ce9953871c243742099f51920c68782db1a`;
 
