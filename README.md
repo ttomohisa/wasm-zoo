@@ -86,7 +86,7 @@ All eight packages retain review-only automatic candidate contracts. libvips rem
 
 ImageMagick npm 0.4.6 is published after separate Trusted Publisher staging and maintainer 2FA approval. Its Registry SHA-1 matches the reviewed immutable-Release-derived tarball.
 
-libarchive npm 0.3.2 is prepared but not yet published. The public npm version remains 0.3.1 until separate Trusted Publisher staging and maintainer 2FA approval complete.
+libarchive npm 0.3.2 is published from `libarchive-v0.3.2` / libarchive 3.8.10 after Trusted Publisher staging and maintainer approval. The public tarball matches reviewed Registry SHA-1 `b8071be3b8d71b320004171a56498b67b49e3084`.
 
 Brotli 1.2.0 is the ninth available package after its patch-zero upstream-CMake feasibility build passed a real Chromium compression/integrity/decompression round trip. `@wasm-zoo/brotli@0.1.0` is now public from the exact three-browser-verified `brotli-v0.1.0` canary tarball, with Registry SHA-1 `6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7`.
 
