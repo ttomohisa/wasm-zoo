@@ -97,11 +97,13 @@ Package metadata now records `npm.status: published` plus that Registry SHA-1. L
 
 ## Published packages
 
+The table records reviewed manifest targets. ImageMagick 0.4.6 is **prepared, not yet public**; npm currently serves 0.4.5. Its `npm.status: published` retains existing-package workflow membership, not proof that the new version is live. The new Registry SHA-1 is intentionally unset until publication.
+
 | npm package | npm version | upstream | Zoo builder | source Release | state |
 | --- | ---: | ---: | ---: | --- | --- |
 | `@wasm-zoo/jq` | `0.9.1` | jq 1.8.2 | `0.9.0` | `jq-v0.9.0` | published |
 | `@wasm-zoo/libarchive` | `0.3.1` | libarchive 3.8.9 | `0.3.1` | `libarchive-v0.3.1` | published |
-| `@wasm-zoo/imagemagick` | `0.4.5` | ImageMagick 7.1.2-33 | `0.4.5` | `imagemagick-v0.4.5` | published |
+| `@wasm-zoo/imagemagick` | `0.4.6` | ImageMagick 7.1.2-34 | `0.4.6` | `imagemagick-v0.4.6` | published |
 | `@wasm-zoo/ghostscript` | `0.7.2` | Ghostscript 10.08.0 | `0.7.2` | `ghostscript-v0.7.2` | published |
 | `@wasm-zoo/libvips` | `0.5.3` | libvips 8.18.7 | `0.5.3` | `libvips-v0.5.3` / `browser-core` | published |
 | `@wasm-zoo/ffmpeg` | `0.2.8` | FFmpeg 9.0.2 | `0.2.8` | `ffmpeg-v0.2.8` / `browser-full` | published |
@@ -156,6 +158,12 @@ try {
 ```
 
 `libarchive` exposes the four published upstream CLI entry points through `load({ tool })`: `bsdtar`, `bsdcpio`, `bsdcat`, and `bsdunzip`.
+
+### ImageMagick npm 0.4.6 follow-up (prepared; publication pending)
+
+`@wasm-zoo/imagemagick@0.4.6` is prepared from immutable `imagemagick-v0.4.6` / `imagemagick-browser-full-7.1.2-34-zoo-0.4.6.zip`, exact upstream commit `a0c4bf729a26a5c2feb28b0365b47a8db736078a`, and Zoo builder 0.4.6. The npm profile remains `browser-full`; no upstream/toolchain/build pin or existing Release asset changes.
+
+Review this npm-only PR, then run `publish-npm.yml` on its branch with `slug=imagemagick`, first `mode=pack` and then, after artifact review, `mode=stage`. A maintainer must approve the staged version with 2FA. After publication, compare public `dist.shasum` with the reviewed tarball, record the new value as `npm.registryShasum`, update pending documentation and regenerate the catalog. Require the ImageMagick Registry/Vite smoke and all PR checks before human merge. Do not reuse the 0.4.5 SHA-1 or treat a prepublication Registry deferral as a successful 0.4.6 browser test.
 
 ### ImageMagick npm 0.4.5 follow-up (published)
 

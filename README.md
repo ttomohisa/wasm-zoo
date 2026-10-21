@@ -76,13 +76,15 @@ All eight packages retain review-only automatic candidate contracts. libvips rem
 | --- | --- | --- | --- | --- | --- |
 | FFmpeg | 9.0.2 | 0.2.8 | `browser-full`, `browser-full-gpl` | yes | `@wasm-zoo/ffmpeg@0.2.8` |
 | libarchive | 3.8.9 | 0.3.1 | `browser-full` | yes | `@wasm-zoo/libarchive@0.3.1` |
-| ImageMagick | 7.1.2-34 | 0.4.6 | `browser-full` | yes | `@wasm-zoo/imagemagick@0.4.5` |
+| ImageMagick | 7.1.2-34 | 0.4.6 | `browser-full` | yes | `@wasm-zoo/imagemagick@0.4.6` |
 | libvips | 8.18.7 | 0.5.3 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.3` |
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 | Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
 | QPDF | 12.4.2 | 0.1.1 | `browser-full` | yes | `@wasm-zoo/qpdf@0.1.1` |
 | Brotli | 1.2.0 | 0.1.0 | `browser-full` | yes | `@wasm-zoo/brotli@0.1.0` |
+
+ImageMagick npm 0.4.6 is prepared but not yet published. The public npm version remains 0.4.5 until separate Trusted Publisher staging and maintainer 2FA approval complete.
 
 Brotli 1.2.0 is the ninth available package after its patch-zero upstream-CMake feasibility build passed a real Chromium compression/integrity/decompression round trip. `@wasm-zoo/brotli@0.1.0` is now public from the exact three-browser-verified `brotli-v0.1.0` canary tarball, with Registry SHA-1 `6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7`.
 

@@ -98,6 +98,7 @@
     }
   ],
   "notes": [
+    "@wasm-zoo/imagemagick@0.4.6 is prepared for separate Trusted Publisher staging from immutable imagemagick-v0.4.6 / ImageMagick 7.1.2-34. Publication and maintainer 2FA approval remain pending; record the new Registry SHA-1 only after publication.",
     "v0.4.6 promotes ImageMagick 7.1.2-34 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
     "v0.4.5 promotes ImageMagick 7.1.2-33 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
     "@wasm-zoo/imagemagick@0.4.5 was published after Trusted Publisher staging and maintainer 2FA approval from immutable imagemagick-v0.4.5 / ImageMagick 7.1.2-33; npm Registry dist.shasum 1a5433d9416441772d4ac6230466b90440111dfa records the reviewed public tarball identity.",
@@ -207,7 +208,7 @@
   "npm": {
     "status": "published",
     "package": "@wasm-zoo/imagemagick",
-    "version": "0.4.5",
+    "version": "0.4.6",
     "profile": "browser-full",
     "entry": "index.mjs",
     "bundledAssets": true,
@@ -253,12 +254,11 @@
       "conversion"
     ],
     "source": {
-      "upstreamVersion": "7.1.2-33",
-      "builderVersion": "0.4.5",
-      "releaseTag": "imagemagick-v0.4.5",
-      "releaseAsset": "imagemagick-browser-full-7.1.2-33-zoo-0.4.5.zip",
-      "commit": "211e5b975a0019a88dcef5f84c1193f46738d815"
-    },
-    "registryShasum": "1a5433d9416441772d4ac6230466b90440111dfa"
+      "upstreamVersion": "7.1.2-34",
+      "builderVersion": "0.4.6",
+      "releaseTag": "imagemagick-v0.4.6",
+      "releaseAsset": "imagemagick-browser-full-7.1.2-34-zoo-0.4.6.zip",
+      "commit": "a0c4bf729a26a5c2feb28b0365b47a8db736078a"
+    }
   }
 }
