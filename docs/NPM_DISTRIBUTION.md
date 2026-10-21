@@ -95,6 +95,10 @@ Package metadata now records `npm.status: published` plus that Registry SHA-1. L
 
 `@wasm-zoo/qpdf@0.1.1` is published from immutable `qpdf-v0.1.1` / `qpdf-browser-full-12.4.2-zoo-0.1.1.zip`, exact upstream commit `4eba95899886e851cc41d76886483b347612f2a8`, and Zoo builder 0.1.1. Trusted Publisher staged publication completed with reviewed Registry `dist.shasum` `53714e9a98edca7fbe775b5028adde7719e86625`; the old 0.1.0 SHA-1 is not reused.
 
+### libarchive upstream promotion and npm pin
+
+The libarchive 3.8.10 / Zoo builder 0.3.2 promotion does not publish npm 0.3.2. The published `@wasm-zoo/libarchive@0.3.1` remains pinned to immutable `libarchive-v0.3.1` / libarchive 3.8.9, exact upstream commit `27cbc7827172698143e440801fc0ba39ccb4f1f5` and Registry SHA-1 `6910ea4a7fd2de4913fd9d598249a0025ef96d0c`. Any npm update requires a separate review after the new package Release exists.
+
 ## Published packages
 
 ImageMagick 0.4.6 is published after separate Trusted Publisher staging and maintainer 2FA approval. Registry SHA-1 `2a089ce9953871c243742099f51920c68782db1a` matches the reviewed tarball and is recorded in `npm.registryShasum`.

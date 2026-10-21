@@ -2,9 +2,9 @@
 
 Reproducible browser build of upstream libarchive command-line tools.
 
-Pinned release: **libarchive 3.8.9**<br>
+Pinned release: **libarchive 3.8.10**<br>
 Toolchain: **Emscripten 6.0.6**<br>
-Zoo builder: **0.3.1**
+Zoo builder: **0.3.2**
 
 `browser-full` publishes four upstream CLIs:
 

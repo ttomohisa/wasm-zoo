@@ -11,7 +11,8 @@ export const automaticCandidateConfigs = {
     refKey: "LIBARCHIVE_REF",
     commitKey: "LIBARCHIVE_COMMIT",
     buildWorkflow: "build-libarchive.yml",
-    displayName: "libarchive"
+    displayName: "libarchive",
+    keepNpmPinned: true
   },
   imagemagick: {
     dir: "imagemagick",
