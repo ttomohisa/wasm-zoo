@@ -1768,6 +1768,7 @@
         }
       ],
       "notes": [
+        "@wasm-zoo/brotli@0.1.1 published from brotli-v0.1.1; Registry SHA-1 6cc07aa0d5bf0feffd1a804df12106386d63ce61 matches the three-browser-tested staged tarball.",
         "v0.1.1 promotes Brotli 1.2.1 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
         "Brotli 1.2.1 is built from the exact upstream v1.2.1 tag at commit db24a98aed38a16de78cc05ca15cdd8dc2a0d92d using the upstream CMake brotli executable target.",
         "The reviewed browser-full build preserves the upstream CLI and has zero Brotli source patches; the browser-specific boundary is limited to Worker execution and Emscripten MEMFS file staging.",
@@ -1800,7 +1801,7 @@
       "npm": {
         "status": "published",
         "package": "@wasm-zoo/brotli",
-        "version": "0.1.0",
+        "version": "0.1.1",
         "profile": "browser-full",
         "entry": "index.mjs",
         "bundledAssets": true,
@@ -1848,25 +1849,13 @@
           "upstream-cli"
         ],
         "source": {
-          "upstreamVersion": "1.2.0",
-          "builderVersion": "0.1.0",
-          "releaseTag": "brotli-v0.1.0",
-          "releaseAsset": "brotli-browser-full-1.2.0-zoo-0.1.0.zip",
-          "commit": "028fb5a23661f123017c060daa546b55cf4bde29"
+          "upstreamVersion": "1.2.1",
+          "builderVersion": "0.1.1",
+          "releaseTag": "brotli-v0.1.1",
+          "releaseAsset": "brotli-browser-full-1.2.1-zoo-0.1.1.zip",
+          "commit": "db24a98aed38a16de78cc05ca15cdd8dc2a0d92d"
         },
-        "registryShasum": "6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7",
-        "pending": {
-          "version": "0.1.1",
-          "profile": "browser-full",
-          "releaseCommit": "d3e9fe2251fea08b2765312efcfdc1191c91cddf",
-          "source": {
-            "upstreamVersion": "1.2.1",
-            "builderVersion": "0.1.1",
-            "releaseTag": "brotli-v0.1.1",
-            "releaseAsset": "brotli-browser-full-1.2.1-zoo-0.1.1.zip",
-            "commit": "db24a98aed38a16de78cc05ca15cdd8dc2a0d92d"
-          }
-        }
+        "registryShasum": "6cc07aa0d5bf0feffd1a804df12106386d63ce61"
       }
     },
     {
