@@ -84,7 +84,7 @@ All eight packages retain review-only automatic candidate contracts. libvips rem
 | jq | 1.8.2 | 0.9.0 | `browser-full` | yes | `@wasm-zoo/jq@0.9.1` |
 | Zstandard | 1.5.7 | 0.3.0 | `browser-core`, `browser-full` | yes | `@wasm-zoo/zstd@0.3.0` |
 | QPDF | 12.4.2 | 0.1.1 | `browser-full` | yes | `@wasm-zoo/qpdf@0.1.1` |
-| Brotli | 1.2.1 | 0.1.1 | `browser-full` | yes | `@wasm-zoo/brotli@0.1.0` |
+| Brotli | 1.2.1 | 0.1.1 | `browser-full` | yes | `@wasm-zoo/brotli@0.1.1` |
 
 ImageMagick npm 0.4.6 is published after separate Trusted Publisher staging and maintainer 2FA approval. Its Registry SHA-1 matches the reviewed immutable-Release-derived tarball.
 
