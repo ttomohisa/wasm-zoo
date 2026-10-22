@@ -12,7 +12,7 @@ const input=new TextEncoder().encode(text);
 (async()=>{try{
   const brotli=await load({baseUrl:'./'});
   const version=await brotli.exec(['--version'],{timeoutMs:30000,onLog});
-  if(!version.stdout.includes('brotli 1.2.0')) throw new Error(`brotli --version mismatch: ${version.stdout}`);
+  if(!version.stdout.includes('brotli 1.2.1')) throw new Error(`brotli --version mismatch: ${version.stdout}`);
   const compressed=await brotli.exec(['-q','11','-o','/payload.br','/payload.txt'],{files:[{name:'/payload.txt',data:input}],outputs:['/payload.br'],timeoutMs:60000,onLog});
   const br=compressed.files.find((file)=>file.name==='/payload.br');
   if(!br?.data?.length) throw new Error('compression did not produce /payload.br');
@@ -23,6 +23,6 @@ const input=new TextEncoder().encode(text);
   const actual=new TextDecoder().decode(roundtrip.data);
   if(actual!==text) throw new Error(`round-trip mismatch: expected ${input.length} bytes got ${roundtrip.data.length}`);
   brotli.dispose();
-  location.hash=`#SMOKE_TEST_PASS_brotli_1.2.0_q11_roundtrip_${input.length}_to_${br.data.length}`;
+  location.hash=`#SMOKE_TEST_PASS_brotli_1.2.1_q11_roundtrip_${input.length}_to_${br.data.length}`;
 }catch(error){fail(error);}})();
 </script>
