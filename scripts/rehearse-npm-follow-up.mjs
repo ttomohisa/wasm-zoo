@@ -14,6 +14,9 @@ try {
   await fs.cp(root, temp, { recursive: true, filter: src => !['.git', 'node_modules', 'npm-work'].includes(path.basename(src)) });
   for (const original of (await loadPackages()).filter(p => p.npm?.status === 'published')) {
     const pkg = structuredClone(original);
+    // Model an independent publication in this fixture, even on a preparation PR.
+    // The real pending update remains untouched in the source repository.
+    delete pkg.npm.pending;
     const pins = await readEnv(path.join(root, 'builders', pkg.slug, 'versions.env'));
     // Simulate a just-completed package Release whose public npm still points at
     // an older Release, without changing the repository's actual reviewed pins.

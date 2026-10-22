@@ -1854,7 +1854,19 @@
           "releaseAsset": "brotli-browser-full-1.2.0-zoo-0.1.0.zip",
           "commit": "028fb5a23661f123017c060daa546b55cf4bde29"
         },
-        "registryShasum": "6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7"
+        "registryShasum": "6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7",
+        "pending": {
+          "version": "0.1.1",
+          "profile": "browser-full",
+          "releaseCommit": "d3e9fe2251fea08b2765312efcfdc1191c91cddf",
+          "source": {
+            "upstreamVersion": "1.2.1",
+            "builderVersion": "0.1.1",
+            "releaseTag": "brotli-v0.1.1",
+            "releaseAsset": "brotli-browser-full-1.2.1-zoo-0.1.1.zip",
+            "commit": "db24a98aed38a16de78cc05ca15cdd8dc2a0d92d"
+          }
+        }
       }
     },
     {
