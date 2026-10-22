@@ -56,3 +56,7 @@ jobs:
             --verify-tag \
             --title "WASM Zoo · FFmpeg ${FFMPEG_REF#n} · full browser builds" \
             --notes "Unofficial generic upstream ffmpeg CLI builds for WebAssembly. Includes browser-full and browser-full-gpl, feature inventories, exact hashes and corresponding source/build recipe. Both profiles passed the real Chromium pthread smoke test before publication. Metadata-enabled releases also publish per-profile in-toto/SLSA provenance and CycloneDX 1.6 SBOM assets."
+      - name: Prepare review-only npm follow-up after successful Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run npm-follow-up.yml --repo "$GITHUB_REPOSITORY" --ref main -f action=prepare -f slug=ffmpeg -f tag="$GITHUB_REF_NAME"

@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { root, readJson } from "./lib.mjs";
+import { root, readJson, readEnv } from "./lib.mjs";
 
 const args={};
 for(let i=2;i<process.argv.length;i+=2){
@@ -13,6 +13,8 @@ if(!args.input) throw new Error("Missing --input");
 const input=path.resolve(args.input);
 const zoo=await readJson(path.join(root,"packages/qpdf/package.json"));
 const npm=zoo.npm;
+const pins=await readEnv(args["versions-file"]||path.join(root,"builders/qpdf/versions.env"));
+if(!pins.EMSDK_VERSION||!pins.ZLIB_VERSION||!pins.LIBJPEG_VERSION) throw new Error("Missing selected QPDF Release toolchain/dependency pins");
 if(!["canary","published"].includes(npm?.status)||npm.package!=="@wasm-zoo/qpdf") throw new Error("QPDF npm metadata is not in a reviewed immutable-distribution state");
 const expectedFiles=[
   "browser-qpdf.js","wasm-zoo.mjs","qpdf-core.js","qpdf-core.wasm","manifest.json","features.json",
@@ -32,7 +34,7 @@ if(manifest.package!=="qpdf"||manifest.profile!=="browser-full") throw new Error
 if(manifest.upstream?.version!==npm.source.upstreamVersion||manifest.upstream?.ref!==`v${npm.source.upstreamVersion}`) throw new Error("QPDF release manifest upstream version/ref mismatch");
 if(manifest.upstream?.commit!==npm.source.commit) throw new Error("QPDF release manifest exact commit mismatch");
 if(manifest.build?.builderVersion!==npm.source.builderVersion) throw new Error("QPDF release manifest builder mismatch");
-if(manifest.toolchain?.version!=="6.0.8") throw new Error("QPDF npm distribution must stay on reviewed Emscripten 6.0.8");
+if(manifest.toolchain?.version!==pins.EMSDK_VERSION) throw new Error("QPDF npm distribution toolchain must match the selected reviewed Release");
 if(!/^[0-9a-f]{64}$/.test(manifest.upstream?.sourceSha256||"")) throw new Error("QPDF release manifest source SHA-256 missing");
 for(const rel of ["qpdf-core.js","qpdf-core.wasm"]){
   if(!manifest.files?.[rel]?.sha256||!Number.isFinite(manifest.files?.[rel]?.bytes)) throw new Error("QPDF release manifest missing hashed core file "+rel);
@@ -51,8 +53,8 @@ for(const marker of [
   `Zoo build version: ${npm.source.builderVersion}`,
   `QPDF version: ${npm.source.upstreamVersion}`,
   `QPDF commit: ${npm.source.commit}`,
-  "Emscripten version: 6.0.8",
-  "Emscripten zlib 1.3.2 + libjpeg 9f ports"
+  `Emscripten version: ${pins.EMSDK_VERSION}`,
+  `Emscripten zlib ${pins.ZLIB_VERSION} + libjpeg ${pins.LIBJPEG_VERSION} ports`
 ]){
   if(!buildInfo.includes(marker)) throw new Error("QPDF BUILDINFO missing reviewed marker: "+marker);
 }

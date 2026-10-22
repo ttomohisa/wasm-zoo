@@ -78,6 +78,11 @@ try {
     need(pkg.wasmZoo?.npmVersion === npm.version, `${slug} npm metadata must record the npm distribution version`);
     need(pkg.publishConfig?.access === "public", `${slug} scoped npm package must publish with public access`);
     need(pkg.publishConfig?.provenance === true, `${slug} npm package must request provenance`);
+    if (npm.source) {
+      need(/^[a-f0-9]{40}$/.test(npm.source.commit || ""), `${slug} npm source commit must be exact`);
+      need(npm.source.releaseTag === `${slug}-v${npm.source.builderVersion}`, `${slug} npm source release tag must match its builder`);
+      need(npm.source.releaseAsset === `${slug}-${npm.profile}-${npm.source.upstreamVersion}-zoo-${npm.source.builderVersion}.zip`, `${slug} npm source asset must match its reviewed identity`);
+    }
     if (npm.registryShasum != null) {
       need(npm.status === "published", `${slug} registryShasum is only valid for a published npm package`);
       need(/^[a-f0-9]{40}$/.test(npm.registryShasum), `${slug} registryShasum must be a lowercase SHA-1`);
@@ -154,15 +159,16 @@ try {
   const workflow = normalizeLf(await fs.readFile(path.join(root, ".github", "workflows", "publish-npm.yml"), "utf8"));
   need(workflow.includes("slug:\n        description: npm distribution package\n        required: true\n        type: string"),
     "npm distribution workflow must accept manifest-validated package slugs without a static package allowlist");
-  need(workflow.includes("pkg.npm.status !== 'published'"), "npm distribution workflow must require published npm packages after v0.13 rollout");
+  const automation = await fs.readFile(path.join(root, "scripts/npm-release-automation.mjs"), "utf8");
+  need(automation.includes("p.npm?.status === 'published'"), "npm distribution workflow must require published npm packages after v0.13 rollout");
   need(workflow.includes("options: [pack, stage]"), "npm distribution workflow must expose only pack/stage after the v0.13 rollout");
   need(workflow.includes("id-token: write"), "npm distribution workflow must request OIDC id-token permission");
   need(workflow.includes("npm stage publish"), "npm distribution workflow must support staged publishing for existing packages");
   const retiredBootstrapSecret = ["NPM", "BOOTSTRAP", "TOKEN"].join("_");
   const retiredDirectPublish = ["npm", "publish", "--access", "public"].join(" ");
   need(!workflow.includes(retiredBootstrapSecret) && !workflow.includes(retiredDirectPublish) && !workflow.includes("bootstrap"), "npm workflow must not retain temporary bootstrap/token/direct-publish paths after v0.13");
-  need(workflow.includes("gh release download"), "npm workflow must package immutable GitHub Release assets");
-  need(workflow.includes("pkg.npm.source?.releaseTag") && workflow.includes("pkg.npm.source?.releaseAsset"),
+  need(automation.includes("'release', 'download'"), "npm workflow must package immutable GitHub Release assets");
+  need(automation.includes("active.npm.source?.releaseTag") && automation.includes("active.npm.source?.releaseAsset"),
     "npm workflow must honor an independently pinned immutable npm source release");
 
   const smoke = await fs.readFile(path.join(root, "scripts", "smoke-npm-package.mjs"), "utf8");
@@ -266,7 +272,7 @@ try {
   need(ffmpegMeta.npm?.packageFiles?.required?.includes("LICENSES/FFmpeg-COPYING.LGPLv2.1"), "FFmpeg npm package must retain the LGPL license copy");
   need(!(ffmpegMeta.npm?.packageFiles?.required || []).some((rel) => rel.endsWith("/x264-COPYING") || rel.endsWith("/FFmpeg-COPYING.GPLv2")), "FFmpeg npm browser-full package must not accidentally include GPL/x264-only release files");
   const brotliMeta=await readJson(path.join(root,"packages/brotli/package.json"));
-  need(brotliMeta.status==="available" && brotliMeta.npm?.status==="published" &&
+  need(brotliMeta.npm?.version !== "0.1.0" || (brotliMeta.status==="available" && brotliMeta.npm?.status==="published" &&
     brotliMeta.npm?.package==="@wasm-zoo/brotli" && brotliMeta.npm?.version==="0.1.0" &&
     brotliMeta.npm?.profile==="browser-full" &&
     brotliMeta.npm?.source?.upstreamVersion==="1.2.0" &&
@@ -274,7 +280,7 @@ try {
     brotliMeta.npm?.source?.releaseTag==="brotli-v0.1.0" &&
     brotliMeta.npm?.source?.releaseAsset==="brotli-browser-full-1.2.0-zoo-0.1.0.zip" &&
     brotliMeta.npm?.source?.commit==="028fb5a23661f123017c060daa546b55cf4bde29" &&
-    brotliMeta.npm?.registryShasum==="6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7",
+    brotliMeta.npm?.registryShasum==="6d66df90e8d472e5f2e24e1c1c1ec547ea6923a7"),
     "Published Brotli npm 0.1.0 must stay bound to the exact three-browser-verified brotli-v0.1.0 tarball and reviewed Registry SHA-1");
   need(brotliMeta.npm?.packageFiles?.requiredDirs?.includes("LICENSES"),
     "Published Brotli npm must recursively preserve the upstream MIT license notice");
@@ -290,14 +296,14 @@ try {
     "Brotli immutable Release npm canary must discover the manifest-versioned reviewed tarball without hardcoding an artifact filename");
 
   const qpdfMeta=await readJson(path.join(root,"packages/qpdf/package.json"));
-  need(qpdfMeta.status==="available" && qpdfMeta.npm?.status==="published" &&
+  need(qpdfMeta.npm?.version !== "0.1.1" || (qpdfMeta.status==="available" && qpdfMeta.npm?.status==="published" &&
     qpdfMeta.npm?.package==="@wasm-zoo/qpdf" && qpdfMeta.npm?.version==="0.1.1" &&
     qpdfMeta.npm?.profile==="browser-full" && qpdfMeta.npm?.source?.upstreamVersion==="12.4.2" &&
     qpdfMeta.npm?.source?.builderVersion==="0.1.1" &&
     qpdfMeta.npm?.source?.commit==="4eba95899886e851cc41d76886483b347612f2a8" &&
     qpdfMeta.npm?.source?.releaseTag==="qpdf-v0.1.1" &&
     qpdfMeta.npm?.source?.releaseAsset==="qpdf-browser-full-12.4.2-zoo-0.1.1.zip" &&
-    qpdfMeta.npm?.registryShasum==="53714e9a98edca7fbe775b5028adde7719e86625",
+    qpdfMeta.npm?.registryShasum==="53714e9a98edca7fbe775b5028adde7719e86625"),
     "Published QPDF npm 0.1.1 must target immutable qpdf-v0.1.1 browser-full and retain the exact reviewed Registry SHA-1");
   need(qpdfMeta.npm?.packageFiles?.requiredDirs?.includes("LICENSES"),
     "Published QPDF npm must recursively preserve QPDF/zlib/libjpeg release notices");
@@ -318,16 +324,16 @@ try {
     "QPDF immutable Release npm canary must discover the reviewed tarball from manifest-driven npm versioning instead of hardcoding a historical npm version");
 
   const zstdMeta=await readJson(path.join(root,"packages/zstd/package.json"));
-  need(zstdMeta.status==="available" && zstdMeta.npm?.status==="published" &&
+  need(zstdMeta.npm?.version !== "0.3.0" || (zstdMeta.status==="available" && zstdMeta.npm?.status==="published" &&
     zstdMeta.npm?.package==="@wasm-zoo/zstd" && zstdMeta.npm?.version==="0.3.0" &&
     zstdMeta.npm?.profile==="browser-full" && zstdMeta.tracker?.candidateMode==="auto" &&
     zstdMeta.npm?.source?.upstreamVersion==="1.5.7" &&
     zstdMeta.npm?.source?.builderVersion==="0.3.0" &&
     zstdMeta.npm?.source?.commit==="f8745da6ff1ad1e7bab384bd1f9d742439278e99" &&
     zstdMeta.npm?.source?.releaseTag==="zstd-v0.3.0" &&
-    zstdMeta.npm?.source?.releaseAsset==="zstd-browser-full-1.5.7-zoo-0.3.0.zip",
+    zstdMeta.npm?.source?.releaseAsset==="zstd-browser-full-1.5.7-zoo-0.3.0.zip"),
     "Published Zstandard npm must retain its immutable source release while package updates use review-only candidate automation");
-  need(zstdMeta.npm?.registryShasum==="29add1aaf6ab0c3e9a3d538166a51a3f70cefa99",
+  need(zstdMeta.npm?.version !== "0.3.0" || zstdMeta.npm?.registryShasum==="29add1aaf6ab0c3e9a3d538166a51a3f70cefa99",
     "Published Zstandard npm metadata must retain the exact reviewed Registry SHA-1");
   need(zstdMeta.npm.runtime.consumerScript==="wasm-zoo-cli.mjs" &&
     zstdMeta.npm.runtime.workerScript==="browser-zstd-cli-worker.js",

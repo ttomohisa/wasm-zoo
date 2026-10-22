@@ -130,3 +130,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref main
+      - name: Prepare review-only npm follow-up after successful Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run npm-follow-up.yml --repo "$GITHUB_REPOSITORY" --ref main -f action=prepare -f slug=zstd -f tag="$GITHUB_REF_NAME"

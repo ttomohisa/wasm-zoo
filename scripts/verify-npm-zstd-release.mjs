@@ -8,9 +8,9 @@ if(index<0||!process.argv[index+1])throw new Error("Usage: node scripts/verify-n
 const input=path.resolve(process.argv[index+1]),pkg=await readJson(path.join(root,"packages/zstd/package.json"));
 const source=pkg.npm?.source||{};
 if(pkg.status!=="available"||pkg.npm?.profile!=="browser-full"||pkg.npm?.status!=="published"||
-   pkg.npm?.version!=="0.3.0"||source.releaseTag!=="zstd-v0.3.0"||
-   source.upstreamVersion!=="1.5.7"||source.builderVersion!=="0.3.0"||
-   source.commit!=="f8745da6ff1ad1e7bab384bd1f9d742439278e99")
+   !/^\d+\.\d+\.\d+$/.test(pkg.npm?.version||"")||source.releaseTag!==`zstd-v${source.builderVersion}`||
+   !/^\d+\.\d+\.\d+$/.test(source.upstreamVersion||"")||
+   !/^[a-f0-9]{40}$/.test(source.commit||""))
   throw new Error("Refusing Zstandard npm input outside the exact reviewed published npm source identity");
 const manifest=await readJson(path.join(input,"manifest.json"));
 const features=await readJson(path.join(input,"features.json"));

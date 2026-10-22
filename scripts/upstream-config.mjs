@@ -1,5 +1,6 @@
 export const automaticCandidateConfigs = {
   ffmpeg: {
+    keepNpmPinned: true,
     dir: "ffmpeg",
     refKey: "FFMPEG_REF",
     commitKey: "FFMPEG_COMMIT",
@@ -40,6 +41,7 @@ export const automaticCandidateConfigs = {
     }
   },
   brotli: {
+    keepNpmPinned: true,
     dir: "brotli",
     refKey: "BROTLI_REF",
     commitKey: "BROTLI_COMMIT",
@@ -50,6 +52,7 @@ export const automaticCandidateConfigs = {
     }
   },
   ghostscript: {
+    keepNpmPinned: true,
     dir: "ghostscript",
     refKey: "GHOSTSCRIPT_REF",
     commitKey: "GHOSTSCRIPT_COMMIT",
@@ -84,6 +87,7 @@ export const automaticCandidateConfigs = {
     keepNpmPinned: true
   },
   jq: {
+    keepNpmPinned: true,
     dir: "jq",
     refKey: "JQ_REF",
     commitKey: "JQ_COMMIT",

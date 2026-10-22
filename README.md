@@ -28,6 +28,8 @@ WASM Zoo is an unofficial distribution project for native software whose WebAsse
 
 
 
+npm updates now follow successful package Releases automatically: review/merge the generated npm preparation PR, approve the staged package in npm with 2FA, then review/merge the verified publication-record PR. Packaging, checksum/source validation, three-browser tarball tests, staging and Registry hash recording run in Actions. See [npm follow-up and recovery](docs/NPM_DISTRIBUTION.md#automated-npm-follow-up).
+
 ## v0.19.0: Brotli & 27-cell Registry Lab
 
 WASM Zoo v0.19.0 records Brotli 1.2.0 as the ninth available package and ninth public npm distribution. The finalization PR itself is project-only: it updates the project version and release documentation without changing any reviewed package pin, builder version, package Release tag or npm Registry identity.
@@ -138,7 +140,7 @@ WASM Zoo v0.8.0 adds a distribution-level health layer instead of treating a suc
 - live npm Registry state for the reviewed package/version, including the source Release and Registry SHA-1 when available;
 - an aggregate health state.
 
-`site/release-health.json` is refreshed during Pages deployment and by the daily watcher. Its npm section distinguishes four operational states: aligned/current, Registry update pending, intentionally pinned for a separate npm review, and broken identity (for example a recorded `dist.shasum` mismatch). QPDF, Zstandard, ImageMagick and libvips may therefore show an intentional npm pin after a future package promotion without being mislabeled as a broken GitHub Release. Older package releases remain valid when they predate the v0.8.0 supply-chain contract; they are shown as waiting for metadata rather than falsely marked broken.
+`site/release-health.json` is refreshed during Pages deployment and by the daily watcher. Its npm section distinguishes four operational states: aligned/current, Registry update pending, intentionally pinned for a separate npm review, and broken identity (for example a recorded `dist.shasum` mismatch). All nine published packages may therefore show an intentional npm pin after a future package promotion without being mislabeled as a broken GitHub Release. Older package releases remain valid when they predate the v0.8.0 supply-chain contract; they are shown as waiting for metadata rather than falsely marked broken.
 
 After a builder's real browser smoke test succeeds, every profile now generates:
 

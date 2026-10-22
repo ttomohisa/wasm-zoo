@@ -13,16 +13,124 @@ on:
         default: pack
         type: choice
         options: [pack, stage]
+      pending:
+        description: Use the human-merged pending npm update instead of the current distribution
+        type: boolean
+        default: false
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
-  npm:
-    runs-on: ubuntu-latest
+  pack:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      slug: ${{ steps.meta.outputs.slug }}
+      mode: ${{ steps.meta.outputs.mode }}
+      version: ${{ steps.meta.outputs.npm_version }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Require current npm CLI
+        run: npm install --global npm@12.0.2
+      - name: Validate repository npm contracts before activating pending metadata
+        run: npm run npm:check
+      - name: Resolve human-reviewed npm identity
+        id: meta
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NPM_SLUG: ${{ inputs.slug }}
+          NPM_MODE: ${{ inputs.mode }}
+          NPM_PENDING: ${{ inputs.pending }}
+        run: node scripts/npm-release-automation.mjs resolve
+      - name: Download immutable Zoo release asset and verify checksums/source identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/npm-release-automation.mjs download
+      - name: Prepare and pack the npm artifact once
+        env:
+          SLUG: ${{ steps.meta.outputs.slug }}
+        run: |
+          set -euo pipefail
+          node scripts/prepare-npm-package.mjs --slug "$SLUG" --input npm-work/release --output npm-work/package
+          mkdir -p npm-work/artifacts
+          npm pack ./npm-work/package --json --ignore-scripts --pack-destination npm-work/artifacts > npm-work/npm-pack.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: npm-${{ steps.meta.outputs.slug }}-${{ steps.meta.outputs.npm_version }}
+          path: |
+            npm-work/artifacts/*.tgz
+            npm-work/npm-pack.json
+            npm-work/reviewed.json
+            npm-work/meta.json
+          if-no-files-found: error
+          retention-days: 30
+
+  browser:
+    needs: pack
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/download-artifact@v7
+        with:
+          name: npm-${{ needs.pack.outputs.slug }}-${{ needs.pack.outputs.version }}
+          path: npm-work
+      - name: Activate the reviewed npm target in this disposable browser workspace
+        run: node scripts/npm-release-automation.mjs activate
+      - name: Test the exact tarball through Vite and the real browser operation
+        env:
+          SLUG: ${{ needs.pack.outputs.slug }}
+          BROWSER: ${{ matrix.browser }}
+          WASM_ZOO_PLAYWRIGHT_WITH_DEPS: '1'
+        run: |
+          set -euo pipefail
+          mapfile -t tarballs < <(find "$PWD/npm-work/artifacts" -maxdepth 1 -type f -name '*.tgz' -print)
+          test "${#tarballs[@]}" -eq 1
+          export WASM_ZOO_NPM_PACKAGE_SPEC="${tarballs[0]}"
+          node scripts/smoke-npm-package.mjs --slug "$SLUG" --browser "$BROWSER" --result-json "npm-work/compat-$BROWSER.json"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: npm-${{ needs.pack.outputs.slug }}-${{ needs.pack.outputs.version }}-${{ matrix.browser }}
+          path: npm-work/compat-${{ matrix.browser }}.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  stage:
+    needs: [pack, browser]
+    if: needs.pack.outputs.mode == 'stage'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    concurrency:
+      group: npm-stage-${{ needs.pack.outputs.slug }}-${{ needs.pack.outputs.version }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
@@ -30,84 +138,21 @@ jobs:
           package-manager-cache: false
       - name: Require current npm CLI
         run: npm install --global npm@12.0.2
-      - name: Resolve reviewed release asset
-        id: meta
-        shell: bash
-        run: |
-          set -euo pipefail
-          slug='${{ inputs.slug }}'
-          mode='${{ inputs.mode }}'
-          node - <<'NODE' "$slug" "$mode" >> "$GITHUB_OUTPUT"
-          const fs = require('fs');
-          const slug = process.argv[2];
-          const mode = process.argv[3];
-          const pkg = JSON.parse(fs.readFileSync(`packages/${slug}/package.json`, 'utf8'));
-          const profile = pkg.npm?.profile;
-          const meta = pkg.profiles.find((entry) => entry.id === profile);
-          if (!pkg.npm || pkg.npm.status !== 'published' || !meta) throw new Error(`${slug} is not an npm-enabled distribution package`);
-          if (!['pack', 'stage'].includes(mode)) throw new Error(`Unsupported npm mode: ${mode}`);
-          console.log(`tag=${pkg.npm.source?.releaseTag || pkg.release.tag}`);
-          console.log(`asset=${pkg.npm.source?.releaseAsset || meta.releaseAsset}`);
-          console.log(`npm_name=${pkg.npm.package}`);
-          console.log(`npm_version=${pkg.npm.version}`);
-          NODE
-      - name: Download immutable Zoo release asset
+      - uses: actions/download-artifact@v7
+        with:
+          name: npm-${{ needs.pack.outputs.slug }}-${{ needs.pack.outputs.version }}
+          path: npm-work
+      - name: Reserve a single staging attempt and persist the tested tarball hashes
+        id: reserve
         env:
           GH_TOKEN: ${{ github.token }}
-        shell: bash
+        run: node scripts/npm-release-automation.mjs reserve
+      - name: Stage the exact browser-tested tarball through the existing Trusted Publisher
+        if: steps.reserve.outputs.stage == 'true'
+        env:
+          TARBALL: ${{ steps.reserve.outputs.tarball }}
+        run: npm stage publish "$TARBALL" --ignore-scripts --provenance --access public --tag latest
+      - name: Maintainer handoff
+        if: steps.reserve.outputs.stage == 'true'
         run: |
-          set -euo pipefail
-          mkdir -p npm-work/release
-          gh release download '${{ steps.meta.outputs.tag }}' --repo "$GITHUB_REPOSITORY" \
-            --pattern '${{ steps.meta.outputs.asset }}' --dir npm-work
-          unzip -q "npm-work/${{ steps.meta.outputs.asset }}" -d npm-work/release
-      - name: Prepare npm package
-        run: node scripts/prepare-npm-package.mjs --slug '${{ inputs.slug }}' --input npm-work/release --output npm-work/package
-      - name: Validate npm package contents
-        run: |
-          npm run npm:check
-          mkdir -p npm-work/artifacts
-          npm pack ./npm-work/package --json --ignore-scripts --pack-destination npm-work/artifacts | tee npm-work/npm-pack.json
-      - uses: actions/upload-artifact@v7
-        with:
-          name: npm-${{ inputs.slug }}-${{ steps.meta.outputs.npm_version }}
-          path: |
-            npm-work/artifacts/*.tgz
-            npm-work/npm-pack.json
-          retention-days: 14
-      - name: Guard staged version
-        if: inputs.mode == 'stage'
-        shell: bash
-        run: |
-          set -euo pipefail
-          name='${{ steps.meta.outputs.npm_name }}'
-          version='${{ steps.meta.outputs.npm_version }}'
-          npm view "$name" version >/dev/null 2>&1 || {
-            echo "$name does not exist yet; this workflow only stages existing Trusted Publisher packages." >&2
-            exit 1
-          }
-          if npm view "$name@$version" version >/dev/null 2>&1; then
-            echo "$name@$version is already public; refusing to stage an existing version." >&2
-            exit 1
-          fi
-      - name: Stage new version for maintainer review
-        if: inputs.mode == 'stage'
-        working-directory: npm-work/package
-        run: npm stage publish
-      - name: Summary
-        shell: bash
-        run: |
-          {
-            echo '## npm distribution'
-            echo
-            echo '- Package: `${{ steps.meta.outputs.npm_name }}@${{ steps.meta.outputs.npm_version }}`'
-            echo '- Source release: `${{ steps.meta.outputs.tag }}` / `${{ steps.meta.outputs.asset }}`'
-            echo '- Mode: `${{ inputs.mode }}`'
-            if [[ '${{ inputs.mode }}' == 'stage' ]]; then
-              echo '- Authentication: npm Trusted Publisher (OIDC), no long-lived publish token'
-              echo '- Publication state: staged only; maintainer 2FA approval is still required'
-            else
-              echo '- Registry write: none'
-            fi
-            echo '- Existing GitHub Release assets: unchanged'
-          } >> "$GITHUB_STEP_SUMMARY"
+          echo 'npm staging succeeded. Maintainer npm approval / 2FA is required. The hourly npm release follow-up will verify publication and open the record PR.' >> "$GITHUB_STEP_SUMMARY"

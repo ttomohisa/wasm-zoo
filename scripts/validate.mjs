@@ -2,6 +2,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { loadPackages, readEnv, readJson, root } from "./lib.mjs";
 
+import { validatePendingNpm } from "./npm-release-follow-up.mjs";
+
 const errors = [];
 const assert = (condition, message) => { if (!condition) errors.push(message); };
 const isHttps = (value) => typeof value === "string" && value.startsWith("https://");
@@ -61,6 +63,9 @@ for (const pkg of packages) {
     assert(typeof pkg.integration?.example === "string" && pkg.integration.example.length > 0, `${at}: available package needs integration.example`);
     if (pkg.integration?.notes !== undefined) assert(Array.isArray(pkg.integration.notes) && pkg.integration.notes.every((note) => typeof note === "string" && note.length > 0), `${at}: integration.notes must be a string array`);
     if (pkg.npm !== undefined) {
+      if (pkg.npm.pending) {
+        try { validatePendingNpm(pkg); } catch (error) { assert(false, `${at}: ${error.message}`); }
+      }
       assert(["canary", "published", "disabled"].includes(pkg.npm?.status), `${at}: npm.status is invalid`);
       assert(/^@wasm-zoo\/[a-z0-9][a-z0-9-]*$/.test(pkg.npm?.package || ""), `${at}: npm.package must use the @wasm-zoo scope`);
       assert(/^\d+\.\d+\.\d+$/.test(pkg.npm?.version || ""), `${at}: npm.version must be a stable semver distribution version`);

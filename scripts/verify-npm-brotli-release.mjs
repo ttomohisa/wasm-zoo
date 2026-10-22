@@ -16,10 +16,11 @@ const npm=zoo.npm;
 if(!["canary","published"].includes(npm?.status)||npm.package!=="@wasm-zoo/brotli"){
   throw new Error("Brotli npm metadata is not in a reviewed immutable-distribution state");
 }
+const source=npm.source||{upstreamVersion:zoo.upstream.version,builderVersion:zoo.zoo.builderVersion};
 const profile=zoo.profiles?.find((item)=>item.id===npm.profile);
 if(!profile||npm.profile!=="browser-full") throw new Error("Brotli npm must target browser-full");
 
-const envText=await fs.readFile(path.join(root,"builders/brotli/versions.env"),"utf8");
+const envText=await fs.readFile(args["versions-file"]||path.join(root,"builders/brotli/versions.env"),"utf8");
 const env=Object.fromEntries(envText.split(/\r?\n/).map((line)=>line.trim()).filter((line)=>line&&!line.startsWith("#")&&line.includes("=")).map((line)=>{const i=line.indexOf("=");return[line.slice(0,i),line.slice(i+1).replace(/^['"]|['"]$/g,"")];}));
 const expectedFiles=[
   "browser-brotli.js","wasm-zoo.mjs","brotli-core.js","brotli-core.wasm","manifest.json","features.json",
@@ -34,9 +35,9 @@ if(!license?.isFile()) throw new Error("Missing immutable Brotli release notice:
 
 const manifest=await readJson(path.join(input,"manifest.json"));
 if(manifest.package!=="brotli"||manifest.profile!=="browser-full") throw new Error("Brotli release manifest package/profile mismatch");
-if(manifest.upstream?.version!==zoo.upstream.version||manifest.upstream?.ref!==zoo.upstream.ref) throw new Error("Brotli release manifest upstream version/ref mismatch");
-if(manifest.upstream?.commit!==env.BROTLI_COMMIT) throw new Error("Brotli release manifest exact commit mismatch");
-if(manifest.build?.builderVersion!==zoo.zoo.builderVersion) throw new Error("Brotli release manifest builder mismatch");
+if(manifest.upstream?.version!==source.upstreamVersion||manifest.upstream?.ref!==`v${source.upstreamVersion}`) throw new Error("Brotli release manifest upstream version/ref mismatch");
+if(manifest.upstream?.commit!==(source.commit||env.BROTLI_COMMIT)) throw new Error("Brotli release manifest exact commit mismatch");
+if(manifest.build?.builderVersion!==source.builderVersion) throw new Error("Brotli release manifest builder mismatch");
 if(manifest.toolchain?.version!==env.EMSDK_VERSION||manifest.toolchain?.commit!==env.EMSCRIPTEN_COMMIT) throw new Error("Brotli release manifest toolchain mismatch");
 if(manifest.build?.sourcePatchCount!==0||manifest.build?.upstreamBuildTarget!=="brotli") throw new Error("Brotli npm source must retain patch-zero upstream CMake CLI identity");
 for(const rel of ["brotli-core.js","brotli-core.wasm"]){
@@ -50,7 +51,7 @@ for(const key of ["upstreamCli","compress","decompress","integrityTest"]){
 
 const provenance=await readJson(path.join(input,"provenance.json"));
 const params=provenance.predicate?.buildDefinition?.externalParameters;
-if(params?.package!=="brotli"||params?.upstreamVersion!==zoo.upstream.version||params?.builderVersion!==zoo.zoo.builderVersion||params?.profile!=="browser-full"){
+if(params?.package!=="brotli"||params?.upstreamVersion!==source.upstreamVersion||params?.builderVersion!==source.builderVersion||params?.profile!=="browser-full"){
   throw new Error("Brotli provenance identity does not match the reviewed npm canary source");
 }
 const sbom=await readJson(path.join(input,"sbom.cdx.json"));
@@ -58,9 +59,9 @@ if(sbom.bomFormat!=="CycloneDX"||sbom.specVersion!=="1.6") throw new Error("Brot
 
 const buildInfo=await fs.readFile(path.join(input,"BUILDINFO.txt"),"utf8");
 for(const marker of [
-  `Zoo build version: ${zoo.zoo.builderVersion}`,
-  `Brotli version: ${zoo.upstream.version}`,
-  `Brotli commit: ${env.BROTLI_COMMIT}`,
+  `Zoo build version: ${source.builderVersion}`,
+  `Brotli version: ${source.upstreamVersion}`,
+  `Brotli commit: ${source.commit||env.BROTLI_COMMIT}`,
   `Emscripten version: ${env.EMSDK_VERSION}`,
   "Source patches: 0",
   "Upstream executable target: brotli"

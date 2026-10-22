@@ -50,8 +50,8 @@ need(qpdfConfig?.extraEnv?.['source-url'] === 'QPDF_SOURCE_URL', 'QPDF candidate
 need(qpdfConfig?.extraEnv?.['source-sha256'] === 'QPDF_SOURCE_SHA256', 'QPDF candidate config must update QPDF_SOURCE_SHA256');
 need(zstd.tracker?.candidateMode === 'auto', 'Zstandard must be candidateMode=auto');
 need(JSON.stringify(zstd.tracker?.candidateProfiles) === JSON.stringify(['browser-core', 'browser-full']), 'Zstandard automatic candidate must test both profiles');
-need(zstd.npm?.source?.releaseTag === 'zstd-v0.3.0' && zstd.npm?.source?.upstreamVersion === '1.5.7' &&
-  zstd.npm?.source?.commit === 'f8745da6ff1ad1e7bab384bd1f9d742439278e99', 'Zstandard npm source identity must remain separately pinned');
+need(zstd.npm?.version !== '0.3.0' || (zstd.npm?.source?.releaseTag === 'zstd-v0.3.0' && zstd.npm?.source?.upstreamVersion === '1.5.7' &&
+  zstd.npm?.source?.commit === 'f8745da6ff1ad1e7bab384bd1f9d742439278e99'), 'Zstandard npm source identity must remain separately pinned');
 const ghostOfficialArchive = `Ghostscript bundled third-party source set from the official ${ghost.upstream.version} release archive`;
 need((ghost.profiles || []).some((profile) => (profile.externalLibraries || []).includes(ghostOfficialArchive)), 'Ghostscript external library metadata must follow the reviewed upstream version');
 need((ghost.notes || []).some((note) => note.startsWith(`Official Ghostscript ${ghost.upstream.version} release source archive is pinned by SHA-256`)), 'Ghostscript official source archive note must follow the reviewed upstream version');
@@ -145,9 +145,9 @@ for (const marker of ['automaticCandidateSlugs', 'git", ["worktree", "add"', 'co
 const handoff = await read('scripts/promotion-human-handoff.mjs');
 for (const marker of [
   'buildPromotionHumanHandoff',
-  'config?.keepNpmPinned',
-  '-f mode=pack',
-  '-f mode=stage',
+  'npm-follow-up.yml',
+  'preparation PR',
+  'npm 2FA',
   'git merge-base --is-ancestor',
   'Reviewed boundary'
 ]) need(handoff.includes(marker), `promotion human handoff contract missing: ${marker}`);
