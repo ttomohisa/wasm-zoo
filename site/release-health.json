@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-21T08:43:26.884Z",
+  "generatedAt": "2026-10-22T08:45:35.877Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -160,25 +160,24 @@
       },
       "npm": {
         "package": "@wasm-zoo/libarchive",
-        "expectedVersion": "0.3.1",
-        "registryVersion": "0.3.1",
-        "registryLatest": "0.3.1",
-        "registryShasum": "6910ea4a7fd2de4913fd9d598249a0025ef96d0c",
-        "recordedShasum": "6910ea4a7fd2de4913fd9d598249a0025ef96d0c",
+        "expectedVersion": "0.3.2",
+        "registryVersion": "0.3.2",
+        "registryLatest": "0.3.2",
+        "registryShasum": "b8071be3b8d71b320004171a56498b67b49e3084",
+        "recordedShasum": "b8071be3b8d71b320004171a56498b67b49e3084",
         "shasumMatch": true,
-        "sourceReleaseTag": "libarchive-v0.3.1",
-        "sourceReleaseAsset": "libarchive-browser-full-3.8.9-zoo-0.3.1.zip",
+        "sourceReleaseTag": "libarchive-v0.3.2",
+        "sourceReleaseAsset": "libarchive-browser-full-3.8.10-zoo-0.3.2.zip",
         "packageReleaseTag": "libarchive-v0.3.2",
-        "sourceCurrent": false,
-        "intentionalPin": true,
-        "updatePending": true,
-        "state": "warn",
-        "label": "Pinned to libarchive-v0.3.1",
-        "review": "separate-npm-review"
+        "sourceCurrent": true,
+        "intentionalPin": false,
+        "updatePending": false,
+        "state": "ok",
+        "label": "Published 0.3.2"
       },
       "overall": {
-        "state": "warn",
-        "label": "npm separate review"
+        "state": "ok",
+        "label": "Healthy"
       }
     },
     {
@@ -392,8 +391,8 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/brotli-playground/"
       },
       "freshness": {
-        "state": "ok",
-        "label": "Current"
+        "state": "warn",
+        "label": "Update available"
       },
       "npm": {
         "package": "@wasm-zoo/brotli",
@@ -413,8 +412,8 @@
         "label": "Published 0.1.0"
       },
       "overall": {
-        "state": "ok",
-        "label": "Healthy"
+        "state": "warn",
+        "label": "Upstream review"
       }
     },
     {
@@ -541,9 +540,9 @@
     "error": 0,
     "supplyChainPublished": 9,
     "npmTotal": 9,
-    "npmAligned": 8,
-    "npmFollowUp": 1,
-    "npmPinned": 1,
+    "npmAligned": 9,
+    "npmFollowUp": 0,
+    "npmPinned": 0,
     "npmErrors": 0,
     "total": 9
   }
