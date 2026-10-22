@@ -23,6 +23,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
       - name: Generate catalog
         run: npm run catalog
       - name: Check GitHub Actions trigger efficiency
@@ -33,5 +37,7 @@ jobs:
           node scripts/check-metadata-contract.mjs
       - name: Rehearse all review-only automatic promotions
         run: npm run promotion:rehearse
+      - name: Rehearse npm preparation and publication records for all packages (offline)
+        run: npm run npm:rehearse
       - name: Ensure generated catalog is committed
         run: git diff --exit-code -- site/catalog.json

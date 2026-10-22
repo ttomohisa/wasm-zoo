@@ -18,7 +18,7 @@ For packages with `tracker.candidateMode: auto`:
 10. the promotion PR includes a generated **After merge — human handoff** derived from the promoted package manifest;
 11. a human reviews the diff and CI and merges the PR;
 12. `promotion-handoff.yml` reacts only to a merged `automation/promote-*` PR, re-validates the promoted package, and posts the confirmed handoff to the merged PR and its watcher issue;
-13. the human follows that handoff to verify reviewed `main`, create/push the package tag, confirm the immutable Release, and perform any separately reviewed npm follow-up.
+13. the human follows that handoff to verify reviewed `main`, create/push the package tag, confirm the immutable Release, and review the automatically prepared npm follow-up PR.
 
 The automation never merges a PR, creates a package release tag, creates a reviewed GitHub Release, publishes npm, or approves npm staging.
 
@@ -62,10 +62,10 @@ The merged-PR comment includes copyable PowerShell / `gh` commands for:
 - syncing local `main` and verifying that the reviewed promotion merge is an ancestor;
 - checking that the expected package tag does not already exist, then creating/pushing it manually;
 - confirming the package Release workflow and immutable GitHub Release;
-- preparing npm `pack` and `stage` runs only when the promoted npm identity is meant to advance;
+- reviewing the automatically generated npm preparation PR and completing npm approval / 2FA;
 - closing the watcher issue after the package Release is confirmed.
 
-The npm guidance is metadata-aware. Normal published packages whose promotion bumps the npm distribution version receive separate `mode=pack` then `mode=stage` commands; the stage remains subject to maintainer review / npm 2FA. Packages configured with `keepNpmPinned` (currently QPDF, Zstandard, ImageMagick and libvips) explicitly receive **no npm staging instruction**: their existing Registry identity remains pinned until a separate npm-only review.
+All nine published packages use `keepNpmPinned`: source/build promotion keeps the existing public npm version, source and Registry hash unchanged. After the manually tagged package Release succeeds, its release workflow explicitly dispatches `npm-follow-up.yml` on main, which proposes a separate npm preparation PR. The handoff explains review, npm 2FA and the later publication-record PR; it no longer asks the operator to pack/stage locally. See [npm distribution automation](NPM_DISTRIBUTION.md#automated-npm-follow-up).
 
 The handoff workflow only comments. It contains no `git tag`, `gh release create`, `npm publish` or `npm stage publish` execution path. Its comments are idempotent: a rerun refreshes the existing handoff comment rather than creating duplicate operator instructions.
 

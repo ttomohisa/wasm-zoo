@@ -20,21 +20,23 @@ function pkg(overrides = {}) {
   };
 }
 
-test("normal published package gets reviewed npm pack/stage follow-up", () => {
+test("published package gets automatic npm preparation and maintainer approval guidance", () => {
   const md = buildPromotionHumanHandoff(pkg(), { buildWorkflow: "build-ffmpeg.yml" }, {
     repository: "ttomohisa/wasm-zoo",
     issueNumber: "42"
   });
   assert.match(md, /ffmpeg-v0\.2\.9/);
   assert.match(md, /build-ffmpeg\.yml/);
-  assert.match(md, /mode=pack/);
-  assert.match(md, /mode=stage/);
+  assert.match(md, /npm-follow-up\.yml/);
+  assert.match(md, /preparation PR/);
+  assert.match(md, /npm 2FA/);
+  assert.doesNotMatch(md, /mode=stage/);
   assert.match(md, /@wasm-zoo\/ffmpeg@0\.2\.9/);
   assert.match(md, /gh issue close 42/);
   assert.match(md, /does \*\*not\*\* create the package tag/);
 });
 
-test("keepNpmPinned package does not suggest staging", () => {
+test("pinned package keeps current npm identity until the separate preparation is reviewed", () => {
   const qpdf = pkg({
     slug: "qpdf",
     name: "QPDF",
@@ -49,7 +51,7 @@ test("keepNpmPinned package does not suggest staging", () => {
     }
   });
   const md = buildPromotionHumanHandoff(qpdf, { buildWorkflow: "build-qpdf.yml", keepNpmPinned: true });
-  assert.match(md, /intentionally separate and pinned/);
+  assert.match(md, /preparation PR/);
   assert.match(md, /@wasm-zoo\/qpdf@0\.1\.0/);
   assert.match(md, /qpdf-v0\.1\.0/);
   assert.doesNotMatch(md, /mode=stage/);

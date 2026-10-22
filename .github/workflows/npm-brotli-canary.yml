@@ -37,6 +37,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
@@ -58,7 +60,8 @@ jobs:
           gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir npm-brotli/download
           (cd npm-brotli/download && sha256sum -c SHA256SUMS.txt)
           unzip -q "npm-brotli/download/$asset" -d npm-brotli/input
-          node scripts/verify-npm-brotli-release.mjs --input npm-brotli/input
+          git show "$tag:builders/brotli/versions.env" > npm-brotli/source-versions.env
+          node scripts/verify-npm-brotli-release.mjs --input npm-brotli/input --versions-file npm-brotli/source-versions.env
       - name: Prepare reviewed npm overlay, synthetic npm contracts and tarball
         run: |
           node scripts/prepare-npm-package.mjs --slug brotli --input npm-brotli/input --output npm-brotli/package

@@ -1,0 +1,79 @@
+name: npm release follow-up
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Prepare an npm update PR or reconcile approved publications
+        type: choice
+        options: [prepare, reconcile]
+        default: reconcile
+      slug:
+        description: Package slug (prepare only)
+        type: string
+      tag:
+        description: Reviewed package Release tag (prepare only)
+        type: string
+  pull_request:
+    types: [closed]
+  schedule:
+    - cron: '17 * * * *'
+
+concurrency:
+  group: npm-follow-up-${{ github.event_name }}-${{ github.event.pull_request.number || inputs.slug || 'reconcile' }}-${{ inputs.tag }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  stage-after-review:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      startsWith(github.event.pull_request.head.ref, 'automation/npm-prepare-')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Start npm staging on reviewed main with the existing Trusted Publisher workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/npm-release-automation.mjs dispatch
+
+  follow-up:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Create review-only npm preparation PR from a successful package Release
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'prepare'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SLUG: ${{ inputs.slug }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: node scripts/npm-release-automation.mjs prepare --slug "$SLUG" --tag "$RELEASE_TAG"
+      - name: Verify approved public tarballs and create publication-record PRs
+        if: github.event_name == 'schedule' || inputs.action == 'reconcile'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/npm-release-automation.mjs finalize

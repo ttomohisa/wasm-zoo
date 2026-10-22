@@ -37,6 +37,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
@@ -58,7 +60,8 @@ jobs:
           gh release download "$tag" --repo "$GITHUB_REPOSITORY" --dir npm-qpdf/download
           (cd npm-qpdf/download && sha256sum -c SHA256SUMS.txt)
           unzip -q "npm-qpdf/download/$asset" -d npm-qpdf/input
-          node scripts/verify-npm-qpdf-release.mjs --input npm-qpdf/input
+          git show "$tag:builders/qpdf/versions.env" > npm-qpdf/source-versions.env
+          node scripts/verify-npm-qpdf-release.mjs --input npm-qpdf/input --versions-file npm-qpdf/source-versions.env
       - name: Prepare reviewed npm overlay, synthetic npm contracts and tarball
         run: |
           node scripts/prepare-npm-package.mjs --slug qpdf --input npm-qpdf/input --output npm-qpdf/package

@@ -30,7 +30,7 @@ The first publication used the reviewed tarball in the maintainer's local enviro
 
 The existing `npm-zstd-canary.yml` remains a **read-only immutable Release packaging regression** workflow: it downloads/checks every Release checksum, repacks without publishing and runs the exact local tarball through real Vite Chromium/Firefox/WebKit tests. Independently, `npm-package-smoke.yml` keeps a manifest-derived published package as a real Registry + Vite/Chromium baseline. The full `cross-browser-compat.yml` resolves every available `npm.status: published` package from reviewed manifests and uses the real Registry version in all three engines, verifying recorded `dist.shasum` identities before installation when present. The public dashboard accepts only complete fresh verified main evidence, never PR-only or older partial evidence.
 
-Future npm-only versions follow the existing separate manual review and Trusted Publisher staged-publishing workflow. Upstream candidate automation may prepare review-only package promotion PRs, including libvips only after its complete adapter bundle is resolved to immutable commits, but it never publishes npm. Registry publication remains a separate reviewed action from package promotion.
+Future npm versions use the automated follow-up described below, with separate PR review and Trusted Publisher staged publishing. Upstream candidate automation may prepare review-only package promotion PRs, including libvips only after its complete adapter bundle is resolved to immutable commits, but it never publishes npm. Registry publication remains a separate reviewed action from package promotion.
 
 ## Manifest-driven package membership
 
@@ -63,7 +63,7 @@ Operational classification is fail-closed:
 
 - **Published/current** — reviewed version exists on npm and its source Release matches the current package Release;
 - **Registry update pending** — the reviewed npm version has been advanced in the promotion metadata but is not yet public;
-- **Pinned / separate npm review** — the package Release advanced while `keepNpmPinned` intentionally keeps npm bound to the previous immutable Release (currently QPDF, Zstandard, ImageMagick and libvips);
+- **Pinned / separate npm review** — the package Release advanced while `keepNpmPinned` intentionally keeps npm bound to the previous immutable Release (all nine published packages);
 - **Error** — recorded Registry SHA-1 mismatch or non-policy source-release drift;
 - **Unknown** — Registry inspection was unavailable, which does not invent a healthy result.
 
@@ -395,26 +395,45 @@ The jq fixture performs a real JSON transformation. The libarchive fixture creat
 
 `.github/workflows/npm-package-smoke.yml` is manually selectable across all eight published packages. The QPDF published-promotion PR is gated on the live Registry QPDF fixture; scheduled live-registry runs keep the stable published jq baseline, while any package can be selected manually for a package-specific Registry regression.
 
-## Publishing workflow
+## Automated npm follow-up
 
-After v0.13.0, `.github/workflows/publish-npm.yml` has two manual modes:
+After this automation is merged to main, a successful manually tagged package Release explicitly dispatches `npm-follow-up.yml` for that package. It does not rely on a `release.published` event, because Releases created using `GITHUB_TOKEN` do not start ordinary downstream event workflows.
 
-- `pack` — generate, validate and upload the `.tgz`; no Registry write;
-- `stage` — use npm Trusted Publisher OIDC and `npm stage publish` for an existing package version, followed by maintainer review and 2FA approval.
+1. The follow-up verifies the stable Release, its tag commit being an ancestor of reviewed main, tagged package metadata and exact source commit. It opens `automation/npm-prepare-<slug>-<npm-version>` with `npm.pending` containing the proposed version, profile, source Release/asset and repository Release commit.
+2. Human review and merge starts a main-branch `workflow_dispatch` of the existing `publish-npm.yml` Trusted Publisher workflow. Current `npm.version`, `npm.source` and `npm.registryShasum` remain unchanged while publication is pending, so normal Registry-backed main tests still use the current public distribution.
+3. Packaging verifies the selected ZIP against `SHA256SUMS.txt`, checks source/profile/build provenance and core JS/Wasm SHA-256, and overlays the reviewed main runtime. It packs **once**. Chromium, Firefox and WebKit independently exercise that exact tarball through the existing Vite real-operation fixture.
+4. Only after all three pass, the stage job records SHA-1 and SHA-512 plus exact source identity on the preparation PR **before** calling `npm stage publish <tested-tarball>`. It uses the existing `publish-npm.yml` Trusted Publisher and no long-lived publish token. The default profile remains unchanged, including libvips `browser-core` and FFmpeg LGPL `browser-full`.
+5. The maintainer approves the staged version in npm with 2FA.
+6. The hourly follow-up checks pending exact versions. Only Registry 404 means “still waiting”; authentication, rate limits and other failures fail visibly. It downloads the public tarball, verifies Registry metadata and downloaded bytes against the recorded SHA-1/SHA-512, and opens `automation/npm-published-<slug>-<npm-version>` with the new current identity, Registry SHA-1, README/distribution rows and changelog/catalog.
+7. Verify and the published-package Cross-browser Lab are explicitly dispatched on that PR, including for bot-created PRs. Human review/merge completes the repository record.
 
-All eight `@wasm-zoo/*` package names now exist on npm. The original six already use package-level Trusted Publishers; after the human bootstrap publications, Zstandard and QPDF join the same staged Trusted Publisher model for future versions. The temporary rollout bootstrap mode, direct `npm publish` path and rollout-only repository secret dependency have been removed. Future updates therefore use no long-lived npm publish credential in GitHub Actions.
+Preparation does not automatically merge anything, create package tags, recreate Release assets or approve npm publication. All nine upstream promotion configurations keep the public npm identity pinned until the separate npm follow-up succeeds. npm versions are independently incremented above the reviewed/public stable versions, rather than copied from the builder version. A second package release cannot overwrite an already pending publication.
 
-The reviewed flow is:
+### Recovery and retries
 
-1. prepare the npm package from the immutable Zoo Release asset;
-2. run `pack` and inspect the generated artifact when desired;
-3. run `stage`, authenticated by GitHub Actions OIDC;
-4. review and approve the staged version with maintainer 2FA;
-5. run the public Registry/Vite/Chromium smoke for the published version.
+Existing preparation/record PRs are reused without overwriting human edits; closed PRs are not silently reopened. Stage jobs serialize per package/version. If that version is already public or an Actions-bot stage-attempt receipt exists, the stage is skipped. A receipt is written before the Registry write, so a timeout cannot cause an automatic duplicate. If staging failed after reservation, inspect the linked run and npm stage first; only remove that specific bot receipt after confirming no stage or public version exists, then retry the reviewed pending target. A rejected npm stage also requires this explicit recovery; it is not silently restaged.
 
-## Promotion interaction
+A failed Release-to-follow-up dispatch can be retried after this change is present on main:
 
-npm distribution versions are independent from Zoo builder versions. A package-only wrapper correction can patch-bump npm without changing the native/Wasm build. A future reviewed upstream promotion still patch-bumps the npm distribution version independently so an npm version is never accidentally reused, except for packages whose automatic promotion config deliberately sets `keepNpmPinned`; those remain on the prior npm source Release until a separate npm-only review. Release Health exposes that difference explicitly.
+```bash
+gh workflow run npm-follow-up.yml --ref main -f action=prepare -f slug=imagemagick -f tag=imagemagick-v0.4.7
+```
+
+The tag must match the current reviewed package Release. This command does not recreate a tag or Release. Historical Releases are not automatically staged just because the workflow is installed.
+
+After npm approval, reconcile immediately instead of waiting for the hourly check:
+
+```bash
+gh workflow run npm-follow-up.yml --ref main -f action=reconcile
+```
+
+The manual `publish-npm.yml` modes remain available: `pack` validates/builds the tarball and runs the three browser tests without a Registry write; `stage` always selects a human-merged pending target on main and runs those gates before staging. To retry an approved preparation target, select `pending=true` on main:
+
+```bash
+gh workflow run publish-npm.yml --ref main -f slug=imagemagick -f mode=stage -f pending=true
+```
+
+The existing Trusted Publisher must permit staged publishing for `publish-npm.yml`; its workflow filename and npm 2FA approval requirement are preserved. GitHub Actions must be allowed to create PRs, as already required by upstream promotion automation.
 
 ## Rollout completion
 

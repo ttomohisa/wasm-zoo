@@ -55,7 +55,7 @@ for (const pkg of packages) {
   }
 
   if (pkg.npm) {
-    const npmRow = rowByPrefix(npmDoc, "| `" + pkg.npm.package + "` |");
+    const npmRow = rowByPrefix(npmDoc.split("## Published packages\n")[1]?.split("\n## ")[0] || "", "| `" + pkg.npm.package + "` |");
     need(Boolean(npmRow), "npm distribution row missing for " + pkg.npm.package);
     if (npmRow) {
       need(npmRow.includes("| `" + pkg.npm.version + "` |"), "npm distribution version is stale for " + pkg.npm.package);

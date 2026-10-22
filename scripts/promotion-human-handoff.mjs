@@ -26,7 +26,6 @@ export function buildPromotionHumanHandoff(pkg, config, options = {}) {
   const releaseWorkflow = "release-" + pkg.slug + ".yml";
   const buildWorkflow = config?.buildWorkflow || ("build-" + pkg.slug + ".yml");
   const npm = pkg.npm || null;
-  const keepNpmPinned = Boolean(config?.keepNpmPinned);
 
   const lines = [
     "<!-- wasm-zoo-human-handoff -->",
@@ -96,33 +95,22 @@ export function buildPromotionHumanHandoff(pkg, config, options = {}) {
       "This package has no npm distribution metadata. No npm action is part of this promotion.",
       ""
     );
-  } else if (keepNpmPinned) {
-    const sourceTag = npm.source?.releaseTag || "<separately reviewed source release>";
-    lines.push(
-      "### 4. npm — intentionally separate and pinned",
-      "",
-      "No npm publication is required for this package promotion. Keep " + npm.package + "@" + npm.version + " pinned to " + sourceTag + " until a separate npm-only review explicitly changes that identity.",
-      "",
-      "Do **not** run npm staging merely because the package Release advanced.",
-      ""
-    );
   } else {
+    const sourceTag = npm.source?.releaseTag || "current reviewed source Release";
     lines.push(
-      "### 4. npm — separate reviewed follow-up",
+      "### 4. npm — automatic preparation, human approval",
       "",
-      "The promoted manifest expects " + npm.package + "@" + npm.version + ". Only after the immutable package Release above exists, prepare and review the exact npm artifact:",
+      "Keep " + npm.package + "@" + npm.version + " on " + sourceTag + " while the separate npm preparation PR is reviewed.",
+      "",
+      "After a successful package Release, npm-follow-up.yml automatically opens that preparation PR. Human merge starts checksum/source verification, exact-tarball Chromium/Firefox/WebKit tests and Trusted Publisher staging on main.",
+      "",
+      "Complete maintainer approval / npm 2FA in npm. The hourly follow-up verifies the downloaded public tarball against the stage receipt and opens a publication-record PR; review and merge it after Registry browser checks pass.",
+      "",
+      "If the preparation dispatch failed, retry it without recreating the package Release:",
       "",
       "~~~powershell",
-      "gh workflow run publish-npm.yml --repo " + repository + " --ref main -f slug=" + pkg.slug + " -f mode=pack",
+      "gh workflow run npm-follow-up.yml --repo " + repository + " --ref main -f action=prepare -f slug=" + pkg.slug + " -f tag=" + releaseTag,
       "~~~",
-      "",
-      "After reviewing the packed artifact, stage the new version for maintainer approval:",
-      "",
-      "~~~powershell",
-      "gh workflow run publish-npm.yml --repo " + repository + " --ref main -f slug=" + pkg.slug + " -f mode=stage",
-      "~~~",
-      "",
-      "The stage workflow does not silently complete publication: maintainer review / npm 2FA approval remains required.",
       ""
     );
   }
