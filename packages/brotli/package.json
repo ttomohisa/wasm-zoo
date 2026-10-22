@@ -2,14 +2,14 @@
   "schemaVersion": 2,
   "slug": "brotli",
   "name": "Brotli",
-  "summary": "Current upstream Google Brotli 1.2.0 CLI compiled for browser WebAssembly from the exact official tag/commit without source patches.",
+  "summary": "Current upstream Google Brotli 1.2.1 CLI compiled for browser WebAssembly from the exact official tag/commit without source patches.",
   "category": "compression",
   "status": "available",
   "order": 35,
   "upstream": {
-    "version": "1.2.0",
-    "ref": "v1.2.0",
-    "released": "2025-10-27",
+    "version": "1.2.1",
+    "ref": "v1.2.1",
+    "released": "2026-10-21",
     "homepage": "https://github.com/google/brotli",
     "repository": "https://github.com/google/brotli",
     "license": "MIT"
@@ -24,7 +24,7 @@
     ]
   },
   "zoo": {
-    "builderVersion": "0.1.0",
+    "builderVersion": "0.1.1",
     "toolchain": "Emscripten 6.0.8",
     "buildModel": "upstream-cmake-cli-patch-zero",
     "reproducible": true,
@@ -60,7 +60,7 @@
       "output": "Generic upstream brotli CLI; input and output files are staged in browser MEMFS",
       "binaryLicense": "MIT",
       "size": "Loaded from the published release manifest",
-      "releaseAsset": "brotli-browser-full-1.2.0-zoo-0.1.0.zip",
+      "releaseAsset": "brotli-browser-full-1.2.1-zoo-0.1.1.zip",
       "playground": true,
       "playgroundPath": "./brotli-playground/"
     }
@@ -102,17 +102,18 @@
   "comparison": [
     {
       "name": "Upstream native",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "note": "Official Google Brotli C libraries and brotli CLI on the host filesystem."
     },
     {
       "name": "WASM Zoo",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "note": "Same reviewed upstream tag/commit and upstream CMake brotli CLI target compiled with Emscripten; filesystem I/O is isolated to MEMFS."
     }
   ],
   "notes": [
-    "Brotli 1.2.0 is built from the exact upstream v1.2.0 tag at commit 028fb5a23661f123017c060daa546b55cf4bde29 using the upstream CMake brotli executable target.",
+    "v0.1.1 promotes Brotli 1.2.1 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
+    "Brotli 1.2.1 is built from the exact upstream v1.2.1 tag at commit db24a98aed38a16de78cc05ca15cdd8dc2a0d92d using the upstream CMake brotli executable target.",
     "The reviewed browser-full build preserves the upstream CLI and has zero Brotli source patches; the browser-specific boundary is limited to Worker execution and Emscripten MEMFS file staging.",
     "The initial package release is brotli-v0.1.0. A human maintainer creates the reviewed package tag; the tag-triggered workflow rebuilds, smoke-tests and publishes immutable binary/source/checksum/provenance/SBOM assets.",
     "Stable Google Brotli GitHub Releases are eligible for exact-tag/commit browser-full candidate builds and review-only promotion PRs. Automation may prepare the reviewed pin change after the real Chromium gate passes, but merge, package tag, GitHub Release and any future npm publication remain human-controlled.",
@@ -134,10 +135,10 @@
     ]
   },
   "release": {
-    "tag": "brotli-v0.1.0",
-    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/brotli-v0.1.0",
-    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/brotli-v0.1.0/",
-    "sourceAsset": "brotli-sources-1.2.0-zoo-0.1.0.tar.gz",
+    "tag": "brotli-v0.1.1",
+    "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/brotli-v0.1.1",
+    "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/brotli-v0.1.1/",
+    "sourceAsset": "brotli-sources-1.2.1-zoo-0.1.1.tar.gz",
     "checksumsAsset": "SHA256SUMS.txt"
   },
   "npm": {

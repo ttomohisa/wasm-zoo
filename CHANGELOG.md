@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- promote Brotli 1.2.1 to builder 0.1.1 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `db24a98aed38a16de78cc05ca15cdd8dc2a0d92d`;
+
 - automate Release-to-npm preparation PRs, reviewed-main three-browser tarball verification and Trusted Publisher staging, with human npm 2FA approval and automatic verified publication-record PRs; preserve current public npm identities while updates are pending;
 
 - record the separately reviewed `@wasm-zoo/libarchive@0.3.2` npm publication from `libarchive-v0.3.2` / libarchive 3.8.10 / builder 0.3.2 after Trusted Publisher staging and maintainer approval, retaining `browser-full` and exact upstream commit `0c48412be2d94afe1859a807ea7896a18d8900bd` and binding the public tarball to reviewed Registry SHA-1 `b8071be3b8d71b320004171a56498b67b49e3084`;
