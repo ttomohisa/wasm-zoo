@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-22T08:45:22.166Z",
-  "hasUpdates": true,
+  "generatedAt": "2026-10-23T08:41:08.422Z",
+  "hasUpdates": false,
   "packages": [
     {
       "slug": "ffmpeg",
@@ -166,19 +166,19 @@
       "slug": "brotli",
       "name": "Brotli",
       "status": "ok",
-      "pinned": "1.2.0",
-      "pinnedRef": "v1.2.0",
-      "pinnedReleased": "2025-10-27",
+      "pinned": "1.2.1",
+      "pinnedRef": "v1.2.1",
+      "pinnedReleased": "2026-10-21",
       "latest": "1.2.1",
       "latestRef": "v1.2.1",
       "latestCommit": "db24a98aed38a16de78cc05ca15cdd8dc2a0d92d",
       "latestReleased": "2026-10-21T19:27:34Z",
-      "updateAvailable": true,
-      "lagDays": 359,
+      "updateAvailable": false,
+      "lagDays": 0,
       "gap": {
-        "kind": "behind",
-        "label": "Update available",
-        "versionsBehind": 1
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
       },
       "url": "https://github.com/google/brotli/releases/tag/v1.2.1",
       "candidate": {
