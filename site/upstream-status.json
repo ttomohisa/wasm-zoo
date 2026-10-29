@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-28T09:51:27.807Z",
+  "generatedAt": "2026-10-29T10:12:04.432Z",
   "hasUpdates": false,
   "packages": [
     {
@@ -126,7 +126,7 @@
         "label": "Current",
         "versionsBehind": 0
       },
-      "url": "https://github.com/facebook/zstd/releases/tag/v1.5.7",
+      "url": "https://github.com/meta/zstd/releases/tag/v1.5.7",
       "candidate": {
         "mode": "auto",
         "profiles": [
