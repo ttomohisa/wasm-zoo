@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-30T10:13:57.712Z",
-  "hasUpdates": false,
+  "generatedAt": "2026-10-31T09:49:10.728Z",
+  "hasUpdates": true,
   "packages": [
     {
       "slug": "ffmpeg",
@@ -63,18 +63,18 @@
       "pinned": "3.8.10",
       "pinnedRef": "v3.8.10",
       "pinnedReleased": "2026-10-14",
-      "latest": "3.8.10",
-      "latestRef": "v3.8.10",
-      "latestCommit": "0c48412be2d94afe1859a807ea7896a18d8900bd",
-      "latestReleased": "2026-10-14T09:31:07Z",
-      "updateAvailable": false,
-      "lagDays": 0,
+      "latest": "3.8.11",
+      "latestRef": "v3.8.11",
+      "latestCommit": "03036ffa409a2aa1c5bbad35be2202641a040fda",
+      "latestReleased": "2026-10-30T21:38:55Z",
+      "updateAvailable": true,
+      "lagDays": 16,
       "gap": {
-        "kind": "current",
-        "label": "Current",
-        "versionsBehind": 0
+        "kind": "behind",
+        "label": "Update available",
+        "versionsBehind": 1
       },
-      "url": "https://github.com/libarchive/libarchive/releases/tag/v3.8.10",
+      "url": "https://github.com/libarchive/libarchive/releases/tag/v3.8.11",
       "candidate": {
         "mode": "auto",
         "profiles": [
@@ -191,33 +191,16 @@
     {
       "slug": "ghostscript",
       "name": "Ghostscript",
-      "status": "ok",
+      "status": "error",
       "pinned": "10.08.0",
       "pinnedRef": "gs10.08.0",
       "pinnedReleased": "2026-09-08",
-      "latest": "10.08.0",
-      "latestRef": "gs10.08.0",
-      "latestCommit": "4d175558193ad50d6fbc329fe28dbb48af626126",
-      "latestReleased": "2026-09-08T12:29:24Z",
-      "updateAvailable": false,
-      "lagDays": 0,
-      "gap": {
-        "kind": "current",
-        "label": "Current",
-        "versionsBehind": 0
-      },
-      "url": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/tag/gs10080",
+      "error": "422 Unprocessable Entity",
       "candidate": {
         "mode": "auto",
         "profiles": [
           "browser-full"
-        ],
-        "source": {
-          "releaseTag": "gs10080",
-          "assetName": "ghostscript-10.08.0.tar.xz",
-          "sourceUrl": "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10080/ghostscript-10.08.0.tar.xz",
-          "sourceSha256": "c20492bc8ebb96c87fa2e52a0926e1cda8cde95d66145e018ac713fed5da38cf"
-        }
+        ]
       }
     },
     {
