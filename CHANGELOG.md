@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- promote ImageMagick 7.1.2-35 to builder 0.4.7 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `5d1bcc55f2c83bc2ff802118b7369756610f3ad4`;
+
 - record @wasm-zoo/brotli@0.1.1 publication from brotli-v0.1.1; verified Registry SHA-1 `6cc07aa0d5bf0feffd1a804df12106386d63ce61` against the staged tarball;
 
 - promote Brotli 1.2.1 to builder 0.1.1 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `db24a98aed38a16de78cc05ca15cdd8dc2a0d92d`;
