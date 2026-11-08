@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- promote ImageMagick 7.1.2-35 to builder 0.4.7 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `5d1bcc55f2c83bc2ff802118b7369756610f3ad4`;
+
 - promote libarchive 3.8.11 to builder 0.3.3 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `03036ffa409a2aa1c5bbad35be2202641a040fda`;
 
 - record @wasm-zoo/brotli@0.1.1 publication from brotli-v0.1.1; verified Registry SHA-1 `6cc07aa0d5bf0feffd1a804df12106386d63ce61` against the staged tarball;
