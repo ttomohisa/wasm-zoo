@@ -563,7 +563,19 @@
           "releaseAsset": "imagemagick-browser-full-7.1.2-34-zoo-0.4.6.zip",
           "commit": "a0c4bf729a26a5c2feb28b0365b47a8db736078a"
         },
-        "registryShasum": "2a089ce9953871c243742099f51920c68782db1a"
+        "registryShasum": "2a089ce9953871c243742099f51920c68782db1a",
+        "pending": {
+          "version": "0.4.7",
+          "profile": "browser-full",
+          "releaseCommit": "ee6f6fc6312e49a2d07df81a01d4e7a645944fc1",
+          "source": {
+            "upstreamVersion": "7.1.2-35",
+            "builderVersion": "0.4.7",
+            "releaseTag": "imagemagick-v0.4.7",
+            "releaseAsset": "imagemagick-browser-full-7.1.2-35-zoo-0.4.7.zip",
+            "commit": "5d1bcc55f2c83bc2ff802118b7369756610f3ad4"
+          }
+        }
       }
     },
     {
