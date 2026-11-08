@@ -77,7 +77,7 @@ All eight packages retain review-only automatic candidate contracts. libvips rem
 | Package | Upstream | Zoo builder | Browser profile | Playground | npm rollout |
 | --- | --- | --- | --- | --- | --- |
 | FFmpeg | 9.0.2 | 0.2.8 | `browser-full`, `browser-full-gpl` | yes | `@wasm-zoo/ffmpeg@0.2.8` |
-| libarchive | 3.8.11 | 0.3.3 | `browser-full` | yes | `@wasm-zoo/libarchive@0.3.2` |
+| libarchive | 3.8.11 | 0.3.3 | `browser-full` | yes | `@wasm-zoo/libarchive@0.3.3` |
 | ImageMagick | 7.1.2-35 | 0.4.7 | `browser-full` | yes | `@wasm-zoo/imagemagick@0.4.6` |
 | libvips | 8.18.7 | 0.5.3 | `browser-core`, `browser-full` | yes | `@wasm-zoo/libvips@0.5.3` |
 | Ghostscript | 10.08.0 | 0.7.2 | `browser-full` | yes | `@wasm-zoo/ghostscript@0.7.2` |
