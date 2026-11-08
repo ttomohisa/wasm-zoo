@@ -273,6 +273,18 @@
       "releaseAsset": "libarchive-browser-full-3.8.10-zoo-0.3.2.zip",
       "commit": "0c48412be2d94afe1859a807ea7896a18d8900bd"
     },
-    "registryShasum": "b8071be3b8d71b320004171a56498b67b49e3084"
+    "registryShasum": "b8071be3b8d71b320004171a56498b67b49e3084",
+    "pending": {
+      "version": "0.3.3",
+      "profile": "browser-full",
+      "releaseCommit": "a996300f8330118dcfc5118e71b348df352311be",
+      "source": {
+        "upstreamVersion": "3.8.11",
+        "builderVersion": "0.3.3",
+        "releaseTag": "libarchive-v0.3.3",
+        "releaseAsset": "libarchive-browser-full-3.8.11-zoo-0.3.3.zip",
+        "commit": "03036ffa409a2aa1c5bbad35be2202641a040fda"
+      }
+    }
   }
 }
