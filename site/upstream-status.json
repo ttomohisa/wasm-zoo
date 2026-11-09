@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-08T10:35:01.494Z",
-  "hasUpdates": true,
+  "generatedAt": "2026-11-09T11:50:14.932Z",
+  "hasUpdates": false,
   "packages": [
     {
       "slug": "ffmpeg",
@@ -34,19 +34,19 @@
       "slug": "imagemagick",
       "name": "ImageMagick",
       "status": "ok",
-      "pinned": "7.1.2-34",
-      "pinnedRef": "7.1.2-34",
-      "pinnedReleased": "2026-10-14",
+      "pinned": "7.1.2-35",
+      "pinnedRef": "7.1.2-35",
+      "pinnedReleased": "2026-10-31",
       "latest": "7.1.2-35",
       "latestRef": "7.1.2-35",
       "latestCommit": "5d1bcc55f2c83bc2ff802118b7369756610f3ad4",
       "latestReleased": "2026-10-31T23:28:18Z",
-      "updateAvailable": true,
-      "lagDays": 17,
+      "updateAvailable": false,
+      "lagDays": 0,
       "gap": {
-        "kind": "behind",
-        "label": "Update available",
-        "versionsBehind": 1
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
       },
       "url": "https://github.com/ImageMagick/ImageMagick/releases/tag/7.1.2-35",
       "candidate": {
@@ -60,19 +60,19 @@
       "slug": "libarchive",
       "name": "libarchive",
       "status": "ok",
-      "pinned": "3.8.10",
-      "pinnedRef": "v3.8.10",
-      "pinnedReleased": "2026-10-14",
+      "pinned": "3.8.11",
+      "pinnedRef": "v3.8.11",
+      "pinnedReleased": "2026-10-30",
       "latest": "3.8.11",
       "latestRef": "v3.8.11",
       "latestCommit": "03036ffa409a2aa1c5bbad35be2202641a040fda",
       "latestReleased": "2026-10-30T21:38:55Z",
-      "updateAvailable": true,
-      "lagDays": 16,
+      "updateAvailable": false,
+      "lagDays": 0,
       "gap": {
-        "kind": "behind",
-        "label": "Update available",
-        "versionsBehind": 1
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
       },
       "url": "https://github.com/libarchive/libarchive/releases/tag/v3.8.11",
       "candidate": {
