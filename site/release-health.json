@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-09T11:50:30.070Z",
+  "generatedAt": "2026-11-10T11:25:10.923Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -102,25 +102,24 @@
       },
       "npm": {
         "package": "@wasm-zoo/imagemagick",
-        "expectedVersion": "0.4.6",
-        "registryVersion": "0.4.6",
+        "expectedVersion": "0.4.7",
+        "registryVersion": "0.4.7",
         "registryLatest": "0.4.7",
-        "registryShasum": "2a089ce9953871c243742099f51920c68782db1a",
-        "recordedShasum": "2a089ce9953871c243742099f51920c68782db1a",
+        "registryShasum": "ebb9f06b3e4a3a23cd145660feb305ca2a979fe9",
+        "recordedShasum": "ebb9f06b3e4a3a23cd145660feb305ca2a979fe9",
         "shasumMatch": true,
-        "sourceReleaseTag": "imagemagick-v0.4.6",
-        "sourceReleaseAsset": "imagemagick-browser-full-7.1.2-34-zoo-0.4.6.zip",
+        "sourceReleaseTag": "imagemagick-v0.4.7",
+        "sourceReleaseAsset": "imagemagick-browser-full-7.1.2-35-zoo-0.4.7.zip",
         "packageReleaseTag": "imagemagick-v0.4.7",
-        "sourceCurrent": false,
-        "intentionalPin": true,
-        "updatePending": true,
-        "state": "warn",
-        "label": "Pinned to imagemagick-v0.4.6",
-        "review": "separate-npm-review"
+        "sourceCurrent": true,
+        "intentionalPin": false,
+        "updatePending": false,
+        "state": "ok",
+        "label": "Published 0.4.7"
       },
       "overall": {
-        "state": "warn",
-        "label": "npm separate review"
+        "state": "ok",
+        "label": "Healthy"
       }
     },
     {
@@ -536,15 +535,15 @@
     }
   ],
   "summary": {
-    "healthy": 7,
-    "warning": 2,
+    "healthy": 8,
+    "warning": 1,
     "pending": 0,
     "error": 0,
     "supplyChainPublished": 9,
     "npmTotal": 9,
-    "npmAligned": 7,
-    "npmFollowUp": 2,
-    "npmPinned": 2,
+    "npmAligned": 8,
+    "npmFollowUp": 1,
+    "npmPinned": 1,
     "npmErrors": 0,
     "total": 9
   }
