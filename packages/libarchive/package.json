@@ -96,6 +96,7 @@
     }
   ],
   "notes": [
+    "@wasm-zoo/libarchive@0.3.3 published from libarchive-v0.3.3; Registry SHA-1 9ca67a5f1af2cc5ee4936d2a17cfa66b1a861e5e matches the three-browser-tested staged tarball.",
     "v0.3.3 promotes libarchive 3.8.11 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
     "npm 0.3.2 is published from libarchive-v0.3.2 / libarchive 3.8.10 / builder 0.3.2 after Trusted Publisher staging and maintainer approval; the public tarball matches reviewed Registry SHA-1 b8071be3b8d71b320004171a56498b67b49e3084.",
     "v0.3.2 promotes libarchive 3.8.10 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
@@ -198,7 +199,7 @@
   "npm": {
     "status": "published",
     "package": "@wasm-zoo/libarchive",
-    "version": "0.3.2",
+    "version": "0.3.3",
     "profile": "browser-full",
     "entry": "index.mjs",
     "bundledAssets": true,
@@ -267,24 +268,12 @@
       "zip"
     ],
     "source": {
-      "upstreamVersion": "3.8.10",
-      "builderVersion": "0.3.2",
-      "releaseTag": "libarchive-v0.3.2",
-      "releaseAsset": "libarchive-browser-full-3.8.10-zoo-0.3.2.zip",
-      "commit": "0c48412be2d94afe1859a807ea7896a18d8900bd"
+      "upstreamVersion": "3.8.11",
+      "builderVersion": "0.3.3",
+      "releaseTag": "libarchive-v0.3.3",
+      "releaseAsset": "libarchive-browser-full-3.8.11-zoo-0.3.3.zip",
+      "commit": "03036ffa409a2aa1c5bbad35be2202641a040fda"
     },
-    "registryShasum": "b8071be3b8d71b320004171a56498b67b49e3084",
-    "pending": {
-      "version": "0.3.3",
-      "profile": "browser-full",
-      "releaseCommit": "a996300f8330118dcfc5118e71b348df352311be",
-      "source": {
-        "upstreamVersion": "3.8.11",
-        "builderVersion": "0.3.3",
-        "releaseTag": "libarchive-v0.3.3",
-        "releaseAsset": "libarchive-browser-full-3.8.11-zoo-0.3.3.zip",
-        "commit": "03036ffa409a2aa1c5bbad35be2202641a040fda"
-      }
-    }
+    "registryShasum": "9ca67a5f1af2cc5ee4936d2a17cfa66b1a861e5e"
   }
 }
