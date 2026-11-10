@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- record @wasm-zoo/imagemagick@0.4.7 publication from imagemagick-v0.4.7; verified Registry SHA-1 `ebb9f06b3e4a3a23cd145660feb305ca2a979fe9` against the staged tarball;
+
 - promote ImageMagick 7.1.2-35 to builder 0.4.7 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `5d1bcc55f2c83bc2ff802118b7369756610f3ad4`;
 
 - promote libarchive 3.8.11 to builder 0.3.3 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `03036ffa409a2aa1c5bbad35be2202641a040fda`;

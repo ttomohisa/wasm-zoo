@@ -111,7 +111,7 @@ ImageMagick 0.4.6 is published after separate Trusted Publisher staging and main
 | --- | ---: | ---: | ---: | --- | --- |
 | `@wasm-zoo/jq` | `0.9.1` | jq 1.8.2 | `0.9.0` | `jq-v0.9.0` | published |
 | `@wasm-zoo/libarchive` | `0.3.2` | libarchive 3.8.10 | `0.3.2` | `libarchive-v0.3.2` | published |
-| `@wasm-zoo/imagemagick` | `0.4.6` | ImageMagick 7.1.2-34 | `0.4.6` | `imagemagick-v0.4.6` | published |
+| `@wasm-zoo/imagemagick` | `0.4.7` | ImageMagick 7.1.2-35 | `0.4.7` | `imagemagick-v0.4.7` / `browser-full` | published |
 | `@wasm-zoo/ghostscript` | `0.7.2` | Ghostscript 10.08.0 | `0.7.2` | `ghostscript-v0.7.2` | published |
 | `@wasm-zoo/libvips` | `0.5.3` | libvips 8.18.7 | `0.5.3` | `libvips-v0.5.3` / `browser-core` | published |
 | `@wasm-zoo/ffmpeg` | `0.2.8` | FFmpeg 9.0.2 | `0.2.8` | `ffmpeg-v0.2.8` / `browser-full` | published |
