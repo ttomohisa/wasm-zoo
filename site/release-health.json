@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-10T11:25:10.923Z",
+  "generatedAt": "2026-11-11T11:13:33.513Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -160,25 +160,24 @@
       },
       "npm": {
         "package": "@wasm-zoo/libarchive",
-        "expectedVersion": "0.3.2",
-        "registryVersion": "0.3.2",
+        "expectedVersion": "0.3.3",
+        "registryVersion": "0.3.3",
         "registryLatest": "0.3.3",
-        "registryShasum": "b8071be3b8d71b320004171a56498b67b49e3084",
-        "recordedShasum": "b8071be3b8d71b320004171a56498b67b49e3084",
+        "registryShasum": "9ca67a5f1af2cc5ee4936d2a17cfa66b1a861e5e",
+        "recordedShasum": "9ca67a5f1af2cc5ee4936d2a17cfa66b1a861e5e",
         "shasumMatch": true,
-        "sourceReleaseTag": "libarchive-v0.3.2",
-        "sourceReleaseAsset": "libarchive-browser-full-3.8.10-zoo-0.3.2.zip",
+        "sourceReleaseTag": "libarchive-v0.3.3",
+        "sourceReleaseAsset": "libarchive-browser-full-3.8.11-zoo-0.3.3.zip",
         "packageReleaseTag": "libarchive-v0.3.3",
-        "sourceCurrent": false,
-        "intentionalPin": true,
-        "updatePending": true,
-        "state": "warn",
-        "label": "Pinned to libarchive-v0.3.2",
-        "review": "separate-npm-review"
+        "sourceCurrent": true,
+        "intentionalPin": false,
+        "updatePending": false,
+        "state": "ok",
+        "label": "Published 0.3.3"
       },
       "overall": {
-        "state": "warn",
-        "label": "npm separate review"
+        "state": "ok",
+        "label": "Healthy"
       }
     },
     {
@@ -535,15 +534,15 @@
     }
   ],
   "summary": {
-    "healthy": 8,
-    "warning": 1,
+    "healthy": 9,
+    "warning": 0,
     "pending": 0,
     "error": 0,
     "supplyChainPublished": 9,
     "npmTotal": 9,
-    "npmAligned": 8,
-    "npmFollowUp": 1,
-    "npmPinned": 1,
+    "npmAligned": 9,
+    "npmFollowUp": 0,
+    "npmPinned": 0,
     "npmErrors": 0,
     "total": 9
   }
