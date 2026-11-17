@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-16T11:45:41.390Z",
-  "hasUpdates": false,
+  "generatedAt": "2026-11-17T12:06:00.930Z",
+  "hasUpdates": true,
   "packages": [
     {
       "slug": "ffmpeg",
@@ -37,18 +37,18 @@
       "pinned": "7.1.2-35",
       "pinnedRef": "7.1.2-35",
       "pinnedReleased": "2026-10-31",
-      "latest": "7.1.2-35",
-      "latestRef": "7.1.2-35",
-      "latestCommit": "5d1bcc55f2c83bc2ff802118b7369756610f3ad4",
-      "latestReleased": "2026-10-31T23:28:18Z",
-      "updateAvailable": false,
-      "lagDays": 0,
+      "latest": "7.1.2-36",
+      "latestRef": "7.1.2-36",
+      "latestCommit": "dcec873ede2912a1b045a50fd54cd138ee5f3fa4",
+      "latestReleased": "2026-11-16T19:07:26Z",
+      "updateAvailable": true,
+      "lagDays": 16,
       "gap": {
-        "kind": "current",
-        "label": "Current",
-        "versionsBehind": 0
+        "kind": "behind",
+        "label": "Update available",
+        "versionsBehind": 1
       },
-      "url": "https://github.com/ImageMagick/ImageMagick/releases/tag/7.1.2-35",
+      "url": "https://github.com/ImageMagick/ImageMagick/releases/tag/7.1.2-36",
       "candidate": {
         "mode": "auto",
         "profiles": [
