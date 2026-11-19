@@ -98,6 +98,7 @@
     }
   ],
   "notes": [
+    "@wasm-zoo/imagemagick@0.4.8 published from imagemagick-v0.4.8; Registry SHA-1 b02543dd6b0b747c64a12bf6a8dbef98ba8d28bb matches the three-browser-tested staged tarball.",
     "v0.4.8 promotes ImageMagick 7.1.2-36 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
     "@wasm-zoo/imagemagick@0.4.7 published from imagemagick-v0.4.7; Registry SHA-1 ebb9f06b3e4a3a23cd145660feb305ca2a979fe9 matches the three-browser-tested staged tarball.",
     "v0.4.7 promotes ImageMagick 7.1.2-35 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
@@ -211,7 +212,7 @@
   "npm": {
     "status": "published",
     "package": "@wasm-zoo/imagemagick",
-    "version": "0.4.7",
+    "version": "0.4.8",
     "profile": "browser-full",
     "entry": "index.mjs",
     "bundledAssets": true,
@@ -257,24 +258,12 @@
       "conversion"
     ],
     "source": {
-      "upstreamVersion": "7.1.2-35",
-      "builderVersion": "0.4.7",
-      "releaseTag": "imagemagick-v0.4.7",
-      "releaseAsset": "imagemagick-browser-full-7.1.2-35-zoo-0.4.7.zip",
-      "commit": "5d1bcc55f2c83bc2ff802118b7369756610f3ad4"
+      "upstreamVersion": "7.1.2-36",
+      "builderVersion": "0.4.8",
+      "releaseTag": "imagemagick-v0.4.8",
+      "releaseAsset": "imagemagick-browser-full-7.1.2-36-zoo-0.4.8.zip",
+      "commit": "dcec873ede2912a1b045a50fd54cd138ee5f3fa4"
     },
-    "registryShasum": "ebb9f06b3e4a3a23cd145660feb305ca2a979fe9",
-    "pending": {
-      "version": "0.4.8",
-      "profile": "browser-full",
-      "releaseCommit": "fc69bc96bcd2ca6ba70b95caa8153d34bc2012c1",
-      "source": {
-        "upstreamVersion": "7.1.2-36",
-        "builderVersion": "0.4.8",
-        "releaseTag": "imagemagick-v0.4.8",
-        "releaseAsset": "imagemagick-browser-full-7.1.2-36-zoo-0.4.8.zip",
-        "commit": "dcec873ede2912a1b045a50fd54cd138ee5f3fa4"
-      }
-    }
+    "registryShasum": "b02543dd6b0b747c64a12bf6a8dbef98ba8d28bb"
   }
 }
