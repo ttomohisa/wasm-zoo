@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- promote FFmpeg 9.1 to builder 0.2.9 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `74e4393595cf2b5857f0da925c4e0dd74ea306e5`;
+
 - record @wasm-zoo/imagemagick@0.4.8 publication from imagemagick-v0.4.8; verified Registry SHA-1 `b02543dd6b0b747c64a12bf6a8dbef98ba8d28bb` against the staged tarball;
 
 - promote ImageMagick 7.1.2-36 to builder 0.4.8 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `dcec873ede2912a1b045a50fd54cd138ee5f3fa4`;
