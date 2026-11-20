@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-19T11:53:58.494Z",
+  "generatedAt": "2026-11-20T11:55:22.995Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -39,8 +39,8 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/ffmpeg-playground/"
       },
       "freshness": {
-        "state": "ok",
-        "label": "Current"
+        "state": "warn",
+        "label": "1 minor behind"
       },
       "npm": {
         "package": "@wasm-zoo/ffmpeg",
@@ -60,19 +60,19 @@
         "label": "Published 0.2.8"
       },
       "overall": {
-        "state": "ok",
-        "label": "Healthy"
+        "state": "warn",
+        "label": "Upstream review"
       }
     },
     {
       "slug": "imagemagick",
       "name": "ImageMagick",
-      "tag": "imagemagick-v0.4.7",
+      "tag": "imagemagick-v0.4.8",
       "release": {
         "state": "ok",
         "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.7",
-        "publishedAt": "2026-11-08T14:44:52Z",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/imagemagick-v0.4.8",
+        "publishedAt": "2026-11-19T12:53:11Z",
         "assetCount": 6,
         "missingAssets": []
       },
@@ -88,8 +88,8 @@
       "buildGate": {
         "state": "ok",
         "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/42491066342",
-        "runId": 42491066342
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/44527378536",
+        "runId": 44527378536
       },
       "playground": {
         "state": "ok",
@@ -97,29 +97,29 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/imagemagick-playground/"
       },
       "freshness": {
-        "state": "warn",
-        "label": "Update available"
+        "state": "ok",
+        "label": "Current"
       },
       "npm": {
         "package": "@wasm-zoo/imagemagick",
-        "expectedVersion": "0.4.7",
-        "registryVersion": "0.4.7",
-        "registryLatest": "0.4.7",
-        "registryShasum": "ebb9f06b3e4a3a23cd145660feb305ca2a979fe9",
-        "recordedShasum": "ebb9f06b3e4a3a23cd145660feb305ca2a979fe9",
+        "expectedVersion": "0.4.8",
+        "registryVersion": "0.4.8",
+        "registryLatest": "0.4.8",
+        "registryShasum": "b02543dd6b0b747c64a12bf6a8dbef98ba8d28bb",
+        "recordedShasum": "b02543dd6b0b747c64a12bf6a8dbef98ba8d28bb",
         "shasumMatch": true,
-        "sourceReleaseTag": "imagemagick-v0.4.7",
-        "sourceReleaseAsset": "imagemagick-browser-full-7.1.2-35-zoo-0.4.7.zip",
-        "packageReleaseTag": "imagemagick-v0.4.7",
+        "sourceReleaseTag": "imagemagick-v0.4.8",
+        "sourceReleaseAsset": "imagemagick-browser-full-7.1.2-36-zoo-0.4.8.zip",
+        "packageReleaseTag": "imagemagick-v0.4.8",
         "sourceCurrent": true,
         "intentionalPin": false,
         "updatePending": false,
         "state": "ok",
-        "label": "Published 0.4.7"
+        "label": "Published 0.4.8"
       },
       "overall": {
-        "state": "warn",
-        "label": "Upstream review"
+        "state": "ok",
+        "label": "Healthy"
       }
     },
     {

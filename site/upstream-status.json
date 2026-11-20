@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-19T11:53:43.817Z",
+  "generatedAt": "2026-11-20T11:55:06.571Z",
   "hasUpdates": true,
   "packages": [
     {
@@ -10,18 +10,18 @@
       "pinned": "9.0.2",
       "pinnedRef": "n9.0.2",
       "pinnedReleased": "2026-09-17",
-      "latest": "9.0.2",
-      "latestRef": "n9.0.2",
-      "latestCommit": "946fcce07b6dcd0331c8cc609192aeff5e1924f8",
-      "latestReleased": "2026-09-17T23:19:50Z",
-      "updateAvailable": false,
-      "lagDays": 0,
+      "latest": "9.1",
+      "latestRef": "n9.1",
+      "latestCommit": "74e4393595cf2b5857f0da925c4e0dd74ea306e5",
+      "latestReleased": "2026-11-19T18:47:40Z",
+      "updateAvailable": true,
+      "lagDays": 63,
       "gap": {
-        "kind": "current",
-        "label": "Current",
-        "versionsBehind": 0
+        "kind": "behind",
+        "label": "1 minor behind",
+        "versionsBehind": 1
       },
-      "url": "https://github.com/FFmpeg/FFmpeg/tree/n9.0.2",
+      "url": "https://github.com/FFmpeg/FFmpeg/tree/n9.1",
       "candidate": {
         "mode": "auto",
         "profiles": [
@@ -34,19 +34,19 @@
       "slug": "imagemagick",
       "name": "ImageMagick",
       "status": "ok",
-      "pinned": "7.1.2-35",
-      "pinnedRef": "7.1.2-35",
-      "pinnedReleased": "2026-10-31",
+      "pinned": "7.1.2-36",
+      "pinnedRef": "7.1.2-36",
+      "pinnedReleased": "2026-11-16",
       "latest": "7.1.2-36",
       "latestRef": "7.1.2-36",
       "latestCommit": "dcec873ede2912a1b045a50fd54cd138ee5f3fa4",
       "latestReleased": "2026-11-16T19:07:26Z",
-      "updateAvailable": true,
-      "lagDays": 16,
+      "updateAvailable": false,
+      "lagDays": 0,
       "gap": {
-        "kind": "behind",
-        "label": "Update available",
-        "versionsBehind": 1
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
       },
       "url": "https://github.com/ImageMagick/ImageMagick/releases/tag/7.1.2-36",
       "candidate": {
