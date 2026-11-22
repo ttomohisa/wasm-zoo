@@ -114,7 +114,7 @@ ImageMagick 0.4.6 is published after separate Trusted Publisher staging and main
 | `@wasm-zoo/imagemagick` | `0.4.8` | ImageMagick 7.1.2-36 | `0.4.8` | `imagemagick-v0.4.8` / `browser-full` | published |
 | `@wasm-zoo/ghostscript` | `0.7.2` | Ghostscript 10.08.0 | `0.7.2` | `ghostscript-v0.7.2` | published |
 | `@wasm-zoo/libvips` | `0.5.3` | libvips 8.18.7 | `0.5.3` | `libvips-v0.5.3` / `browser-core` | published |
-| `@wasm-zoo/ffmpeg` | `0.2.8` | FFmpeg 9.0.2 | `0.2.8` | `ffmpeg-v0.2.8` / `browser-full` | published |
+| `@wasm-zoo/ffmpeg` | `0.2.9` | FFmpeg 9.1 | `0.2.9` | `ffmpeg-v0.2.9` / `browser-full` | published |
 | `@wasm-zoo/zstd` | `0.3.0` | Zstandard 1.5.7 | `0.3.0` | `zstd-v0.3.0` / `browser-full` | published |
 | `@wasm-zoo/qpdf` | `0.1.1` | QPDF 12.4.2 | `0.1.1` | `qpdf-v0.1.1` / `browser-full` | published |
 | `@wasm-zoo/brotli` | `0.1.1` | Brotli 1.2.1 | `0.1.1` | `brotli-v0.1.1` / `browser-full` | published |
