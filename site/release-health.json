@@ -1,37 +1,45 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-21T11:26:46.457Z",
+  "generatedAt": "2026-11-22T11:41:18.509Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
     {
       "slug": "ffmpeg",
       "name": "FFmpeg",
-      "tag": "ffmpeg-v0.2.8",
+      "tag": "ffmpeg-v0.2.9",
       "release": {
-        "state": "ok",
-        "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.8",
-        "publishedAt": "2026-09-19T13:33:38Z",
-        "assetCount": 10,
-        "missingAssets": []
+        "state": "pending",
+        "label": "Reviewed tag pending",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.9",
+        "publishedAt": null,
+        "assetCount": 0,
+        "missingAssets": [
+          "ffmpeg-browser-full-9.1-zoo-0.2.9.zip",
+          "ffmpeg-browser-full-gpl-9.1-zoo-0.2.9.zip",
+          "ffmpeg-sources-9.1-zoo-0.2.9.tar.gz",
+          "SHA256SUMS.txt"
+        ]
       },
       "supplyChain": {
-        "state": "ok",
-        "label": "Provenance + SBOM published",
+        "state": "pending",
+        "label": "Publishes with reviewed package release",
         "expected": [
           "provenance-browser-full.json",
           "sbom-browser-full.cdx.json",
           "provenance-browser-full-gpl.json",
           "sbom-browser-full-gpl.cdx.json"
         ],
-        "missing": []
+        "missing": [
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json",
+          "provenance-browser-full-gpl.json",
+          "sbom-browser-full-gpl.cdx.json"
+        ]
       },
       "buildGate": {
-        "state": "ok",
-        "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/35445527987",
-        "runId": 35445527987
+        "state": "pending",
+        "label": "Reviewed tag not created"
       },
       "playground": {
         "state": "ok",
@@ -39,8 +47,8 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/ffmpeg-playground/"
       },
       "freshness": {
-        "state": "warn",
-        "label": "1 minor behind"
+        "state": "ok",
+        "label": "Current"
       },
       "npm": {
         "package": "@wasm-zoo/ffmpeg",
@@ -52,16 +60,17 @@
         "shasumMatch": null,
         "sourceReleaseTag": "ffmpeg-v0.2.8",
         "sourceReleaseAsset": "ffmpeg-browser-full-9.0.2-zoo-0.2.8.zip",
-        "packageReleaseTag": "ffmpeg-v0.2.8",
-        "sourceCurrent": true,
-        "intentionalPin": false,
-        "updatePending": false,
-        "state": "ok",
-        "label": "Published 0.2.8"
+        "packageReleaseTag": "ffmpeg-v0.2.9",
+        "sourceCurrent": false,
+        "intentionalPin": true,
+        "updatePending": true,
+        "state": "warn",
+        "label": "Pinned to ffmpeg-v0.2.8",
+        "review": "separate-npm-review"
       },
       "overall": {
-        "state": "warn",
-        "label": "Upstream review"
+        "state": "pending",
+        "label": "In progress"
       }
     },
     {
@@ -535,14 +544,14 @@
   ],
   "summary": {
     "healthy": 8,
-    "warning": 1,
-    "pending": 0,
+    "warning": 0,
+    "pending": 1,
     "error": 0,
-    "supplyChainPublished": 9,
+    "supplyChainPublished": 8,
     "npmTotal": 9,
-    "npmAligned": 9,
-    "npmFollowUp": 0,
-    "npmPinned": 0,
+    "npmAligned": 8,
+    "npmFollowUp": 1,
+    "npmPinned": 1,
     "npmErrors": 0,
     "total": 9
   }

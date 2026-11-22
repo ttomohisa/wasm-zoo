@@ -1,25 +1,25 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-21T11:26:32.383Z",
-  "hasUpdates": true,
+  "generatedAt": "2026-11-22T11:41:03.085Z",
+  "hasUpdates": false,
   "packages": [
     {
       "slug": "ffmpeg",
       "name": "FFmpeg",
       "status": "ok",
-      "pinned": "9.0.2",
-      "pinnedRef": "n9.0.2",
-      "pinnedReleased": "2026-09-17",
+      "pinned": "9.1",
+      "pinnedRef": "n9.1",
+      "pinnedReleased": "2026-11-19",
       "latest": "9.1",
       "latestRef": "n9.1",
       "latestCommit": "74e4393595cf2b5857f0da925c4e0dd74ea306e5",
       "latestReleased": "2026-11-19T18:47:40Z",
-      "updateAvailable": true,
-      "lagDays": 63,
+      "updateAvailable": false,
+      "lagDays": 0,
       "gap": {
-        "kind": "behind",
-        "label": "1 minor behind",
-        "versionsBehind": 1
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
       },
       "url": "https://github.com/FFmpeg/FFmpeg/tree/n9.1",
       "candidate": {
