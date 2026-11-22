@@ -305,6 +305,18 @@
           "releaseTag": "ffmpeg-v0.2.8",
           "releaseAsset": "ffmpeg-browser-full-9.0.2-zoo-0.2.8.zip",
           "commit": "946fcce07b6dcd0331c8cc609192aeff5e1924f8"
+        },
+        "pending": {
+          "version": "0.2.9",
+          "profile": "browser-full",
+          "releaseCommit": "b42938bf21a70d68cc4484dd1bea4231b0072742",
+          "source": {
+            "upstreamVersion": "9.1",
+            "builderVersion": "0.2.9",
+            "releaseTag": "ffmpeg-v0.2.9",
+            "releaseAsset": "ffmpeg-browser-full-9.1-zoo-0.2.9.zip",
+            "commit": "74e4393595cf2b5857f0da925c4e0dd74ea306e5"
+          }
         }
       }
     },
