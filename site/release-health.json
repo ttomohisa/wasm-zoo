@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-22T11:41:18.509Z",
+  "generatedAt": "2026-11-23T13:15:37.170Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -9,37 +9,29 @@
       "name": "FFmpeg",
       "tag": "ffmpeg-v0.2.9",
       "release": {
-        "state": "pending",
-        "label": "Reviewed tag pending",
+        "state": "ok",
+        "label": "Assets present",
         "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/ffmpeg-v0.2.9",
-        "publishedAt": null,
-        "assetCount": 0,
-        "missingAssets": [
-          "ffmpeg-browser-full-9.1-zoo-0.2.9.zip",
-          "ffmpeg-browser-full-gpl-9.1-zoo-0.2.9.zip",
-          "ffmpeg-sources-9.1-zoo-0.2.9.tar.gz",
-          "SHA256SUMS.txt"
-        ]
+        "publishedAt": "2026-11-22T16:29:30Z",
+        "assetCount": 10,
+        "missingAssets": []
       },
       "supplyChain": {
-        "state": "pending",
-        "label": "Publishes with reviewed package release",
+        "state": "ok",
+        "label": "Provenance + SBOM published",
         "expected": [
           "provenance-browser-full.json",
           "sbom-browser-full.cdx.json",
           "provenance-browser-full-gpl.json",
           "sbom-browser-full-gpl.cdx.json"
         ],
-        "missing": [
-          "provenance-browser-full.json",
-          "sbom-browser-full.cdx.json",
-          "provenance-browser-full-gpl.json",
-          "sbom-browser-full-gpl.cdx.json"
-        ]
+        "missing": []
       },
       "buildGate": {
-        "state": "pending",
-        "label": "Reviewed tag not created"
+        "state": "ok",
+        "label": "Passed",
+        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/45043111458",
+        "runId": 45043111458
       },
       "playground": {
         "state": "ok",
@@ -52,25 +44,24 @@
       },
       "npm": {
         "package": "@wasm-zoo/ffmpeg",
-        "expectedVersion": "0.2.8",
-        "registryVersion": "0.2.8",
-        "registryLatest": "0.2.8",
-        "registryShasum": "869dd4993802baec1895373f0fe8f24a4d4b4a16",
-        "recordedShasum": null,
-        "shasumMatch": null,
-        "sourceReleaseTag": "ffmpeg-v0.2.8",
-        "sourceReleaseAsset": "ffmpeg-browser-full-9.0.2-zoo-0.2.8.zip",
+        "expectedVersion": "0.2.9",
+        "registryVersion": "0.2.9",
+        "registryLatest": "0.2.9",
+        "registryShasum": "dd64027fab26c7652f142f6ab8a17edf5349b75b",
+        "recordedShasum": "dd64027fab26c7652f142f6ab8a17edf5349b75b",
+        "shasumMatch": true,
+        "sourceReleaseTag": "ffmpeg-v0.2.9",
+        "sourceReleaseAsset": "ffmpeg-browser-full-9.1-zoo-0.2.9.zip",
         "packageReleaseTag": "ffmpeg-v0.2.9",
-        "sourceCurrent": false,
-        "intentionalPin": true,
-        "updatePending": true,
-        "state": "warn",
-        "label": "Pinned to ffmpeg-v0.2.8",
-        "review": "separate-npm-review"
+        "sourceCurrent": true,
+        "intentionalPin": false,
+        "updatePending": false,
+        "state": "ok",
+        "label": "Published 0.2.9"
       },
       "overall": {
-        "state": "pending",
-        "label": "In progress"
+        "state": "ok",
+        "label": "Healthy"
       }
     },
     {
@@ -543,15 +534,15 @@
     }
   ],
   "summary": {
-    "healthy": 8,
+    "healthy": 9,
     "warning": 0,
-    "pending": 1,
+    "pending": 0,
     "error": 0,
-    "supplyChainPublished": 8,
+    "supplyChainPublished": 9,
     "npmTotal": 9,
-    "npmAligned": 8,
-    "npmFollowUp": 1,
-    "npmPinned": 1,
+    "npmAligned": 9,
+    "npmFollowUp": 0,
+    "npmPinned": 0,
     "npmErrors": 0,
     "total": 9
   }
