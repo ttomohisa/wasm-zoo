@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T13:15:22.068Z",
-  "hasUpdates": false,
+  "generatedAt": "2026-11-24T13:58:03.832Z",
+  "hasUpdates": true,
   "packages": [
     {
       "slug": "ffmpeg",
@@ -115,18 +115,18 @@
       "pinned": "1.5.7",
       "pinnedRef": "v1.5.7",
       "pinnedReleased": "2025-02-19",
-      "latest": "1.5.7",
-      "latestRef": "v1.5.7",
-      "latestCommit": "f8745da6ff1ad1e7bab384bd1f9d742439278e99",
-      "latestReleased": "2025-02-19T21:50:11Z",
-      "updateAvailable": false,
-      "lagDays": 0,
+      "latest": "1.6.0",
+      "latestRef": "v1.6.0",
+      "latestCommit": "916e8e70b33317d469a41ee837e47317807815c8",
+      "latestReleased": "2026-11-23T22:55:19Z",
+      "updateAvailable": true,
+      "lagDays": 642,
       "gap": {
-        "kind": "current",
-        "label": "Current",
-        "versionsBehind": 0
+        "kind": "behind",
+        "label": "1 minor behind",
+        "versionsBehind": 1
       },
-      "url": "https://github.com/meta/zstd/releases/tag/v1.5.7",
+      "url": "https://github.com/meta/zstd/releases/tag/v1.6.0",
       "candidate": {
         "mode": "auto",
         "profiles": [
