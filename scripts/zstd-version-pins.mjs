@@ -29,10 +29,10 @@ export async function refreshZstdVersionPins(root, oldVersion, newVersion, newRe
     const file = path.join(root, "builders/zstd", rel);
     let body = await fs.readFile(file, "utf8");
     if (body.split(expected).length !== 2) throw new Error(`Expected exactly one Zstandard version pin ${expected} in ${rel}`);
-    body = body.replace(expected, replacement);
-    if (!rel.startsWith("runtime/")) {
-      body = body.replaceAll(oldVersion, newVersion);
+    if (rel.startsWith("runtime/") || rel === "tests/smoke-test.html") {
+      body = body.replace(expected, replacement);
     }
+    if (!rel.startsWith("runtime/")) body = body.replaceAll(oldVersion, newVersion);
     pending.push([file, body]);
   }
   for (const [file, body] of pending) await fs.writeFile(file, body);
