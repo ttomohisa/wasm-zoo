@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { compareVersions, readEnv, readJson, root } from "./lib.mjs";
 import { automaticCandidateConfig } from "./upstream-config.mjs";
+import { refreshZstdVersionPins } from "./zstd-version-pins.mjs";
 
 const values = {};
 for (let i = 2; i < process.argv.length; i += 2) {
@@ -370,26 +371,7 @@ if (values.slug === "libvips") {
   await replaceFile("builders/libvips/docs/ARCHITECTURE.md", refresh);
 }
 if (values.slug === "zstd") {
-  const versionNumber = (version) => {
-    const parts = String(version).split(".").map(Number);
-    if (parts.length !== 3 || parts.some((part) => !Number.isInteger(part) || part < 0)) {
-      throw new Error(`Unsupported Zstandard version: ${version}`);
-    }
-    return parts[0] * 10000 + parts[1] * 100 + parts[2];
-  };
-  const oldNumber = versionNumber(oldVersion);
-  const newNumber = versionNumber(values.version);
-  for (const rel of [
-    "builders/zstd/tests/smoke-test.html",
-    "builders/zstd/tests/smoke-test-cli.html",
-    "builders/zstd/scripts/build-cli.sh"
-  ]) {
-    await replaceFile(rel, (text) => {
-      let next = text.replaceAll(oldVersion, values.version);
-      if (rel.endsWith("tests/smoke-test.html")) next = next.replaceAll(String(oldNumber), String(newNumber));
-      return next;
-    });
-  }
+  await refreshZstdVersionPins(root, oldVersion, values.version, values.ref);
   await replaceFile("site/zstd-playground/app.js", (text) =>
     text.replaceAll(oldVersion, values.version)
       .replace(/const UPSTREAM_SHA = "[0-9a-f]{40}";/, `const UPSTREAM_SHA = "${values.commit}";`)
