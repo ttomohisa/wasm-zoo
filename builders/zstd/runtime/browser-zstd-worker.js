@@ -1,6 +1,7 @@
 /* WASM Zoo Zstandard browser-core: fresh Worker per operation, bounded inputs. */
 "use strict";
 const MAX_BYTES = 64 * 1024 * 1024;
+const EXPECTED_VERSION_NUMBER = 10507;
 let factoryLoaded = false;
 self.onmessage = async (event) => {
   const { operation, coreJsUrl, wasmBytes, input, level } = event.data;
@@ -9,9 +10,10 @@ self.onmessage = async (event) => {
     if (!factoryLoaded) { importScripts(coreJsUrl); factoryLoaded = true; }
     if (typeof createZstdCore !== "function") throw new Error("Zstandard core factory unavailable");
     core = await createZstdCore({ wasmBinary: new Uint8Array(wasmBytes), locateFile: (name) => new URL(name, coreJsUrl).href });
-    if (core._zoo_version_number() !== 10507) throw new Error("Unexpected libzstd version: " + core._zoo_version_number());
+    const actualVersion = core._zoo_version_number();
+    if (actualVersion !== EXPECTED_VERSION_NUMBER) throw new Error(`Unexpected libzstd version: ${actualVersion} (expected ${EXPECTED_VERSION_NUMBER})`);
     if (operation === "version") {
-      self.postMessage({ type: "done", versionNumber: core._zoo_version_number() });
+      self.postMessage({ type: "done", versionNumber: actualVersion });
       return;
     }
     const source = new Uint8Array(input);
