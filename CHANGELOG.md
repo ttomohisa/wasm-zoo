@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- promote Zstandard 1.6.0 to builder 0.3.1 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `916e8e70b33317d469a41ee837e47317807815c8`;
+
 - record @wasm-zoo/ffmpeg@0.2.9 publication from ffmpeg-v0.2.9; verified Registry SHA-1 `dd64027fab26c7652f142f6ab8a17edf5349b75b` against the staged tarball;
 
 - promote FFmpeg 9.1 to builder 0.2.9 after the isolated upstream candidate build and browser smoke test passed, moving the reviewed source pin to exact commit `74e4393595cf2b5857f0da925c4e0dd74ea306e5`;

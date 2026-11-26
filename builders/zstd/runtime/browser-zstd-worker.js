@@ -1,7 +1,7 @@
 /* WASM Zoo Zstandard browser-core: fresh Worker per operation, bounded inputs. */
 "use strict";
 const MAX_BYTES = 64 * 1024 * 1024;
-const EXPECTED_VERSION_NUMBER = 10507;
+const EXPECTED_VERSION_NUMBER = 10600;
 let factoryLoaded = false;
 self.onmessage = async (event) => {
   const { operation, coreJsUrl, wasmBytes, input, level } = event.data;
