@@ -42,7 +42,7 @@ cat > /out/features.json <<'EOF'
     "pthreads": false, "simd": false, "network": false
   },
   "runtimeTested": [
-    "zstd --version displays 1.5.7", "CLI compress with a staged MEMFS input",
+    "zstd --version displays 1.6.0", "CLI compress with a staged MEMFS input",
     "CLI decompress produces byte-identical output", "CLI decodes a native-zstd frame",
     "native zstd decodes a browser-produced CLI frame", "invalid input fails nonzero"
   ],

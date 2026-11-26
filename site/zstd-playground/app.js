@@ -5,7 +5,7 @@ const runtimeStatus = $("runtime-status"), coreStatus = $("core-status"), messag
   fileInput = $("input-file"), runButton = $("run"), demoButton = $("demo"),
   selection = $("selection"), download = $("download");
 const MAX_BYTES = 64 * 1024 * 1024;
-const UPSTREAM_SHA = "f8745da6ff1ad1e7bab384bd1f9d742439278e99";
+const UPSTREAM_SHA = "916e8e70b33317d469a41ee837e47317807815c8";
 let pkg = null, canRun = false, input = null, outputUrl = null, activeRunner = null;
 const formatBytes = (n) => { let value=n, i=0; const units=["B","KiB","MiB"]; while(value>=1024&&i<units.length-1){value/=1024;i++;} return value.toFixed(i?1:0)+" "+units[i]; };
 const log = (text) => { logNode.textContent += String(text)+"\n"; logNode.scrollTop=logNode.scrollHeight; };
@@ -33,7 +33,7 @@ function selectFile(blob, name, sample=false){
 }
 demoButton.addEventListener("click",()=>{
   if(modeInput.value!=="compress"){message.textContent="The sample is for compression. Select a .zst file to decompress.";return;}
-  const text="WASM Zoo: official Zstandard 1.5.7 browser compression.\n".repeat(1000);
+  const text="WASM Zoo: official Zstandard 1.6.0 browser compression.\n".repeat(1000);
   selectFile(new Blob([text],{type:"text/plain"}),"zstd-sample.txt",true);
 });
 fileInput.addEventListener("change",()=>{

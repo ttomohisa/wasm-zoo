@@ -1083,14 +1083,14 @@
       "schemaVersion": 2,
       "slug": "zstd",
       "name": "Zstandard",
-      "summary": "Official-source Zstandard 1.5.7 WebAssembly with a bounded browser-core library profile and the original upstream zstd CLI browser-full profile, both published with verified corresponding source and supply-chain metadata.",
+      "summary": "Official-source Zstandard 1.6.0 WebAssembly with a bounded browser-core library profile and the original upstream zstd CLI browser-full profile, both published with verified corresponding source and supply-chain metadata.",
       "category": "archives",
       "status": "available",
       "order": 28,
       "upstream": {
-        "version": "1.5.7",
-        "ref": "v1.5.7",
-        "released": "2025-02-19",
+        "version": "1.6.0",
+        "ref": "v1.6.0",
+        "released": "2026-11-23",
         "homepage": "https://www.zstd.net/",
         "repository": "https://github.com/facebook/zstd",
         "license": "BSD-3-Clause (the upstream BSD option)"
@@ -1106,7 +1106,7 @@
         ]
       },
       "zoo": {
-        "builderVersion": "0.3.0",
+        "builderVersion": "0.3.1",
         "toolchain": "Emscripten 6.0.7",
         "buildModel": "libzstd-browser-core-and-upstream-cli-both-release-gated",
         "reproducible": true,
@@ -1131,18 +1131,18 @@
           "arbitraryCli": false,
           "network": false,
           "features": [
-            "exact upstream libzstd 1.5.7 compression and decompression",
+            "exact upstream libzstd 1.6.0 compression and decompression",
             "single-frame in-memory C API",
             "bounded output (64 MiB maximum)",
             "dedicated worker without SharedArrayBuffer"
           ],
           "externalLibraries": [],
-          "output": "Zstandard 1.5.7 one-shot compression/decompression library for browser-local data",
+          "output": "Zstandard 1.6.0 one-shot compression/decompression library for browser-local data",
           "binaryLicense": "BSD-3-Clause",
           "size": "Loaded from the published release manifest",
           "playground": true,
           "playgroundPath": "./zstd-playground/",
-          "releaseAsset": "zstd-browser-core-1.5.7-zoo-0.3.0.zip"
+          "releaseAsset": "zstd-browser-core-1.6.0-zoo-0.3.1.zip"
         },
         {
           "id": "browser-full",
@@ -1168,23 +1168,24 @@
           "size": "Loaded from the published release manifest",
           "playground": true,
           "playgroundPath": "./zstd-playground/",
-          "releaseAsset": "zstd-browser-full-1.5.7-zoo-0.3.0.zip"
+          "releaseAsset": "zstd-browser-full-1.6.0-zoo-0.3.1.zip"
         }
       ],
       "comparison": [
         {
           "name": "Upstream native",
-          "version": "1.5.7",
+          "version": "1.6.0",
           "note": "Reference libzstd C library and full CLI, native filesystem and optional multithreading."
         },
         {
           "name": "WASM Zoo",
-          "version": "1.5.7",
+          "version": "1.6.0",
           "note": "Published browser-core plus original upstream zstd CLI browser-full. The CLI uses browser MEMFS rather than a native OS filesystem and intentionally omits pthreads, legacy-frame decoding and external format codecs."
         }
       ],
       "notes": [
-        "Published GitHub Release zstd-v0.3.0 contains both browser profiles, exact corresponding official source/build recipe, SHA-256 checksums, standalone in-toto/SLSA provenance and CycloneDX 1.6 SBOMs.",
+        "v0.3.1 promotes Zstandard 1.6.0 after the isolated upstream candidate build and browser smoke test passed; the reviewed upstream ref/commit and release metadata move to the candidate-tested exact pins.",
+        "Published GitHub Release zstd-v0.3.1 contains both browser profiles, exact corresponding official source/build recipe, SHA-256 checksums, standalone in-toto/SLSA provenance and CycloneDX 1.6 SBOMs.",
         "browser-core and browser-full both passed real Chromium operation tests; browser-full also passed bidirectional native zstd frame interoperability before publication.",
         "The public Playground stages only checksum-verified published release assets. Files are processed locally in browser Workers.",
         "The original upstream browser-full CLI is now distributed as @wasm-zoo/zstd@0.3.0. The published Registry version is independently tested in Chromium, Firefox and WebKit using real Vite-built operations.",
@@ -1208,7 +1209,7 @@
             "browser-core": "included",
             "browser-full": "included"
           },
-          "note": "Both profiles use the official 1.5.7 C sources. Browser-full also requires real CLI compress/decompress and bidirectional native frame compatibility in CI."
+          "note": "Both profiles use the official 1.6.0 C sources. Browser-full also requires real CLI compress/decompress and bidirectional native frame compatibility in CI."
         },
         {
           "feature": "Stream processing of unknown-length frames",
@@ -1285,16 +1286,16 @@
         ],
         "example": "import { load } from \"/vendor/zstd/wasm-zoo-cli.mjs\";\nconst cli = await load({baseUrl:\"/vendor/zstd/\"});\ntry {\n  const compressed = await cli.exec([\"-q\",\"-f\",\"-5\",\"-o\",\"/out.zst\",\"/in.txt\"], {\n    files: [{name:\"/in.txt\",data:new TextEncoder().encode(\"hello\")}], outputs:[\"/out.zst\"]\n  });\n  console.log(compressed.files[0].data);\n} finally { cli.dispose(); }",
         "notes": [
-          "Use the immutable zstd-v0.3.0 GitHub Release assets; the public Playground stages the same verified ZIP contents.",
+          "Use the immutable zstd-v0.3.1 GitHub Release assets; the public Playground stages the same verified ZIP contents.",
           "Inputs and outputs use safe browser-local paths. Maximum staged input and collected output remain bounded to 64 MiB by the wrappers.",
           "No native OS filesystem, pthreads or network access is exposed by either browser profile."
         ]
       },
       "release": {
-        "tag": "zstd-v0.3.0",
-        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/zstd-v0.3.0",
-        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/zstd-v0.3.0/",
-        "sourceAsset": "zstd-sources-1.5.7-zoo-0.3.0.tar.gz",
+        "tag": "zstd-v0.3.1",
+        "page": "https://github.com/ttomohisa/wasm-zoo/releases/tag/zstd-v0.3.1",
+        "downloadBase": "https://github.com/ttomohisa/wasm-zoo/releases/download/zstd-v0.3.1/",
+        "sourceAsset": "zstd-sources-1.6.0-zoo-0.3.1.tar.gz",
         "checksumsAsset": "SHA256SUMS.txt"
       },
       "npm": {

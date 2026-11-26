@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><meta charset="utf-8"><title>WASM Zoo experimental native zstd CLI browser smoke</title>
-<pre id="log">Running original Zstandard 1.5.7 CLI smoke…</pre>
+<pre id="log">Running original Zstandard 1.6.0 CLI smoke…</pre>
 <script type="module">
 import { load } from "./wasm-zoo-cli.mjs";
 const out = document.querySelector("#log");
@@ -14,7 +14,7 @@ const abort = (error) => {
     runner = await load({ baseUrl: "./" });
     const version = await runner.exec(["--version"], { timeoutMs: 45000 });
     const versionOutput = version.stdout + version.stderr;
-    if (!versionOutput.includes("v1.5.7") && !versionOutput.includes("1.5.7")) {
+    if (!versionOutput.includes("v1.6.0") && !versionOutput.includes("1.6.0")) {
       throw new Error("Actual upstream CLI version mismatch: " + versionOutput.slice(0, 300));
     }
     const input = new Uint8Array(await (await fetch("./native-input.bin")).arrayBuffer());
@@ -65,8 +65,8 @@ const abort = (error) => {
       if (!post.ok) throw new Error("Failed to submit browser CLI frame for native verification");
       nativeStatus = "bidirectional-native-interop";
     }
-    out.textContent = "PASS original zstd CLI 1.5.7 / MEMFS roundtrip / invalid-frame rejection / " + nativeStatus;
-    location.hash = "#SMOKE_TEST_PASS_zstd_1.5.7_upstream_cli_" + nativeStatus;
+    out.textContent = "PASS original zstd CLI 1.6.0 / MEMFS roundtrip / invalid-frame rejection / " + nativeStatus;
+    location.hash = "#SMOKE_TEST_PASS_zstd_1.6.0_upstream_cli_" + nativeStatus;
   } catch (error) { abort(error); }
   finally { runner?.dispose(); }
 })();
