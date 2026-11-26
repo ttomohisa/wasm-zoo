@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-25T13:12:36.203Z",
-  "hasUpdates": true,
+  "generatedAt": "2026-11-26T12:52:57.455Z",
+  "hasUpdates": false,
   "packages": [
     {
       "slug": "ffmpeg",
@@ -112,19 +112,19 @@
       "slug": "zstd",
       "name": "Zstandard",
       "status": "ok",
-      "pinned": "1.5.7",
-      "pinnedRef": "v1.5.7",
-      "pinnedReleased": "2025-02-19",
+      "pinned": "1.6.0",
+      "pinnedRef": "v1.6.0",
+      "pinnedReleased": "2026-11-23",
       "latest": "1.6.0",
       "latestRef": "v1.6.0",
       "latestCommit": "916e8e70b33317d469a41ee837e47317807815c8",
       "latestReleased": "2026-11-23T22:55:19Z",
-      "updateAvailable": true,
-      "lagDays": 642,
+      "updateAvailable": false,
+      "lagDays": 0,
       "gap": {
-        "kind": "behind",
-        "label": "1 minor behind",
-        "versionsBehind": 1
+        "kind": "current",
+        "label": "Current",
+        "versionsBehind": 0
       },
       "url": "https://github.com/meta/zstd/releases/tag/v1.6.0",
       "candidate": {

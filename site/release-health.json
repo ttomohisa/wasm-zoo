@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-25T13:12:54.011Z",
+  "generatedAt": "2026-11-26T12:53:13.705Z",
   "repository": "ttomohisa/wasm-zoo",
   "pagesBase": "https://ttomohisa.github.io/wasm-zoo",
   "packages": [
@@ -241,31 +241,39 @@
     {
       "slug": "zstd",
       "name": "Zstandard",
-      "tag": "zstd-v0.3.0",
+      "tag": "zstd-v0.3.1",
       "release": {
-        "state": "ok",
-        "label": "Assets present",
-        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/zstd-v0.3.0",
-        "publishedAt": "2026-09-23T14:54:50Z",
-        "assetCount": 10,
-        "missingAssets": []
+        "state": "pending",
+        "label": "Reviewed tag pending",
+        "url": "https://github.com/ttomohisa/wasm-zoo/releases/tag/zstd-v0.3.1",
+        "publishedAt": null,
+        "assetCount": 0,
+        "missingAssets": [
+          "zstd-browser-core-1.6.0-zoo-0.3.1.zip",
+          "zstd-browser-full-1.6.0-zoo-0.3.1.zip",
+          "zstd-sources-1.6.0-zoo-0.3.1.tar.gz",
+          "SHA256SUMS.txt"
+        ]
       },
       "supplyChain": {
-        "state": "ok",
-        "label": "Provenance + SBOM published",
+        "state": "pending",
+        "label": "Publishes with reviewed package release",
         "expected": [
           "provenance-browser-core.json",
           "sbom-browser-core.cdx.json",
           "provenance-browser-full.json",
           "sbom-browser-full.cdx.json"
         ],
-        "missing": []
+        "missing": [
+          "provenance-browser-core.json",
+          "sbom-browser-core.cdx.json",
+          "provenance-browser-full.json",
+          "sbom-browser-full.cdx.json"
+        ]
       },
       "buildGate": {
-        "state": "ok",
-        "label": "Passed",
-        "url": "https://github.com/ttomohisa/wasm-zoo/actions/runs/35877438423",
-        "runId": 35877438423
+        "state": "pending",
+        "label": "Reviewed tag not created"
       },
       "playground": {
         "state": "ok",
@@ -273,8 +281,8 @@
         "url": "https://ttomohisa.github.io/wasm-zoo/zstd-playground/"
       },
       "freshness": {
-        "state": "warn",
-        "label": "1 minor behind"
+        "state": "ok",
+        "label": "Current"
       },
       "npm": {
         "package": "@wasm-zoo/zstd",
@@ -286,16 +294,17 @@
         "shasumMatch": true,
         "sourceReleaseTag": "zstd-v0.3.0",
         "sourceReleaseAsset": "zstd-browser-full-1.5.7-zoo-0.3.0.zip",
-        "packageReleaseTag": "zstd-v0.3.0",
-        "sourceCurrent": true,
-        "intentionalPin": false,
-        "updatePending": false,
-        "state": "ok",
-        "label": "Published 0.3.0"
+        "packageReleaseTag": "zstd-v0.3.1",
+        "sourceCurrent": false,
+        "intentionalPin": true,
+        "updatePending": true,
+        "state": "warn",
+        "label": "Pinned to zstd-v0.3.0",
+        "review": "separate-npm-review"
       },
       "overall": {
-        "state": "warn",
-        "label": "Upstream review"
+        "state": "pending",
+        "label": "In progress"
       }
     },
     {
@@ -535,14 +544,14 @@
   ],
   "summary": {
     "healthy": 8,
-    "warning": 1,
-    "pending": 0,
+    "warning": 0,
+    "pending": 1,
     "error": 0,
-    "supplyChainPublished": 9,
+    "supplyChainPublished": 8,
     "npmTotal": 9,
-    "npmAligned": 9,
-    "npmFollowUp": 0,
-    "npmPinned": 0,
+    "npmAligned": 8,
+    "npmFollowUp": 1,
+    "npmPinned": 1,
     "npmErrors": 0,
     "total": 9
   }
