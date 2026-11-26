@@ -226,12 +226,12 @@ async function validateRehearsal(worktree, slug, before, config, expected, nextV
   }
 }
 
-async function rehearse(slug) {
+async function rehearse(slug, versionOverride) {
   const config = automaticCandidateConfigs[slug];
   const before = await readJsonAt(root, `packages/${slug}/package.json`);
   if (before.tracker?.candidateMode !== "auto") throw new Error(`${slug}: configured automatic candidate is not candidateMode=auto`);
 
-  const nextVersion = bumpLastNumeric(before.upstream?.version, `${slug} upstream version`);
+  const nextVersion = versionOverride ?? bumpLastNumeric(before.upstream?.version, `${slug} upstream version`);
   if (!String(before.upstream?.ref || "").includes(before.upstream.version)) {
     throw new Error(`${slug}: cannot derive synthetic ref from ${before.upstream?.ref || "<missing>"}`);
   }
@@ -246,6 +246,9 @@ async function rehearse(slug) {
     await run(process.execPath, args, worktree);
     await run(process.execPath, ["scripts/generate-catalog.mjs"], worktree);
     await run(process.execPath, [`builders/${config.dir}/scripts/check-repository.mjs`], worktree);
+    if (slug === "zstd") {
+      await run(process.execPath, ["--test", "--test-name-pattern=reviewed Worker", "scripts/test-zstd-version-pins.mjs"], worktree);
+    }
     await run("git", ["diff", "--check"], worktree);
     await validateRehearsal(worktree, slug, before, config, expected, nextVersion, nextRef, commit);
     console.log(`[OK] ${slug}: synthetic ${before.upstream.version} -> ${nextVersion} review-only promotion rehearsal passed`);
@@ -260,4 +263,11 @@ if (!configured.length) throw new Error("No automatic candidate packages are con
 if (!configured.includes("libvips")) throw new Error("libvips automatic adapter candidate must be covered by promotion rehearsal");
 
 for (const slug of configured) await rehearse(slug);
+// Exercise actual review-only promotion for minor and major version transitions as well.
+if (configured.includes("zstd")) {
+  const pkg = await readJsonAt(root, "packages/zstd/package.json");
+  const [major, minor] = pkg.upstream.version.split(".").map(Number);
+  await rehearse("zstd", `${major}.${minor + 1}.0`);
+  await rehearse("zstd", `${major + 1}.0.0`);
+}
 console.log(`[OK] automatic promotion rehearsal passed for ${configured.length} packages including libvips adapter-bundle promotion`);
