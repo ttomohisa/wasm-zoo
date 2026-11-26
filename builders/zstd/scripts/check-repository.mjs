@@ -61,6 +61,10 @@ for (const token of [`version !== ${versionNumber}`, "zstd.compress(", "zstd.dec
   need(browser.includes(token), "Browser smoke must verify " + token);
 }
 const worker = read("runtime/browser-zstd-worker.js");
+need(worker.includes(`const EXPECTED_VERSION_NUMBER = ${versionNumber};`) &&
+  worker.includes("actualVersion !== EXPECTED_VERSION_NUMBER") &&
+  worker.includes("const actualVersion = core._zoo_version_number()"),
+  "Worker must reject a WASM binary whose version differs from the reviewed upstream pin");
 need(worker.includes("MAX_BYTES = 64 * 1024 * 1024") &&
   worker.includes("Zstandard output exceeds") &&
   worker.includes("_zoo_frame_size") && !worker.includes("SharedArrayBuffer"),
