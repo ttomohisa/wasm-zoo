@@ -134,7 +134,10 @@ need(promotion.includes('docs/NPM_DISTRIBUTION.md') && promotion.includes('npm d
 need(promotion.includes('values.slug === "ghostscript"') && promotion.includes('profile.externalLibraries') && promotion.includes('note.startsWith(`Official Ghostscript ${oldVersion} release source archive is pinned by SHA-256`)'), 'Ghostscript promotion must refresh current-version source-archive metadata');
 need(promotion.includes('values.slug === "brotli"') && promotion.includes('builders/brotli/tests/smoke-test.html') && promotion.includes('builders/brotli/README.md'), 'Brotli promotion must refresh current-version docs and exact-version smoke assertions');
 
+need(candidate.includes('await refreshZstdVersionPins(root,') && promotion.includes('await refreshZstdVersionPins(root,'),
+  'Zstandard candidate and promotion must share the exact-version runtime pin updater');
 const verifyWorkflow = await read('.github/workflows/verify.yml');
+need(verifyWorkflow.includes('node --test scripts/test-zstd-version-pins.mjs'), 'Verify catalog must run Zstandard candidate/runtime version regression tests');
 need(verifyWorkflow.includes('npm run promotion:rehearse'), 'Verify catalog must run the shared automatic promotion rehearsal');
 need(!verifyWorkflow.includes('Rehearse future Zstandard candidate and review-only promotion'), 'Verify catalog must not retain the legacy Zstandard-only rehearsal');
 const rehearsal = await read('scripts/rehearse-upstream-promotions.mjs');

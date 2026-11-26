@@ -37,6 +37,8 @@ jobs:
           node scripts/check-metadata-contract.mjs
       - name: Test Zstandard exact-source fetch against multiple release versions
         run: bash builders/zstd/tests/test-fetch-zstd.sh
+      - name: Test Zstandard candidate and runtime version pins
+        run: node --test scripts/test-zstd-version-pins.mjs
       - name: Rehearse all review-only automatic promotions
         run: npm run promotion:rehearse
       - name: Rehearse npm preparation and publication records for all packages (offline)
