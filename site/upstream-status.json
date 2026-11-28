@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-27T12:47:49.175Z",
+  "generatedAt": "2026-11-28T11:59:59.542Z",
   "hasUpdates": true,
   "packages": [
     {
@@ -161,11 +161,17 @@
           "browser-full"
         ],
         "adapter": {
-          "ready": false,
-          "reason": "wasm-vips master a81f702d5735 targets libvips 8.18.7, not 8.18.8",
-          "adapterCommit": "a81f702d57356e60c237987b9ced0d53b0105b78",
+          "ready": true,
+          "reason": "adapter and compatibility patch bundle resolved to immutable commits",
+          "adapterCommit": "ed9b78634ff5aafcee901d300b527d48d2ad55f5",
           "adapterVersion": "0.0.19",
-          "emsdkVersion": "7.0.1"
+          "emsdkVersion": "7.0.1",
+          "emscriptenRef": "7.0.1",
+          "emscriptenCommit": "ac0578743420bcbe9a4f77d0b6599c25f8d43702",
+          "libvipsPatchRef": "wasm-vips-8.18.8",
+          "libvipsPatchCommit": "4be849910ad633fb93c3978736596c2a19f2094f",
+          "emscriptenPatchRef": "wasm-vips-7.0.1",
+          "emscriptenPatchCommit": "358c8a65362149953488886fd400d296ef949f71"
         }
       }
     },
